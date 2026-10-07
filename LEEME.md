@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.1.0)
+# Escuadra · Control docente (v1.2.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,15 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.2:** **Perfiles**. Cada alumno tiene un perfil aproximado del semestre: punto de partida (diagnóstico),
+conocimiento, trabajos, constancia, participación y actitud, con fortalezas, áreas de oportunidad, siguiente paso y
+cuántos datos lo sostienen. La vista del grupo muestra posibles monitores, a quién apoyar primero, equipos equilibrados,
+fichas imprimibles para juntas y una copia **sin nombres** para analizar con Claude. Además:
+- **Observaciones de un toque:** en el Pase de lista toca el nombre del alumno (🤝 explicó, ❓ buena pregunta, 💤 se distrajo…).
+- **Puntos máximos** en cada actividad (ej. examen de 94 puntos): escribes los puntos y la app los convierte a base 100.
+- **Rubro Diagnóstico:** no cuenta para la calificación, marca el punto de partida.
+- **Pegar datos de Claude** (Alumnos → Pegar datos de Claude): pegas el bloque que Claude arma desde tus fotos de listas o exámenes, revisas y aplicas.
 
 **Cómo proyectar:** conecta la laptop al proyector → abre *Temas* → elige el tema → **Proyectar**.
 Teclas: → o espacio avanza (o muestra la respuesta), ← regresa, **R** muestra la respuesta, **Esc** sale.
@@ -62,6 +71,8 @@ al abrirla con internet. Tus datos no se tocan.
 | `ideas.js` | Banco de 52 ideas: prácticas, FreeCAD, manejo de grupo, evaluación y 24 para clase con proyector |
 | `temas.js` | 26 temas con explicación, ejemplo resuelto, preguntas y contenido para el modo Proyector |
 | `core.js` | Guardado, sincronización y cálculos |
+| `perfil.js` | Perfil de cada alumno, observaciones, equipos equilibrados y fichas |
+| `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
 | `views.js` | Pantallas |
 | `print.js` | Impresión, acta en Excel y planeación en Word |
 | `app.js` | Arranque y navegación |
@@ -78,3 +89,4 @@ al abrirla con internet. Tus datos no se tocan.
 - Formato de acta y lista: "LISTAS DE ASISTENCIA AGOSTO ENERO 2026.xlsx".
 - Temas: el propio programa SEP 2024 y su bibliografía (Myszka, *Máquinas y mecanismos*; Bolton, *Mecatrónica*; Guillén, *Introducción a la Neumática*; Serrano, *Neumática práctica*; manuales CNAD de Rivera y Ruiz), más ISO 1219 y las NOM que cita el programa. Cada tema dice su fuente al final.
 - Simuladores sugeridos: PhET (Universidad de Colorado, gratuitos) y PMKS+ (Worcester Polytechnic Institute, gratuito y sin registro).
+- Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

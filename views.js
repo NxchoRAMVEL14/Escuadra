@@ -38,12 +38,16 @@
     upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',
     download: '<path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/>',
     cloud: '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/>',
-    screen: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>'
+    screen: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M16.5 3.5l1.5 1.5 3-3"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
   E.logo = () => '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
   const icon = E.icon;
 
+  const CAT_LBL = { examen: 'Examen', trabajos: 'Libreta/Proyecto/Bitácora', diagnostico: 'Diagnóstico' };
+  const TEMAS_EVAL = ['Dibujo técnico y FreeCAD (Submódulo 1)', 'Mecanismos y pares cinemáticos', 'Grados de libertad y cuatro barras', 'Transmisiones: engranes, poleas y tornillo', 'Modelado y ensamble en FreeCAD', 'Construcción del mecanismo', 'Neumática e hidráulica: principios', 'Simbología y circuitos ISO 1219', 'Electroneumática y motores DC'];
+  E.CAT_LBL = CAT_LBL; E.TEMAS_EVAL = TEMAS_EVAL;
   /* ---------- piezas ---------- */
   const card = (h, cls, attrs) => '<section class="card ' + (cls || '') + '" ' + (attrs || '') + '>' + h + '</section>';
   const btn = (label, act, attrs, cls) => '<button type="button" class="btn ' + (cls || '') + '" data-act="' + act + '" ' + (attrs || '') + '>' + label + '</button>';
@@ -53,6 +57,7 @@
   const noGroup = () => ({ t: 'Escuadra', h: card('<div class="empty"><h3>No hay grupo configurado</h3><p>Ve a Ajustes → Grupo para crearlo.</p>' + link('Ir a Ajustes', 'ajustes', 'primary') + '</div>') });
   const needAlumnos = t => ({ t: t, h: card('<div class="empty"><h3>Primero importa tu lista</h3><p>Sube el Excel de listas de la escuela o pega los nombres.</p>' + link(icon('upload') + ' Importar lista', 'alumnos', 'primary') + '</div>') });
   const fieldIn = (label, attrs, val, type) => '<label class="fld"><span>' + label + '</span><input type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '" ' + attrs + '></label>';
+  E.h = { card: card, btn: btn, link: link, gclass: gclass, gfmt: gfmt, fieldIn: fieldIn, noGroup: noGroup, needAlumnos: needAlumnos };
   E.modal = {
     open(title, body) { const m = document.getElementById('modal'); m.innerHTML = '<div class="sheet" role="dialog" aria-modal="true"><div class="sheet-h"><h3>' + esc(title) + '</h3><button type="button" class="iconbtn" data-act="modal-close" aria-label="Cerrar">' + icon('x') + '</button></div><div id="modal-body">' + body + '</div></div>'; m.hidden = false; },
     body(html) { const b = document.getElementById('modal-body'); if (b) b.innerHTML = html; },
@@ -100,7 +105,9 @@
       '<a href="#/bitacora">' + icon('book') + 'Bitácora del día</a>' +
       '<a href="#/planeacion">' + icon('doc') + 'Planeaciones</a>' +
       '<a href="#/temas">' + icon('screen') + 'Temas para proyectar</a>' +
-      '<a href="#/ideas">' + icon('bulb') + 'Ideas de clase</a></div>';
+      '<a href="#/ideas">' + icon('bulb') + 'Ideas de clase</a>' +
+      '<a href="#/perfiles">' + icon('profile') + 'Perfiles del grupo</a>' +
+      '<a href="#/alumnos/paquete">' + icon('download') + 'Pegar datos de Claude</a></div>';
     return { t: 'Inicio', h: h };
   };
   function ideaDelDia(g, p) {
@@ -131,11 +138,11 @@
     h += '<div class="row wrap gap">' + (doc ? '' : btn('✓ Todos presentes', 'asis-todos', 'data-fecha="' + fecha + '"', 'primary')) +
       btn(icon('dice') + ' Al azar', 'azar', 'data-fecha="' + fecha + '"') + btn(icon('team') + ' Equipos', 'equipos', 'data-fecha="' + fecha + '"') +
       link(icon('timer') + ' Temporizador', 'herramientas') + (doc ? btn(icon('trash') + ' Borrar registro', 'asis-borrar', 'data-fecha="' + fecha + '"', 'ghost danger') : '') + '</div>';
-    h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · toca la letra para cambiarla; <b>+</b> suma participación.</p>';
+    h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · toca la letra para cambiarla; <b>+</b> suma participación; toca el <b>nombre</b> para anotar una observación (🤝 ❓ 💡…).</p>';
     h += '<ul class="slist">' + al.map(a => {
       const st = (doc && doc[a.id]) || 'A', n = Number(pd[a.id] || 0);
       return '<li class="srow ' + (doc ? '' : 'pending') + '"><button type="button" class="st st-' + st + '" data-act="asis" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Estado de ' + esc(a.nombre) + ': ' + st + '">' + st + '</button>' +
-        '<div class="sname"><span class="num">' + a.num + '</span>' + esc(a.nombre) + '</div>' +
+        '<button type="button" class="sname obsbtn" data-act="obs-open" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Anotar observación de ' + esc(a.nombre) + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button>' +
         '<div class="partc"><button type="button" class="mini" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="-1" aria-label="Quitar participación">−</button><b>' + n + '</b><button type="button" class="mini plus" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="1" aria-label="Sumar participación">+</button></div></li>';
     }).join('') + '</ul>';
     return { t: 'Pase de lista', h: h };
@@ -162,7 +169,7 @@
   function azarHTML(g, f) {
     const z = E.ui.azar, a = z.last && D.alumno(g, z.last);
     return '<p class="muted small">' + presentes(g, f).length + ' presentes · no se repite nadie hasta que pasen todos.</p><div class="picked">' + (a ? esc(a.nombre) : 'Toca "Elegir"') + '</div><div class="row gap wrap">' +
-      btn(icon('dice') + ' Elegir', 'azar-pick', 'data-fecha="' + f + '"', 'primary') + (a ? btn('+1 participación', 'azar-part', 'data-fecha="' + f + '" data-aid="' + a.id + '"', 'accent') : '') + '</div>';
+      btn(icon('dice') + ' Elegir', 'azar-pick', 'data-fecha="' + f + '"', 'primary') + (a ? btn('+1 participación', 'azar-part', 'data-fecha="' + f + '" data-aid="' + a.id + '"', 'accent') + btn('Observar', 'obs-open', 'data-fecha="' + f + '" data-aid="' + a.id + '"') : '') + '</div>';
   }
   A.azar = el => {
     const g = D.grupoActual(); if (!g || !D.alumnos(g).length) { u.toast('Primero importa tu lista', 'err'); return; }
@@ -182,17 +189,20 @@
   function equiposHTML(f) {
     const e = E.ui.equipos;
     return '<div class="row gap wrap" style="align-items:flex-end"><label class="fld" style="margin:0;flex:1"><span>Integrantes por equipo</span><input type="number" min="2" max="10" value="' + e.n + '" data-ch="eq-n" id="eq-n" inputmode="numeric"></label>' + btn(icon('team') + ' Formar', 'eq-form', 'data-fecha="' + f + '"', 'primary') + '</div>' +
+      '<label class="switch mt"><input type="checkbox" data-ch="eq-bal" ' + (e.bal ? 'checked' : '') + '><span>Equilibrar por nivel (perfil): cada equipo con alumnos fuertes y en proceso</span></label>' +
       (e.teams ? '<div class="teams mt">' + e.teams.map((t, i) => '<div class="team"><b>Equipo ' + (i + 1) + '</b><ol>' + t.map(a => '<li>' + esc(a.nombre) + '</li>').join('') + '</ol></div>').join('') + '</div><div class="row gap wrap mt">' + btn(icon('copy') + ' Copiar', 'eq-copy') + btn(icon('book') + ' Guardar en bitácora', 'eq-bit', 'data-fecha="' + f + '"') + '</div>' : '');
   }
   A.equipos = el => {
     const g = D.grupoActual(); if (!g || !D.alumnos(g).length) { u.toast('Primero importa tu lista', 'err'); return; }
     E.modal.open('Formar equipos', equiposHTML(el.dataset.fecha || u.today()));
   };
+  CH['eq-bal'] = el => { E.ui.equipos.bal = el.checked; };
   CH['eq-n'] = el => { E.ui.equipos.n = Math.max(2, Math.min(10, Number(el.value) || 4)); };
   A['eq-form'] = el => {
     const g = D.grupoActual(), f = el.dataset.fecha, n = E.ui.equipos.n, list = u.shuffle(presentes(g, f));
-    const k = Math.max(1, Math.round(list.length / n)), teams = Array.from({ length: k }, () => []);
-    list.forEach((a, i) => teams[i % k].push(a)); E.ui.equipos.teams = teams; E.modal.body(equiposHTML(f));
+    const k = Math.max(1, Math.round(list.length / n)); let teams = Array.from({ length: k }, () => []);
+    if (E.ui.equipos.bal && E.perfil) teams = E.perfil.equiposBal(g, list, k); else list.forEach((a, i) => teams[i % k].push(a));
+    E.ui.equipos.teams = teams; E.modal.body(equiposHTML(f));
   };
   const equiposTxt = () => (E.ui.equipos.teams || []).map((t, i) => 'Equipo ' + (i + 1) + ': ' + t.map(a => a.nombre).join(', ')).join('\n');
   A['eq-copy'] = async () => { const ok = await u.copy(equiposTxt()); u.toast(ok ? 'Equipos copiados' : 'No se pudo copiar', ok ? 'ok' : 'err'); };
@@ -261,13 +271,15 @@
     const acts = C.acts(g, p.id);
     const catBlock = (cat, label) => {
       const list = acts.filter(a => a.categoria === cat);
-      return '<div class="cat"><div class="cat-h"><h4>' + label + ' <span class="chip brand">' + c.pond[cat] + '%</span></h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + '</div>' +
-        (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (a.cuenta === false ? ' · no cuenta' : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') + '</div>';
+      if (cat === 'diagnostico' && !list.length) return '';
+      return '<div class="cat"><div class="cat-h"><h4>' + label + (c.pond[cat] != null ? ' <span class="chip brand">' + c.pond[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + '</div>' +
+        (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (C.maxPts(a) !== 100 ? ' · de ' + C.maxPts(a) + ' pts' : '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (a.cuenta === false && cat !== 'diagnostico' ? ' · no cuenta' : '') + (st.prom != null ? ' · prom. ' + Math.round(st.prom) : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') + '</div>';
     };
-    h += card('<h3>' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + catBlock('examen', 'Examen') + catBlock('trabajos', 'Libreta / Proyecto / Bitácora') +
+    h += card('<h3>' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + catBlock('examen', 'Examen') + catBlock('trabajos', 'Libreta / Proyecto / Bitácora') + catBlock('diagnostico', 'Diagnóstico') +
       '<div class="cat"><h4>Asistencia <span class="chip brand">' + c.pond.asistencia + '%</span></h4><p class="muted small">Se calcula sola con tu pase de lista.</p></div>' +
       '<div class="cat"><h4>Participación <span class="chip brand">' + c.pond.participacion + '%</span></h4><p class="muted small">' + c.metaPart + ' participaciones en el parcial = 100.</p></div>' +
-      (!acts.length && sm && sm.ac.some(a => a.producto) ? '<div class="mt">' + btn(icon('sparkle') + ' Agregar actividades sugeridas del submódulo', 'act-sugeridas', 'data-pid="' + p.id + '"') + '</div>' : ''));
+      '<div class="row gap wrap mt">' + (!acts.some(a => a.categoria !== 'diagnostico') && sm && sm.ac.some(a => a.producto) ? btn(icon('sparkle') + ' Agregar actividades sugeridas del submódulo', 'act-sugeridas', 'data-pid="' + p.id + '"') : '') +
+      (!acts.some(a => a.categoria === 'diagnostico') ? btn(icon('plus') + ' Examen diagnóstico (no cuenta)', 'act-nueva', 'data-cat="diagnostico" data-pid="' + p.id + '"', 'small ghost') : '') + '</div>');
     h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Calif.</th><th>Exa</th><th>Trab</th><th>Asis</th><th>Part</th></tr></thead><tbody>' + al.map(a => {
       const k = C.cal(g, p.id, a.id), cp = k.comp;
       return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + (k.enCurso && k.final != null ? '*' : '') + '</span></td><td>' + gfmt(cp.examen) + '</td><td>' + gfmt(cp.trabajos) + '</td><td>' + gfmt(cp.asistencia) + '</td><td>' + gfmt(cp.participacion) + '</td></tr>';
@@ -282,7 +294,7 @@
   };
   A['act-nueva'] = el => {
     const g = D.grupoActual(), id = u.uid('act'), cat = el.dataset.cat;
-    S.put('act:' + g.id + ':' + id, { id: id, parcial: el.dataset.pid, categoria: cat, nombre: cat === 'examen' ? 'Examen' : 'Nueva actividad', peso: 1, fecha: u.today(), instrumento: cat === 'examen' ? 'Exa' : 'LC', cuenta: true, notas: {} }, { silent: true });
+    S.put('act:' + g.id + ':' + id, { id: id, parcial: el.dataset.pid, categoria: cat, nombre: cat === 'examen' ? 'Examen' : cat === 'diagnostico' ? 'Examen diagnóstico' : 'Nueva actividad', peso: 1, max: 100, fecha: u.today(), instrumento: cat === 'trabajos' ? 'LC' : 'Exa', cuenta: cat !== 'diagnostico', notas: {} }, { silent: true });
     location.hash = '#/actividad/' + id;
   };
   A['act-sugeridas'] = el => {
@@ -297,36 +309,42 @@
   V.actividad = id => {
     const g = D.grupoActual(); if (!g) return noGroup();
     const a = S.get('act:' + g.id + ':' + id); if (!a) return { t: 'Actividad', h: card('<p>No encontré esta actividad.</p>' + link('Volver', 'calificaciones', 'primary')) };
-    const al = D.alumnos(g), st = C.actStats(a, al), k = 'act:' + g.id + ':' + id;
+    const al = D.alumnos(g), st = C.actStats(a, al), k = 'act:' + g.id + ':' + id, mx = C.maxPts(a), conv = mx !== 100;
     let h = '<p><a href="#/calificaciones/' + a.parcial + '">‹ Volver a calificaciones</a></p>';
     h += card('<div class="fgrid">' + fieldIn('Nombre', 'data-ch="act-field" data-path="nombre" id="af-nombre"', a.nombre) +
-      '<label class="fld"><span>Rubro</span><select data-ch="act-field" data-path="categoria" id="af-cat"><option value="examen" ' + (a.categoria === 'examen' ? 'selected' : '') + '>Examen</option><option value="trabajos" ' + (a.categoria === 'trabajos' ? 'selected' : '') + '>Libreta / Proyecto / Bitácora</option></select></label>' +
+      '<label class="fld"><span>Rubro</span><select data-ch="act-field" data-path="categoria" id="af-cat"><option value="examen" ' + (a.categoria === 'examen' ? 'selected' : '') + '>Examen</option><option value="trabajos" ' + (a.categoria === 'trabajos' ? 'selected' : '') + '>Libreta / Proyecto / Bitácora</option><option value="diagnostico" ' + (a.categoria === 'diagnostico' ? 'selected' : '') + '>Diagnóstico (no cuenta, alimenta el perfil)</option></select></label>' +
+      fieldIn('Puntos máximos', 'data-ch="act-field" data-path="max" id="af-max" inputmode="decimal" min="1" step="1"', mx, 'number') +
+      '<label class="fld"><span>Tema que evalúa (para el perfil)</span><input list="temas-dl" data-ch="act-field" data-path="tema" id="af-tema" value="' + esc(a.tema || '') + '" placeholder="Ej. Dibujo técnico y FreeCAD"><datalist id="temas-dl">' + TEMAS_EVAL.map(x => '<option value="' + esc(x) + '">').join('') + '</datalist></label>' +
       fieldIn('Fecha', 'data-ch="act-field" data-path="fecha" id="af-fecha"', a.fecha, 'date') +
       '<label class="fld"><span>Instrumento</span><select data-ch="act-field" data-path="instrumento" id="af-ins">' + Object.keys(E.INSTR).map(x => '<option value="' + x + '" ' + (a.instrumento === x ? 'selected' : '') + '>' + E.INSTR[x] + '</option>').join('') + '</select></label>' +
       fieldIn('Peso dentro del rubro', 'data-ch="act-field" data-path="peso" id="af-peso" inputmode="decimal" min="0" step="0.5"', a.peso, 'number') +
-      '<label class="switch" style="align-self:end"><input type="checkbox" data-ch="act-field" data-path="cuenta" ' + (a.cuenta !== false ? 'checked' : '') + '><span>Cuenta para la calificación</span></label></div>' +
-      '<p class="muted small">Capturadas ' + st.capturadas + ' de ' + al.length + (st.prom != null ? ' · promedio del grupo ' + Math.round(st.prom) : '') + '. Vacío = NE (no entregó): cuenta como 0 a partir del día siguiente a la fecha de entrega' + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : '; ponle fecha para que aplique') + '.</p>' +
-      '<div class="fillbar"><span class="muted small">Llenar vacíos con:</span>' + [100, 90, 80, 70, 60, 0].map(v => btn(String(v), 'act-fill', 'data-id="' + id + '" data-v="' + v + '"', 'small')).join('') + '</div>');
+      (a.categoria === 'diagnostico' ? '<p class="muted small" style="align-self:end">El diagnóstico no cuenta para la calificación: marca el punto de partida en el perfil.</p>' : '<label class="switch" style="align-self:end"><input type="checkbox" data-ch="act-field" data-path="cuenta" ' + (a.cuenta !== false ? 'checked' : '') + '><span>Cuenta para la calificación</span></label>') + '</div>' +
+      '<p class="muted small">Capturadas ' + st.capturadas + ' de ' + al.length + (st.prom != null ? ' · promedio del grupo ' + Math.round(st.prom) + '/100' : '') + '.' + (conv ? ' Escribe los <b>puntos</b> (de ' + mx + '); la app los convierte a base 100.' : '') + (a.categoria === 'diagnostico' ? '' : ' Vacío = NE (no entregó): cuenta como 0 a partir del día siguiente a la fecha de entrega' + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : '; ponle fecha para que aplique') + '.') + '</p>' +
+      '<div class="fillbar"><span class="muted small">Llenar vacíos con (base 100):</span>' + [100, 90, 80, 70, 60, 0].map(v => btn(String(v), 'act-fill', 'data-id="' + id + '" data-v="' + v + '"', 'small')).join('') + '</div>');
     h += '<ul class="slist">' + al.map((x, i) => {
       const v = a.notas && a.notas[x.id], nx = al[i + 1];
-      return '<li class="srow"><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div><input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="100" step="1" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' aria-label="Calificación de ' + esc(x.nombre) + '"></li>';
+      const n100 = C.nota(a, x.id);
+      return '<li class="srow"><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv ? '<span class="conv g ' + gclass(n100) + '">' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '"></li>';
     }).join('') + '</ul>';
     h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
     return { t: a.nombre || 'Actividad', h: h, key: k };
   };
   CH['act-field'] = el => {
     const g = D.grupoActual(), id = location.hash.split('/')[2]; const path = el.dataset.path;
-    let v = el.type === 'checkbox' ? el.checked : el.value; if (path === 'peso') v = Math.max(0, Number(v) || 0);
+    let v = el.type === 'checkbox' ? el.checked : el.value; if (path === 'peso') v = Math.max(0, Number(v) || 0); if (path === 'max') v = Number(v) > 0 ? Number(v) : 100;
+    if (path === 'categoria' && v === 'diagnostico') S.update('act:' + g.id + ':' + id, a => { a.cuenta = false; });
+    if (path === 'categoria' && v !== 'diagnostico') { const cur = S.get('act:' + g.id + ':' + id); if (cur && cur.categoria === 'diagnostico') S.update('act:' + g.id + ':' + id, a => { a.cuenta = true; }); }
     S.update('act:' + g.id + ':' + id, a => { u.set(a, path, v); });
   };
   CH.nota = el => {
     const g = D.grupoActual(), id = el.dataset.id, aid = el.dataset.aid; let v = el.value.trim();
-    if (v !== '') { v = Number(v); v = isNaN(v) ? '' : Math.max(0, Math.min(100, v)); }
+    const mx = C.maxPts(S.get('act:' + g.id + ':' + id));
+    if (v !== '') { v = Number(v); v = isNaN(v) ? '' : Math.max(0, Math.min(mx, v)); }
     S.update('act:' + g.id + ':' + id, a => { a.notas = a.notas || {}; a.notas[aid] = v; });
   };
   A['act-fill'] = el => {
     const g = D.grupoActual(), id = el.dataset.id, v = Number(el.dataset.v);
-    S.update('act:' + g.id + ':' + id, a => { a.notas = a.notas || {}; D.alumnos(g).forEach(x => { const cur = a.notas[x.id]; if (cur === '' || cur == null) a.notas[x.id] = v; }); });
+    S.update('act:' + g.id + ':' + id, a => { const pv = u.round(v * C.maxPts(a) / 100, 1); a.notas = a.notas || {}; D.alumnos(g).forEach(x => { const cur = a.notas[x.id]; if (cur === '' || cur == null) a.notas[x.id] = pv; }); });
   };
   A['act-del'] = el => {
     const g = D.grupoActual(), k = 'act:' + g.id + ':' + el.dataset.id, a = S.get(k); if (!confirm('¿Eliminar "' + (a && a.nombre) + '" y sus calificaciones?')) return;
@@ -605,12 +623,14 @@
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && P.t) { /* sigue abierto en ventana */ } });
 
   /* =================== ALUMNOS =================== */
-  V.alumnos = () => {
+  V.alumnos = sub => {
     const g = D.grupoActual(); if (!g) return noGroup();
     const al = D.alumnos(g, true), p = C.parcialActual();
     let h = card('<h3>' + icon('upload') + ' Importar o actualizar lista</h3><p class="muted small">Sube el Excel de listas de la escuela y elige la hoja de tu grupo, o pega los nombres (uno por renglón). Si un alumno ya existe, se conserva todo su historial.</p>' +
       '<label class="btn primary filebtn">' + icon('upload') + ' Subir Excel<input type="file" accept=".xlsx,.xls,.csv" data-ch="import-file" hidden></label>' +
-      '<details class="sub"><summary>Pegar nombres</summary><textarea class="inp" id="imp-paste" rows="6" placeholder="BARRIENTOS CORONADO MICHEL ARMANDO&#10;CORTES TAMAYO MIGUEL ALEXANDER&#10;…"></textarea><div class="mt">' + btn('Revisar', 'import-paste', '', 'primary') + '</div></details>');
+      '<details class="sub"><summary>Pegar nombres</summary><textarea class="inp" id="imp-paste" rows="6" placeholder="BARRIENTOS CORONADO MICHEL ARMANDO&#10;CORTES TAMAYO MIGUEL ALEXANDER&#10;…"></textarea><div class="mt">' + btn('Revisar', 'import-paste', '', 'primary') + '</div></details>' +
+      (E.paquete ? E.paquete.html(sub === 'paquete') : ''));
+    if (sub === 'paquete') h += '<span data-scroll="pk-det"></span>';
     if (!al.length) return { t: 'Alumnos', h: h };
     h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Asis ' + esc(p.nombre.replace(' parcial', '')) + '</th><th>Calif.</th></tr></thead><tbody>' + al.map(a => {
       const as = C.asis(g, p, a.id), k = C.cal(g, p.id, a.id);
@@ -686,10 +706,11 @@
         const as = C.asis(g, p, a.id), k = C.cal(g, p.id, a.id);
         return '<tr><td class="l">' + esc(p.nombre) + '</td><td>' + (k.manual ? (k.asis == null ? '—' : k.asis) : as.a) + '</td><td>' + (k.manual ? (k.fal == null ? '—' : k.fal) : as.f) + '</td><td>' + (k.manual ? '—' : C.part(g, p, a.id)) + '</td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + '</span></td></tr>';
       }).join('') + '</tbody></table></div>');
+    if (E.perfil) h += card(E.perfil.cardHTML(g, a), 'pf');
     const p = C.parcialActual(), as = C.asis(g, p, a.id);
     if (as.fechasF.length) h += card('<h3>Faltas en el ' + esc(p.nombre) + '</h3><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
     const acts = C.acts(g, p.id);
-    if (acts.length) h += card('<h3>Actividades del ' + esc(p.nombre) + '</h3><ul class="acts">' + acts.map(x => { const v = x.notas && x.notas[a.id]; return '<li><a href="#/actividad/' + x.id + '"><b>' + esc(x.nombre) + '</b><span class="muted small">' + (x.categoria === 'examen' ? 'Examen' : 'Libreta/Proyecto/Bitácora') + '</span></a><span class="g ' + gclass(v === '' || v == null ? null : Number(v)) + '">' + (v === '' || v == null ? 'NE' : v) + '</span></li>'; }).join('') + '</ul>');
+    if (acts.length) h += card('<h3>Actividades del ' + esc(p.nombre) + '</h3><ul class="acts">' + acts.map(x => { const v = x.notas && x.notas[a.id], n = C.nota(x, a.id), mx = C.maxPts(x); return '<li><a href="#/actividad/' + x.id + '"><b>' + esc(x.nombre) + '</b><span class="muted small">' + (CAT_LBL[x.categoria] || '') + (n != null && mx !== 100 ? ' · ' + v + ' de ' + mx + ' pts' : '') + '</span></a><span class="g ' + gclass(n) + '">' + (n == null ? 'NE' : Math.round(n)) + '</span></li>'; }).join('') + '</ul>');
     h += card('<label class="fld"><span>Nombre</span><input id="al-nombre" value="' + esc(a.nombre) + '" data-ch="alumno-f" data-aid="' + a.id + '" data-f="nombre"></label>' +
       '<label class="fld"><span>Observaciones (solo tú las ves)</span><textarea id="al-notas" rows="4" data-ch="alumno-f" data-aid="' + a.id + '" data-f="notas">' + esc(a.notas || '') + '</textarea></label>' +
       btn(a.activo === false ? 'Reactivar' : 'Dar de baja', 'alumno-baja', 'data-aid="' + a.id + '"', 'ghost danger'));
@@ -746,7 +767,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 

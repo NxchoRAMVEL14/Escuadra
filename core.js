@@ -233,8 +233,12 @@
       return S.list('act:' + g.id + ':').filter(a => a.parcial === pid)
         .sort((a, b) => String(a.fecha || '9999').localeCompare(String(b.fecha || '9999')) || String(a.nombre).localeCompare(String(b.nombre)));
     },
+    // puntos máximos de una actividad (ej. examen de 94 puntos); 100 si no se indica
+    maxPts(a) { const m = Number(a && a.max); return m > 0 ? m : 100; },
+    // calificación de una actividad convertida a base 100 (null si no tiene)
+    nota(a, aid) { const v = a && a.notas && a.notas[aid]; if (v === '' || v == null || isNaN(Number(v))) return null; return Math.max(0, Math.min(100, Number(v) / C.maxPts(a) * 100)); },
     actStats(a, al) {
-      let cap = 0, s = 0; al.forEach(x => { const v = a.notas && a.notas[x.id]; if (v !== '' && v != null) { cap++; s += Number(v); } });
+      let cap = 0, s = 0; al.forEach(x => { const v = C.nota(a, x.id); if (v != null) { cap++; s += v; } });
       return { capturadas: cap, faltan: al.length - cap, prom: cap ? s / cap : null };
     },
     promCat(g, pid, cat, aid) {
@@ -242,10 +246,10 @@
       if (!as.length) return null; let sw = 0, s = 0;
       const hoy = u.today();
       as.forEach(a => {
-        const w = Number(a.peso || 1); let v = a.notas && a.notas[aid];
+        const w = Number(a.peso || 1); let v = C.nota(a, aid);
         // vacío = 0 solo si ya pasó la fecha de entrega; si no, aún no cuenta
-        if (v === '' || v == null) { if (!c.vaciasCero || !a.fecha || a.fecha >= hoy) return; v = 0; }
-        s += Number(v) * w; sw += w;
+        if (v == null) { if (!c.vaciasCero || !a.fecha || a.fecha >= hoy) return; v = 0; }
+        s += v * w; sw += w;
       });
       return sw ? s / sw : null;
     },
