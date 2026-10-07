@@ -1,10 +1,18 @@
-# Escuadra · Control docente (v1.0.0)
+# Escuadra · Control docente (v1.1.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
 acta con las mismas columnas que la de la escuela, impresión de listas, lista de cotejo y rúbrica,
 planeaciones en el formato SEMS con revisión automática y exportación a Word, banco de ideas,
 herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista de mejoras.
+
+**Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
+neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
+con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Cómo proyectar:** conecta la laptop al proyector → abre *Temas* → elige el tema → **Proyectar**.
+Teclas: → o espacio avanza (o muestra la respuesta), ← regresa, **R** muestra la respuesta, **Esc** sale.
+En celular o tableta, toca la pantalla para avanzar y el borde izquierdo para regresar.
 
 No necesita compilar nada: se sube tal cual a GitHub Pages arrastrando los archivos.
 
@@ -51,7 +59,8 @@ al abrirla con internet. Tus datos no se tocan.
 | `index.html` | Página principal |
 | `styles.css` | Diseño (claro/oscuro, celular y PC, impresión) |
 | `data.js` | Programa de estudios 2024 (Módulo II completo), tus fechas de parciales, horario y borradores de planeación |
-| `ideas.js` | Banco de 28 ideas de práctica y manejo de grupo |
+| `ideas.js` | Banco de 52 ideas: prácticas, FreeCAD, manejo de grupo, evaluación y 24 para clase con proyector |
+| `temas.js` | 26 temas con explicación, ejemplo resuelto, preguntas y contenido para el modo Proyector |
 | `core.js` | Guardado, sincronización y cálculos |
 | `views.js` | Pantallas |
 | `print.js` | Impresión, acta en Excel y planeación en Word |
@@ -67,3 +76,5 @@ al abrirla con internet. Tus datos no se tocan.
 - Horario: hoja "3 MEC" (bloques azules de MÓDULO, 16 h/semana).
 - Planeaciones: tus archivos "2do parcial 3ro.docx" y "3er parcial 3ro.docx".
 - Formato de acta y lista: "LISTAS DE ASISTENCIA AGOSTO ENERO 2026.xlsx".
+- Temas: el propio programa SEP 2024 y su bibliografía (Myszka, *Máquinas y mecanismos*; Bolton, *Mecatrónica*; Guillén, *Introducción a la Neumática*; Serrano, *Neumática práctica*; manuales CNAD de Rivera y Ruiz), más ISO 1219 y las NOM que cita el programa. Cada tema dice su fuente al final.
+- Simuladores sugeridos: PhET (Universidad de Colorado, gratuitos) y PMKS+ (Worcester Polytechnic Institute, gratuito y sin registro).

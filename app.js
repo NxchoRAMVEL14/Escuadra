@@ -2,15 +2,16 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.0.0';
+  E.VERSION = '1.1.0';
   E.CHANGELOG = [
+    { v: '1.1.0', f: '2026-10-05', t: 'Nueva sección Temas: 26 temas del Módulo II (nivelación del Submódulo 1, mecanismos y neumática/hidráulica) más formación integral, con explicación para el docente, ejemplo resuelto, preguntas y modo Proyector a pantalla completa (con alumno al azar). 24 ideas nuevas para aula con proyector (simuladores PhET y PMKS+, Plickers, cámara lenta, escape room ISO 1219, proyecto de vida y más).' },
     { v: '1.0.0', f: '2026-10-05', t: 'Primera versión: inicio con avisos, pase de lista y participación, calificaciones 50/40/5/5 con acta, impresión de listas, cotejo y rúbrica, planeaciones con revisión automática y exportación a Word, banco de ideas, herramientas de clase, bitácora, mejoras y sincronización con Supabase.' }
   ];
 
   const NAV = [['inicio', 'Inicio', 'home'], ['lista', 'Lista', 'check'], ['calificaciones', 'Califs', 'grade'], ['planeacion', 'Planea', 'doc'], ['mas', 'Más', 'more']];
-  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['calificaciones', 'Calificaciones', 'grade'], ['planeacion', 'Planeaciones', 'doc'], ['imprimir', 'Imprimir', 'print'], ['ideas', 'Ideas', 'bulb'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
-  const MAS = ['imprimir', 'ideas', 'herramientas', 'alumnos', 'calendario', 'bitacora', 'mejoras', 'ajustes', 'mas'];
-  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos' };
+  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['calificaciones', 'Calificaciones', 'grade'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
+  const MAS = ['temas', 'imprimir', 'ideas', 'herramientas', 'alumnos', 'calendario', 'bitacora', 'mejoras', 'ajustes', 'mas'];
+  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas' };
 
   function shell() {
     document.getElementById('app').innerHTML =
@@ -57,7 +58,7 @@
   document.addEventListener('change', e => { const el = e.target.closest('[data-ch]'); if (!el) return; const fn = E.changes[el.dataset.ch]; if (fn) fn(el, e); });
   document.addEventListener('input', e => { const el = e.target.closest('[data-in]'); if (!el) return; const fn = E.inputs[el.dataset.in]; if (fn) fn(el, e); });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') E.modal.close();
+    if (e.key === 'Escape' && !(E.proj && E.proj.t)) E.modal.close();
     if (e.key === 'Enter' && e.target.matches && e.target.matches('input[data-next]')) {
       e.preventDefault(); const nx = document.getElementById(e.target.dataset.next); e.target.blur();
       if (nx) { nx.focus(); try { nx.select(); } catch (_) { } }

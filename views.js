@@ -37,7 +37,8 @@
     copy: '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',
     upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',
     download: '<path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/>',
-    cloud: '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/>'
+    cloud: '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/>',
+    screen: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
   E.logo = () => '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
@@ -88,13 +89,18 @@
       if (R.length) h += card('<h3>' + icon('alert') + ' Alumnos que necesitan atención</h3><ul class="risk">' + R.slice(0, 6).map(r => '<li><a href="#/alumno/' + r.id + '">' + esc(r.nombre) + '</a> <span class="chip ' + r.kind + '">' + esc(r.txt) + '</span></li>').join('') + '</ul>' +
         (R.length > 6 ? '<p class="small mt"><a href="#/calificaciones/' + p.id + '">Ver los ' + R.length + ' casos en Calificaciones ›</a></p>' : ''));
     }
+    const smk = g && p && (g.submodulos || {})[p.id] ? 'II-' + g.submodulos[p.id] : null;
+    const temasSm = smk ? E.TEMAS.filter(t => t.sm === smk) : [];
+    if (temasSm.length) h += card('<h3>' + icon('screen') + ' Temas para proyectar</h3><p class="muted small">' + temasSm.length + ' temas del ' + esc(SM_LBL[smk] || '') + ' listos para tu clase.</p><ul class="risk">' + temasSm.slice(0, 4).map(t => '<li><a href="#/tema/' + t.id + '">' + esc(t.titulo) + '</a>' + btn('📽', 'proj-open', 'data-id="' + t.id + '" aria-label="Proyectar"', 'small ghost') + '</li>').join('') + '</ul>' + link('Ver todos', 'temas/' + smk, 'small'));
     const idea = ideaDelDia(g, p);
     if (idea) h += card('<h3>' + icon('bulb') + ' Idea del día</h3><p><b>' + esc(idea.titulo) + '</b></p><p class="muted small">' + esc(idea.obj) + '</p>' + link('Ver idea', 'ideas/' + idea.id, 'small'));
     h += '<div class="quick">' +
       '<a href="#/imprimir">' + icon('print') + 'Imprimir listas</a>' +
       '<a href="#/herramientas">' + icon('dice') + 'Al azar y equipos</a>' +
       '<a href="#/bitacora">' + icon('book') + 'Bitácora del día</a>' +
-      '<a href="#/planeacion">' + icon('doc') + 'Planeaciones</a></div>';
+      '<a href="#/planeacion">' + icon('doc') + 'Planeaciones</a>' +
+      '<a href="#/temas">' + icon('screen') + 'Temas para proyectar</a>' +
+      '<a href="#/ideas">' + icon('bulb') + 'Ideas de clase</a></div>';
     return { t: 'Inicio', h: h };
   };
   function ideaDelDia(g, p) {
@@ -458,25 +464,25 @@
   A['acta-copy'] = () => E.print.actaCopy(D.grupoActual());
 
   /* =================== IDEAS =================== */
-  const FILTROS = [['todas', 'Todas'], ['fav', '★ Favoritas'], ['II-2', 'Mecanismos (SM2)'], ['II-3', 'Neumática e hidráulica (SM3)'], ['FreeCAD', 'FreeCAD'], ['Docencia', 'Manejo de grupo'], ['Evaluación', 'Evaluación']];
+  const FILTROS = [['todas', 'Todas'], ['fav', '★ Favoritas'], ['Proyector', '📽 Con proyector'], ['II-2', 'Mecanismos (SM2)'], ['II-3', 'Neumática e hidráulica (SM3)'], ['FreeCAD', 'FreeCAD'], ['Docencia', 'Manejo de grupo'], ['Evaluación', 'Evaluación']];
   V.ideas = openId => {
     const q = u.norm(E.ui.ideasQ), fl = E.ui.ideasF, favs = D.favs();
     const list = E.IDEAS.filter(i => {
       if (fl === 'fav' && favs.indexOf(i.id) < 0) return false;
       if (fl.indexOf('II-') === 0 && i.sm.indexOf(fl) < 0) return false;
-      if (['FreeCAD', 'Docencia', 'Evaluación'].indexOf(fl) >= 0 && i.tipo !== fl) return false;
+      if (['FreeCAD', 'Docencia', 'Evaluación', 'Proyector'].indexOf(fl) >= 0 && i.tipo !== fl) return false;
       if (q && u.norm(i.titulo + ' ' + i.obj + ' ' + i.pasos.join(' ')).indexOf(q) < 0) return false;
       return true;
     });
     let h = '<label class="fld"><span>Buscar</span><input type="search" id="ideas-q" value="' + esc(E.ui.ideasQ) + '" data-in="ideas-q" placeholder="engranes, Pascal, equipos…"></label>';
     h += '<div class="filters">' + FILTROS.map(f => '<button type="button" class="tab ' + (fl === f[0] ? 'on' : '') + '" data-act="ideas-f" data-f="' + f[0] + '">' + f[1] + '</button>').join('') + '</div>';
-    h += '<p class="muted small">' + list.length + ' ideas · pensadas para un plantel con computadoras y FreeCAD, y materiales de bajo costo.</p>';
+    h += '<p class="muted small">' + list.length + ' ideas · para tu aula con proyector, computadoras con FreeCAD y materiales de bajo costo. La teoría lista para proyectar está en ' + '<a href="#/temas">Temas</a>.</p>';
     h += list.map(i => {
       const fav = favs.indexOf(i.id) >= 0;
       return '<details class="sec idea" ' + (openId === i.id ? 'open' : '') + ' id="idea-' + i.id + '"><summary><span>' + esc(i.titulo) + '</span></summary><div class="in">' +
         '<div class="meta"><span class="chip brand">' + esc(i.tipo) + '</span><span class="chip">' + esc(i.dur) + '</span><span class="chip">' + esc(i.costo) + '</span>' + i.sm.map(s => '<span class="chip info">' + (s === 'gen' ? 'Cualquier submódulo' : 'Submódulo ' + s.split('-')[1]) + '</span>').join('') + '</div>' +
         '<p><b>Para qué:</b> ' + esc(i.obj) + '</p><p><b>Materiales:</b> ' + esc(i.mat.join(' · ')) + '</p><ol>' + i.pasos.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>' +
-        '<p><b>Evidencia:</b> ' + esc(i.evid) + '</p><p class="note info">💡 ' + esc(i.tip) + '</p>' +
+        '<p><b>Evidencia:</b> ' + esc(i.evid) + '</p>' + (i.link ? '<p><a class="btn small" href="' + esc(i.link) + '" target="_blank" rel="noopener">↗ Abrir ' + esc(i.link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]) + '</a></p>' : '') + '<p class="note info">💡 ' + esc(i.tip) + '</p>' +
         '<div class="row gap wrap">' + btn(icon('star') + (fav ? ' Quitar de favoritas' : ' Favorita'), 'idea-fav', 'data-id="' + i.id + '"', fav ? 'accent' : '') + btn(icon('copy') + ' Copiar', 'idea-copy', 'data-id="' + i.id + '"') + '</div></div></details>';
     }).join('');
     return { t: 'Ideas para tus clases', h: h, after: () => { if (openId) { const el = document.getElementById('idea-' + openId); if (el) el.scrollIntoView({ block: 'start' }); } } };
@@ -489,6 +495,114 @@
     const t = i.titulo + '\nPara qué: ' + i.obj + '\nMateriales: ' + i.mat.join(', ') + '\n' + i.pasos.map((s, k) => (k + 1) + '. ' + s).join('\n') + '\nEvidencia: ' + i.evid;
     const ok = await u.copy(t); u.toast(ok ? 'Idea copiada' : 'No se pudo copiar', ok ? 'ok' : 'err');
   };
+
+  /* =================== TEMAS =================== */
+  const SM_LBL = { 'II-1': 'Nivelación · Submódulo 1', 'II-2': 'Submódulo 2 · Mecanismos', 'II-3': 'Submódulo 3 · Neumática e hidráulica', gen: 'Formación integral' };
+  const TFILT = [['todos', 'Todos'], ['II-1', 'Nivelación (SM1)'], ['II-2', 'Mecanismos (SM2)'], ['II-3', 'Neumática e hidráulica (SM3)'], ['gen', 'Formación integral']];
+  function smActual() { const g = D.grupoActual(), p = C.parcialActual(); const n = g && p && (g.submodulos || {})[p.id]; return n ? 'II-' + n : 'todos'; }
+  V.temas = f => {
+    f = f || E.ui.temasF || smActual(); E.ui.temasF = f;
+    const list = E.TEMAS.filter(t => f === 'todos' || t.sm === f);
+    let h = card('<h3>' + icon('doc') + ' Temas para explicar y proyectar</h3><p class="muted small">Cada tema trae la explicación para ti, lo esencial para proyectar, un ejemplo resuelto, preguntas con respuesta y su conexión con la vida. Toca <b>Proyectar</b> y conecta la laptop al proyector.</p>');
+    h += '<div class="filters">' + TFILT.map(x => '<a class="tab ' + (f === x[0] ? 'on' : '') + '" href="#/temas/' + x[0] + '">' + x[1] + '</a>').join('') + '</div>';
+    h += list.map(t => card('<div class="row between gap"><div><h3 style="margin-bottom:2px">' + esc(t.titulo) + '</h3><p class="muted small" style="margin:0">' + esc(SM_LBL[t.sm] || '') + ' · ' + esc(t.dur) + '</p></div>' +
+      btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'small primary') + '</div><p class="small">' + esc(t.objetivo) + '</p>' + (t.ac ? '<p class="muted small">Actividad clave: ' + esc(t.ac) + '</p>' : '') + link('Ver tema', 'tema/' + t.id, 'small'))).join('');
+    return { t: 'Temas', h: h };
+  };
+  V.tema = id => {
+    const t = E.TEMAS.find(x => x.id === id); if (!t) return { t: 'Tema', h: card('<p>No encontré este tema.</p>' + link('Volver', 'temas', 'primary')) };
+    const L = arr => '<ul>' + (arr || []).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+    let h = '<p><a href="#/temas">‹ Temas</a></p>';
+    h += card('<span class="chip brand">' + esc(SM_LBL[t.sm] || '') + '</span><h3 class="mt">' + esc(t.titulo) + '</h3><p class="small"><b>Objetivo:</b> ' + esc(t.objetivo) + '</p>' + (t.ac ? '<p class="muted small">Actividad clave del programa: ' + esc(t.ac) + '</p>' : '') + '<p class="muted small">Duración sugerida: ' + esc(t.dur) + '</p>' +
+      '<div class="row gap wrap">' + btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'primary') + btn(icon('copy') + ' Copiar preguntas', 'tema-copy', 'data-id="' + t.id + '"') + btn(icon('book') + ' Registrar en bitácora', 'tema-bit', 'data-id="' + t.id + '"') + '</div>');
+    h += card('<h3>Explicación para ti</h3>' + t.explica.map(p => '<p>' + esc(p) + '</p>').join(''));
+    h += card('<h3>Lo que se proyecta</h3>' + L(t.pantalla));
+    h += card('<h3>Conceptos clave</h3><dl class="kv">' + (t.clave || []).map(k => '<dt>' + esc(k[0]) + '</dt><dd>' + esc(k[1]) + '</dd>').join('') + '</dl>');
+    if (t.ejemplo) h += card('<h3>Ejemplo: ' + esc(t.ejemplo.titulo) + '</h3><ol>' + t.ejemplo.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol><p class="note ok">' + esc(t.ejemplo.resultado) + '</p>');
+    h += card('<h3>Preguntas para verificar</h3>' + (t.preguntas || []).map((q, i) => '<details class="sub"><summary>' + (i + 1) + '. ' + esc(q[0]) + '</summary><p class="small">' + esc(q[1]) + '</p></details>').join(''));
+    h += card('<h3>Errores comunes</h3>' + L(t.errores));
+    h += card('<h3>¿Para qué me sirve?</h3><p>' + esc(t.vida) + '</p>', 'accent');
+    const ids = (t.ideas || []).map(x => E.IDEAS.find(i => i.id === x)).filter(Boolean);
+    if (ids.length) h += card('<h3>' + icon('bulb') + ' Ideas para practicarlo</h3><ul class="risk">' + ids.map(i => '<li><a href="#/ideas/' + i.id + '">' + esc(i.titulo) + '</a><span class="chip">' + esc(i.tipo) + '</span></li>').join('') + '</ul>');
+    h += '<p class="muted small">Fuente: ' + esc(t.fuente) + '</p>';
+    return { t: 'Tema', h: h };
+  };
+  A['tema-copy'] = async el => {
+    const t = E.TEMAS.find(x => x.id === el.dataset.id); if (!t) return;
+    const txt = t.titulo + '\n' + t.preguntas.map((q, i) => (i + 1) + '. ' + q[0] + '\n   R: ' + q[1]).join('\n');
+    const ok = await u.copy(txt); u.toast(ok ? 'Preguntas copiadas (úsalas en tu examen o en Plickers)' : 'No se pudo copiar', ok ? 'ok' : 'err');
+  };
+  A['tema-bit'] = el => {
+    const t = E.TEMAS.find(x => x.id === el.dataset.id), g = D.grupoActual(), id = u.uid('bit');
+    S.put('bit:' + id, { id: id, fecha: u.today(), grupoId: g ? g.id : '', texto: 'Tema visto: ' + t.titulo + ' (' + (SM_LBL[t.sm] || '') + ').' }); u.toast('Registrado en la bitácora de hoy', 'ok');
+  };
+
+  /* ---------- modo proyector ---------- */
+  const chunk = (a, n) => { const out = []; for (let i = 0; i < (a || []).length; i += n) out.push(a.slice(i, i + n)); return out; };
+  function slides(t) {
+    const s = [{ k: 'cover', h: t.titulo, sub: SM_LBL[t.sm] || '', p: t.objetivo }];
+    chunk(t.pantalla, 4).forEach(c => s.push({ k: 'list', h: 'Lo esencial', items: c }));
+    chunk(t.clave, 3).forEach(c => s.push({ k: 'terms', h: 'Conceptos clave', items: c }));
+    if (t.ejemplo) { const ch = chunk(t.ejemplo.pasos, 4); ch.forEach((c, i) => s.push({ k: 'list', h: 'Ejemplo: ' + t.ejemplo.titulo, items: c, foot: i === ch.length - 1 ? t.ejemplo.resultado : '' })); }
+    (t.preguntas || []).forEach((q, i) => s.push({ k: 'q', h: 'Pregunta ' + (i + 1) + ' de ' + t.preguntas.length, q: q[0], a: q[1] }));
+    s.push({ k: 'vida', h: '¿Para qué me sirve?', p: t.vida });
+    return s;
+  }
+  const P = E.proj = {
+    t: null, s: [], i: 0, rev: false, dark: false,
+    open(id) {
+      const t = E.TEMAS.find(x => x.id === id); if (!t) return;
+      P.t = t; P.s = slides(t); P.i = 0; P.rev = false;
+      let el = document.getElementById('proj'); if (!el) { el = document.createElement('div'); el.id = 'proj'; document.body.appendChild(el); }
+      el.hidden = false; P.draw();
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => { });
+    },
+    draw() {
+      const el = document.getElementById('proj'); if (!el || !P.t) return; const sl = P.s[P.i];
+      let body = '';
+      if (sl.k === 'cover') body = '<div class="pj-cover"><span class="pj-kicker">' + esc(sl.sub) + '</span><h1>' + esc(sl.h) + '</h1><p>' + esc(sl.p) + '</p></div>';
+      else if (sl.k === 'list') body = '<h2>' + esc(sl.h) + '</h2><ul class="pj-list">' + sl.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' + (sl.foot ? '<p class="pj-foot">' + esc(sl.foot) + '</p>' : '');
+      else if (sl.k === 'terms') body = '<h2>' + esc(sl.h) + '</h2><dl class="pj-terms">' + sl.items.map(x => '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>').join('') + '</dl>';
+      else if (sl.k === 'q') body = '<h2>' + esc(sl.h) + '</h2><p class="pj-q">' + esc(sl.q) + '</p>' + (P.rev ? '<p class="pj-a">' + esc(sl.a) + '</p>' : '<button type="button" class="pj-btn pj-reveal" data-act="proj-reveal">Mostrar respuesta</button>');
+      else body = '<h2>' + esc(sl.h) + '</h2><p class="pj-vida">' + esc(sl.p) + '</p>';
+      el.className = P.dark ? 'pj-dark' : '';
+      el.innerHTML = '<div class="pj-slide" data-act="proj-tap">' + body + '</div>' +
+        '<div class="pj-bar"><div class="pj-prog"><span style="width:' + ((P.i + 1) / P.s.length * 100) + '%"></span></div>' +
+        '<div class="pj-ctrl"><button type="button" class="pj-btn" data-act="proj-prev" aria-label="Anterior">‹</button><span class="pj-count">' + (P.i + 1) + ' / ' + P.s.length + '</span><button type="button" class="pj-btn" data-act="proj-next" aria-label="Siguiente">›</button>' +
+        '<button type="button" class="pj-btn" data-act="proj-azar" title="Alumno al azar">🎲</button><button type="button" class="pj-btn" data-act="proj-theme" title="Claro u oscuro" aria-label="Claro u oscuro">🌓</button><button type="button" class="pj-btn" data-act="proj-close" aria-label="Cerrar">✕</button></div></div>' +
+        '<div class="pj-azar" id="pj-azar" hidden></div>';
+    },
+    go(d) { const n = P.i + d; if (n < 0 || n >= P.s.length) return; P.i = n; P.rev = false; P.draw(); },
+    close() { const el = document.getElementById('proj'); if (el) { el.hidden = true; el.innerHTML = ''; } if (document.fullscreenElement) document.exitFullscreen().catch(() => { }); P.t = null; }
+  };
+  A['proj-open'] = el => P.open(el.dataset.id);
+  A['proj-next'] = () => P.go(1);
+  A['proj-prev'] = () => P.go(-1);
+  A['proj-close'] = () => P.close();
+  A['proj-theme'] = () => { P.dark = !P.dark; P.draw(); };
+  A['proj-reveal'] = () => { P.rev = true; P.draw(); };
+  A['proj-tap'] = (el, e) => {
+    const sl = P.s[P.i]; const x = e.clientX / window.innerWidth;
+    if (x < 0.3) { P.go(-1); return; }
+    if (sl && sl.k === 'q' && !P.rev) { P.rev = true; P.draw(); return; }
+    P.go(1);
+  };
+  A['proj-azar'] = () => {
+    const g = D.grupoActual(); const box = document.getElementById('pj-azar'); if (!g || !box) return;
+    const list = presentes(g, u.today()); if (!list.length) { u.toast('Importa tu lista para usar el azar', 'err'); return; }
+    const a = list[Math.floor(Math.random() * list.length)];
+    box.hidden = false; box.innerHTML = '<div class="pj-azar-in"><span>Contesta</span><b>' + esc(a.nombre) + '</b><button type="button" class="pj-btn" data-act="proj-azar-ok" data-aid="' + a.id + '">+1 participación</button><button type="button" class="pj-btn" data-act="proj-azar-x">Cerrar</button></div>';
+  };
+  A['proj-azar-ok'] = el => { const g = D.grupoActual(); S.update('part:' + g.id + ':' + u.today(), d => { d[el.dataset.aid] = Number(d[el.dataset.aid] || 0) + 1; }, {}); const b = document.getElementById('pj-azar'); if (b) b.hidden = true; u.toast('+1 participación', 'ok'); };
+  A['proj-azar-x'] = () => { const b = document.getElementById('pj-azar'); if (b) b.hidden = true; };
+  document.addEventListener('keydown', e => {
+    if (!P.t) return;
+    if (['ArrowRight', 'PageDown', ' '].indexOf(e.key) >= 0) { e.preventDefault(); const sl = P.s[P.i]; if (sl.k === 'q' && !P.rev) { P.rev = true; P.draw(); } else P.go(1); }
+    else if (['ArrowLeft', 'PageUp'].indexOf(e.key) >= 0) { e.preventDefault(); P.go(-1); }
+    else if (e.key === 'Escape') P.close();
+    else if (e.key === 'r' || e.key === 'R') { P.rev = true; P.draw(); }
+  });
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && P.t) { /* sigue abierto en ventana */ } });
 
   /* =================== ALUMNOS =================== */
   V.alumnos = () => {
@@ -632,7 +746,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['ideas', 'bulb', 'Ideas', 'Prácticas y manejo de grupo'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 

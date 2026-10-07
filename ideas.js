@@ -199,6 +199,176 @@ window.E = window.E || {};
       mat: ['Un objeto o un video corto de un mecanismo en movimiento'],
       pasos: ['Muestra el mecanismo sin explicar nada.', 'Pregunta: "¿cómo creen que funciona?" y da 1 minuto para pensar en parejas.', 'Elige respuestas con "Alumno al azar" y suma participación.', 'Retoma la pregunta al final de la clase.'],
       evid: 'Participación', tip: 'Junta 3 o 4 objetos de cocina o taller y rótalos durante el parcial.'
+    },
+
+    /* ======== AULA CON PROYECTOR (v1.1) ======== */
+    {
+      id: 'pr-modo-proyector', titulo: 'Teoría en 15 minutos con el modo Proyector', sm: ['gen'], tipo: 'Proyector', dur: '15 min', costo: '$0',
+      obj: 'Dar la teoría corta y clara, y dedicar el resto de la sesión a la práctica.',
+      mat: ['Laptop con Escuadra conectada al proyector'],
+      pasos: ['Abre Escuadra → Temas y elige el tema del día.', 'Toca "Proyectar": la pantalla muestra lo esencial con letra grande.', 'Avanza con las flechas o tocando la pantalla; en las preguntas, toca para revelar la respuesta.', 'Cierra con la diapositiva "¿Para qué me sirve?" y pasa directo a la práctica.'],
+      evid: 'Participación en las preguntas proyectadas', tip: 'Usa "Alumno al azar" para que contesten las preguntas proyectadas: todos ponen atención porque cualquiera puede salir.'
+    },
+    {
+      id: 'pr-camara-doc', titulo: 'Tu celular como cámara de documentos', sm: ['gen'], tipo: 'Proyector', dur: 'Permanente', costo: '$0',
+      obj: 'Que todos vean en grande lo pequeño: un barreno, un empalme, una conexión de manguera.',
+      mat: ['Celular', 'Cable USB-C a HDMI o duplicación inalámbrica de pantalla (en Samsung: Smart View, si el proyector o la pantalla la admite)', 'Un soporte o un vaso para sostener el celular'],
+      pasos: ['Pon el celular en modo cámara apuntando a tu mesa.', 'Duplica la pantalla al proyector.', 'Haz la demostración en vivo: todos ven tus manos en grande.', 'Pasa a un alumno a explicar su pieza con la cámara.'],
+      evid: 'Práctica demostrativa (programa: demostrativa → guiada → supervisada → autónoma)', tip: 'Es la forma más barata de tener una "cámara de documentos" como las de las universidades.'
+    },
+    {
+      id: 'pr-camara-lenta', titulo: 'Cámara lenta para analizar mecanismos', sm: ['II-2', 'II-3'], tipo: 'Proyector', dur: '20 min', costo: '$0',
+      obj: 'Ver lo que el ojo no alcanza: dónde choca un eslabón o cuándo se detiene un seguidor.',
+      mat: ['Celular con video en cámara lenta', 'Proyector'],
+      pasos: ['Graba en cámara lenta el mecanismo de un equipo funcionando.', 'Proyéctalo y pausa cuadro por cuadro en el momento crítico.', 'Pregunta: ¿qué eslabón está en su punto muerto? ¿dónde se pierde fuerza?', 'El equipo propone la corrección y la registra en la bitácora.'],
+      evid: 'Bitácora de fallas y ajustes', tip: 'Graba también los mecanismos que SÍ funcionan: verlos en grande motiva muchísimo.'
+    },
+    {
+      id: 'pr-freecad-espejo', titulo: '"Yo modelo, tú modelas" en FreeCAD', sm: ['II-1', 'II-2'], tipo: 'Proyector', dur: '50 min', costo: '$0',
+      obj: 'Práctica guiada de FreeCAD donde nadie se queda atrás.',
+      mat: ['Laptop con FreeCAD al proyector', 'Computadoras del plantel'],
+      pasos: ['Proyecta FreeCAD con la letra y los íconos grandes.', 'Haz un paso, di "manos arriba" cuando termines y espera a que todos lo repliquen.', 'Cada 3 pasos, un alumno al azar explica qué hiciste y por qué.', 'Al final, cambia una cota y muestra cómo se actualiza todo (paramétrico).'],
+      evid: 'Archivo del modelo (Lista de cotejo)', tip: 'Antes de clase, guarda el archivo terminado: si alguien se pierde, lo abre y se reincorpora.'
+    },
+    {
+      id: 'pr-pausa-predice', titulo: 'Pausa y predice', sm: ['II-2', 'II-3'], tipo: 'Proyector', dur: '15 min', costo: '$0',
+      obj: 'Entrenar el razonamiento mecánico antes de la explicación.',
+      mat: ['Video corto de una máquina o mecanismo (búscalo con "animación mecanismo …" o "cilindro neumático animación")'],
+      pasos: ['Reproduce el video hasta justo antes del momento clave y páusalo.', 'Pregunta: ¿qué va a pasar ahora? ¿hacia dónde se mueve? En parejas, 1 minuto.', 'Recoge 3 predicciones con "Alumno al azar".', 'Reproduce y comenten quién acertó y por qué.'],
+      evid: 'Participación', tip: 'Las predicciones equivocadas son las mejores para enseñar: no las corrijas antes de ver el video.'
+    },
+    {
+      id: 'pr-maquina-misteriosa', titulo: 'La máquina misteriosa', sm: ['II-2', 'II-3'], tipo: 'Proyector', dur: '20 min', costo: '$0',
+      obj: 'Identificar mecanismos y tecnologías (neumática, hidráulica, eléctrica) en máquinas industriales reales.',
+      mat: ['Video sin audio de una máquina industrial: empacadora, prensa, robot de paletizado, línea de embotellado'],
+      pasos: ['Proyecta el video sin decir qué máquina es.', 'En equipos llenan una tabla: mecanismos que ven, ¿neumático, hidráulico o eléctrico?, ¿qué sensores habría?', 'Cada equipo defiende una respuesta.', 'Revela qué máquina es y para qué industria trabaja.'],
+      evid: 'Tabla de análisis por equipo', tip: 'Usa máquinas de industrias del Bajío (automotriz, alimentos, plásticos): les muestra dónde podrían trabajar.'
+    },
+    {
+      id: 'pr-phet-presion', titulo: 'Simulación PhET "Bajo presión"', sm: ['II-3'], tipo: 'Proyector', dur: '25 min', costo: '$0',
+      obj: 'Visualizar cómo cambia la presión de un líquido con la profundidad, la densidad y la gravedad.',
+      mat: ['Simulación gratuita PhET (Universidad de Colorado), funciona en el navegador'], link: 'https://phet.colorado.edu/es/simulations/under-pressure',
+      pasos: ['Proyecta la simulación y coloca el manómetro a distintas profundidades.', 'Pregunta antes de mover: si bajo el doble, ¿qué pasa con la presión?', 'Cambia el fluido (más denso) y la gravedad; anoten resultados.', 'Conecta con Pascal: si empujo el líquido, ¿a dónde se va la presión?'],
+      evid: 'Tabla de lecturas en la libreta', tip: 'Muéstrales que la presión se lee en kPa y pídeles convertir a bar y psi: repasa unidades sin que lo noten.'
+    },
+    {
+      id: 'pr-phet-circuitos', titulo: 'Simula el circuito antes de cablear (PhET)', sm: ['II-3'], tipo: 'Proyector', dur: '30 min', costo: '$0',
+      obj: 'Armar el circuito de la grúa de forma virtual y entender por qué un corto es peligroso.',
+      mat: ['Simulación gratuita PhET "Kit de construcción de circuitos: CD"'], link: 'https://phet.colorado.edu/es/simulations/circuit-construction-kit-dc',
+      pasos: ['Arma en vivo pila + interruptor + foco (el foco hace de motor).', 'Mide voltaje y corriente con los instrumentos de la simulación.', 'Provoca un corto a propósito y comenten lo que muestra la simulación.', 'Después cada equipo dibuja su circuito real en la libreta.'],
+      evid: 'Diagrama aprobado antes de recibir material', tip: 'Ver el corto en pantalla convence más que cualquier advertencia verbal.'
+    },
+    {
+      id: 'pr-linkage-sim', titulo: 'Simulador de mecanismos en el navegador (PMKS+)', sm: ['II-2'], tipo: 'Proyector', dur: '30 min', costo: '$0',
+      obj: 'Comprobar la ley de Grashof y ver trayectorias de cuatro barras y biela-manivela en vivo.',
+      mat: ['PMKS+: simulador gratuito de mecanismos planos (Worcester Polytechnic Institute), sin cuenta'], link: 'https://pmksplus.com',
+      pasos: ['Proyecta y arma un cuatro barras con las medidas del reto Grashof.', 'Pide predicciones antes de animarlo.', 'Anima y cambia una longitud: ¿sigue dando la vuelta completa?', 'Muestra la trayectoria del acoplador: así se diseñan movimientos especiales.'],
+      evid: 'Predicción vs. resultado en la bitácora', tip: 'Haz primero el mecanismo en cartón y luego en el simulador: comparan lo real con lo ideal.'
+    },
+    {
+      id: 'pr-plickers', titulo: 'Votación con tarjetas (Plickers)', sm: ['gen'], tipo: 'Proyector', dur: '10 min', costo: '$0',
+      obj: 'Saber en segundos quién entendió, sin que los alumnos usen celular.',
+      mat: ['Cuenta gratuita en plickers.com', 'Tarjetas impresas (una por alumno)', 'App de Plickers en tu celular'], link: 'https://www.plickers.com',
+      pasos: ['Crea 4 o 5 preguntas de opción múltiple del tema.', 'Proyecta la pregunta; cada alumno levanta su tarjeta girada según su respuesta.', 'Escanea el salón con tu celular y proyecta los resultados.', 'Si menos del 70 % acierta, re-explica antes de seguir.'],
+      evid: 'Reporte de respuestas por alumno', tip: 'Asigna la tarjeta según el número de lista de Escuadra: así coinciden tus registros.'
+    },
+    {
+      id: 'pr-quien-quiere', titulo: '"¿Quién quiere ser técnico?" (repaso)', sm: ['gen'], tipo: 'Proyector', dur: '30 min', costo: '$0',
+      obj: 'Repasar antes del examen con emoción y sin presión.',
+      mat: ['Preguntas de los Temas de Escuadra en diapositivas', 'Temporizador de Escuadra'],
+      pasos: ['Prepara 10 preguntas de dificultad creciente.', 'Dos equipos compiten; cada pregunta con 30 segundos en el temporizador.', 'Comodines: "pregúntale al equipo", "50/50" y "llamada al profe" (una sola vez).', 'Al final, repasa las preguntas que más fallaron.'],
+      evid: 'Participación', tip: 'Haz que los equipos escriban dos preguntas cada uno para el juego: preparar preguntas es la mejor forma de estudiar.'
+    },
+    {
+      id: 'pr-escape-iso', titulo: 'Escape room de simbología ISO 1219', sm: ['II-3'], tipo: 'Proyector', dur: '40 min', costo: 'Impresión',
+      obj: 'Leer diagramas neumáticos con un reto que engancha.',
+      mat: ['4 diagramas proyectados, uno por "candado"', 'Sobres con la siguiente pista'],
+      pasos: ['Cada candado es una pregunta sobre el diagrama proyectado: ¿qué válvula es? ¿qué vía es el escape? ¿en qué posición está el cilindro?', 'La respuesta da un número; con el código abren (piden) el siguiente sobre.', 'Gana el equipo que "escapa" primero con todo correcto.', 'Cierra explicando el diagrama más difícil.'],
+      evid: 'Respuestas del equipo (Guía de observación)', tip: 'Cubre la actividad clave "Interpreta planos…" sin que parezca examen.'
+    },
+    {
+      id: 'pr-muro-logros', titulo: 'Muro de logros del viernes', sm: ['gen'], tipo: 'Proyector', dur: '10 min', costo: '$0',
+      obj: 'Celebrar avances y construir orgullo de grupo (HVyT: logro de metas).',
+      mat: ['Fotos que tomas durante la semana de piezas, mecanismos y equipos trabajando'],
+      pasos: ['El viernes proyecta una presentación rápida con las fotos de la semana.', 'Cada equipo comenta en 30 segundos qué logró y qué sigue.', 'Reconoce el esfuerzo y la estrategia, no solo el resultado.'],
+      evid: 'No aplica (clima de aula)', tip: 'Antes de proyectar fotos donde salgan alumnos, confirma con la escuela su política de imagen de menores; puedes mostrar solo manos y piezas.'
+    },
+    {
+      id: 'pr-videollamada', titulo: 'Un profesional de la industria en el aula', sm: ['gen'], tipo: 'Proyector', dur: '20 min', costo: '$0',
+      obj: 'Que escuchen de primera mano cómo es el trabajo de un técnico o ingeniero.',
+      mat: ['Videollamada proyectada con bocinas', 'Preguntas preparadas por los alumnos'],
+      pasos: ['Invita a alguien de tu red: técnico de mantenimiento, integrador, egresado del CETAC.', 'Los alumnos preparan 5 preguntas: ¿qué hace un día normal?, ¿qué estudió?, ¿qué le hubiera gustado saber a su edad?', 'La plática dura 15 minutos y 5 de preguntas.', 'Al día siguiente, cada alumno escribe una idea que lo inspiró.'],
+      evid: 'Reflexión escrita', tip: 'Tu experiencia en automatización industrial te da una red de contactos que pocos docentes tienen: úsala.'
+    },
+    {
+      id: 'pr-carreras', titulo: '"¿Dónde voy a trabajar?" Mapa del Bajío industrial', sm: ['gen'], tipo: 'Proyector', dur: '30 min', costo: '$0',
+      obj: 'Conectar la carrera con oportunidades reales cerca de casa.',
+      mat: ['Mapa proyectado del corredor industrial del Bajío', 'Lista de ocupaciones del programa (SINCO): técnicos y mecánicos en mantenimiento, ensambladores de maquinaria, técnicos en equipos electromecánicos'],
+      pasos: ['Proyecta el mapa y marquen juntos parques industriales y tipos de industria de la región.', 'Relaciona cada industria con un submódulo: ¿dónde se usan mecanismos?, ¿dónde neumática?', 'Cada alumno elige un lugar donde le gustaría trabajar y por qué.', 'Cierra con los tres caminos: trabajar, seguir estudiando o emprender.'],
+      evid: 'Reflexión en la libreta', tip: 'Combínalo con "Mi yo de 25 años" para cerrar el parcial con visión de futuro.'
+    },
+    {
+      id: 'pr-yo-25', titulo: 'Mi yo de 25 años (proyecto de vida)', sm: ['gen'], tipo: 'Proyector', dur: '30 min', costo: '$0',
+      obj: 'Que se pongan metas concretas (HVyT: logro de metas, autoconocimiento).',
+      mat: ['Preguntas guía proyectadas', 'Hoja para una carta'],
+      pasos: ['Proyecta: ¿dónde vives?, ¿en qué trabajas?, ¿qué sabes hacer que hoy no sabes?, ¿qué hiciste a los 16 para llegar ahí?', 'Escriben una carta de su yo de 25 años a su yo de hoy.', 'Cada quien define una meta para este parcial y la escribe en la libreta.', 'Guarda las cartas (cerradas) y regrésalas al final del semestre.'],
+      evid: 'Meta del parcial en la libreta', tip: 'Las cartas son personales: no se califican ni se leen en voz alta, a menos que alguien quiera compartir.'
+    },
+    {
+      id: 'pr-respira', titulo: 'Un minuto para respirar antes del examen', sm: ['gen'], tipo: 'Proyector', dur: '2 min', costo: '$0',
+      obj: 'Bajar la ansiedad antes de evaluar (HVyT: regulación de emociones).',
+      mat: ['Temporizador de Escuadra en pantalla completa'],
+      pasos: ['Pon el temporizador en 1 minuto en el proyector.', 'Guía: inhalan contando 4, sostienen 4, exhalan contando 4, sostienen 4.', 'Al terminar: "Ya estudiaron; ahora solo demuestren lo que saben".'],
+      evid: 'No aplica', tip: 'Si lo haces siempre igual, se vuelve un ritual que les da seguridad.'
+    },
+    {
+      id: 'pr-explica-60', titulo: 'Explícalo en 60 segundos', sm: ['gen'], tipo: 'Proyector', dur: '20 min', costo: '$0',
+      obj: 'Practicar comunicación técnica clara (HVyT: comunicación).',
+      mat: ['Foto o video del mecanismo de cada equipo', 'Temporizador de Escuadra'],
+      pasos: ['Proyecta la foto del mecanismo de un equipo.', 'Un integrante al azar lo explica en 60 segundos: qué entra, qué sale y qué mecanismo lo transforma.', 'El grupo da una fortaleza y una sugerencia.'],
+      evid: 'Guía de observación de la exposición', tip: 'Ensaya la "defensa del proyecto" del cierre de parcial sin que se sienta como examen.'
+    },
+    {
+      id: 'pr-error-del-dia', titulo: 'El error del día', sm: ['II-1', 'II-3'], tipo: 'Proyector', dur: '10 min', costo: '$0',
+      obj: 'Entrenar el ojo crítico para planos y diagramas.',
+      mat: ['Un plano o diagrama con 3 errores intencionales (cota cruzada, línea equivocada, válvula mal conectada)'],
+      pasos: ['Proyecta el plano o diagrama al iniciar la clase.', 'En parejas, 3 minutos para encontrar los 3 errores.', 'Revelen y expliquen cómo se corrige cada uno.'],
+      evid: 'Participación', tip: 'Usa los errores reales que veas en sus libretas (sin nombres): aprenden de lo que realmente les pasa.'
+    },
+    {
+      id: 'pr-catalogo-real', titulo: 'Lee un catálogo industrial de verdad', sm: ['II-3'], tipo: 'Proyector', dur: '30 min', costo: '$0',
+      obj: 'Extraer datos de una ficha técnica real y usarlos para calcular.',
+      mat: ['Ficha técnica en PDF de un cilindro neumático o un motorreductor de un fabricante conocido'],
+      pasos: ['Proyecta la ficha y busquen juntos: diámetro del émbolo, del vástago, carrera y presión máxima.', 'Calculen la fuerza de avance y retroceso a 6 bar.', 'Comparen con lo que dice el catálogo.', 'Discutan: ¿este cilindro sirve para levantar 30 kg?'],
+      evid: 'Cálculo en la libreta', tip: 'Leer catálogos es exactamente lo que hacen los técnicos y vendedores técnicos en la industria.'
+    },
+    {
+      id: 'pr-mapa-mental', titulo: 'Mapa mental colectivo al cerrar el tema', sm: ['gen'], tipo: 'Proyector', dur: '15 min', costo: '$0',
+      obj: 'Consolidar lo aprendido conectando conceptos.',
+      mat: ['Diapositiva o pizarra digital en blanco proyectada'],
+      pasos: ['Escribe el tema al centro.', 'Con "Alumno al azar", cada quien agrega un concepto y lo conecta con otro.', 'Toma foto del resultado y súbela a la bitácora del día en Escuadra.'],
+      evid: 'Foto del mapa en la bitácora', tip: 'Al final del parcial, proyecta todos los mapas juntos: ven cuánto avanzaron.'
+    },
+    {
+      id: 'pr-historia', titulo: '5 minutos de historia: máquinas que cambiaron el mundo', sm: ['gen'], tipo: 'Proyector', dur: '5 min', costo: '$0',
+      obj: 'Dar contexto humano y curiosidad a los temas técnicos.',
+      mat: ['Una imagen proyectada por sesión'],
+      pasos: ['Ejemplos: el mecanismo de paralelogramo de James Watt para su máquina de vapor (1784); el telar de Jacquard con tarjetas perforadas (1804), antecesor de la programación; el origen de la palabra mecatrónica (Yaskawa, 1969).', 'Pregunta: ¿qué problema resolvía? ¿qué mecanismo usa?', 'Conecta con el tema del día.'],
+      evid: 'Participación', tip: 'Pide que cada equipo traiga una "máquina que cambió el mundo" para exponer en 2 minutos.'
+    },
+    {
+      id: 'pr-diagnostico-visible', titulo: 'Resultados del diagnóstico en pantalla (sin nombres)', sm: ['II-1'], tipo: 'Proyector', dur: '15 min', costo: '$0',
+      obj: 'Decidir juntos qué repasar del Submódulo 1 que no les tocó contigo.',
+      mat: ['Porcentaje de aciertos por pregunta del examen diagnóstico'],
+      pasos: ['Proyecta una gráfica de aciertos por pregunta, sin nombres.', 'Pregunta: ¿qué tema necesitamos reforzar como grupo?', 'Agenda micro-repasos (Temas de nivelación) al inicio de las próximas sesiones.'],
+      evid: 'No aplica', tip: 'Ver que el problema es de todos (no de uno) baja la vergüenza y sube la disposición a repasar.'
+    },
+    {
+      id: 'pr-antes-despues', titulo: 'Antes y después: del CAD a la pieza real', sm: ['II-2'], tipo: 'Proyector', dur: '15 min', costo: '$0',
+      obj: 'Comparar lo diseñado con lo fabricado y hablar de tolerancias.',
+      mat: ['Captura del modelo en FreeCAD y foto de la pieza cortada'],
+      pasos: ['Proyecta lado a lado el modelo y la pieza real.', 'Midan la pieza real y comparen con el plano.', '¿Cuánto se desvió? ¿Por qué? (corte, plantilla mal impresa, material).', 'Introduce la idea de tolerancia: cuánto error es aceptable.'],
+      evid: 'Tabla de medidas en la bitácora', tip: 'Cierra con la pregunta: ¿cómo lo harían en una fábrica para que todas salgan iguales?'
     }
   ];
 })(window.E);
