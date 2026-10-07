@@ -230,8 +230,8 @@ window.E = window.E || {};
         { dia: 3, inicio: '10:30', fin: '12:10', horas: 2 },
         { dia: 4, inicio: '09:10', fin: '10:00', horas: 1 },
         { dia: 4, inicio: '10:30', fin: '12:10', horas: 2 },
-        { dia: 5, inicio: '07:30', fin: '10:00', horas: 3 },
-        { dia: 5, inicio: '10:30', fin: '11:20', horas: 1 }
+        { dia: 5, inicio: '07:30', fin: '10:00', horas: 3, lugar: 'computo' },
+        { dia: 5, inicio: '10:30', fin: '11:20', horas: 1, lugar: 'computo' }
       ],
       alumnos: []
     }

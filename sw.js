@@ -1,5 +1,5 @@
 /* Escuadra · service worker: funciona sin internet y se actualiza solo. Cambia VERSION en cada entrega. */
-const VERSION = 'escuadra-v1.3.0';
+const VERSION = 'escuadra-v1.4.0';
 const SHELL = ['./', 'index.html', 'styles.css', 'config.js', 'data.js', 'ideas.js', 'temas.js', 'core.js', 'views.js', 'perfil.js', 'paquete.js', 'clases.js', 'print.js', 'app.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

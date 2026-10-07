@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.3.0)
+# Escuadra · Control docente (v1.4.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,16 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.4:** **lugar de cada clase**. En *Ajustes → Grupo y horario* cada bloque dice si es 🏫 aula, 💻 centro de
+cómputo o 🛠️ taller (este semestre: viernes en cómputo). Clases acomoda sola lo de computadora en esos bloques, nunca
+pone corte ni agua en el centro de cómputo, y si un día te toca taller lo cambias en ese día y se trae la siguiente
+práctica. Actualiza los lugares cada semestre.
+
+**Clase con temporizador (v1.4):** en el guion de cada bloque toca **⏱ Dar esta clase con temporizador**. Una barra abajo te lleva
+paso a paso con su tiempo; avisa con sonido y vibración cuando se acaba el tiempo de un paso, te dice si vas atrasado o
+adelantado y si ya no alcanzas antes de que termine el bloque. El tiempo también se ve en el modo Proyector. Al terminar,
+guarda en la bitácora cuánto te tomó cada paso y, si no alcanzaste, recorre lo que faltó a la siguiente clase.
 
 **Nuevo en v1.3:** pantalla **Clases** (en la barra de abajo). Para cada bloque de tu horario dice qué dar: actividad,
 objetivo, guion por minutos, material, evidencia, tarea y palabras para adelantar el tema, con el botón para proyectar.

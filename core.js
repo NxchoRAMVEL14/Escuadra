@@ -452,6 +452,11 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       });
     });
     if (total) setTimeout(() => u.toast('Reparé tu lista: quité ' + total + ' renglones que no eran alumnos.', 'ok', 7000), 800);
+    // v1.4: lugar de cada bloque; este semestre los viernes (4 h) son en el centro de cómputo
+    const g3 = S.get('grupo:3AMEC');
+    if (g3 && Array.isArray(g3.horario) && g3.horario.length && !g3.horario.some(b => b.lugar)) {
+      S.update('grupo:3AMEC', gr => { gr.horario.forEach(b => { b.lugar = Number(b.dia) === 5 ? 'computo' : 'aula'; }); });
+    }
     return total;
   };
 

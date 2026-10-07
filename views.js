@@ -39,6 +39,9 @@
     download: '<path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/>',
     cloud: '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/>',
     screen: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    pause: '<path d="M9 5v14M15 5v14" stroke-width="3"/>',
+    play: '<path d="M8 5l11 7-11 7z" fill="currentColor"/>',
+    stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor"/>',
     board: '<rect x="3" y="3.5" width="18" height="12.5" rx="1.5"/><path d="M8 20.5l2-4.5M16 20.5l-2-4.5M7 8h10M7 11.5h6"/>',
     profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M16.5 3.5l1.5 1.5 3-3"/>'
   };
@@ -227,6 +230,7 @@
     const el = document.getElementById('timer-disp'); if (el) el.textContent = fmtT(left);
     if (left <= 0) { t.run = false; t.left = 0; clearInterval(t.h); beep(); if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 600]); u.toast('⏰ ¡Tiempo!', 'ok', 6000); E.render(); }
   }
+  E.beep = () => beep();
   function beep() {
     try {
       const ctx = E.ui.audio || new (window.AudioContext || window.webkitAudioContext)(); E.ui.audio = ctx;
@@ -589,7 +593,7 @@
       el.className = P.dark ? 'pj-dark' : '';
       el.innerHTML = '<div class="pj-slide" data-act="proj-tap">' + body + '</div>' +
         '<div class="pj-bar"><div class="pj-prog"><span style="width:' + ((P.i + 1) / P.s.length * 100) + '%"></span></div>' +
-        '<div class="pj-ctrl"><button type="button" class="pj-btn" data-act="proj-prev" aria-label="Anterior">‹</button><span class="pj-count">' + (P.i + 1) + ' / ' + P.s.length + '</span><button type="button" class="pj-btn" data-act="proj-next" aria-label="Siguiente">›</button>' +
+        '<div class="pj-ctrl"><button type="button" class="pj-btn" data-act="proj-prev" aria-label="Anterior">‹</button><span class="pj-count">' + (P.i + 1) + ' / ' + P.s.length + '</span><button type="button" class="pj-btn" data-act="proj-next" aria-label="Siguiente">›</button>' + (E.run && E.run.activo() ? '<span class="pj-run" id="pj-run"></span>' : '') +
         '<button type="button" class="pj-btn" data-act="proj-azar" title="Alumno al azar">🎲</button><button type="button" class="pj-btn" data-act="proj-theme" title="Claro u oscuro" aria-label="Claro u oscuro">🌓</button><button type="button" class="pj-btn" data-act="proj-close" aria-label="Cerrar">✕</button></div></div>' +
         '<div class="pj-azar" id="pj-azar" hidden></div>';
     },
@@ -815,7 +819,7 @@
       h += sec('grupo', '👥 Grupo y horario', '<div class="fgrid">' + gf('nombre', 'Nombre corto', g.nombre) + gf('grupo', 'Grupo', g.grupo) + gf('semestre', 'Semestre', g.semestre) + gf('inicioDocente', 'Inicio con el grupo', g.inicioDocente, 'date') + '</div>' + gf('carrera', 'Carrera (como en la lista oficial)', g.carrera) +
         '<div class="fgrid c4"><label class="fld"><span>Módulo</span><select data-ch="grupo" data-path="modulo">' + Object.keys(E.PROGRAMA.modulos).map(k => '<option ' + (g.modulo === k ? 'selected' : '') + '>' + k + '</option>').join('') + '</select></label>' +
         ps.map(p => '<label class="fld"><span>Submódulo ' + esc(p.nombre) + '</span><select data-ch="grupo" data-path="submodulos.' + p.id + '"><option value="">—</option>' + Object.keys((E.PROGRAMA.modulos[g.modulo] || { sub: {} }).sub).map(k => '<option ' + ((g.submodulos || {})[p.id] === k ? 'selected' : '') + '>' + k + '</option>').join('') + '</select></label>').join('') + '</div>' +
-        '<h4>Horario (' + (g.horario || []).reduce((a, b) => a + Number(b.horas || 0), 0) + ' h/semana)</h4>' + (g.horario || []).map((b, i) => '<div class="hrow"><select data-ch="hor" data-i="' + i + '" data-f="dia" aria-label="Día">' + [1, 2, 3, 4, 5, 6].map(d => '<option value="' + d + '" ' + (Number(b.dia) === d ? 'selected' : '') + '>' + u.DIAS3[d] + '</option>').join('') + '</select><input type="time" value="' + esc(b.inicio) + '" data-ch="hor" data-i="' + i + '" data-f="inicio" aria-label="Inicio"><input type="time" value="' + esc(b.fin) + '" data-ch="hor" data-i="' + i + '" data-f="fin" aria-label="Fin"><input type="number" value="' + esc(b.horas) + '" data-ch="hor" data-i="' + i + '" data-f="horas" inputmode="numeric" aria-label="Horas"><button type="button" class="iconbtn" data-act="hor-del" data-i="' + i + '" aria-label="Quitar">' + icon('x') + '</button></div>').join('') +
+        '<h4>Horario (' + (g.horario || []).reduce((a, b) => a + Number(b.horas || 0), 0) + ' h/semana)</h4>' + (g.horario || []).map((b, i) => '<div class="hrow"><select data-ch="hor" data-i="' + i + '" data-f="dia" aria-label="Día">' + [1, 2, 3, 4, 5, 6].map(d => '<option value="' + d + '" ' + (Number(b.dia) === d ? 'selected' : '') + '>' + u.DIAS3[d] + '</option>').join('') + '</select><input type="time" value="' + esc(b.inicio) + '" data-ch="hor" data-i="' + i + '" data-f="inicio" aria-label="Inicio"><input type="time" value="' + esc(b.fin) + '" data-ch="hor" data-i="' + i + '" data-f="fin" aria-label="Fin"><input type="number" value="' + esc(b.horas) + '" data-ch="hor" data-i="' + i + '" data-f="horas" inputmode="numeric" aria-label="Horas"><button type="button" class="iconbtn" data-act="hor-del" data-i="' + i + '" aria-label="Quitar">' + icon('x') + '</button><select class="hlugar" data-ch="hor" data-i="' + i + '" data-f="lugar" aria-label="Lugar">' + [['aula', '🏫 Aula'], ['computo', '💻 Centro de cómputo'], ['taller', '🛠️ Taller']].map(o => '<option value="' + o[0] + '" ' + ((b.lugar || 'aula') === o[0] ? 'selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>').join('') + '<p class="muted small">El lugar de cada bloque se usa en Clases para acomodar lo de computadora y las prácticas. Actualízalo cada semestre; si un día cambia, ajústalo solo en ese día desde Clases.</p>' +
         btn(icon('plus') + ' Agregar bloque', 'hor-add', '', 'small'));
     }
     h += sec('parciales', '📅 Ciclo y parciales', ps.map(p => '<div class="momento"><h4>' + esc(p.nombre) + '</h4><div class="fgrid c3">' +
@@ -844,7 +848,7 @@
     const g = D.grupoActual(), i = Number(el.dataset.i), f = el.dataset.f;
     S.update('grupo:' + g.id, gr => { const b = gr.horario[i]; b[f] = (f === 'dia' || f === 'horas') ? Number(el.value) : el.value; });
   };
-  A['hor-add'] = () => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { gr.horario = gr.horario || []; gr.horario.push({ dia: 1, inicio: '07:30', fin: '08:20', horas: 1 }); }); };
+  A['hor-add'] = () => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { gr.horario = gr.horario || []; gr.horario.push({ dia: 1, inicio: '07:30', fin: '08:20', horas: 1, lugar: 'aula' }); }); };
   A['hor-del'] = el => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { gr.horario.splice(Number(el.dataset.i), 1); }); };
   CH.parcial = el => { S.update('parciales', ps => { const p = ps.find(x => x.id === el.dataset.pid); if (p && el.value) p[el.dataset.f] = el.value; }, D.parciales()); };
   A['asueto-add'] = el => {

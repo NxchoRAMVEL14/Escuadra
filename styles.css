@@ -397,3 +397,36 @@ ol.steps li { margin: 6px 0 }
 .cl-pasos li:last-child { border-bottom: 0 }
 .cl-pasos .min { position: absolute; left: 0; top: 6px; width: 56px; font-weight: 700; color: var(--brand); font-size: .82rem }
 .row.end { justify-content: flex-end }
+.hrow .hlugar { grid-column: 1 / -1 }
+.cl-lugar { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem }
+.cl-lugar select { border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--ink); padding: 6px 8px; font-size: .88rem }
+
+/* v1.4 · clase con temporizador */
+.runbar { position: fixed; left: 8px; right: 8px; bottom: calc(64px + env(safe-area-inset-bottom)); z-index: 40; background: var(--surface); border: 2px solid var(--ok); border-radius: 14px; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); padding: 8px 10px; font-size: .86rem }
+@media (min-width: 900px) { .runbar { left: auto; right: 20px; bottom: 20px; width: 420px } }
+.runbar[data-st="warn"] { border-color: var(--warn) } .runbar[data-st="over"] { border-color: var(--bad); background: var(--bad-soft) } .runbar[data-st="pausa"] { border-color: var(--line) }
+.rb-row { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.rb-txt { min-width: 0; flex: 1; text-decoration: none; color: var(--ink); display: flex; flex-direction: column }
+.rb-k { font-size: .72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.rb-p { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.rb-time { font-size: 1.5rem; font-variant-numeric: tabular-nums; min-width: 74px; text-align: right }
+.runbar[data-st="warn"] .rb-time { color: var(--warn) } .runbar[data-st="over"] .rb-time { color: var(--bad) }
+.rb-bar { height: 5px; background: var(--surface2); border-radius: 9px; overflow: hidden; margin: 6px 0 }
+.rb-bar span { display: block; height: 100%; background: var(--ok); width: 0 }
+.runbar[data-st="warn"] .rb-bar span { background: var(--warn) } .runbar[data-st="over"] .rb-bar span { background: var(--bad) }
+.rb-pace { font-size: .78rem; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.rb-btns { display: flex; gap: 6px; flex: none }
+.rb-b { min-width: 38px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 700; cursor: pointer; padding: 0 8px }
+.rb-b:disabled { opacity: .4 }
+.rb-b.rb-next { background: var(--brand); border-color: var(--brand); color: var(--brand-ink) }
+body.running .main { padding-bottom: calc(190px + env(safe-area-inset-bottom)) }
+body.running #toasts { bottom: calc(180px + env(safe-area-inset-bottom)) }
+@media (min-width: 900px) { body.running .main { padding-bottom: 150px } body.running #toasts { bottom: 150px } }
+.pj-run { font-weight: 800; font-variant-numeric: tabular-nums; padding: 0 8px; font-size: 1.05rem }
+.pj-run[data-st="warn"] { color: #c27a00 } .pj-run[data-st="over"] { color: #d23b30 }
+@media print { .runbar { display: none !important } }
+.rb-left { font-size: .78rem; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.rb-b .ic { width: 18px; height: 18px; vertical-align: middle }
+.rb-k .badc { font-weight: 700 }
+.cl-pasos li.now { background: var(--ok-soft); border-radius: 8px; padding-right: 6px } .cl-pasos li.now .min { color: var(--ok) }
+.cl-pasos li.fuera { opacity: .45 }
