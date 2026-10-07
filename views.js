@@ -39,6 +39,7 @@
     download: '<path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/>',
     cloud: '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/>',
     screen: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    board: '<rect x="3" y="3.5" width="18" height="12.5" rx="1.5"/><path d="M8 20.5l2-4.5M16 20.5l-2-4.5M7 8h10M7 11.5h6"/>',
     profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M16.5 3.5l1.5 1.5 3-3"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
@@ -81,8 +82,10 @@
     if (g) {
       const bl = C.bloquesDia(g, hoy), asu = C.esAsueto(hoy); let t = '';
       if (asu) t = '<p>🏖️ Hoy es asueto.</p>';
-      else if (bl.length && C.esClase(g, hoy)) t = '<ul class="blocks">' + bl.map(b => '<li><b>' + esc(b.inicio) + '–' + esc(b.fin) + '</b> · ' + b.horas + ' h</li>').join('') + '</ul>' + link(icon('check') + ' Pasar lista', 'lista/' + hoy, 'primary');
-      else { const nx = C.siguienteClase(g, hoy); t = '<p class="muted">Hoy no tienes clase con ' + esc(g.nombre) + '.' + (nx ? ' Próxima: <b>' + u.fLarga(nx) + '</b> (' + C.bloquesDia(g, nx).map(b => b.inicio).join(', ') + ').' : '') + '</p>'; }
+      else if (bl.length && C.esClase(g, hoy)) { const rs = E.clases && E.clases.resumenDia(g, hoy); t = '<ul class="blocks">' + (rs ? rs.map(r => '<li><b>' + esc(r.b.inicio) + '–' + esc(r.b.fin) + '</b> · ' + esc(r.txt) + '</li>') : bl.map(b => '<li><b>' + esc(b.inicio) + '–' + esc(b.fin) + '</b> · ' + b.horas + ' h</li>')).join('') + '</ul><div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + hoy, 'primary') + (rs ? link(icon('board') + ' Guion de hoy', 'clase/' + hoy) : '') + '</div>';
+        const nx = C.siguienteClase(g, hoy), rn = nx && E.clases && E.clases.resumenDia(g, nx);
+        if (rn) t += '<p class="small mt"><b>Próxima clase (' + u.fLarga(nx) + '):</b> ' + esc(rn.map(r => r.txt).join(' · ')) + ' · <a href="#/clase/' + nx + '">Preparar ›</a></p>'; }
+      else { const nx = C.siguienteClase(g, hoy), rs = nx && E.clases && E.clases.resumenDia(g, nx); t = '<p class="muted">Hoy no tienes clase con ' + esc(g.nombre) + '.' + (nx ? ' Próxima: <b>' + u.fLarga(nx) + '</b>.' : '') + '</p>' + (rs ? '<ul class="blocks">' + rs.map(r => '<li><b>' + esc(r.b.inicio) + '</b> · ' + esc(r.txt) + '</li>').join('') + '</ul>' + link(icon('board') + ' Preparar la clase', 'clase/' + nx, 'primary') : ''); }
       h += card('<h3>' + icon('cal') + ' Hoy</h3>' + t);
     }
     if (g && p) {
@@ -672,7 +675,9 @@
   };
   A['import-paste'] = () => {
     const t = (document.getElementById('imp-paste') || {}).value || '';
-    const nombres = t.split('\n').map(s => s.replace(/^\s*\d+(\.0)?[\s\t.)\-]*/, '').replace(/\s+/g, ' ').trim()).filter(s => s && !/^NOMBRE$/i.test(s));
+    // si pegaron el bloque de datos de Claude aquí, se manda al lugar correcto
+    if (E.paquete && E.paquete.esPaquete(t)) { u.toast('Eso es un bloque de datos de Claude: lo abro en "Pegar datos de Claude".', 'ok', 5000); E.actions['pk-revisar'](null, null, t); return; }
+    const nombres = t.split('\n').map(s => s.replace(/^\s*\d+(\.0)?[\s\t.)\-]*/, '').replace(/\s+/g, ' ').trim()).filter(s => s && !/^NOMBRE$/i.test(s) && !E.esNombreRaro(s));
     if (!nombres.length) { u.toast('Pega al menos un nombre', 'err'); return; }
     previewImport(nombres, {}, 'texto pegado');
   };
@@ -713,10 +718,14 @@
     if (acts.length) h += card('<h3>Actividades del ' + esc(p.nombre) + '</h3><ul class="acts">' + acts.map(x => { const v = x.notas && x.notas[a.id], n = C.nota(x, a.id), mx = C.maxPts(x); return '<li><a href="#/actividad/' + x.id + '"><b>' + esc(x.nombre) + '</b><span class="muted small">' + (CAT_LBL[x.categoria] || '') + (n != null && mx !== 100 ? ' · ' + v + ' de ' + mx + ' pts' : '') + '</span></a><span class="g ' + gclass(n) + '">' + (n == null ? 'NE' : Math.round(n)) + '</span></li>'; }).join('') + '</ul>');
     h += card('<label class="fld"><span>Nombre</span><input id="al-nombre" value="' + esc(a.nombre) + '" data-ch="alumno-f" data-aid="' + a.id + '" data-f="nombre"></label>' +
       '<label class="fld"><span>Observaciones (solo tú las ves)</span><textarea id="al-notas" rows="4" data-ch="alumno-f" data-aid="' + a.id + '" data-f="notas">' + esc(a.notas || '') + '</textarea></label>' +
-      btn(a.activo === false ? 'Reactivar' : 'Dar de baja', 'alumno-baja', 'data-aid="' + a.id + '"', 'ghost danger'));
+      '<div class="row gap wrap">' + btn(a.activo === false ? 'Reactivar' : 'Dar de baja', 'alumno-baja', 'data-aid="' + a.id + '"', 'ghost danger') + (a.activo === false ? btn(icon('trash') + ' Quitar de la lista', 'alumno-quitar', 'data-aid="' + a.id + '"', 'ghost danger') : '') + '</div>');
     return { t: 'Alumno', h: h };
   };
   CH['alumno-f'] = el => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { const a = (gr.alumnos || []).find(x => x.id === el.dataset.aid); if (a) a[el.dataset.f] = el.dataset.f === 'nombre' ? el.value.trim() : el.value; }); };
+  A['alumno-quitar'] = el => {
+    const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (!a || !confirm('¿Quitar a "' + a.nombre + '" de la lista? Sus calificaciones guardadas dejarán de mostrarse.')) return;
+    S.update('grupo:' + g.id, gr => { gr.alumnos = (gr.alumnos || []).filter(x => x.id !== a.id); }); location.hash = '#/alumnos';
+  };
   A['alumno-baja'] = el => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { const a = (gr.alumnos || []).find(x => x.id === el.dataset.aid); if (a) a.activo = a.activo === false; }); };
 
   /* =================== CALENDARIO =================== */
@@ -767,7 +776,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -780,7 +789,17 @@
     const sec = (k, t, inner) => '<details class="sec" ' + (sub === k ? 'open' : '') + ' id="aj-' + k + '"><summary>' + t + '</summary><div class="in">' + inner + '</div></details>';
     const sumP = ['examen', 'trabajos', 'asistencia', 'participacion'].reduce((a, k) => a + Number(c.pond[k] || 0), 0);
     let h = '';
-    h += sec('sync', '☁️ Sincronización (Supabase)', '<p class="note ' + ({ ok: 'ok', error: 'bad', offline: 'warn', auth: 'warn', syncing: 'info' })[sy.state] + '">' + esc(sy.msg) + (S.dirtyCount() ? ' · ' + S.dirtyCount() + ' cambios por subir' : '') + '</p>' +
+    const guia = !(sy.client && sy.user);
+    h += '<p class="muted small">Escuadra v' + E.VERSION + ' · ' + btn('Buscar actualización', 'app-update', '', 'small ghost') + '</p>';
+    h += sec('sync', '☁️ Sincronización (Supabase)', '<p class="note ' + ({ ok: 'ok', error: 'bad', offline: 'warn', auth: 'warn', syncing: 'info', local: '' })[sy.state] + '">' + esc(sy.msg) + (S.dirtyCount() ? ' · ' + S.dirtyCount() + ' cambios por subir' : '') + '</p>' +
+      (guia ? '<details class="sub" ' + (sy.state === 'local' || sy.state === 'error' ? 'open' : '') + '><summary>Cómo conectarla, paso a paso (una sola vez, unos 10 minutos)</summary><ol class="steps">' +
+        '<li>En <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com</a> → <b>New project</b>, nombre <code>escuadra</code>. Guarda la contraseña de la base (no la vas a usar aquí).</li>' +
+        '<li><b>SQL Editor → New query</b> → pega el SQL → <b>Run</b>. ' + btn(icon('copy') + ' Copiar SQL', 'sync-sql', '', 'small') + '</li>' +
+        '<li><b>Authentication → Users → Add user → Create new user</b>: tu correo y una contraseña, con <b>Auto Confirm User</b> marcado.</li>' +
+        '<li><b>Authentication → Sign In / Providers → Email</b>: apaga <b>Allow new users to sign up</b> para que nadie más se registre.</li>' +
+        '<li><b>Project Settings → API</b> (o <i>API Keys</i>): copia la <b>Project URL</b> y la llave <b>anon public</b> (o <i>publishable</i>) y pégalas abajo → <b>Guardar y conectar</b>.</li>' +
+        '<li>Inicia sesión con el correo del paso 3. Repite solo el paso 5 y 6 en tu celular (o mándale a Claude la URL y la llave para dejarlas fijas en config.js y que solo inicies sesión).</li></ol>' +
+        '<p class="muted small">Primero conéctala en el aparato que tiene tus datos buenos (tu compu): esos se suben y el celular los baja al iniciar sesión.</p></details>' : '') +
       (window.ESCUADRA_CONFIG && window.ESCUADRA_CONFIG.supabaseUrl ? '<p class="muted small">Conexión tomada de config.js.</p>' :
         fieldIn('Project URL', 'id="sy-url" placeholder="https://xxxx.supabase.co"', cr.url) + fieldIn('anon public key (o publishable key)', 'id="sy-key" placeholder="eyJ… o sb_publishable_…"', cr.key) + btn('Guardar y conectar', 'sync-connect', '', 'primary')) +
       (sy.client ? (sy.user ? '<p class="small mt">Sesión: <b>' + esc(sy.user.email) + '</b></p><div class="row gap wrap">' + btn('Sincronizar ahora', 'sync-now', '', 'primary') + btn('Cerrar sesión', 'sync-logout', '', 'ghost') + '</div>'
@@ -840,10 +859,16 @@
   };
   A['sync-login'] = async () => {
     try { await E.sync.login(document.getElementById('sy-email').value.trim(), document.getElementById('sy-pw').value); u.toast('Sesión iniciada', 'ok'); }
-    catch (e) { u.toast('No se pudo iniciar sesión: ' + (e.message || e), 'err', 6000); }
+    catch (e) { u.toast('No se pudo iniciar sesión: ' + E.sync.explica(e), 'err', 7000); }
     E.render();
   };
   A['sync-now'] = async () => { await E.sync.now(); E.render(); };
+  A['sync-sql'] = async () => { const ok = await u.copy(E.SCHEMA_SQL); u.toast(ok ? 'SQL copiado: pégalo en Supabase → SQL Editor → Run' : 'No se pudo copiar', ok ? 'ok' : 'err', 5000); };
+  A['app-update'] = async () => {
+    u.toast('Buscando la versión más nueva…');
+    try { const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) await r.update(); } catch (e) { }
+    setTimeout(() => location.reload(), 600);
+  };
   A['sync-logout'] = async () => { await E.sync.logout(); E.render(); };
   A['notif-on'] = () => E.notify.pedir();
   A['backup-dl'] = () => { u.download('escuadra-respaldo-' + u.today() + '.json', JSON.stringify({ app: 'escuadra', version: E.VERSION, fecha: u.now(), docs: S.docs }, null, 1), 'application/json'); };

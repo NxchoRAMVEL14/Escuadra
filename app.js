@@ -2,17 +2,18 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.2.0';
+  E.VERSION = '1.3.0';
   E.CHANGELOG = [
+    { v: '1.3.0', f: '2026-10-06', t: 'Nueva pantalla Clases: qué dar en cada bloque de tu horario (71 h del 2º parcial y 92 h del 3ero), alineada con tu planeación y con las actividades clave del programa SEP, con guion por minutos, material, evidencia, tarea, palabras para adelantar el tema y botón para proyectar; si una clase no se da, todo se recorre. Reparación automática de la lista si se pegó texto que no eran nombres. Guía paso a paso para conectar la sincronización y la app busca versión nueva cada vez que la abres.' },
     { v: '1.2.0', f: '2026-10-06', t: 'Perfil aproximado de cada alumno por semestre (punto de partida, conocimiento, trabajos, constancia, participación y actitud, con fortalezas, áreas de oportunidad y siguiente paso) y vista Perfiles del grupo con monitores, apoyo primero, equipos equilibrados, ficha imprimible y copia anónima para Claude. Observaciones de un toque al tocar el nombre en el Pase de lista. Actividades con puntos máximos (ej. examen de 94 puntos) y rubro Diagnóstico. "Pegar datos de Claude" para cargar listas y exámenes desde fotos.' },
     { v: '1.1.0', f: '2026-10-05', t: 'Nueva sección Temas: 26 temas del Módulo II (nivelación del Submódulo 1, mecanismos y neumática/hidráulica) más formación integral, con explicación para el docente, ejemplo resuelto, preguntas y modo Proyector a pantalla completa (con alumno al azar). 24 ideas nuevas para aula con proyector (simuladores PhET y PMKS+, Plickers, cámara lenta, escape room ISO 1219, proyecto de vida y más).' },
     { v: '1.0.0', f: '2026-10-05', t: 'Primera versión: inicio con avisos, pase de lista y participación, calificaciones 50/40/5/5 con acta, impresión de listas, cotejo y rúbrica, planeaciones con revisión automática y exportación a Word, banco de ideas, herramientas de clase, bitácora, mejoras y sincronización con Supabase.' }
   ];
 
-  const NAV = [['inicio', 'Inicio', 'home'], ['lista', 'Lista', 'check'], ['calificaciones', 'Califs', 'grade'], ['planeacion', 'Planea', 'doc'], ['mas', 'Más', 'more']];
-  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['calificaciones', 'Calificaciones', 'grade'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['perfiles', 'Perfiles', 'profile'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
-  const MAS = ['temas', 'perfiles', 'imprimir', 'ideas', 'herramientas', 'alumnos', 'calendario', 'bitacora', 'mejoras', 'ajustes', 'mas'];
-  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas' };
+  const NAV = [['inicio', 'Inicio', 'home'], ['clases', 'Clases', 'board'], ['lista', 'Lista', 'check'], ['calificaciones', 'Califs', 'grade'], ['mas', 'Más', 'more']];
+  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['clases', 'Clases', 'board'], ['calificaciones', 'Calificaciones', 'grade'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['perfiles', 'Perfiles', 'profile'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
+  const MAS = ['planeacion', 'plan', 'temas', 'perfiles', 'imprimir', 'ideas', 'herramientas', 'alumnos', 'calendario', 'bitacora', 'mejoras', 'ajustes', 'mas'];
+  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas', clase: 'clases' };
 
   function shell() {
     document.getElementById('app').innerHTML =
@@ -81,8 +82,8 @@
 
   /* ---------- arranque ---------- */
   function boot() {
-    S.load(); E.seed(); E.applyTheme(); shell();
-    S.on(key => { if (key === '__sync') { renderSync(); return; } E.render(); });
+    S.load(); E.seed(); E.reparar(); E.applyTheme(); shell();
+    S.on(key => { if (key === '__sync') { renderSync(); return; } if (key === '__pull') E.reparar(); E.render(); });
     window.addEventListener('hashchange', E.render);
     if (!location.hash) history.replaceState(null, '', '#/inicio');
     E.render(); E.sync.init(); registerSW();

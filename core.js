@@ -95,6 +95,16 @@
     setMeta(m) { localStorage.setItem(LS_META, JSON.stringify(Object.assign(this.meta(), m))); },
     creds() { const c = window.ESCUADRA_CONFIG || {}; const m = this.meta(); return { url: String(c.supabaseUrl || m.url || '').trim(), key: String(c.supabaseAnonKey || m.key || '').trim() }; },
     setState(s, msg) { this.state = s; this.msg = msg; S.emit('__sync'); },
+    // traduce los errores de Supabase a qué paso de la guía revisar
+    explica(e) {
+      const m = String((e && (e.message || e.error_description)) || e || '');
+      if (/escuadra_docs|42P01|does not exist|schema cache/i.test(m)) return 'Falta crear la tabla: corre el SQL del paso 2.';
+      if (/Invalid login credentials/i.test(m)) return 'Correo o contraseña incorrectos (paso 3).';
+      if (/Email not confirmed/i.test(m)) return 'Tu usuario no está confirmado: créalo con "Auto Confirm User" (paso 3).';
+      if (/Invalid API key|No API key|apikey|JWT/i.test(m)) return 'La llave no es la correcta: copia la "anon public" o "publishable" (paso 5).';
+      if (/Failed to fetch|NetworkError|Load failed|ERR_NAME/i.test(m)) return 'No se pudo llegar a Supabase: revisa la URL (paso 5) o tu internet.';
+      return m;
+    },
     async init() {
       const cr = this.creds();
       if (!cr.url || !cr.key) { this.setState('local', 'Solo en este dispositivo · conecta Supabase en Ajustes'); return; }
@@ -114,7 +124,7 @@
           setInterval(() => this.now(), 90000);
           document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') this.now(); });
         }
-      } catch (e) { console.error(e); this.setState('error', 'No se pudo conectar con Supabase: ' + (e.message || e)); }
+      } catch (e) { console.error(e); this.setState('error', 'No se pudo conectar con Supabase: ' + this.explica(e)); }
     },
     schedule() { clearTimeout(this.timer); this.timer = setTimeout(() => this.now(), 2500); },
     async login(email, pw) {
@@ -133,7 +143,7 @@
         await this.pull(); await this.push();
         this.setMeta({ lastSyncAt: u.now() });
         this.setState('ok', 'Sincronizado ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }));
-      } catch (e) { console.error(e); this.setState('error', 'Error al sincronizar: ' + (e.message || e)); }
+      } catch (e) { console.error(e); this.setState('error', 'Error al sincronizar: ' + this.explica(e)); }
       finally { this.busy = false; }
     },
     async pull() {
@@ -166,6 +176,48 @@
       if (entries.length) S.persist();
     }
   };
+
+  E.SCHEMA_SQL = `-- Escuadra · base de datos en Supabase
+-- Pega TODO esto en Supabase → SQL Editor → New query → Run. Solo se corre una vez.
+-- Cada fila es un "documento" de la app (configuración, grupo, lista de un día, actividad, planeación…).
+-- Las reglas RLS hacen que SOLO tu usuario pueda leer o escribir tus datos.
+
+create table if not exists public.escuadra_docs (
+  user_id    uuid        not null default auth.uid() references auth.users(id) on delete cascade,
+  key        text        not null,
+  data       jsonb,
+  deleted    boolean     not null default false,
+  client_ts  timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, key)
+);
+
+create index if not exists escuadra_docs_user_updated on public.escuadra_docs (user_id, updated_at);
+
+-- updated_at lo pone el servidor (sirve para bajar solo lo nuevo)
+create or replace function public.escuadra_touch() returns trigger
+language plpgsql as $$
+begin
+  new.updated_at := clock_timestamp();
+  return new;
+end;
+$$;
+
+drop trigger if exists escuadra_docs_touch on public.escuadra_docs;
+create trigger escuadra_docs_touch before insert or update on public.escuadra_docs
+for each row execute function public.escuadra_touch();
+
+alter table public.escuadra_docs enable row level security;
+
+drop policy if exists "escuadra: leer lo mío"     on public.escuadra_docs;
+drop policy if exists "escuadra: crear lo mío"    on public.escuadra_docs;
+drop policy if exists "escuadra: editar lo mío"   on public.escuadra_docs;
+drop policy if exists "escuadra: borrar lo mío"   on public.escuadra_docs;
+
+create policy "escuadra: leer lo mío"   on public.escuadra_docs for select using (auth.uid() = user_id);
+create policy "escuadra: crear lo mío"  on public.escuadra_docs for insert with check (auth.uid() = user_id);
+create policy "escuadra: editar lo mío" on public.escuadra_docs for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete using (auth.uid() = user_id);`;
 
   /* ---------------- acceso a datos ---------------- */
   const D = E.data = {
@@ -383,6 +435,24 @@
     S.seed('manual:3AMEC', { P1: { activo: true, alumnos: {} } });
     (E.PLAN_SEEDS || []).forEach(p => S.seed('plan:' + p.id, u.clone(p)));
     S.persist();
+  };
+
+  // Repara una importación equivocada: renglones de código pegados como nombres de alumnos.
+  E.esNombreRaro = n => /[\[\]{}"]|:\s*\[|^\s*[\],]+\s*$/.test(String(n || ''));
+  E.reparar = function () {
+    let total = 0;
+    S.keys('grupo:').forEach(k => {
+      const g = S.get(k); if (!g || !Array.isArray(g.alumnos)) return;
+      const malos = g.alumnos.filter(a => E.esNombreRaro(a.nombre)); if (!malos.length) return;
+      total += malos.length;
+      S.update(k, gr => {
+        gr.alumnos = gr.alumnos.filter(a => !E.esNombreRaro(a.nombre));
+        // quienes esa importación dejó como baja vuelven a estar activos con su número original
+        gr.alumnos.forEach(a => { if (a.activo === false && Number(a.num) >= 900) { a.activo = true; a.num = Number(a.num) - 900; } });
+      });
+    });
+    if (total) setTimeout(() => u.toast('Reparé tu lista: quité ' + total + ' renglones que no eran alumnos.', 'ok', 7000), 800);
+    return total;
   };
 
   /* ---------------- notificaciones del sistema ---------------- */

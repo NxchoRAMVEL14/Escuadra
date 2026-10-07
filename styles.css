@@ -372,3 +372,28 @@ details.sub > summary { cursor: pointer; font-weight: 600; font-size: .88rem; co
 .ficha .lines div { border-bottom: 1px solid #000; height: 24px }
 .ficha .fsig { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 46px; text-align: center; font-size: 8.5pt }
 .ficha .fsig div { border-top: 1px solid #000; padding-top: 3px }
+
+/* v1.3 · clases y guía de sincronización */
+ol.steps { margin: 6px 0; padding-left: 20px; font-size: .9rem }
+ol.steps li { margin: 6px 0 }
+.cl-sem { margin: 16px 2px 6px; font-size: .82rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted) }
+.cl-dias { display: grid; gap: 8px }
+@media (min-width: 900px) { .cl-dias { grid-template-columns: 1fr 1fr } }
+.cl-dia { display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-decoration: none; color: var(--ink) }
+.cl-dia.hoy { border: 2px solid var(--brand); box-shadow: var(--sh) }
+.cl-dia.pasada { opacity: .62 }
+.cl-f { margin-bottom: 4px }
+.cl-b { font-size: .88rem; line-height: 1.35; margin: 3px 0 }
+.cl-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 5px 1px 2px; background: var(--info) }
+.cl-dot.a { background: var(--brand) } .cl-dot.c { background: var(--warn) }
+.cl-mini { margin: 6px 0 10px; padding: 0; list-style: none; font-size: .9rem }
+.cl-mini li { padding: 4px 0; border-bottom: 1px dashed var(--line) }
+.card.cl-hoy { border-color: var(--brand) }
+.cl-act { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px }
+.cl-act:first-of-type { border-top: 0; margin-top: 4px; padding-top: 0 }
+.cl-act h4 { margin: 8px 0 4px; font-size: 1.08rem }
+.cl-pasos { margin: 6px 0; padding-left: 0; list-style: none; counter-reset: p }
+.cl-pasos li { position: relative; padding: 6px 0 6px 64px; border-bottom: 1px dashed var(--line); font-size: .92rem }
+.cl-pasos li:last-child { border-bottom: 0 }
+.cl-pasos .min { position: absolute; left: 0; top: 6px; width: 56px; font-weight: 700; color: var(--brand); font-size: .82rem }
+.row.end { justify-content: flex-end }

@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.2.0)
+# Escuadra · Control docente (v1.3.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,13 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.3:** pantalla **Clases** (en la barra de abajo). Para cada bloque de tu horario dice qué dar: actividad,
+objetivo, guion por minutos, material, evidencia, tarea y palabras para adelantar el tema, con el botón para proyectar.
+La secuencia suma las mismas horas que tu planeación (2º parcial: 7 + 52 + 12 = 71 h; 3er parcial: 9 + 51 + 32 = 92 h)
+y cada actividad indica qué actividad clave del programa SEP trabaja. Si una clase no se da, márcala y todo se recorre;
+con "⇄" cambias el orden de dos actividades. Además: la app se repara sola si se pegaron renglones que no eran nombres,
+busca versión nueva cada vez que la abres y Ajustes → Sincronización trae la guía paso a paso con el SQL para copiar.
 
 **Nuevo en v1.2:** **Perfiles**. Cada alumno tiene un perfil aproximado del semestre: punto de partida (diagnóstico),
 conocimiento, trabajos, constancia, participación y actitud, con fortalezas, áreas de oportunidad, siguiente paso y
@@ -72,6 +79,7 @@ al abrirla con internet. Tus datos no se tocan.
 | `temas.js` | 26 temas con explicación, ejemplo resuelto, preguntas y contenido para el modo Proyector |
 | `core.js` | Guardado, sincronización y cálculos |
 | `perfil.js` | Perfil de cada alumno, observaciones, equipos equilibrados y fichas |
+| `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
 | `views.js` | Pantallas |
 | `print.js` | Impresión, acta en Excel y planeación en Word |

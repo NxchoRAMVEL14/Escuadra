@@ -37,8 +37,9 @@
   const actId = clave => 'act_' + u.norm(clave).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
   /* ---------- revisión ---------- */
-  A['pk-revisar'] = () => {
-    let pk; try { pk = leer((document.getElementById('pk-txt') || {}).value); } catch (e) { u.toast('No pude leerlo: ' + e.message, 'err', 6000); return; }
+  PK.esPaquete = txt => /"escuadra"\s*:/.test(String(txt || '').replace(/[“”]/g, '"'));
+  A['pk-revisar'] = (el, ev, txtDirecto) => {
+    let pk; try { pk = leer(txtDirecto != null ? txtDirecto : (document.getElementById('pk-txt') || {}).value); } catch (e) { u.toast('No pude leerlo: ' + e.message, 'err', 6000); return; }
     const g = D.grupoActual(); if (!g) { u.toast('Primero configura tu grupo', 'err'); return; }
     const vacio = !D.alumnos(g, true).length;
     const m = vacio ? { lista: [], map: {}, sin: [], dudosos: [] } : emparejar(g, pk);
