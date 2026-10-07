@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.4.0';
+  E.VERSION = '1.5.0';
   E.CHANGELOG = [
+    { v: '1.5.0', f: '2026-10-07', t: 'Modo Presentador: el proyector muestra solo la diapositiva y tu laptop o celular muestra el control, la respuesta antes de revelarla, tus notas, lo que sigue, alumno al azar y pantalla en negro. Se abre en una segunda ventana (laptop en "Extender" o Galaxy con DeX) y, con la sincronización conectada, también entre dos aparatos.' },
     { v: '1.4.0', f: '2026-10-06', t: 'Clase con temporizador: en el guion de cada clase tocas "Dar esta clase con temporizador" y una barra te lleva paso a paso, avisa (sonido y vibración) cuando se acaba el tiempo de un paso, si vas atrasado y si ya no alcanzas antes de que termine el bloque; al final guarda los tiempos en la bitácora y puede recorrer lo que faltó a la siguiente clase. Lugar de cada clase: en Ajustes → Grupo y horario marcas qué bloques son aula, centro de cómputo o taller (este semestre, los viernes en cómputo). Clases acomoda sola lo de computadora en esos bloques, nunca pone corte ni agua en el centro de cómputo, y si un día cambias un bloque a taller se trae la siguiente práctica. Secuencias del 2º y 3er parcial reorganizadas para los viernes de cómputo.' },
     { v: '1.3.0', f: '2026-10-06', t: 'Nueva pantalla Clases: qué dar en cada bloque de tu horario (71 h del 2º parcial y 92 h del 3ero), alineada con tu planeación y con las actividades clave del programa SEP, con guion por minutos, material, evidencia, tarea, palabras para adelantar el tema y botón para proyectar; si una clase no se da, todo se recorre. Reparación automática de la lista si se pegó texto que no eran nombres. Guía paso a paso para conectar la sincronización y la app busca versión nueva cada vez que la abres.' },
     { v: '1.2.0', f: '2026-10-06', t: 'Perfil aproximado de cada alumno por semestre (punto de partida, conocimiento, trabajos, constancia, participación y actitud, con fortalezas, áreas de oportunidad y siguiente paso) y vista Perfiles del grupo con monitores, apoyo primero, equipos equilibrados, ficha imprimible y copia anónima para Claude. Observaciones de un toque al tocar el nombre en el Pase de lista. Actividades con puntos máximos (ej. examen de 94 puntos) y rubro Diagnóstico. "Pegar datos de Claude" para cargar listas y exámenes desde fotos.' },
@@ -14,7 +15,7 @@
   const NAV = [['inicio', 'Inicio', 'home'], ['clases', 'Clases', 'board'], ['lista', 'Lista', 'check'], ['calificaciones', 'Califs', 'grade'], ['mas', 'Más', 'more']];
   const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['clases', 'Clases', 'board'], ['calificaciones', 'Calificaciones', 'grade'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['perfiles', 'Perfiles', 'profile'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
   const MAS = ['planeacion', 'plan', 'temas', 'perfiles', 'imprimir', 'ideas', 'herramientas', 'alumnos', 'calendario', 'bitacora', 'mejoras', 'ajustes', 'mas'];
-  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas', clase: 'clases' };
+  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas', clase: 'clases', presentador: 'temas' };
 
   function shell() {
     document.getElementById('app').innerHTML =
@@ -83,6 +84,7 @@
 
   /* ---------- arranque ---------- */
   function boot() {
+    if (E.modoPantalla) { S.load(); E.seed(); E.pres.pantalla(); registerSW(); return; }
     S.load(); E.seed(); E.reparar(); E.applyTheme(); shell();
     S.on(key => { if (key === '__sync') { renderSync(); return; } if (key === '__pull') E.reparar(); E.render(); });
     window.addEventListener('hashchange', E.render);

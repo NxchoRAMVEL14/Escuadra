@@ -539,7 +539,7 @@
     const L = arr => '<ul>' + (arr || []).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
     let h = '<p><a href="#/temas">‹ Temas</a></p>';
     h += card('<span class="chip brand">' + esc(SM_LBL[t.sm] || '') + '</span><h3 class="mt">' + esc(t.titulo) + '</h3><p class="small"><b>Objetivo:</b> ' + esc(t.objetivo) + '</p>' + (t.ac ? '<p class="muted small">Actividad clave del programa: ' + esc(t.ac) + '</p>' : '') + '<p class="muted small">Duración sugerida: ' + esc(t.dur) + '</p>' +
-      '<div class="row gap wrap">' + btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'primary') + btn(icon('copy') + ' Copiar preguntas', 'tema-copy', 'data-id="' + t.id + '"') + btn(icon('book') + ' Registrar en bitácora', 'tema-bit', 'data-id="' + t.id + '"') + '</div>');
+      '<div class="row gap wrap">' + btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'primary') + link(icon('screen') + ' Presentador: proyector y celular separados', 'presentador/' + t.id) + btn(icon('copy') + ' Copiar preguntas', 'tema-copy', 'data-id="' + t.id + '"') + btn(icon('book') + ' Registrar en bitácora', 'tema-bit', 'data-id="' + t.id + '"') + '</div>');
     h += card('<h3>Explicación para ti</h3>' + t.explica.map(p => '<p>' + esc(p) + '</p>').join(''));
     h += card('<h3>Lo que se proyecta</h3>' + L(t.pantalla));
     h += card('<h3>Conceptos clave</h3><dl class="kv">' + (t.clave || []).map(k => '<dt>' + esc(k[0]) + '</dt><dd>' + esc(k[1]) + '</dd>').join('') + '</dl>');
@@ -573,29 +573,32 @@
     s.push({ k: 'vida', h: '¿Para qué me sirve?', p: t.vida });
     return s;
   }
+  function slideBody(sl, rev) {
+    if (sl.k === 'cover') return '<div class="pj-cover"><span class="pj-kicker">' + esc(sl.sub) + '</span><h1>' + esc(sl.h) + '</h1><p>' + esc(sl.p) + '</p></div>';
+    if (sl.k === 'list') return '<h2>' + esc(sl.h) + '</h2><ul class="pj-list">' + sl.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' + (sl.foot ? '<p class="pj-foot">' + esc(sl.foot) + '</p>' : '');
+    if (sl.k === 'terms') return '<h2>' + esc(sl.h) + '</h2><dl class="pj-terms">' + sl.items.map(x => '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>').join('') + '</dl>';
+    if (sl.k === 'q') return '<h2>' + esc(sl.h) + '</h2><p class="pj-q">' + esc(sl.q) + '</p>' + (rev ? '<p class="pj-a">' + esc(sl.a) + '</p>' : '<button type="button" class="pj-btn pj-reveal" data-act="proj-reveal">Mostrar respuesta</button>');
+    return '<h2>' + esc(sl.h) + '</h2><p class="pj-vida">' + esc(sl.p) + '</p>';
+  }
   const P = E.proj = {
-    t: null, s: [], i: 0, rev: false, dark: false,
+    t: null, s: [], i: 0, rev: false, dark: false, slides: slides, body: slideBody,
     open(id) {
       const t = E.TEMAS.find(x => x.id === id); if (!t) return;
       P.t = t; P.s = slides(t); P.i = 0; P.rev = false;
       let el = document.getElementById('proj'); if (!el) { el = document.createElement('div'); el.id = 'proj'; document.body.appendChild(el); }
       el.hidden = false; P.draw();
-      if (el.requestFullscreen) el.requestFullscreen().catch(() => { });
+      if (el.requestFullscreen && !E.modoPantalla) el.requestFullscreen().catch(() => { });
     },
     draw() {
       const el = document.getElementById('proj'); if (!el || !P.t) return; const sl = P.s[P.i];
-      let body = '';
-      if (sl.k === 'cover') body = '<div class="pj-cover"><span class="pj-kicker">' + esc(sl.sub) + '</span><h1>' + esc(sl.h) + '</h1><p>' + esc(sl.p) + '</p></div>';
-      else if (sl.k === 'list') body = '<h2>' + esc(sl.h) + '</h2><ul class="pj-list">' + sl.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' + (sl.foot ? '<p class="pj-foot">' + esc(sl.foot) + '</p>' : '');
-      else if (sl.k === 'terms') body = '<h2>' + esc(sl.h) + '</h2><dl class="pj-terms">' + sl.items.map(x => '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>').join('') + '</dl>';
-      else if (sl.k === 'q') body = '<h2>' + esc(sl.h) + '</h2><p class="pj-q">' + esc(sl.q) + '</p>' + (P.rev ? '<p class="pj-a">' + esc(sl.a) + '</p>' : '<button type="button" class="pj-btn pj-reveal" data-act="proj-reveal">Mostrar respuesta</button>');
-      else body = '<h2>' + esc(sl.h) + '</h2><p class="pj-vida">' + esc(sl.p) + '</p>';
+      const body = slideBody(sl, P.rev);
       el.className = P.dark ? 'pj-dark' : '';
       el.innerHTML = '<div class="pj-slide" data-act="proj-tap">' + body + '</div>' +
         '<div class="pj-bar"><div class="pj-prog"><span style="width:' + ((P.i + 1) / P.s.length * 100) + '%"></span></div>' +
         '<div class="pj-ctrl"><button type="button" class="pj-btn" data-act="proj-prev" aria-label="Anterior">‹</button><span class="pj-count">' + (P.i + 1) + ' / ' + P.s.length + '</span><button type="button" class="pj-btn" data-act="proj-next" aria-label="Siguiente">›</button>' + (E.run && E.run.activo() ? '<span class="pj-run" id="pj-run"></span>' : '') +
         '<button type="button" class="pj-btn" data-act="proj-azar" title="Alumno al azar">🎲</button><button type="button" class="pj-btn" data-act="proj-theme" title="Claro u oscuro" aria-label="Claro u oscuro">🌓</button><button type="button" class="pj-btn" data-act="proj-close" aria-label="Cerrar">✕</button></div></div>' +
-        '<div class="pj-azar" id="pj-azar" hidden></div>';
+        '<div class="pj-azar" id="pj-azar" hidden></div>' + (E.modoPantalla ? '<div class="pj-negro" id="pj-negro"' + (E.pres && E.pres.negro ? '' : ' hidden') + '></div>' : '');
+      if (E.pres && E.pres.alDibujar) E.pres.alDibujar();
     },
     go(d) { const n = P.i + d; if (n < 0 || n >= P.s.length) return; P.i = n; P.rev = false; P.draw(); },
     close() { const el = document.getElementById('proj'); if (el) { el.hidden = true; el.innerHTML = ''; } if (document.fullscreenElement) document.exitFullscreen().catch(() => { }); P.t = null; }

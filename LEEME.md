@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.4.0)
+# Escuadra · Control docente (v1.5.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,11 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.5:** **modo Presentador**. En cada tema (o desde Clases) toca *Presentador*: el proyector muestra solo la
+diapositiva y tu laptop o celular muestra los controles, la respuesta antes de revelarla, tus notas, lo que sigue, alumno al
+azar y "pantalla en negro". Se usa con dos ventanas: laptop conectada al proyector en modo **Extender** (Windows + P) o Galaxy
+con **Samsung DeX**. Si solo *duplicas* la pantalla, el proyector muestra lo mismo que tu aparato.
 
 **Nuevo en v1.4:** **lugar de cada clase**. En *Ajustes → Grupo y horario* cada bloque dice si es 🏫 aula, 💻 centro de
 cómputo o 🛠️ taller (este semestre: viernes en cómputo). Clases acomoda sola lo de computadora en esos bloques, nunca
@@ -89,6 +94,7 @@ al abrirla con internet. Tus datos no se tocan.
 | `temas.js` | 26 temas con explicación, ejemplo resuelto, preguntas y contenido para el modo Proyector |
 | `core.js` | Guardado, sincronización y cálculos |
 | `perfil.js` | Perfil de cada alumno, observaciones, equipos equilibrados y fichas |
+| `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
 | `views.js` | Pantallas |

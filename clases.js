@@ -326,7 +326,7 @@
     h += programa(g, pid, it);
     const tm = it.tema && E.TEMAS.find(t => t.id === it.tema);
     const ids = (it.ideas || []).map(id => E.IDEAS.find(x => x.id === id)).filter(Boolean);
-    if (tm || ids.length) h += '<div class="row gap wrap mt">' + (tm ? btn(icon('screen') + ' Proyectar tema', 'proj-open', 'data-id="' + tm.id + '"', 'small primary') + link('Ver tema', 'tema/' + tm.id, 'small') : '') + ids.map(x => link(icon('bulb') + ' ' + esc(x.titulo), 'ideas/' + x.id, 'small ghost')).join('') + '</div>';
+    if (tm || ids.length) h += '<div class="row gap wrap mt">' + (tm ? btn(icon('screen') + ' Proyectar tema', 'proj-open', 'data-id="' + tm.id + '"', 'small primary') + link('Presentador', 'presentador/' + tm.id, 'small') + link('Ver tema', 'tema/' + tm.id, 'small') : '') + ids.map(x => link(icon('bulb') + ' ' + esc(x.titulo), 'ideas/' + x.id, 'small ghost')).join('') + '</div>';
     return h + '</div>';
   }
 
@@ -432,6 +432,7 @@
     return { p: p, el: el, rest: rest, atraso: atraso, falta: falta, quedan: quedan };
   };
   R.barra = () => {
+    if (E.modoPantalla) return;
     let el = document.getElementById('runbar');
     if (!R.r) { if (el) el.remove(); document.body.classList.remove('running'); return; }
     if (!el) { el = document.createElement('div'); el.id = 'runbar'; el.className = 'runbar'; document.body.appendChild(el); }
@@ -513,6 +514,6 @@
     u.toast(el.dataset.rec === '1' ? 'Guardado. Lo que faltó pasó a la siguiente clase.' : 'Guardado en la bitácora', 'ok', 5000);
   };
   // si la página se recargó a media clase, el temporizador sigue
-  setTimeout(() => { try { const x = JSON.parse(localStorage.getItem(LS_RUN) || 'null'); if (x && x.pasos && x.pasos.length) { R.r = x; R.barra(); R.loop(); } } catch (e) { } }, 0);
+  setTimeout(() => { if (E.modoPantalla) return; try { const x = JSON.parse(localStorage.getItem(LS_RUN) || 'null'); if (x && x.pasos && x.pasos.length) { R.r = x; R.barra(); R.loop(); } } catch (e) { } }, 0);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && R.r) { R.tick(false); if (!R.r.pausa) R.wake(true); } });
 })();

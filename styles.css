@@ -430,3 +430,36 @@ body.running #toasts { bottom: calc(180px + env(safe-area-inset-bottom)) }
 .rb-k .badc { font-weight: 700 }
 .cl-pasos li.now { background: var(--ok-soft); border-radius: 8px; padding-right: 6px } .cl-pasos li.now .min { color: var(--ok) }
 .cl-pasos li.fuera { opacity: .45 }
+
+/* v1.5 · presentador */
+body.pantalla { background: #000 }
+body.pantalla #toasts, body.pantalla .runbar, body.pantalla .pj-ctrl { display: none !important }
+body.pantalla .pj-bar { padding: 0; background: transparent }
+body.pantalla .pj-prog { margin: 0; border-radius: 0; height: 5px }
+.pj-negro { position: absolute; inset: 0; background: #000; z-index: 5 }
+.pj-negro[hidden] { display: none }
+#pant-espera { position: fixed; inset: 0; z-index: 95; background: #0b1312; color: #e4eeec; display: grid; place-items: center; text-align: center; padding: 6vw }
+#pant-espera .pe-in svg { width: 90px; height: 90px }
+#pant-espera h1 { font-size: clamp(1.6rem, 4vw, 3rem); margin: .4em 0 .2em }
+#pant-espera p { font-size: clamp(1rem, 2vw, 1.5rem); color: #94a8a4; max-width: 40ch; margin: 0 auto }
+#pant-full { position: fixed; top: 12px; right: 12px; z-index: 99; border: 0; border-radius: 10px; padding: 10px 14px; background: rgba(14, 94, 90, .92); color: #fff; font-weight: 700; cursor: pointer }
+#pant-full[hidden] { display: none }
+.pres-grid { display: grid; gap: 12px }
+@media (min-width: 900px) { .pres-grid { grid-template-columns: 1.15fr 1fr; align-items: start } }
+.pres-mini { container-type: inline-size; aspect-ratio: 16 / 9; background: #fff; color: #0d1b19; border-radius: 12px; border: 1px solid var(--line); overflow: hidden; display: flex; margin: 6px 0 10px; --pj-accent: #0e5e5a; --pj-soft: #e3f1ef; --pj-muted: #4b5d5a; box-shadow: var(--sh) }
+.pres-mini.pj-dark { background: #0a1514; color: #f2f7f6; --pj-accent: #46c2b5; --pj-soft: #163532; --pj-muted: #a9bdb9 }
+.pres-mini.negro { opacity: .35 }
+.pres-mini .pj-slide { padding: 4cqw 6cqw; cursor: default; pointer-events: none }
+.pres-mini .pj-slide h1 { font-size: 6cqw } .pres-mini .pj-slide h2 { font-size: 3.6cqw }
+.pres-mini .pj-kicker { font-size: 1.8cqw } .pres-mini .pj-cover p { font-size: 2.6cqw }
+.pres-mini .pj-list li { font-size: 3cqw } .pres-mini .pj-foot { font-size: 2.4cqw; border-left-width: 1cqw }
+.pres-mini .pj-terms dt { font-size: 3cqw } .pres-mini .pj-terms dd { font-size: 2.7cqw }
+.pres-mini .pj-q { font-size: 3.8cqw } .pres-mini .pj-a { font-size: 3cqw; border-left-width: 1.2cqw } .pres-mini .pj-vida { font-size: 3.2cqw }
+.pres-mini .pj-reveal { font-size: 2cqw }
+.pres-ctl { display: flex; gap: 8px; margin-bottom: 10px }
+.pres-ctl .btn { flex: 1; min-height: 56px; font-size: 1.05rem }
+.pres-ctl .btn:first-child { flex: 0 0 64px }
+.pres-lista { margin: 4px 0 0; padding-left: 22px; font-size: .88rem }
+.pres-lista button { background: none; border: 0; padding: 4px 0; color: var(--ink); text-align: left; cursor: pointer; font: inherit }
+.pres-lista li.on button { font-weight: 800; color: var(--brand) }
+body.pantalla .pj-reveal { display: none }
