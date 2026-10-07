@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e5e5a" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b1312" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="Escuadra · control docente: pase de lista, calificaciones, planeaciones e impresión.">
+  <meta name="robots" content="noindex">
+  <title>Escuadra · Control docente</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app"><p style="padding:24px;font-family:system-ui">Cargando Escuadra…</p></div>
+  <div id="modal" class="modal" hidden></div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="print-root"></div>
+  <script src="config.js"></script>
+  <script src="data.js"></script>
+  <script src="ideas.js"></script>
+  <script src="core.js"></script>
+  <script src="views.js"></script>
+  <script src="print.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
