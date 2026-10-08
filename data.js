@@ -210,7 +210,7 @@ window.E = window.E || {};
       conteoActa: 'dias',
       escalaActa: 100,
       minAsis: 80,
-      minAprob: 60,
+      minAprob: 60, umbralBien: 80,
       grupoActivo: '3AMEC',
       tema: 'auto'
     },

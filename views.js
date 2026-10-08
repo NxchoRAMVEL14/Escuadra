@@ -56,7 +56,7 @@
   const card = (h, cls, attrs) => '<section class="card ' + (cls || '') + '" ' + (attrs || '') + '>' + h + '</section>';
   const btn = (label, act, attrs, cls) => '<button type="button" class="btn ' + (cls || '') + '" data-act="' + act + '" ' + (attrs || '') + '>' + label + '</button>';
   const link = (label, to, cls) => '<a class="btn ' + (cls || '') + '" href="#/' + to + '">' + label + '</a>';
-  const gclass = v => { if (v == null) return 'na'; return v >= 80 ? 'ok' : v >= D.cfg().minAprob ? 'warn' : 'bad'; };
+  const gclass = v => { if (v == null) return 'na'; const c = D.cfg(); return v >= (Number(c.umbralBien) || 80) ? 'ok' : v >= c.minAprob ? 'warn' : 'bad'; };
   const gfmt = v => v == null ? '—' : Math.round(v);
   const noGroup = () => ({ t: 'Escuadra', h: card('<div class="empty"><h3>No hay grupo configurado</h3><p>Ve a Ajustes → Grupo para crearlo.</p>' + link('Ir a Ajustes', 'ajustes', 'primary') + '</div>') });
   const needAlumnos = t => ({ t: t, h: card('<div class="empty"><h3>Primero importa tu lista</h3><p>Sube el Excel de listas de la escuela o pega los nombres.</p>' + link(icon('upload') + ' Importar lista', 'alumnos', 'primary') + '</div>') });
@@ -96,6 +96,7 @@
       h += card('<h3>' + icon('grade') + ' ' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + (sm ? '<p class="muted small">' + esc(sm.nombre) + '</p>' : '') +
         '<div class="bar"><span style="width:' + Math.min(100, pct) + '%"></span></div><div class="stats"><div><b>' + hr.imp + '</b><span>h impartidas</span></div><div><b>' + hr.disp + '</b><span>h en tu calendario</span></div>' + (hr.programa ? '<div><b>' + hr.programa + '</b><span>h del programa</span></div>' : '') + '</div>' +
         (hr.programa && hr.disp < hr.programa ? '<p class="note warn">Tienes ' + (hr.programa - hr.disp) + ' h menos de las que marca el programa: prioriza las actividades clave.</p>' : ''));
+      if (E.semaforo) h += E.semaforo.resumenHTML(g);
       const R = C.riesgos(g, p);
       if (R.length) h += card('<h3>' + icon('alert') + ' Alumnos que necesitan atención</h3><ul class="risk">' + R.slice(0, 6).map(r => '<li><a href="#/alumno/' + r.id + '">' + esc(r.nombre) + '</a> <span class="chip ' + r.kind + '">' + esc(r.txt) + '</span></li>').join('') + '</ul>' +
         (R.length > 6 ? '<p class="small mt"><a href="#/calificaciones/' + p.id + '">Ver los ' + R.length + ' casos en Calificaciones ›</a></p>' : ''));
@@ -540,6 +541,7 @@
     let h = '<p><a href="#/temas">‹ Temas</a></p>';
     h += card('<span class="chip brand">' + esc(SM_LBL[t.sm] || '') + '</span><h3 class="mt">' + esc(t.titulo) + '</h3><p class="small"><b>Objetivo:</b> ' + esc(t.objetivo) + '</p>' + (t.ac ? '<p class="muted small">Actividad clave del programa: ' + esc(t.ac) + '</p>' : '') + '<p class="muted small">Duración sugerida: ' + esc(t.dur) + '</p>' +
       '<div class="row gap wrap">' + btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'primary') + link(icon('screen') + ' Presentador: proyector y celular separados', 'presentador/' + t.id) + btn(icon('copy') + ' Copiar preguntas', 'tema-copy', 'data-id="' + t.id + '"') + btn(icon('book') + ' Registrar en bitácora', 'tema-bit', 'data-id="' + t.id + '"') + '</div>');
+    if (E.medios) h += card(E.medios.cardHTML(t), 'medios');
     h += card('<h3>Explicación para ti</h3>' + t.explica.map(p => '<p>' + esc(p) + '</p>').join(''));
     h += card('<h3>Lo que se proyecta</h3>' + L(t.pantalla));
     h += card('<h3>Conceptos clave</h3><dl class="kv">' + (t.clave || []).map(k => '<dt>' + esc(k[0]) + '</dt><dd>' + esc(k[1]) + '</dd>').join('') + '</dl>');
@@ -567,13 +569,17 @@
   function slides(t) {
     const s = [{ k: 'cover', h: t.titulo, sub: SM_LBL[t.sm] || '', p: t.objetivo }];
     chunk(t.pantalla, 4).forEach(c => s.push({ k: 'list', h: 'Lo esencial', items: c }));
+    const md = E.medios ? E.medios.slides(t) : { figs: [], fin: [] };
+    md.figs.forEach(x => s.push(x));
     chunk(t.clave, 3).forEach(c => s.push({ k: 'terms', h: 'Conceptos clave', items: c }));
     if (t.ejemplo) { const ch = chunk(t.ejemplo.pasos, 4); ch.forEach((c, i) => s.push({ k: 'list', h: 'Ejemplo: ' + t.ejemplo.titulo, items: c, foot: i === ch.length - 1 ? t.ejemplo.resultado : '' })); }
     (t.preguntas || []).forEach((q, i) => s.push({ k: 'q', h: 'Pregunta ' + (i + 1) + ' de ' + t.preguntas.length, q: q[0], a: q[1] }));
+    md.fin.forEach(x => s.push(x));
     s.push({ k: 'vida', h: '¿Para qué me sirve?', p: t.vida });
     return s;
   }
-  function slideBody(sl, rev) {
+  function slideBody(sl, rev, mini) {
+    if ((sl.k === 'fig' || sl.k === 'video' || sl.k === 'img') && E.medios) return E.medios.slideBody(sl, mini);
     if (sl.k === 'cover') return '<div class="pj-cover"><span class="pj-kicker">' + esc(sl.sub) + '</span><h1>' + esc(sl.h) + '</h1><p>' + esc(sl.p) + '</p></div>';
     if (sl.k === 'list') return '<h2>' + esc(sl.h) + '</h2><ul class="pj-list">' + sl.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' + (sl.foot ? '<p class="pj-foot">' + esc(sl.foot) + '</p>' : '');
     if (sl.k === 'terms') return '<h2>' + esc(sl.h) + '</h2><dl class="pj-terms">' + sl.items.map(x => '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>').join('') + '</dl>';
@@ -718,7 +724,8 @@
         const as = C.asis(g, p, a.id), k = C.cal(g, p.id, a.id);
         return '<tr><td class="l">' + esc(p.nombre) + '</td><td>' + (k.manual ? (k.asis == null ? '—' : k.asis) : as.a) + '</td><td>' + (k.manual ? (k.fal == null ? '—' : k.fal) : as.f) + '</td><td>' + (k.manual ? '—' : C.part(g, p, a.id)) + '</td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + '</span></td></tr>';
       }).join('') + '</tbody></table></div>');
-    if (E.perfil) h += card(E.perfil.cardHTML(g, a), 'pf');
+    if (E.perfil) h += card((E.semaforo ? E.semaforo.alumnoHTML(g, a) : '') + E.perfil.cardHTML(g, a), 'pf');
+    if (E.apoyos && E.semaforo) h += E.apoyos.alumnoHTML(g, a);
     const p = C.parcialActual(), as = C.asis(g, p, a.id);
     if (as.fechasF.length) h += card('<h3>Faltas en el ' + esc(p.nombre) + '</h3><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
     const acts = C.acts(g, p.id);
@@ -783,7 +790,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -814,7 +821,7 @@
       (m.lastSyncAt ? '<p class="muted small mt">Última sincronización: ' + new Date(m.lastSyncAt).toLocaleString('es-MX') + '</p>' : ''));
     h += sec('docente', '👤 Docente y escuela', '<div class="fgrid">' + cf('docente', 'Nombre completo', c.docente) + cf('docenteCorto', 'Cómo te saludo', c.docenteCorto) + cf('plantel', 'Plantel', c.plantel) + cf('cct', 'C.C.T.', c.cct) + cf('entidad', 'Entidad', c.entidad) + cf('turno', 'Turno', c.turno) + cf('ciclo', 'Ciclo escolar', c.ciclo) + cf('periodo', 'Periodo', c.periodo) + '</div>' + cf('semestreTexto', 'Semestre (encabezado de planeaciones)', c.semestreTexto));
     h += sec('cal', '📊 Calificación', '<p class="small">Ponderación del parcial (debe sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.trabajos', 'Libreta/Proyecto/Bitácora %', c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
-      '<div class="fgrid">' + cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('minAprob', 'Calificación mínima aprobatoria', c.minAprob, 'number') +
+      '<div class="fgrid">' + cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
       sel('escalaActa', 'Escala del acta', [[100, 'Base 100'], [10, 'Base 10']], c.escalaActa) + sel('conteoActa', 'Asistencias y faltas del acta', [['dias', 'Por día de clase'], ['horas', 'Por hora']], c.conteoActa) + '</div>' +
       tog('vaciasCero', 'Actividad sin calificación cuenta como 0 (no entregó) después de su fecha de entrega', c.vaciasCero) + tog('retardoCuenta', 'Retardo cuenta como asistencia', c.retardoCuenta) + tog('justCuenta', 'Falta justificada cuenta como asistencia', c.justCuenta));
     if (g) {

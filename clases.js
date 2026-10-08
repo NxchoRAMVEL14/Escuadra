@@ -310,6 +310,7 @@
     const dc = it.dc != null && ac.desarrollo ? ac.desarrollo[it.dc] : '';
     return '<details class="sub"><summary>Programa SEP: «' + esc(ac.titulo) + '» (p. ' + esc(ac.pag) + ')</summary><p class="small">' + (dc ? esc(dc) : '') + '</p><p class="small muted">Producto de la actividad clave: ' + esc(ac.producto) + '</p></details>';
   }
+  let medVistos = null;
   function actHTML(g, pid, part, bloqueKey) {
     const it = part.it, min = it.pasos ? it.pasos.reduce((s, x) => s + x[0], 0) : 0;
     let h = '<div class="cl-act"><div class="row between gap wrap"><div>' + momChip(it.m) + ' <span class="chip">' + esc(it.tipo) + '</span>' + (part.h !== it.h ? ' <span class="chip">' + part.h + ' de ' + it.h + ' h</span>' : ' <span class="chip">' + it.h + ' h</span>') + '</div>' +
@@ -325,6 +326,8 @@
     if (it.pre) h += '<p class="small"><b>Para adelantar el tema</b> a quien lo necesite: <i>' + esc(it.pre) + '</i></p>';
     h += programa(g, pid, it);
     const tm = it.tema && E.TEMAS.find(t => t.id === it.tema);
+    // imágenes y videos del tema (una sola vez por día aunque el tema siga en otra actividad)
+    if (tm && E.medios && !(medVistos && medVistos.has(tm.id))) { if (medVistos) medVistos.add(tm.id); h += E.medios.claseHTML(tm.id); }
     const ids = (it.ideas || []).map(id => E.IDEAS.find(x => x.id === id)).filter(Boolean);
     if (tm || ids.length) h += '<div class="row gap wrap mt">' + (tm ? btn(icon('screen') + ' Proyectar tema', 'proj-open', 'data-id="' + tm.id + '"', 'small primary') + link('Presentador', 'presentador/' + tm.id, 'small') + link('Ver tema', 'tema/' + tm.id, 'small') : '') + ids.map(x => link(icon('bulb') + ' ' + esc(x.titulo), 'ideas/' + x.id, 'small ghost')).join('') + '</div>';
     return h + '</div>';
@@ -363,21 +366,31 @@
   };
   const diaMini = rs => '<ul class="cl-mini">' + rs.map(r => '<li><b>' + r.b.inicio + '–' + r.b.fin + '</b> ' + esc(r.txt) + '</li>').join('') + '</ul>';
 
+  // ¿cómo salió la clase? completa, faltó una parte (por horas) o no se dio
+  const salioHTML = b => {
+    if (b.perdida) return '<div class="row end mt">' + btn('↺ Sí se dio esta clase', 'cl-perdida', 'data-key="' + b.key + '"', 'small ghost') + '</div>';
+    const k = 'data-key="' + b.key + '"', ops = [btn('✓ Completa', 'cl-falto', k + ' data-h="0"', 'small' + (!b.recorte ? ' on' : ''))];
+    for (let h = 1; h < b.horas; h++) ops.push(btn(h === 1 ? 'Faltó 1 h' : 'Faltaron ' + h + ' h', 'cl-falto', k + ' data-h="' + h + '"', 'small' + (b.recorte === h ? ' on' : '')));
+    ops.push(btn('No se dio', 'cl-perdida', k, 'small ghost danger'));
+    return '<div class="cl-salio mt"><span class="small muted">¿Cómo salió esta clase?' + (b.horas > 1 ? ' Si te llevó más tiempo un tema, marca cuántas horas faltaron: lo que no alcanzaste pasa a la siguiente clase.' : '') + '</span><div class="cl-seg">' + ops.join('') + '</div></div>';
+  };
+
   /* ---------- vista: guion de un día ---------- */
   V.clase = f => {
     const g = D.grupoActual(); if (!g) return H.noGroup();
     f = f || u.today(); const d = K.dia(g, f);
     const ant = C.claseAnterior(g, f), sig = C.siguienteClase(g, f);
     let h = '<div class="datebar"><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (ant || f) + '" ' + (ant ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button><div class="datebox"><b>' + u.cap(u.fLarga(f)) + '</b><a class="small" href="#/clases' + (d ? '/' + d.p.id : '') + '">Ver todas las clases</a></div><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (sig || f) + '" ' + (sig ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
+    medVistos = new Set();
     if (!d || !d.bloques.length) return { t: 'Clase', h: h + card('<p>No tienes clase con ' + esc(g.nombre) + ' este día.</p>' + (sig ? link('Ir a la próxima clase', 'clase/' + sig, 'primary') : '')) };
     d.bloques.forEach(b => {
       h += card('<div class="row between gap wrap"><h3>' + b.inicio + '–' + b.fin + ' · ' + b.horas + ' h</h3><label class="cl-lugar">' + K.LUGARES[b.lugar][1] + ' <select data-ch="cl-lugar" data-key="' + b.key + '" data-def="' + b.lugarDef + '" aria-label="Lugar de esta clase">' + Object.keys(K.LUGARES).map(k => '<option value="' + k + '" ' + (b.lugar === k ? 'selected' : '') + '>' + K.LUGARES[k][0] + '</option>').join('') + '</select></label></div>' +
         (b.lugar !== b.lugarDef ? '<p class="small muted">Solo este día; en tu horario este bloque es ' + K.LUGARES[b.lugarDef][0].toLowerCase() + '.</p>' : '') + (b.espera && b.libre ? '<p class="note">' + esc(b.espera) + '</p>' : '') +
         (b.perdida ? '<p class="muted">Marcaste que esta clase no se dio: sus actividades pasaron a la siguiente.</p>' : (b.parts.map(x => actHTML(g, d.p.id, x, b.key)).join('') || '<p class="muted">Ya no quedan actividades en la secuencia: úsala para repaso, recuperación o avance del proyecto.</p>')) +
         (b.libre && b.parts.length ? '<p class="note">Te sobra ' + b.libre + ' h en este bloque.</p>' : '') +
-        (b.recorte ? '<p class="note warn">No alcanzó el tiempo: recorriste ' + b.recorte + ' h de esta clase a la siguiente. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
+        (b.recorte ? '<p class="note warn">' + (b.recorte === 1 ? 'Faltó 1 h' : 'Faltaron ' + b.recorte + ' h') + ': aquí queda solo lo que sí se dio y lo que no alcanzaste pasó a la siguiente clase' + (sig ? ' (' + u.fCorta(sig) + ')' : '') + '. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
         (!b.perdida && b.parts.length ? '<div class="mt">' + (E.run.activo() && E.run.r.key === b.key ? '<span class="chip ok">⏱ Clase en curso</span>' : btn('⏱ Dar esta clase con temporizador', 'run-start', 'data-f="' + f + '" data-key="' + b.key + '"', 'primary')) + '</div>' : '') +
-        '<div class="row end mt">' + btn(b.perdida ? '↺ Sí se dio esta clase' : 'Esta clase no se dio: recorrer', 'cl-perdida', 'data-key="' + b.key + '"', 'small ghost' + (b.perdida ? '' : ' danger')) + '</div>', 'cl-bloque');
+        salioHTML(b), 'cl-bloque');
     });
     h += '<div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + f, 'primary') + btn(icon('book') + ' Anotar en bitácora', 'cl-bit', 'data-f="' + f + '"') + '</div>';
     return { t: 'Clase', h: h };
@@ -396,6 +409,11 @@
     const ord = seq.map(x => x.id); const t = ord[pos]; ord[pos] = ord[pos + 1]; ord[pos + 1] = t;
     S.update('clases:' + g.id, st => { st.orden = st.orden || {}; st.orden[pid] = ord; }, {});
     u.toast('Cambié "' + seq[pos].t + '" por "' + seq[pos + 1].t + '"', 'ok', 4000);
+  };
+  A['cl-falto'] = el => {
+    const g = D.grupoActual(), k = el.dataset.key, h = Number(el.dataset.h) || 0;
+    S.update('clases:' + g.id, st => { st.recortes = st.recortes || {}; if (h > 0) st.recortes[k] = h; else delete st.recortes[k]; }, {});
+    u.toast(h > 0 ? 'Listo: ' + (h === 1 ? 'la hora que faltó' : 'las ' + h + ' h que faltaron') + ' pasa' + (h === 1 ? '' : 'n') + ' a la siguiente clase y todo se recorre' : 'Clase completa', 'ok', 4500);
   };
   A['cl-recorte-x'] = el => { const g = D.grupoActual(), k = el.dataset.key; S.update('clases:' + g.id, st => { if (st.recortes) delete st.recortes[k]; }, {}); };
   A['cl-bit'] = el => {

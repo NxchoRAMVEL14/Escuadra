@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.5.0)
+# Escuadra · Control docente (v1.7.1)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,30 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.7.1:** al final de cada bloque en Clases está **"¿Cómo salió esta clase?"**. Si un tema te llevó más
+tiempo, toca **Faltó 1 h** (o las horas que falten): el bloque queda solo con lo que sí diste y lo demás se recorre a la
+siguiente clase. **Completa** lo regresa y **No se dio** recorre el bloque entero.
+
+**Nuevo en v1.7:** **imágenes y videos en cada tema**. 21 animaciones propias (mecanismos, cuatro barras, biela, leva,
+engranes, poleas, tornillo, vistas, presión, Pascal, aire comprimido, cilindro, válvula 5/2, símbolos ISO 1219, escalera
+eléctrica, motor de CD…) que funcionan **sin internet**, con pausa y cámara lenta, y 44 videos de YouTube revisados que se
+ven dentro de la app (esos sí necesitan internet). Aparecen en el tema, en el guion de la clase (toca ▶ Animar) y como
+diapositivas del Proyector; en el Presentador hay botones para reproducir y pausar el video que está en el proyector.
+En cada tema puedes **agregar tus propios** videos, imágenes o páginas (pegas el enlace). Revisa cada video antes de proyectarlo.
+
+**Plan para subir de nivel (v1.7):** dentro del Semáforo y en Más → **Estrategias**. Para los que van mal (rescate),
+los regulares (empujón) y los que van bien (mantener y retar) propone estrategias con respaldo de investigación, elegidas
+según por qué va así cada alumno (no entrega, examen bajo, faltas). Forma **parejas de tutoría** solas (va mal con va bien)
+con guía para monitores, registras qué apoyo diste a quién (también desde la ficha del alumno) y **"¿Funcionan los apoyos?"**
+compara el promedio de cada alumno el día del apoyo con el de hoy. En la lista del semáforo, 🛟 marca a quien ya recibió apoyo.
+
+**Nuevo en v1.6:** **Semáforo del grupo** (Más → Semáforo, también en Inicio y en la ficha de cada alumno). Cada alumno
+queda como 🔴 va mal (menos de 60), 🟡 regular (60 a 79) o 🟢 va bien (80 o más) según su promedio de examen y
+libreta/proyecto/bitácora con tus ponderaciones; mientras no haya calificaciones, cuenta el diagnóstico como punto de partida.
+Ves cuántos hay de cada uno y su porcentaje, la lista de atención especial con el motivo, puedes ordenar de mal a bien y filtrar
+(va mal, regular, va bien, mejoraron, bajaron, asistencia). Cada viernes se guarda solo un corte para ver si los que van mal
+suben a regular. Los límites se cambian en Ajustes → Calificación.
 
 **Nuevo en v1.5:** **modo Presentador**. En cada tema (o desde Clases) toca *Presentador*: el proyector muestra solo la
 diapositiva y tu laptop o celular muestra los controles, la respuesta antes de revelarla, tus notas, lo que sigue, alumno al
@@ -94,6 +118,10 @@ al abrirla con internet. Tus datos no se tocan.
 | `temas.js` | 26 temas con explicación, ejemplo resuelto, preguntas y contenido para el modo Proyector |
 | `core.js` | Guardado, sincronización y cálculos |
 | `perfil.js` | Perfil de cada alumno, observaciones, equipos equilibrados y fichas |
+| `semaforo.js` | Semáforo del grupo: va mal, regular o va bien, filtros y avance semanal |
+| `figuras.js` | 21 figuras animadas de los temas (dibujadas por la app, sin internet) |
+| `videos.js` | Videos seleccionados por tema, tus recursos propios y diapositivas de video e imagen |
+| `estrategias.js` | Estrategias para subir de nivel, parejas de tutoría y registro de apoyos |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
@@ -113,4 +141,6 @@ al abrirla con internet. Tus datos no se tocan.
 - Formato de acta y lista: "LISTAS DE ASISTENCIA AGOSTO ENERO 2026.xlsx".
 - Temas: el propio programa SEP 2024 y su bibliografía (Myszka, *Máquinas y mecanismos*; Bolton, *Mecatrónica*; Guillén, *Introducción a la Neumática*; Serrano, *Neumática práctica*; manuales CNAD de Rivera y Ruiz), más ISO 1219 y las NOM que cita el programa. Cada tema dice su fuente al final.
 - Simuladores sugeridos: PhET (Universidad de Colorado, gratuitos) y PMKS+ (Worcester Polytechnic Institute, gratuito y sin registro).
+- Videos: canales de YouTube indicados en cada video (verificados el 7 oct 2026 con el servicio oEmbed de YouTube). Las animaciones son originales de la app.
+- Estrategias: Education Endowment Foundation, *Teaching and Learning Toolkit* (retroalimentación, metacognición, tutoría entre pares, aprendizaje para el dominio); Dunlosky y col. (2013); Roediger y Karpicke (2006); Rosenshine (2012); Mueller y Dweck (1998); Ryan y Deci (2000). Los enlaces están en Más → Estrategias → Fuentes.
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

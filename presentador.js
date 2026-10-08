@@ -42,14 +42,23 @@
   function alPantalla(m) {
     const P = E.proj;
     if (m.tipo === 'estado') {
+      // si nada cambió (o solo la pantalla en negro), no se vuelve a dibujar: así un video no se reinicia
+      const igual = P.t && P.t.id === m.tema && P.i === m.i && P.rev === !!m.rev && P.dark === !!m.dark;
+      if (igual) { PR.negro = !!m.negro; const ng = document.getElementById('pj-negro'); if (ng) ng.hidden = !PR.negro; if (PR.negro) videoCmd('pauseVideo'); espera(false); return; }
       PR.aplicando = true;
       if (!P.t || P.t.id !== m.tema) P.open(m.tema);
       P.i = Math.max(0, Math.min(m.i, P.s.length - 1)); P.rev = !!m.rev; P.dark = !!m.dark; PR.negro = !!m.negro; P.draw();
       PR.aplicando = false; espera(false);
     }
+    if (m.tipo === 'video') videoCmd(m.cmd);
     if (m.tipo === 'azar') { const g = D.grupoActual(), a = g && D.alumno(g, m.aid); const box = document.getElementById('pj-azar'); if (box) { box.hidden = false; box.innerHTML = '<div class="pj-azar-in"><span>Contesta</span><b>' + esc(a ? a.nombre : (m.nombre || '')) + '</b></div>'; } }
     if (m.tipo === 'azar-x') { const box = document.getElementById('pj-azar'); if (box) box.hidden = true; }
     if (m.tipo === 'cerrar') { P.close(); espera(true); }
+  }
+  // controla el video de YouTube que está en el proyector (API de mensajes del reproductor)
+  function videoCmd(cmd) {
+    const f = document.querySelector('#proj .pj-video iframe');
+    if (f && f.contentWindow) try { f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd, args: [] }), '*'); } catch (e) { }
   }
   // cuando el profe cambia de diapositiva desde la laptop (teclado o toque), el control se entera
   PR.alDibujar = () => { if (E.modoPantalla && !PR.aplicando && E.proj.t) enviar({ tipo: 'estado', tema: E.proj.t.id, i: E.proj.i, rev: E.proj.rev }); };
@@ -87,11 +96,14 @@
       '<div class="row gap wrap">' + btn(icon('screen') + ' Abrir pantalla del proyector', 'pres-abrir', '', 'primary') + btn('Cómo conectarlo', 'pres-ayuda', '', 'ghost') + '</div>');
     h += '<div class="pres-grid"><div>' +
       '<div class="kicker">En el proyector · ' + (s.i + 1) + ' de ' + n + (s.negro ? ' · <b class="badc">pantalla en negro</b>' : '') + '</div>' +
-      '<div class="pres-mini ' + (s.dark ? 'pj-dark' : '') + (s.negro ? ' negro' : '') + '"><div class="pj-slide">' + E.proj.body(cur, s.rev) + '</div></div>' +
+      '<div class="pres-mini ' + (s.dark ? 'pj-dark' : '') + (s.negro ? ' negro' : '') + '"><div class="pj-slide">' + E.proj.body(cur, s.rev, true) + '</div></div>' +
       '<div class="pres-ctl">' + btn('‹', 'pres-ir', 'data-d="-1" aria-label="Anterior"', 'big') + (cur.k === 'q' && !s.rev ? btn('Mostrar respuesta', 'pres-rev', '', 'big accent') : '') + btn('Siguiente ›', 'pres-ir', 'data-d="1"', 'big primary') + '</div>' +
+      (cur.k === 'video' ? '<div class="row gap wrap center">' + btn('▶ Reproducir video', 'pres-vid', 'data-cmd="playVideo"', 'accent') + btn('⏸ Pausar', 'pres-vid', 'data-cmd="pauseVideo"') + '</div>' : '') +
       '<div class="row gap wrap center">' + btn(icon('dice') + ' Al azar', 'pres-azar', '', 'small') + btn(s.negro ? '☀️ Encender pantalla' : '⬛ Pantalla en negro', 'pres-negro', '', 'small') + btn('🌓 Claro u oscuro', 'pres-dark', '', 'small') + btn('Cerrar proyección', 'pres-cerrar', '', 'small ghost danger') + '</div>' +
       '<div id="pres-azar"></div></div><div>' +
       card('<div class="kicker">Solo tú lo ves</div>' + (cur.k === 'q' ? '<p class="note ok"><b>Respuesta:</b> ' + esc(cur.a) + '</p>' : '') +
+        (cur.k === 'fig' && E.FIGS[cur.fig] ? '<p class="note info"><b>Qué señalar:</b> ' + esc(E.FIGS[cur.fig].d) + '</p>' : '') +
+        (cur.k === 'video' ? '<p class="note info">El video se ve en el proyector y necesita internet. Si no arranca con el botón, toca ▶ una vez en la pantalla del proyector (el navegador pide un primer toque para reproducir con sonido).</p>' : '') +
         '<p class="small"><b>Sigue:</b> ' + (sig ? esc(sig.k === 'q' ? sig.h + ': ' + sig.q : sig.h) : 'Fin del tema') + '</p>' +
         '<details class="sub" open><summary>Explicación para ti</summary>' + (t.explica || []).map(p => '<p class="small">' + esc(p) + '</p>').join('') + '</details>' +
         (t.errores && t.errores.length ? '<details class="sub"><summary>Errores comunes</summary><ul class="small">' + t.errores.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></details>' : '') +
@@ -104,6 +116,7 @@
     if (d > 0 && sl.k === 'q' && !s.rev) { s.rev = true; } else { const k = s.i + d; if (k < 0 || k >= n) return; s.i = k; s.rev = false; }
     E.render(); };
   A['pres-ir'] = el => mover(Number(el.dataset.d));
+  A['pres-vid'] = el => { enviar({ tipo: 'video', cmd: el.dataset.cmd }); u.toast(el.dataset.cmd === 'playVideo' ? 'Reproduciendo en el proyector' : 'Video en pausa', 'ok'); };
   A['pres-rev'] = () => { st().rev = true; E.render(); };
   A['pres-saltar'] = el => { const s = st(); s.i = Number(el.dataset.i); s.rev = false; E.render(); };
   A['pres-negro'] = () => { const s = st(); s.negro = !s.negro; E.render(); };

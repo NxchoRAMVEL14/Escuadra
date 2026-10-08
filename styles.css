@@ -463,3 +463,167 @@ body.pantalla .pj-prog { margin: 0; border-radius: 0; height: 5px }
 .pres-lista button { background: none; border: 0; padding: 4px 0; color: var(--ink); text-align: left; cursor: pointer; font: inherit }
 .pres-lista li.on button { font-weight: 800; color: var(--brand) }
 body.pantalla .pj-reveal { display: none }
+
+/* v1.6 · semáforo */
+:root { --on-status: #ffffff }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --on-status: #0b1312 } }
+:root[data-theme="dark"] { --on-status: #0b1312 }
+.sf-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 4px }
+.sf-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); border-top: 5px solid var(--muted); background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; font: inherit }
+.sf-tile.bad { border-top-color: var(--bad) } .sf-tile.warn { border-top-color: var(--warn) } .sf-tile.ok { border-top-color: var(--ok) }
+.sf-tile.on { box-shadow: 0 0 0 2px var(--brand) inset }
+.sf-tile b { font-size: 1.9rem; line-height: 1.1 }
+.sf-k { font-weight: 700; font-size: .84rem }
+@media (max-width: 380px) { .sf-tile b { font-size: 1.5rem } .sf-k { font-size: .76rem } }
+.sf-chart { overflow-x: auto; padding: 4px 0 }
+.sf-svg { display: block; max-width: none }
+.sf-svg .sf-seg { cursor: pointer }
+.sf-mal { fill: var(--bad); background: var(--bad) } .sf-reg { fill: var(--warn); background: var(--warn) } .sf-bien { fill: var(--ok); background: var(--ok) }
+.sf-sin { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line) }
+.sf-in { fill: var(--on-status); font-size: 11px; font-weight: 800; pointer-events: none }
+.sf-x { fill: var(--muted); font-size: 11px }
+.sf-cap { margin: 4px 0 0 }
+.sf-ley { display: flex; gap: 12px; flex-wrap: wrap; font-size: .8rem; color: var(--muted) }
+.sf-ley span { display: inline-flex; align-items: center; gap: 5px }
+.sf-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 3px; vertical-align: middle }
+.sf-tray { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px; margin-top: 3px }
+.sf-orden { margin: 0 0 8px; align-items: center }
+.sf-orden select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); padding: 5px 8px; font: inherit }
+.sf-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden }
+.sf-row { display: grid; grid-template-columns: 26px 1fr auto auto; gap: 8px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--line); border-left: 4px solid transparent }
+.sf-row:last-child { border-bottom: 0 }
+.sf-row.mal { border-left-color: var(--bad) } .sf-row.reg { border-left-color: var(--warn) } .sf-row.bien { border-left-color: var(--ok) }
+.sf-row .num { color: var(--muted); font-size: .8rem; text-align: right }
+.sf-main { min-width: 0; display: flex; flex-direction: column; font-size: .9rem }
+.sf-main a { color: var(--ink); text-decoration: none; font-weight: 600; overflow-wrap: anywhere }
+.sf-why { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; max-width: 55% }
+.sf-why small { color: var(--muted); font-size: .74rem; line-height: 1.25 }
+.sf-barra { display: flex; gap: 2px; height: 14px; border-radius: 7px; overflow: hidden; margin: 8px 0 }
+.sf-barra span { display: block; height: 100% }
+.sf-al { margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--line) }
+
+/* v1.7 · figuras animadas */
+.fig { margin: 8px 0 12px; --fg-acc: var(--brand); --fg-acc2: #c27a00; --fg-fill: var(--surface2); --fg-fillA: var(--brand-soft); --fg-bg: var(--surface); --fg-muted: var(--muted); --fg-fluid: #3b9be0; color: var(--ink) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fig { --fg-acc2: #f5b631 } }
+:root[data-theme="dark"] .fig { --fg-acc2: #f5b631 }
+.fig svg { width: 100%; height: auto; display: block; background: var(--fg-bg); border: 1px solid var(--line); border-radius: 12px; font-family: var(--font) }
+.fig figcaption { display: flex; flex-direction: column; gap: 2px; font-size: .86rem; margin-top: 6px }
+.fig figcaption span { color: var(--muted) }
+.fig-ctl { display: flex; gap: 6px; margin-top: 6px }
+.fig-ctl button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 9px; padding: 5px 10px; font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer }
+.fig-ctl button.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand) }
+.fig svg .k { stroke: currentColor; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round }
+.fig svg .k2 { stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round }
+.fig svg .k3 { stroke: currentColor; stroke-width: 3; fill: none; stroke-linecap: round }
+.fig svg .a { stroke: var(--fg-acc); stroke-width: 4; fill: none; stroke-linecap: round }
+.fig svg .b { stroke: var(--fg-acc2); stroke-width: 3.5; fill: none; stroke-linecap: round }
+.fig svg .m { stroke: var(--fg-muted); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4 }
+.fig svg .piloto { stroke: currentColor; stroke-width: 2.5; fill: none; stroke-dasharray: 8 6 }
+.fig svg .hatch { stroke: var(--fg-muted); stroke-width: 1.5 }
+.fig svg .fill { fill: var(--fg-fill); stroke: currentColor; stroke-width: 2; stroke-linejoin: round }
+.fig svg .fill2 { fill: var(--fg-bg); stroke: currentColor; stroke-width: 2; stroke-linejoin: round }
+.fig svg .fillA { fill: var(--fg-fillA); stroke: var(--fg-acc); stroke-width: 2.5; stroke-linejoin: round }
+.fig svg .none2 { fill: none; stroke: var(--fg-muted); stroke-width: 1.5 }
+.fig svg .none3 { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linejoin: round }
+.fig svg .pin { fill: var(--fg-bg); stroke: currentColor; stroke-width: 2.5 }
+.fig svg .dot { fill: var(--fg-acc2); stroke: var(--fg-bg); stroke-width: 2 }
+.fig svg .dotb { fill: var(--fg-acc2); stroke: var(--fg-bg); stroke-width: 2 }
+.fig svg .globo { fill: var(--fg-bg); stroke: currentColor; stroke-width: 1.5 }
+.fig svg .traza { fill: none; stroke: var(--fg-acc2); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: .8 }
+.fig svg .banda { fill: none; stroke: currentColor; stroke-width: 5; stroke-dasharray: 10 8; stroke-linejoin: round }
+.fig svg .flujo { stroke: var(--fg-fluid); stroke-width: 6; stroke-dasharray: 7 5 }
+.fig svg .fluido { fill: var(--fg-fluid); opacity: .45 }
+.fig svg .aireP { fill: var(--fg-fluid); opacity: .45 }
+.fig svg .aireE { fill: var(--fg-fluid); opacity: .1 }
+.fig svg .verde { fill: rgba(28, 160, 80, .14); stroke: #1ca050; stroke-width: 3 }
+.fig svg .presion1 { fill: var(--fg-fluid); opacity: .25 }
+.fig svg .presion2 { fill: #d23b30; opacity: .8 }
+.fig svg .ah { fill: currentColor } .fig svg .aha { fill: var(--fg-acc) } .fig svg .ahb { fill: var(--fg-acc2) }
+.fig svg text { font-size: 13px; fill: currentColor; stroke: none }
+.fig svg .tm { fill: var(--fg-muted); font-size: 12px }
+.fig svg .tb { font-weight: 700 }
+.fig svg .ta { fill: var(--fg-acc); font-weight: 700 }
+.fig svg .tbb { fill: var(--fg-acc2); font-weight: 700 }
+.fig svg .tverde { fill: #1ca050; font-weight: 800 }
+#proj .fig { --fg-acc: var(--pj-accent); --fg-fill: var(--pj-soft); --fg-fillA: var(--pj-soft); --fg-bg: transparent; --fg-muted: var(--pj-muted); color: inherit; margin: 0 }
+#proj .fig svg { border: 0; max-height: 64vh; width: auto; max-width: 100%; margin: 0 auto }
+#proj .fig figcaption { font-size: clamp(1rem, 2vw, 1.6rem); text-align: center; align-items: center }
+#proj .fig figcaption b { display: none }
+#proj .fig-ctl { justify-content: center }
+#proj .fig-ctl button { background: transparent; color: inherit; border-color: rgba(127, 127, 127, .4); font-size: 1rem }
+.pres-mini .fig svg { max-height: 40cqw } .pres-mini .fig figcaption, .pres-mini .fig-ctl { display: none }
+.fig svg .tbs { font-weight: 700; font-size: 11.5px }
+.fig svg .oculta { stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 6 4; fill: none }
+#proj .fig svg { max-height: 56vh }
+.pres-mini .fig svg { max-height: 34cqw }
+
+/* v1.7 · imágenes y videos */
+.card.medios h4 { margin-top: 12px }
+.figs { display: grid; gap: 4px 16px }
+@media (min-width: 900px) { .figs { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)) } }
+.vgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) }
+.vcard { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); display: flex; flex-direction: column }
+.vthumb { position: relative; display: block; padding: 0; border: 0; background: #000; cursor: pointer; aspect-ratio: 16 / 9; width: 100% }
+.vthumb img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .92 }
+.vthumb span { position: absolute; inset: 0; margin: auto; width: 54px; height: 54px; border-radius: 50%; background: rgba(0, 0, 0, .62); color: #fff; display: grid; place-items: center; font-size: 1.3rem; padding-left: 4px }
+.vthumb:hover img, .vthumb:focus-visible img { opacity: 1 }
+.vinfo { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 3px; font-size: .88rem; line-height: 1.3 }
+.vinfo .btn { align-self: flex-start; margin-top: 4px }
+.vid { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 8px }
+.vid iframe, .pj-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0 }
+.igrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) }
+.ifig { margin: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface) }
+.ifig img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; cursor: zoom-in; background: var(--surface2) }
+.ifig figcaption { padding: 6px 8px; font-size: .82rem; display: flex; flex-direction: column; gap: 4px; align-items: flex-start }
+.img-grande { width: 100%; height: auto; max-height: 75vh; object-fit: contain; border-radius: 10px; background: var(--surface2) }
+.cl-medios { margin: 8px 0 }
+.cl-medios .fig { margin-bottom: 6px }
+.cl-medios .row { margin-top: 6px }
+.pj-video { position: relative; width: min(100%, calc(62vh * 16 / 9)); aspect-ratio: 16 / 9; margin: 0 auto; background: #000; border-radius: 14px; overflow: hidden }
+.pj-video img { width: 100%; height: 100%; object-fit: cover; display: block }
+.pj-src { text-align: center; color: var(--pj-muted); font-size: clamp(.85rem, 1.6vw, 1.2rem); margin-top: .6em }
+.pj-imgw { display: flex; justify-content: center }
+.pj-img { max-width: 100%; max-height: 64vh; object-fit: contain; border-radius: 12px }
+.pres-mini .pj-video { width: 74cqw } .pres-mini .pj-src { font-size: 2cqw } .pres-mini .pj-img { max-height: 34cqw }
+.pres-mini .pj-slide h2 { margin-bottom: .4em }
+
+/* v1.7 · estrategias para subir de nivel */
+.est-niv { border: 1px solid var(--line); border-left-width: 5px; border-radius: 12px; padding: 4px 12px 8px; margin: 10px 0 }
+.est-niv.bad { border-left-color: var(--bad) } .est-niv.warn { border-left-color: #e0a100 } .est-niv.ok { border-left-color: var(--ok) }
+.est-niv > summary { color: var(--ink); font-size: .95rem; padding: 6px 0 }
+.est-niv .kicker { margin: 10px 0 2px }
+details.est { border-top: 1px solid var(--line); margin: 0; padding: 6px 0 }
+details.est > summary { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--ink); font-weight: 600; list-style: none }
+details.est > summary::-webkit-details-marker { display: none }
+details.est > summary::after { content: "›"; margin-left: auto; color: var(--muted); font-size: 1.2rem; transition: transform .15s }
+details.est[open] > summary::after { transform: rotate(90deg) }
+.est-ico { font-size: 1.15rem; width: 1.6em; text-align: center }
+.est-t { flex: 1 1 180px; min-width: 0 }
+.chip.est-ev { white-space: normal; font-weight: 600 }
+.est-pasos { padding-left: 1.3em; margin: 4px 0 6px } .est-pasos li { margin: 3px 0 }
+.est-src a { word-break: break-word }
+.est-quien { list-style: none; padding: 0; margin: 4px 0 } .est-quien li { padding: 2px 0 }
+.est-tbl td, .est-tbl th { font-size: .82rem }
+.est-hist small { display: inline-block }
+.est-pares { padding-left: 1.4em; margin: 8px 0 } .est-pares li { padding: 8px 0; border-bottom: 1px solid var(--line) }
+.est-mon { font-weight: 600 } .est-tut { display: flex; flex-direction: column; gap: 2px; padding-left: 1.6em; margin-top: 2px }
+.est-p b { color: var(--muted); font-weight: 600; margin-left: 4px; font-size: .85em }
+.ap-al { max-height: 38vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 4px 10px; display: block }
+.ap-chk { display: flex; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: .9rem }
+.ap-chk:last-child { border: 0 } .ap-chk input { width: 20px; height: 20px; accent-color: var(--brand); flex: none }
+.est-fuentes li { margin: 4px 0 }
+.ap-chk span { color: var(--ink); font-weight: 500 }
+@media (max-width: 600px) {
+  .vgrid { grid-template-columns: 1fr }
+  .vcard { flex-direction: row; align-items: stretch }
+  .vthumb { width: 44%; flex: none; aspect-ratio: 16 / 9; align-self: flex-start }
+  .vthumb span { width: 40px; height: 40px; font-size: 1rem }
+  .vinfo { font-size: .84rem; padding: 6px 10px }
+}
+.pj-play { position: absolute; inset: 0; margin: auto; width: 14cqw; height: 14cqw; max-width: 64px; max-height: 64px; border-radius: 50%; background: rgba(255, 255, 255, .18); color: #fff; display: grid; place-items: center; font-size: 5cqw }
+.est-ef li > span:first-child { min-width: 0 }
+
+/* v1.7.1 · ¿cómo salió la clase? */
+.cl-salio { display: flex; flex-direction: column; gap: 6px; border-top: 1px dashed var(--line); padding-top: 10px }
+.cl-seg { display: flex; flex-wrap: wrap; gap: 6px }
+.cl-seg .btn.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand) }
