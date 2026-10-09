@@ -204,6 +204,7 @@ window.E = window.E || {};
       semestreTexto: 'Agosto 2026 – Enero 2027',
       pond: { examen: 50, trabajos: 40, asistencia: 5, participacion: 5 },
       metaPart: 10,
+      partModo: 'max',
       vaciasCero: true,
       retardoCuenta: true,
       justCuenta: true,

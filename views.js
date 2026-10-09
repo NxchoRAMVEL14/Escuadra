@@ -97,6 +97,7 @@
         '<div class="bar"><span style="width:' + Math.min(100, pct) + '%"></span></div><div class="stats"><div><b>' + hr.imp + '</b><span>h impartidas</span></div><div><b>' + hr.disp + '</b><span>h en tu calendario</span></div>' + (hr.programa ? '<div><b>' + hr.programa + '</b><span>h del programa</span></div>' : '') + '</div>' +
         (hr.programa && hr.disp < hr.programa ? '<p class="note warn">Tienes ' + (hr.programa - hr.disp) + ' h menos de las que marca el programa: prioriza las actividades clave.</p>' : ''));
       if (E.semaforo) h += E.semaforo.resumenHTML(g);
+      if (E.tutoria) h += E.tutoria.resumenHTML(g);
       const R = C.riesgos(g, p);
       if (R.length) h += card('<h3>' + icon('alert') + ' Alumnos que necesitan atención</h3><ul class="risk">' + R.slice(0, 6).map(r => '<li><a href="#/alumno/' + r.id + '">' + esc(r.nombre) + '</a> <span class="chip ' + r.kind + '">' + esc(r.txt) + '</span></li>').join('') + '</ul>' +
         (R.length > 6 ? '<p class="small mt"><a href="#/calificaciones/' + p.id + '">Ver los ' + R.length + ' casos en Calificaciones ›</a></p>' : ''));
@@ -251,6 +252,15 @@
   A['tm-fs'] = () => { const c = document.getElementById('timer-card'); if (c && c.requestFullscreen) c.requestFullscreen().catch(() => { }); };
 
   /* =================== CALIFICACIONES =================== */
+  // quién tiene su porcentaje completo de participación
+  function partHTML(g, p, al) {
+    const c = D.cfg(), w = Number(c.pond.participacion || 0); if (!C.partRegistrada(g, p)) return '<p class="muted small">Todavía no hay participaciones registradas en este parcial.</p>';
+    const rows = al.map(a => { const n = C.part(g, p, a.id), x = C.partExtra(g, p, a.id), pc = C.partPct(g, p, n); return { a: a, n: n, x: x, pc: pc }; }).sort((q, r) => r.n - q.n || q.a.num - r.a.num);
+    const mx = c.partModo === 'meta' ? (Number(c.metaPart) || 10) : C.partMax(g, p), compl = rows.filter(r => r.pc != null && r.pc >= 99.5).length;
+    return '<details class="sub" id="part-det"><summary>⭐ Quién tiene su ' + w + '% (' + compl + ' de ' + al.length + ' completo)</summary><p class="muted small">' + (c.partModo === 'meta' ? 'Meta: ' + mx + ' participaciones.' : 'Máximo del grupo: <b>' + mx + '</b> participaciones = ' + w + ' puntos.') + ' Los ⭐ son puntos extra que pusiste en actividades.</p>' +
+      '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Part.</th><th>⭐</th><th>%</th><th>Puntos de ' + w + '</th></tr></thead><tbody>' +
+      rows.map(r => '<tr><td>' + r.a.num + '</td><td class="l">' + esc(r.a.nombre) + '</td><td>' + r.n + '</td><td>' + (r.x || '') + '</td><td>' + (r.pc == null ? '—' : Math.round(r.pc)) + '</td><td><span class="g ' + (r.pc == null ? 'na' : r.pc >= 99.5 ? 'ok' : r.pc >= 60 ? 'warn' : 'bad') + '">' + (r.pc == null ? '—' : u.round(r.pc / 100 * w, 1)) + '</span></td></tr>').join('') + '</tbody></table></div></details>';
+  }
   V.calificaciones = pid => {
     const g = D.grupoActual(); if (!g) return noGroup();
     const al = D.alumnos(g); if (!al.length) return needAlumnos('Calificaciones');
@@ -280,12 +290,13 @@
     const catBlock = (cat, label) => {
       const list = acts.filter(a => a.categoria === cat);
       if (cat === 'diagnostico' && !list.length) return '';
-      return '<div class="cat"><div class="cat-h"><h4>' + label + (c.pond[cat] != null ? ' <span class="chip brand">' + c.pond[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + '</div>' +
+      const extra = cat === 'trabajos' ? '<p class="small">' + link('📒 Tareas y revisión de libreta', 'libreta/' + p.id, 'small') + '</p>' : cat === 'examen' ? '<p class="small">' + link('📝 Examen recomendado', 'examen', 'small') + '</p>' : '';
+      return '<div class="cat"><div class="cat-h"><h4>' + label + (c.pond[cat] != null ? ' <span class="chip brand">' + c.pond[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + '</div>' + extra +
         (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (C.maxPts(a) !== 100 ? ' · de ' + C.maxPts(a) + ' pts' : '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (a.cuenta === false && cat !== 'diagnostico' ? ' · no cuenta' : '') + (st.prom != null ? ' · prom. ' + Math.round(st.prom) : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') + '</div>';
     };
     h += card('<h3>' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + catBlock('examen', 'Examen') + catBlock('trabajos', 'Libreta / Proyecto / Bitácora') + catBlock('diagnostico', 'Diagnóstico') +
       '<div class="cat"><h4>Asistencia <span class="chip brand">' + c.pond.asistencia + '%</span></h4><p class="muted small">Se calcula sola con tu pase de lista.</p></div>' +
-      '<div class="cat"><h4>Participación <span class="chip brand">' + c.pond.participacion + '%</span></h4><p class="muted small">' + c.metaPart + ' participaciones en el parcial = 100.</p></div>' +
+      '<div class="cat"><h4>Participación <span class="chip brand">' + c.pond.participacion + '%</span></h4><p class="muted small">' + (c.partModo === 'meta' ? c.metaPart + ' participaciones en el parcial = 100.' : 'Pase de lista + puntos extra ⭐ de las actividades. El que más participa en el parcial = 100 y los demás en proporción.') + '</p>' + partHTML(g, p, al) + '</div>' +
       '<div class="row gap wrap mt">' + (!acts.some(a => a.categoria !== 'diagnostico') && sm && sm.ac.some(a => a.producto) ? btn(icon('sparkle') + ' Agregar actividades sugeridas del submódulo', 'act-sugeridas', 'data-pid="' + p.id + '"') : '') +
       (!acts.some(a => a.categoria === 'diagnostico') ? btn(icon('plus') + ' Examen diagnóstico (no cuenta)', 'act-nueva', 'data-cat="diagnostico" data-pid="' + p.id + '"', 'small ghost') : '') + '</div>');
     h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Calif.</th><th>Exa</th><th>Trab</th><th>Asis</th><th>Part</th></tr></thead><tbody>' + al.map(a => {
@@ -314,6 +325,12 @@
     S.emit('acts'); u.toast(list.length + ' actividades agregadas', 'ok');
   };
 
+  // ⭐ punto extra que se suma a la participación del parcial (no cambia la calificación de la actividad)
+  const extraBtn = (a, x) => { const n = Number((a.extra || {})[x.id] || 0); return '<span class="xtra">' + (n ? '<button type="button" class="xbtn menos" data-act="act-extra" data-id="' + a.id + '" data-aid="' + x.id + '" data-d="-1" aria-label="Quitar punto extra a ' + esc(x.nombre) + '">−</button>' : '') + '<button type="button" class="xbtn' + (n ? ' on' : '') + '" data-act="act-extra" data-id="' + a.id + '" data-aid="' + x.id + '" data-d="1" aria-label="Punto extra a ' + esc(x.nombre) + '">⭐' + (n ? '<b>' + n + '</b>' : '+') + '</button></span>'; };
+  A['act-extra'] = el => {
+    const g = D.grupoActual(), k = 'act:' + g.id + ':' + el.dataset.id, d = Number(el.dataset.d) || 1;
+    S.update(k, a => { a.extra = a.extra || {}; const n = Math.max(0, Number(a.extra[el.dataset.aid] || 0) + d); if (n) a.extra[el.dataset.aid] = n; else delete a.extra[el.dataset.aid]; });
+  };
   V.actividad = id => {
     const g = D.grupoActual(); if (!g) return noGroup();
     const a = S.get('act:' + g.id + ':' + id); if (!a) return { t: 'Actividad', h: card('<p>No encontré esta actividad.</p>' + link('Volver', 'calificaciones', 'primary')) };
@@ -328,11 +345,11 @@
       fieldIn('Peso dentro del rubro', 'data-ch="act-field" data-path="peso" id="af-peso" inputmode="decimal" min="0" step="0.5"', a.peso, 'number') +
       (a.categoria === 'diagnostico' ? '<p class="muted small" style="align-self:end">El diagnóstico no cuenta para la calificación: marca el punto de partida en el perfil.</p>' : '<label class="switch" style="align-self:end"><input type="checkbox" data-ch="act-field" data-path="cuenta" ' + (a.cuenta !== false ? 'checked' : '') + '><span>Cuenta para la calificación</span></label>') + '</div>' +
       '<p class="muted small">Capturadas ' + st.capturadas + ' de ' + al.length + (st.prom != null ? ' · promedio del grupo ' + Math.round(st.prom) + '/100' : '') + '.' + (conv ? ' Escribe los <b>puntos</b> (de ' + mx + '); la app los convierte a base 100.' : '') + (a.categoria === 'diagnostico' ? '' : ' Vacío = NE (no entregó): cuenta como 0 a partir del día siguiente a la fecha de entrega' + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : '; ponle fecha para que aplique') + '.') + '</p>' +
-      '<div class="fillbar"><span class="muted small">Llenar vacíos con (base 100):</span>' + [100, 90, 80, 70, 60, 0].map(v => btn(String(v), 'act-fill', 'data-id="' + id + '" data-v="' + v + '"', 'small')).join('') + '</div>');
+      '<p class="muted small">⭐ = punto extra: se suma a la <b>participación</b> del parcial, no a esta calificación.</p>' + '<div class="fillbar"><span class="muted small">Llenar vacíos con (base 100):</span>' + [100, 90, 80, 70, 60, 0].map(v => btn(String(v), 'act-fill', 'data-id="' + id + '" data-v="' + v + '"', 'small')).join('') + '</div>');
     h += '<ul class="slist">' + al.map((x, i) => {
       const v = a.notas && a.notas[x.id], nx = al[i + 1];
       const n100 = C.nota(a, x.id);
-      return '<li class="srow"><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv ? '<span class="conv g ' + gclass(n100) + '">' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '"></li>';
+      return '<li class="srow"><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv ? '<span class="conv g ' + gclass(n100) + '">' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + '</li>';
     }).join('') + '</ul>';
     h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
     return { t: a.nombre || 'Actividad', h: h, key: k };
@@ -726,6 +743,8 @@
       }).join('') + '</tbody></table></div>');
     if (E.perfil) h += card((E.semaforo ? E.semaforo.alumnoHTML(g, a) : '') + E.perfil.cardHTML(g, a), 'pf');
     if (E.apoyos && E.semaforo) h += E.apoyos.alumnoHTML(g, a);
+    if (E.tutoria) h += E.tutoria.alumnoHTML(g, a);
+    if (E.examen) h += E.examen.alumnoHTML(g, a);
     const p = C.parcialActual(), as = C.asis(g, p, a.id);
     if (as.fechasF.length) h += card('<h3>Faltas en el ' + esc(p.nombre) + '</h3><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
     const acts = C.acts(g, p.id);
@@ -790,7 +809,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -821,7 +840,7 @@
       (m.lastSyncAt ? '<p class="muted small mt">Última sincronización: ' + new Date(m.lastSyncAt).toLocaleString('es-MX') + '</p>' : ''));
     h += sec('docente', '👤 Docente y escuela', '<div class="fgrid">' + cf('docente', 'Nombre completo', c.docente) + cf('docenteCorto', 'Cómo te saludo', c.docenteCorto) + cf('plantel', 'Plantel', c.plantel) + cf('cct', 'C.C.T.', c.cct) + cf('entidad', 'Entidad', c.entidad) + cf('turno', 'Turno', c.turno) + cf('ciclo', 'Ciclo escolar', c.ciclo) + cf('periodo', 'Periodo', c.periodo) + '</div>' + cf('semestreTexto', 'Semestre (encabezado de planeaciones)', c.semestreTexto));
     h += sec('cal', '📊 Calificación', '<p class="small">Ponderación del parcial (debe sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.trabajos', 'Libreta/Proyecto/Bitácora %', c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
-      '<div class="fgrid">' + cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
+      '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
       sel('escalaActa', 'Escala del acta', [[100, 'Base 100'], [10, 'Base 10']], c.escalaActa) + sel('conteoActa', 'Asistencias y faltas del acta', [['dias', 'Por día de clase'], ['horas', 'Por hora']], c.conteoActa) + '</div>' +
       tog('vaciasCero', 'Actividad sin calificación cuenta como 0 (no entregó) después de su fecha de entrega', c.vaciasCero) + tog('retardoCuenta', 'Retardo cuenta como asistencia', c.retardoCuenta) + tog('justCuenta', 'Falta justificada cuenta como asistencia', c.justCuenta));
     if (g) {

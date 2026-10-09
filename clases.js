@@ -246,7 +246,7 @@
   // Acomoda la secuencia en los bloques: lo de computadora solo en el centro de cómputo, el taller jala las prácticas,
   // respeta apertura → desarrollo → cierre y las dependencias (por ejemplo, cortar después de tener el plano).
   K.plan = (g, pid) => {
-    const p = C.parcial(pid), seq = K.seq(g, pid), st = K.estado(g), perd = st.perdidas || {}, rec = st.recortes || {};
+    const p = C.parcial(pid), seq = K.seq(g, pid), st = K.estado(g), perd = st.perdidas || {}, rec = st.recortes || {}, ade = st.adelantos || {};
     const bl = K.bloques(g, p), rem = seq.map(x => x.h), done = seq.map(() => false), ORD = { a: 0, d: 1, c: 2 };
     const pos = {}; seq.forEach((x, j) => { pos[x.id] = j; });
     const lane = x => x.lugar === 'computo' ? 'c' : 'g';
@@ -267,7 +267,9 @@
     bl.forEach(b => {
       b.perdida = !!perd[b.key]; b.parts = []; b.libre = 0; if (b.perdida) return;
       b.recorte = Math.min(b.horas, Number(rec[b.key]) || 0);
-      let cap = b.horas - b.recorte;
+      // te adelantaste: el bloque cubrió más horas del plan de las que dura (lo siguiente se jala aquí)
+      b.adelanto = b.recorte ? 0 : Math.max(0, Number(ade[b.key]) || 0);
+      let cap = b.horas - b.recorte + b.adelanto;
       while (cap > 0) {
         let j = -1; const L = b.lugar, cg = cur.g >= 0 && !done[cur.g] ? cur.g : -1, cc = cur.c >= 0 && !done[cur.c] ? cur.c : -1;
         if (L === 'computo') {
@@ -369,10 +371,12 @@
   // ¿cómo salió la clase? completa, faltó una parte (por horas) o no se dio
   const salioHTML = b => {
     if (b.perdida) return '<div class="row end mt">' + btn('↺ Sí se dio esta clase', 'cl-perdida', 'data-key="' + b.key + '"', 'small ghost') + '</div>';
-    const k = 'data-key="' + b.key + '"', ops = [btn('✓ Completa', 'cl-falto', k + ' data-h="0"', 'small' + (!b.recorte ? ' on' : ''))];
-    for (let h = 1; h < b.horas; h++) ops.push(btn(h === 1 ? 'Faltó 1 h' : 'Faltaron ' + h + ' h', 'cl-falto', k + ' data-h="' + h + '"', 'small' + (b.recorte === h ? ' on' : '')));
-    ops.push(btn('No se dio', 'cl-perdida', k, 'small ghost danger'));
-    return '<div class="cl-salio mt"><span class="small muted">¿Cómo salió esta clase?' + (b.horas > 1 ? ' Si te llevó más tiempo un tema, marca cuántas horas faltaron: lo que no alcanzaste pasa a la siguiente clase.' : '') + '</span><div class="cl-seg">' + ops.join('') + '</div></div>';
+    const k = 'data-key="' + b.key + '"', on = c => c ? ' on' : '', rango = n => Array.from({ length: n }, (x, i) => i + 1);
+    let h = '<div class="cl-salio mt"><b class="small">¿Cómo salió esta clase?</b>' +
+      '<div class="cl-seg">' + btn('✓ Como se planeó', 'cl-ajuste', k + ' data-h="0"', 'small' + on(!b.recorte && !b.adelanto)) + btn('No se dio', 'cl-perdida', k, 'small ghost danger') + '</div>';
+    if (b.horas > 1) h += '<div class="cl-fila"><span class="small muted">Me faltó tiempo:</span><div class="cl-seg">' + rango(b.horas - 1).map(x => btn('−' + x + ' h', 'cl-ajuste', k + ' data-h="-' + x + '"', 'small' + on(b.recorte === x))).join('') + '</div></div>';
+    h += '<div class="cl-fila"><span class="small muted">Me adelanté:</span><div class="cl-seg">' + rango(Math.max(1, b.horas)).map(x => btn('+' + x + ' h', 'cl-ajuste', k + ' data-h="' + x + '"', 'small' + on(b.adelanto === x))).join('') + '</div></div>';
+    return h + '<p class="muted small">Faltó tiempo: lo pendiente pasa a la siguiente clase. Te adelantaste (lo diste en menos tiempo y seguiste con lo que venía): lo siguiente se jala a esta clase y todo el parcial se recorre hacia antes.</p></div>';
   };
 
   /* ---------- vista: guion de un día ---------- */
@@ -389,6 +393,7 @@
         (b.perdida ? '<p class="muted">Marcaste que esta clase no se dio: sus actividades pasaron a la siguiente.</p>' : (b.parts.map(x => actHTML(g, d.p.id, x, b.key)).join('') || '<p class="muted">Ya no quedan actividades en la secuencia: úsala para repaso, recuperación o avance del proyecto.</p>')) +
         (b.libre && b.parts.length ? '<p class="note">Te sobra ' + b.libre + ' h en este bloque.</p>' : '') +
         (b.recorte ? '<p class="note warn">' + (b.recorte === 1 ? 'Faltó 1 h' : 'Faltaron ' + b.recorte + ' h') + ': aquí queda solo lo que sí se dio y lo que no alcanzaste pasó a la siguiente clase' + (sig ? ' (' + u.fCorta(sig) + ')' : '') + '. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
+        (b.adelanto ? '<p class="note ok">Te adelantaste ' + b.adelanto + ' h: esta clase cubrió también lo que venía después y todo el parcial se recorrió hacia antes. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
         (!b.perdida && b.parts.length ? '<div class="mt">' + (E.run.activo() && E.run.r.key === b.key ? '<span class="chip ok">⏱ Clase en curso</span>' : btn('⏱ Dar esta clase con temporizador', 'run-start', 'data-f="' + f + '" data-key="' + b.key + '"', 'primary')) + '</div>' : '') +
         salioHTML(b), 'cl-bloque');
     });
@@ -410,12 +415,16 @@
     S.update('clases:' + g.id, st => { st.orden = st.orden || {}; st.orden[pid] = ord; }, {});
     u.toast('Cambié "' + seq[pos].t + '" por "' + seq[pos + 1].t + '"', 'ok', 4000);
   };
-  A['cl-falto'] = el => {
+  // h < 0: faltó tiempo (se recorre hacia después) · h > 0: te adelantaste (se jala hacia antes) · 0: como se planeó
+  A['cl-ajuste'] = el => {
     const g = D.grupoActual(), k = el.dataset.key, h = Number(el.dataset.h) || 0;
-    S.update('clases:' + g.id, st => { st.recortes = st.recortes || {}; if (h > 0) st.recortes[k] = h; else delete st.recortes[k]; }, {});
-    u.toast(h > 0 ? 'Listo: ' + (h === 1 ? 'la hora que faltó' : 'las ' + h + ' h que faltaron') + ' pasa' + (h === 1 ? '' : 'n') + ' a la siguiente clase y todo se recorre' : 'Clase completa', 'ok', 4500);
+    S.update('clases:' + g.id, st => {
+      st.recortes = st.recortes || {}; st.adelantos = st.adelantos || {}; delete st.recortes[k]; delete st.adelantos[k];
+      if (h < 0) st.recortes[k] = -h; if (h > 0) st.adelantos[k] = h;
+    }, {});
+    u.toast(h < 0 ? 'Listo: ' + (h === -1 ? 'la hora que faltó pasa' : 'las ' + -h + ' h que faltaron pasan') + ' a la siguiente clase y todo se recorre' : h > 0 ? 'Listo: te adelantaste ' + h + ' h; lo siguiente se jaló a esta clase y todo se recorrió hacia antes' : 'Clase como se planeó', 'ok', 4500);
   };
-  A['cl-recorte-x'] = el => { const g = D.grupoActual(), k = el.dataset.key; S.update('clases:' + g.id, st => { if (st.recortes) delete st.recortes[k]; }, {}); };
+  A['cl-recorte-x'] = el => { const g = D.grupoActual(), k = el.dataset.key; S.update('clases:' + g.id, st => { if (st.recortes) delete st.recortes[k]; if (st.adelantos) delete st.adelantos[k]; }, {}); };
   A['cl-bit'] = el => {
     const g = D.grupoActual(), f = el.dataset.f, rs = K.resumenDia(g, f) || [], id = u.uid('bit');
     S.put('bit:' + id, { id: id, fecha: f, grupoId: g.id, texto: 'Clase: ' + rs.map(r => r.b.inicio + ' ' + r.txt).join(' | ') + '\nCómo salió: ' });
@@ -514,22 +523,26 @@
     const plan = r.pasos.reduce((s, p) => s + p.min, 0), real = r.pasos.reduce((s, p) => s + (p.real || 0), 0) / 60;
     let faltan = 0; r.pasos.forEach((p, j) => { if (!p.done) faltan += j === r.i ? Math.max(0, p.min - (p.real || 0) / 60) : p.min; });
     const hRec = Math.min(r.horas, Math.round(faltan / 50 * 2) / 2);
-    R.resumen = { r: r, plan: plan, real: real, faltan: faltan, hRec: hRec };
+    // terminaste el guion con tiempo de sobra: si seguiste con lo que venía, se puede adelantar
+    const hAde = !faltan && plan - real >= 40 ? Math.max(1, Math.min(r.horas, Math.round((plan - real) / 50))) : 0;
+    R.resumen = { r: r, plan: plan, real: real, faltan: faltan, hRec: hRec, hAde: hAde };
     const fila = p => '<tr><td class="l">' + esc(p.t) + '</td><td>' + p.min + '</td><td>' + (p.real ? Math.round(p.real / 60) : '—') + '</td><td class="' + (p.real && p.real / 60 - p.min > 2 ? 'badc' : '') + '">' + (p.real ? ((p.real / 60 - p.min >= 0 ? '+' : '') + Math.round(p.real / 60 - p.min)) : '') + '</td></tr>';
     E.modal.open('¿Cómo te fue con el tiempo?', '<p>Planeado <b>' + plan + ' min</b> · real <b>' + Math.round(real) + ' min</b>' + (faltan ? ' · te faltaron <b>' + Math.round(faltan) + ' min</b> del guion' : ' · completaste el guion') + '.</p>' +
       '<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="l">Paso</th><th>Plan</th><th>Real</th><th>±</th></tr></thead><tbody>' + r.pasos.map(fila).join('') + '</tbody></table></div>' +
-      '<div class="row gap wrap mt">' + (hRec > 0 ? btn('Guardar y recorrer ' + hRec + ' h a la próxima clase', 'run-save', 'data-rec="1"', 'primary') + btn('Solo guardar', 'run-save', 'data-rec="0"') : btn('Guardar en la bitácora', 'run-save', 'data-rec="0"', 'primary')) + btn('Seguir con la clase', 'run-resume', '', 'ghost') + '</div>' +
+      (hAde ? '<p class="note ok small">Terminaste ' + Math.round(plan - real) + ' min antes. Si en ese tiempo seguiste con lo que venía, toca <b>Guardar y adelantar</b>: lo siguiente se jala a esta clase y todo se recorre hacia antes.</p>' : '') +
+      '<div class="row gap wrap mt">' + (hRec > 0 ? btn('Guardar y recorrer ' + hRec + ' h a la próxima clase', 'run-save', 'data-rec="1"', 'primary') + btn('Solo guardar', 'run-save', 'data-rec="0"') : hAde ? btn('Guardar y adelantar ' + hAde + ' h', 'run-save', 'data-ade="1"', 'primary') + btn('Solo guardar', 'run-save', 'data-rec="0"') : btn('Guardar en la bitácora', 'run-save', 'data-rec="0"', 'primary')) + btn('Seguir con la clase', 'run-resume', '', 'ghost') + '</div>' +
       '<p class="muted small">Se guarda en tu bitácora con los tiempos de cada paso. Si recorres, lo que faltó pasa a la siguiente clase y todo el parcial se acomoda.</p>');
   };
   A['run-resume'] = () => { E.modal.close(); if (R.r) { R.loop(); R.barra(); } };
   A['run-save'] = el => {
     const z = R.resumen; if (!z) return; const r = z.r, g = D.grupoActual(), id = u.uid('bit');
     const det = r.pasos.map(p => '• ' + p.t.slice(0, 70) + ': plan ' + p.min + ' / real ' + (p.real ? Math.round(p.real / 60) : '—') + ' min').join('\n');
-    S.put('bit:' + id, { id: id, fecha: r.fecha, grupoId: g.id, texto: 'Clase ' + r.inicio + '–' + r.fin + ' con temporizador: planeado ' + z.plan + ' min, real ' + Math.round(z.real) + ' min' + (z.faltan ? ', faltaron ' + Math.round(z.faltan) + ' min' : '') + (el.dataset.rec === '1' ? ' (se recorrieron ' + z.hRec + ' h a la siguiente clase)' : '') + '.\n' + det });
+    S.put('bit:' + id, { id: id, fecha: r.fecha, grupoId: g.id, texto: 'Clase ' + r.inicio + '–' + r.fin + ' con temporizador: planeado ' + z.plan + ' min, real ' + Math.round(z.real) + ' min' + (z.faltan ? ', faltaron ' + Math.round(z.faltan) + ' min' : '') + (el.dataset.rec === '1' ? ' (se recorrieron ' + z.hRec + ' h a la siguiente clase)' : '') + (el.dataset.ade === '1' ? ' (se adelantaron ' + z.hAde + ' h del plan)' : '') + '.\n' + det });
     S.update('tiempos:' + g.id, l => { l.push({ fecha: r.fecha, key: r.key, ids: r.ids, pasos: r.pasos.map(p => [p.t.slice(0, 60), p.min, p.real ? Math.round(p.real / 60) : null]) }); return l.slice(-200); }, []);
-    if (el.dataset.rec === '1' && z.hRec > 0) S.update('clases:' + g.id, st => { st.recortes = st.recortes || {}; st.recortes[r.key] = z.hRec; }, {});
+    if (el.dataset.rec === '1' && z.hRec > 0) S.update('clases:' + g.id, st => { st.recortes = st.recortes || {}; st.recortes[r.key] = z.hRec; if (st.adelantos) delete st.adelantos[r.key]; }, {});
+    if (el.dataset.ade === '1' && z.hAde > 0) S.update('clases:' + g.id, st => { st.adelantos = st.adelantos || {}; st.adelantos[r.key] = z.hAde; if (st.recortes) delete st.recortes[r.key]; }, {});
     R.r = null; R.resumen = null; R.guardar(); R.barra(); R.wake(false); E.modal.close();
-    u.toast(el.dataset.rec === '1' ? 'Guardado. Lo que faltó pasó a la siguiente clase.' : 'Guardado en la bitácora', 'ok', 5000);
+    u.toast(el.dataset.rec === '1' ? 'Guardado. Lo que faltó pasó a la siguiente clase.' : el.dataset.ade === '1' ? 'Guardado. Te adelantaste: todo se recorrió hacia antes.' : 'Guardado en la bitácora', 'ok', 5000);
   };
   // si la página se recargó a media clase, el temporizador sigue
   setTimeout(() => { if (E.modoPantalla) return; try { const x = JSON.parse(localStorage.getItem(LS_RUN) || 'null'); if (x && x.pasos && x.pasos.length) { R.r = x; R.barra(); R.loop(); } } catch (e) { } }, 0);

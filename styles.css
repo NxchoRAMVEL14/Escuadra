@@ -627,3 +627,71 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .cl-salio { display: flex; flex-direction: column; gap: 6px; border-top: 1px dashed var(--line); padding-top: 10px }
 .cl-seg { display: flex; flex-wrap: wrap; gap: 6px }
 .cl-seg .btn.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand) }
+.cl-fila { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
+.cl-fila > span { min-width: 7.5em }
+
+/* v1.8 · tutoría */
+.fld.grow { flex: 1 1 140px }
+.tut-al li, .tut-seg .sf-tray { flex-wrap: wrap }
+.tut-sen { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: center }
+.tut-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0 }
+@media (max-width: 520px) { .tut-tiles { grid-template-columns: repeat(2, 1fr) } }
+.tut-tile { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; background: var(--surface) }
+.tut-tile span { font-size: .74rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em }
+.tut-tile b { font-size: 1.25rem }
+.tut-tile.ok b { color: var(--ok) } .tut-tile.warn b { color: var(--warn) } .tut-tile.bad b { color: var(--bad) } .tut-tile.brand { background: var(--brand-soft); border-color: transparent } .tut-tile.brand b { color: var(--brand) }
+.tut-pagos { list-style: none; padding: 0; margin: 8px 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r) }
+.tut-pagos li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line) }
+.tut-pagos li:last-child { border: 0 }
+.tut-pagos .num { width: 24px; text-align: right; color: var(--muted); font-size: .8rem; flex: none }
+.tut-pagos li.ok { background: color-mix(in srgb, var(--ok-soft) 45%, transparent) }
+.tut-nm { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 2px 0; color: var(--ink); font: inherit; font-size: .9rem; cursor: pointer; display: flex; flex-direction: column }
+.tut-nm small { color: var(--muted); font-size: .76rem }
+.tut-list { list-style: none; padding: 0; margin: 0 }
+.tut-it { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line) }
+.tut-it:last-child { border: 0 }
+.tut-it.hecha .tut-itm b { text-decoration: line-through; color: var(--muted) }
+.tut-chk { width: 26px; height: 26px; flex: none; border-radius: 8px; border: 2px solid var(--brand); background: var(--surface); color: var(--brand); font-weight: 800; cursor: pointer; margin-top: 1px }
+.tut-it.hecha .tut-chk { background: var(--brand); color: var(--brand-ink) }
+.tut-itm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: .9rem }
+
+/* v1.9 · puntos extra */
+.xtra { display: inline-flex; gap: 4px; flex: none }
+.xbtn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; min-width: 42px; height: 40px; padding: 0 8px; font: inherit; font-size: .85rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 2px }
+.xbtn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--warn); font-weight: 700 }
+.xbtn.menos { min-width: 30px; color: var(--muted) }
+
+/* v1.9 · libreta */
+.warnc { color: var(--warn) }
+.lb-list { list-style: none; padding: 0; margin: 6px 0 10px }
+.lb-list li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line) }
+.lb-list li.off .lb-t b { color: var(--muted); font-weight: 500 }
+.lb-chk input { width: 20px; height: 20px; accent-color: var(--brand); margin-top: 2px }
+.lb-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: .9rem }
+.lb-nav { display: flex; gap: 6px; align-items: center; margin: 6px 0 } .lb-nav select { flex: 1; min-width: 0; padding: 9px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit }
+.lb-res { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; background: var(--surface2); border-radius: 12px; margin: 6px 0 }
+.lb-res .g { font-size: 1.2rem }
+.lb-rev { list-style: none; padding: 0; margin: 6px 0 } .lb-rev li { padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px }
+.cl-seg .btn.on.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok) } .cl-seg .btn.on.warn { background: var(--warn-soft); border-color: var(--warn); color: var(--warn) } .cl-seg .btn.on.bad { background: var(--bad-soft); border-color: var(--bad); color: var(--bad) }
+.lb-tbl td, .lb-tbl th { text-align: center; padding: 4px 6px } .lb-tbl td.l, .lb-tbl th.l { text-align: left }
+
+/* v1.9 · examen recomendado */
+.ex-list { padding-left: 1.6em; margin: 6px 0 } .ex-list > li { padding: 10px 0; border-bottom: 1px solid var(--line) } .ex-list > li p { margin: 6px 0 }
+.ex-hd { display: flex; flex-wrap: wrap; gap: 4px; align-items: center } .ex-pts { margin-left: auto; font-size: .85rem }
+.ex-ops { margin: 4px 0; padding-left: 1.4em } .ex-ops li { padding: 1px 0 } .ex-ops li.ok { color: var(--ok); font-weight: 700 }
+.ex-ops li.ok::after { content: " ✓" }
+.ex-bars { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 8px }
+.ex-bars li { display: grid; grid-template-columns: minmax(110px, 38%) 1fr 44px auto; gap: 8px; align-items: center; font-size: .86rem }
+.ex-bl { min-width: 0; overflow: hidden; text-overflow: ellipsis }
+.ex-bar { height: 10px; border-radius: 99px; background: var(--surface2); overflow: hidden } .ex-bar i { display: block; height: 100%; border-radius: 99px; background: var(--muted) }
+.ex-bar i.bad { background: var(--bad) } .ex-bar i.warn { background: #e0a100 } .ex-bar i.info { background: var(--info) } .ex-bar i.ok { background: var(--ok) }
+@media (max-width: 520px) { .ex-bars li { grid-template-columns: 1fr 40px auto; } .ex-bars li .ex-bl { grid-column: 1 / -1 } }
+.ex-rec { border-left: 4px solid var(--warn); padding: 2px 0 2px 10px; margin: 10px 0 } .ex-rec ul { margin: 4px 0; padding-left: 1.2em }
+.ex-rap { list-style: none; padding: 0; margin: 6px 0 } .ex-rap li { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: .88rem }
+.ex-rap label { display: flex; flex-direction: column; align-items: center; flex: none } .ex-rap input { width: 64px; padding: 7px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-align: center; font: inherit }
+.pr.exam { font-size: 10pt } .pr .ex-head td { border: 1px solid #000; padding: 3px 5px; font-size: 9pt } .pr .ex-head td.r { text-align: right; white-space: nowrap }
+.pr .ex-sec { margin: 8px 0 3px; border-bottom: 1.5px solid #000; padding-bottom: 2px }
+.pr .ex-it { margin: 5px 0 7px; page-break-inside: avoid } .pr .ex-it p { margin: 0 0 2px }
+.pr .ex-p { font-size: 8pt; color: #333 } .pr .ex-ops { margin: 2px 0 0; padding-left: 2.2em } .pr .ex-ops.dos { columns: 2 }
+.pr .ex-box { border: 1px solid #000; height: 28mm; margin-top: 3px; padding: 2px 5px; font-size: 7.5pt; color: #444 }
+.pr .ex-lin { border-bottom: 1px solid #000; height: 8mm }

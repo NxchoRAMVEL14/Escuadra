@@ -240,6 +240,8 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
   };
 
   /* ---------------- cálculos ---------------- */
+  // caché del máximo de participación; se limpia con cualquier cambio de datos
+  let partCache = {}; S.on(() => { partCache = {}; });
   const C = E.calc = {
     parcial(pid) { return D.parciales().find(p => p.id === pid); },
     parcialActual(f) { f = f || u.today(); const ps = D.parciales(); return ps.find(p => f >= p.inicio && f <= p.fin) || ps.find(p => f < p.inicio) || ps[ps.length - 1]; },
@@ -275,11 +277,25 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       if (r.ses) r.pct = c.conteoActa === 'horas' ? r.ha / r.hs * 100 : r.a / r.ses * 100;
       return r;
     },
-    partRegistrada(g, p) { const pre = 'part:' + g.id + ':'; return S.keys(pre).some(k => { const f = k.slice(pre.length); return f >= p.inicio && f <= p.fin; }); },
+    partRegistrada(g, p) { const pre = 'part:' + g.id + ':'; return S.keys(pre).some(k => { const f = k.slice(pre.length); return f >= p.inicio && f <= p.fin; }) || C.acts(g, p.id).some(a => a.extra && Object.keys(a.extra).length); },
+    // participaciones del parcial: las del pase de lista + los puntos extra (⭐) de las actividades
     part(g, p, aid) {
       const pre = 'part:' + g.id + ':'; let n = 0;
       S.keys(pre).forEach(k => { const f = k.slice(pre.length); if (f < p.inicio || f > p.fin) return; n += Number((S.get(k) || {})[aid] || 0); });
+      C.acts(g, p.id).forEach(a => { n += Number((a.extra || {})[aid] || 0); });
       return n;
+    },
+    partExtra(g, p, aid) { return C.acts(g, p.id).reduce((s, a) => s + Number((a.extra || {})[aid] || 0), 0); },
+    // el alumno que más participa en el parcial (para la participación relativa)
+    partMax(g, p) {
+      const k = g.id + '|' + p.id; if (partCache[k] != null) return partCache[k];
+      return (partCache[k] = D.alumnos(g).reduce((m, a) => Math.max(m, C.part(g, p, a.id)), 0));
+    },
+    // participación en base 100: relativa al que más participa (por omisión) o contra una meta fija
+    partPct(g, p, np) {
+      const c = D.cfg(); if (!C.partRegistrada(g, p)) return null;
+      if (c.partModo === 'meta') return Math.min(100, np / (Number(c.metaPart) || 10) * 100);
+      const mx = C.partMax(g, p); return mx > 0 ? Math.min(100, np / mx * 100) : null;
     },
     acts(g, pid) {
       return S.list('act:' + g.id + ':').filter(a => a.parcial === pid)
@@ -313,7 +329,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       }
       const comp = { examen: C.promCat(g, pid, 'examen', aid), trabajos: C.promCat(g, pid, 'trabajos', aid) };
       const as = C.asis(g, p, aid); comp.asistencia = as.pct;
-      const np = C.part(g, p, aid); comp.participacion = C.partRegistrada(g, p) ? Math.min(100, np / (Number(c.metaPart) || 10) * 100) : null;
+      const np = C.part(g, p, aid); comp.participacion = C.partPct(g, p, np);
       let sw = 0, s = 0; const falta = [];
       ['examen', 'trabajos', 'asistencia', 'participacion'].forEach(k => { const w = Number(c.pond[k] || 0); if (!w) return; if (comp[k] == null) { falta.push(k); return; } s += comp[k] * w; sw += w; });
       const final = sw ? u.round(s / sw, 0) : null;

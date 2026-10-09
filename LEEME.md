@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.7.1)
+# Escuadra · Control docente (v1.9.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,29 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.9:**
+- **Examen recomendado** (Más → Examen recomendado, o desde Calificaciones → Examen): toma los temas que diste en Clases hasta
+  la fecha del examen y reparte las preguntas según las horas de cada tema; lo que salió bajo en exámenes anteriores lleva más
+  peso y entra un repaso. Banco de 126 preguntas (opción múltiple, verdadero o falso, abiertas y problemas con datos que cambian
+  en cada versión). Imprime versión A y B y la clave; cambia o quita preguntas. Captura por alumno (marcas qué falló y la
+  calificación llega sola a Calificaciones) o rápida (cuántos fallaron cada pregunta). El análisis dice qué temas reenseñar,
+  qué preguntas fallaron más, a quién darle segunda oportunidad y qué le costó a cada alumno (también en su ficha).
+- **Tareas y libreta** (Más → Tareas y libreta, o Calificaciones → Libreta): junta las tareas y los trabajos en libreta de las
+  clases que diste más las que agregues; revisas alumno por alumno (✓ completa, ½ incompleta, ✗ no) y la calificación entra sola
+  como actividad de Libreta. Lista de cotejo imprimible.
+- **Puntos extra ⭐** en cada actividad: suman a la participación. La participación ahora es relativa: el que más participa en
+  el parcial = 100% y los demás en proporción (en Calificaciones ves quién tiene su 5% completo). La meta fija sigue en Ajustes.
+
+**Nuevo en v1.8:** **adelantar clases** y sección **Tutoría**.
+- En Clases, "¿Cómo salió esta clase?" ahora tiene **Me adelanté +1 h**: úsalo cuando diste la clase en menos tiempo y con el
+  tiempo que sobró seguiste con lo que venía. Lo siguiente se jala a ese bloque y todo el parcial se recorre hacia antes.
+  Si terminaste antes pero ya no avanzaste, déjala en "Como se planeó". El temporizador también lo ofrece si terminas antes.
+- **Más → Tutoría**: alerta temprana ABC con lo de tu módulo (A: 2 o más faltas en 30 días, B: va mal en el semáforo,
+  C: 3 o más llamadas de atención), **cooperaciones** con cuentas claras (quién pagó, parciales, quién no paga, gastos con
+  comprobante, dinero en caja, corte de caja para el grupo sin nombres, pendientes para tesorería e impresión del control),
+  **Mi plan** de tutoría con responsable (tú, tu co-tutora, los dos o el grupo), **seguimiento por alumno** con notas
+  (solo lo escolar) y **20 ideas para tutores** con fuentes. "Copiar resumen para la co-tutora" arma el mensaje para WhatsApp.
 
 **Nuevo en v1.7.1:** al final de cada bloque en Clases está **"¿Cómo salió esta clase?"**. Si un tema te llevó más
 tiempo, toca **Faltó 1 h** (o las horas que falten): el bloque queda solo con lo que sí diste y lo demás se recorre a la
@@ -122,6 +145,10 @@ al abrirla con internet. Tus datos no se tocan.
 | `figuras.js` | 21 figuras animadas de los temas (dibujadas por la app, sin internet) |
 | `videos.js` | Videos seleccionados por tema, tus recursos propios y diapositivas de video e imagen |
 | `estrategias.js` | Estrategias para subir de nivel, parejas de tutoría y registro de apoyos |
+| `tutoria.js` | Sección Tutoría: alerta temprana, cooperaciones, plan, seguimiento e ideas para tutores |
+| `libreta.js` | Tareas del parcial y revisión de libreta |
+| `banco.js` | Banco de preguntas y problemas con datos variables |
+| `examen.js` | Examen recomendado, versiones, captura y análisis |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
@@ -143,4 +170,6 @@ al abrirla con internet. Tus datos no se tocan.
 - Simuladores sugeridos: PhET (Universidad de Colorado, gratuitos) y PMKS+ (Worcester Polytechnic Institute, gratuito y sin registro).
 - Videos: canales de YouTube indicados en cada video (verificados el 7 oct 2026 con el servicio oEmbed de YouTube). Las animaciones son originales de la app.
 - Estrategias: Education Endowment Foundation, *Teaching and Learning Toolkit* (retroalimentación, metacognición, tutoría entre pares, aprendizaje para el dominio); Dunlosky y col. (2013); Roediger y Karpicke (2006); Rosenshine (2012); Mueller y Dweck (1998); Ryan y Deci (2000). Los enlaces están en Más → Estrategias → Fuentes.
+- Tutoría: SEP-SNB, Acuerdo 9/CD/2009 (acción tutorial); SEMS (2014), *Yo no abandono*: manual de alerta temprana; Ley General de Educación, art. 7, fr. IV (aportaciones voluntarias); SEP-DGB (2023) Currículum ampliado y (2025) Orientaciones para la formación socioemocional; IES-WWC (2017) *Preventing Drop-out in Secondary Schools*; EEF (familias, socioemocional, mentoría, tutoría entre pares). Enlaces en Tutoría → Ideas → Fuentes.
+- Examen: preguntas escritas a partir del contenido de Temas (programa SEP 2024 y su bibliografía) y revisadas una por una; los problemas calculan su respuesta con las fórmulas del curso. Reparto por horas = tabla de especificaciones. Repaso de temas bajos: práctica de recuperación y espaciada (Dunlosky y col., 2013).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.
