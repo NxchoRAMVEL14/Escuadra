@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.9.0)
+# Escuadra · Control docente (v1.10.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,15 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.10:** sección **Dinámicas** (Más → Dinámicas). Eliges qué quieres lograr hoy (integrar al grupo,
+desarrollar una capacidad, mejorar la relación contigo, que se sientan mejor consigo mismos o calmar al grupo), el tiempo,
+el lugar y cómo está el grupo, y te recomienda dinámicas sin repetir las recientes. Son 27, cada una con guion paso a paso,
+lo que ven los alumnos (se proyecta), preguntas de cierre y qué cuidar. Hay rutas de 4 sesiones para 8 capacidades
+(comunicación, trabajo en equipo, empatía, autoconocimiento, manejo de emociones, liderazgo, perseverancia y creatividad,
+alineadas a las habilidades de Construye T), rutinas para tu relación con ellos (saludo en la puerta, retroalimentación con
+expectativas altas, 2 × 10, ustedes dijeron-yo hice), temporizador por paso, registro de cómo salió, **termómetro del grupo**
+con tendencia y **bingo humano** imprimible.
 
 **Nuevo en v1.9:**
 - **Examen recomendado** (Más → Examen recomendado, o desde Calificaciones → Examen): toma los temas que diste en Clases hasta
@@ -146,6 +155,7 @@ al abrirla con internet. Tus datos no se tocan.
 | `videos.js` | Videos seleccionados por tema, tus recursos propios y diapositivas de video e imagen |
 | `estrategias.js` | Estrategias para subir de nivel, parejas de tutoría y registro de apoyos |
 | `tutoria.js` | Sección Tutoría: alerta temprana, cooperaciones, plan, seguimiento e ideas para tutores |
+| `dinamicas.js` | Dinámicas de integración y capacidades, rutinas de relación, termómetro y bingo |
 | `libreta.js` | Tareas del parcial y revisión de libreta |
 | `banco.js` | Banco de preguntas y problemas con datos variables |
 | `examen.js` | Examen recomendado, versiones, captura y análisis |
@@ -172,4 +182,5 @@ al abrirla con internet. Tus datos no se tocan.
 - Estrategias: Education Endowment Foundation, *Teaching and Learning Toolkit* (retroalimentación, metacognición, tutoría entre pares, aprendizaje para el dominio); Dunlosky y col. (2013); Roediger y Karpicke (2006); Rosenshine (2012); Mueller y Dweck (1998); Ryan y Deci (2000). Los enlaces están en Más → Estrategias → Fuentes.
 - Tutoría: SEP-SNB, Acuerdo 9/CD/2009 (acción tutorial); SEMS (2014), *Yo no abandono*: manual de alerta temprana; Ley General de Educación, art. 7, fr. IV (aportaciones voluntarias); SEP-DGB (2023) Currículum ampliado y (2025) Orientaciones para la formación socioemocional; IES-WWC (2017) *Preventing Drop-out in Secondary Schools*; EEF (familias, socioemocional, mentoría, tutoría entre pares). Enlaces en Tutoría → Ideas → Fuentes.
 - Examen: preguntas escritas a partir del contenido de Temas (programa SEP 2024 y su bibliografía) y revisadas una por una; los problemas calculan su respuesta con las fórmulas del curso. Reparto por horas = tabla de especificaciones. Repaso de temas bajos: práctica de recuperación y espaciada (Dunlosky y col., 2013).
+- Dinámicas: Construye T (SEP-SEMS y PNUD); SEP-DGB (2025) Orientaciones para la formación socioemocional; EEF (aprendizaje socioemocional, aprendizaje colaborativo, retroalimentación); Cook y col. (2018) saludo en la puerta; Yeager y col. (2014) retroalimentación sabia; Roorda y col. (2011) relación docente-alumno; Aronson (rompecabezas); Wujec (2010) reto del malvavisco; Bandura (1977) autoeficacia. Enlaces en Dinámicas → Fuentes.
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

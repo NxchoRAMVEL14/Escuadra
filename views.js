@@ -224,6 +224,7 @@
       '<div class="row gap wrap center">' + [3, 5, 10, 15, 20, 25, 30].map(m => btn(m + ' min', 'tm-set', 'data-m="' + m + '"', 'small' + (t.total === m * 60 ? ' primary' : ''))).join('') + '</div>' +
       '<div class="row gap wrap center mt">' + (t.run ? btn('Pausar', 'tm-pause', '', 'primary') : btn('Iniciar', 'tm-start', '', 'primary')) + btn('Reiniciar', 'tm-reset') + btn('Pantalla completa', 'tm-fs') + '</div></section>';
     h += '<div class="grid2">' + card('<h3>' + icon('dice') + ' Alumno al azar</h3><p class="muted small">Elige entre los presentes de hoy (o todo el grupo si no has pasado lista) sin repetir.</p>' + btn('Abrir', 'azar', 'data-fecha="' + hoy + '"', 'primary')) +
+      card('<h3>🎯 Dinámicas</h3><p class="muted small">Para integrar al grupo, desarrollar una capacidad o calmar al grupo, con guion y temporizador.</p>' + link('Abrir', 'dinamicas', 'primary')) +
       card('<h3>' + icon('team') + ' Formar equipos</h3><p class="muted small">Equipos balanceados al azar con los presentes; puedes guardarlos en la bitácora.</p>' + btn('Abrir', 'equipos', 'data-fecha="' + hoy + '"', 'primary')) + '</div>';
     return { t: 'Herramientas de clase', h: h };
   };
@@ -605,9 +606,10 @@
   }
   const P = E.proj = {
     t: null, s: [], i: 0, rev: false, dark: false, slides: slides, body: slideBody,
-    open(id) {
-      const t = E.TEMAS.find(x => x.id === id); if (!t) return;
-      P.t = t; P.s = slides(t); P.i = 0; P.rev = false;
+    open(id) { const t = E.TEMAS.find(x => x.id === id); if (t) P.abrir(t, slides(t)); },
+    // proyecta cualquier contenido con las mismas diapositivas (por ejemplo, las instrucciones de una dinámica)
+    abrir(t, s) {
+      P.t = t; P.s = s; P.i = 0; P.rev = false;
       let el = document.getElementById('proj'); if (!el) { el = document.createElement('div'); el.id = 'proj'; document.body.appendChild(el); }
       el.hidden = false; P.draw();
       if (el.requestFullscreen && !E.modoPantalla) el.requestFullscreen().catch(() => { });
@@ -809,7 +811,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 

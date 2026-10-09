@@ -695,3 +695,25 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .pr .ex-p { font-size: 8pt; color: #333 } .pr .ex-ops { margin: 2px 0 0; padding-left: 2.2em } .pr .ex-ops.dos { columns: 2 }
 .pr .ex-box { border: 1px solid #000; height: 28mm; margin-top: 3px; padding: 2px 5px; font-size: 7.5pt; color: #444 }
 .pr .ex-lin { border-bottom: 1px solid #000; height: 8mm }
+
+/* v1.10 · dinámicas */
+.dn-list { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 8px }
+.dn-it a { display: flex; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); text-decoration: none }
+.dn-it a:hover { border-color: var(--brand) }
+.dn-ico { font-size: 1.6rem; width: 1.6em; text-align: center; flex: none }
+.dn-tx { display: flex; flex-direction: column; gap: 3px; min-width: 0 } .dn-tx small { color: var(--muted); font-size: .82rem }
+.dn-ch { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px }
+.dn-filtros { display: grid; gap: 8px; margin-top: 10px } .dn-filtros > div { display: flex; flex-direction: column; gap: 4px }
+@media (min-width: 900px) { .dn-filtros { grid-template-columns: auto auto 1fr } }
+.dn-ruta li { margin: 6px 0 } .dn-rut { list-style: none; padding: 0; margin: 6px 0 } .dn-rut li { padding: 8px 0; border-bottom: 1px solid var(--line) } .dn-rut li p { margin: 3px 0 }
+.dn-princ li { margin: 5px 0; font-size: .9rem }
+.dn-tin { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 }
+.dn-tin label { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .82rem; font-weight: 600 }
+.dn-tin input { width: 100%; max-width: 70px; padding: 8px; text-align: center; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 1rem }
+.dn-termo { width: 100%; max-width: 520px; height: auto; display: block; margin-top: 6px }
+.dn-termo .gl { stroke: var(--line); stroke-width: 1 } .dn-termo .tl, .dn-termo .tx { fill: var(--muted); font-size: 9px }
+.dn-termo .ln { fill: none; stroke: var(--brand); stroke-width: 2.5 } .dn-termo .pt { fill: var(--brand); stroke: var(--surface); stroke-width: 2 }
+.dn-hd { display: flex; gap: 12px; align-items: center } .dn-big { font-size: 2.4rem } .dn-hd h3 { margin: 0 0 4px }
+.dn-run { text-align: center } .dn-run .timer { margin: 6px auto } .dn-paso { font-size: 1.15rem; font-weight: 600; margin: 10px 0 }
+.pr .bingo { page-break-inside: avoid; margin-bottom: 8mm } .pr .bingo-t td { width: 25%; height: 27mm; vertical-align: top; padding: 4px; position: relative }
+.pr .bingo-t td span { display: block; font-size: 8.5pt; line-height: 1.2 } .pr .bingo-t td i { position: absolute; left: 4px; bottom: 3px; font-size: 7pt; color: #555 }
