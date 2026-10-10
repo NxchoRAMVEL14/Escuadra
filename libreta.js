@@ -76,7 +76,7 @@
       btn('›', 'go', 'data-to="libreta/' + pid + '/' + (next || sel).id + '" aria-label="Siguiente"' + (next ? '' : ' disabled'), '') + '</div>' +
       '<div class="lb-res"><span>Libreta de <b>' + esc(sel.nombre) + '</b></span><span class="g ' + (r.v == null ? 'na' : H.gclass(r.v)) + '">' + (r.v == null ? '—' : r.v) + '</span></div>' +
       '<ul class="lb-rev">' + ts.map(t => '<li><div class="lb-t"><b>' + num[t.key] + '</b> ' + esc(corto(t.t, 90)) + '</div><div class="cl-seg">' + [2, 1, 0].map(v => btn(MARCA[v][0] + ' ' + MARCA[v][1], 'lb-marca', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-v="' + v + '"', 'small' + (m[t.key] != null && Number(m[t.key]) === v ? ' on ' + MARCA[v][2] : ''))).join('') + '</div></li>').join('') + '</ul>' +
-      '<div class="row gap wrap">' + btn('✓ Todas completas', 'lb-todas', 'data-pid="' + pid + '" data-aid="' + sel.id + '"', 'small') + (next ? btn('Siguiente alumno ›', 'go', 'data-to="libreta/' + pid + '/' + next.id + '"', 'small primary') : '') + '</div>' +
+      '<div class="row gap wrap">' + btn('✓ Todas completas', 'lb-todas', 'data-pid="' + pid + '" data-aid="' + sel.id + '"', 'small') + (E.retro ? btn('💬 Retroalimentación', 'rt-open', 'data-aid="' + sel.id + '" data-ctx="libreta"', 'small') : '') + (next ? btn('Siguiente alumno ›', 'go', 'data-to="libreta/' + pid + '/' + next.id + '"', 'small primary') : '') + '</div>' +
       '<p class="muted small">Completa = 2 · incompleta = 1 · no la hizo = 0. Lo que no marques cuenta como no entregado; un alumno sin ninguna marca queda sin calificación.</p>');
     // 3) calificaciones
     const a = doc.actId && S.get('act:' + g.id + ':' + doc.actId);

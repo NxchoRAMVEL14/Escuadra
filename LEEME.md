@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.12.0)
+# Escuadra · Control docente (v1.13.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,17 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.13:**
+- **¿Qué le falta para aprobar?** (Más → Para aprobar y en la ficha de cada alumno): lo pendiente (actividades vencidas, tareas de
+  libreta, prácticas de FreeCAD) y cuánto sube su calificación si lo entrega, con tus ponderaciones; si el examen aún no se aplica,
+  cuánto necesita sacar. Eliges cuánto vale lo entregado tarde (100, 80 o 60 %). Hoja **«Mi plan para aprobar»** para dársela en privado.
+- **Informe para padres** (ficha, Para aprobar o Imprimir → Junta con padres): calificación con desglose, asistencia y faltas,
+  FreeCAD, fortalezas, lo que le falta, cómo apoyar en casa, tus comentarios y firma de enterado. Uno por página.
+- **Retroalimentación rápida** (💬 al revisar libreta y prácticas, y en la ficha): frases de lo que hizo bien, qué mejorar y su
+  siguiente paso; se guarda en su historial, se copia y las 2 más recientes salen en el informe para padres (puedes quitarlas).
+- **Banco de preguntas propio** (Más → Banco de preguntas): agregas preguntas, pegas varias en un formato sencillo o copias las
+  instrucciones para que Claude te las prepare. Entran solas a ejercicios, calentamiento, boleto de salida y examen recomendado.
 
 **Nuevo en v1.12:**
 - **Supabase conectado en `config.js`**: tus dispositivos se conectan solos; en cada uno solo inicias sesión (Ajustes → Sincronización).
@@ -193,6 +204,9 @@ al abrirla con internet. Tus datos no se tocan.
 | `proyecto.js` | Avance del proyecto por equipo |
 | `industria.js` | Ejemplos de la industria del Bajío y planeador de visitas y charlas |
 | `reconoce.js` | Reconocimientos semanales por avance |
+| `aprobar.js` | Qué le falta a cada alumno para aprobar, plan imprimible e informe para padres |
+| `retro.js` | Retroalimentación rápida con banco de frases |
+| `mibanco.js` | Tu propio banco de preguntas (agregar, pegar e instrucciones para Claude) |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
@@ -219,5 +233,6 @@ al abrirla con internet. Tus datos no se tocan.
 - Dinámicas: Construye T (SEP-SEMS y PNUD); SEP-DGB (2025) Orientaciones para la formación socioemocional; EEF (aprendizaje socioemocional, aprendizaje colaborativo, retroalimentación); Cook y col. (2018) saludo en la puerta; Yeager y col. (2014) retroalimentación sabia; Roorda y col. (2011) relación docente-alumno; Aronson (rompecabezas); Wujec (2010) reto del malvavisco; Bandura (1977) autoeficacia. Enlaces en Dinámicas → Fuentes.
 - Prácticas de FreeCAD: nombres de herramientas y flujo de trabajo de la documentación oficial de FreeCAD 1.0 (wiki: Part Design, Sketcher, Assembly y TechDraw; espejo en GitHub *FreeCAD-documentation*); fórmulas de los Temas de la app (Grashof, carrera = 2r, i = Z2/Z1, a = m·(Z1+Z2)/2, F = P·A, τ = F·r). Consejos del centro de cómputo: Rosenshine (2012), *Principles of Instruction*.
 - Calentamiento y boleto: práctica de recuperación espaciada (Dunlosky y col., 2013; Roediger y Karpicke, 2006) y revisar la comprensión al cerrar (Rosenshine, 2012). Reconocimientos: elogiar el esfuerzo y la estrategia (Mueller y Dweck, 1998).
+- Retroalimentación: concreta y con siguiente paso (EEF, *Teaching and Learning Toolkit*: Feedback). Informe para padres: consejos de estudio por recuperación (Dunlosky y col., 2013).
 - Industria: armadoras, motores, transmisiones y regiones de Guanajuato según *mexicoindustry.com* (20 ago 2026); Guanajuato primer productor de vehículos ligeros en 2025 según *Mexico Business News* (22 ene 2026, datos de Cluster Industrial).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

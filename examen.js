@@ -95,7 +95,7 @@
       const b = item(it.id); if (!b) return null; let q = b.q, op = b.op, r = b.r || b.exp || '';
       if (b.tipo === 'calc') { const gx = E.GEN[b.gen](rng(hash(ex.seed + '|' + v + '|' + it.id))); q = gx.q; op = gx.op; r = gx.r; }
       let opts = null, ok = null;
-      if (op) { const ord = shuffle([0, 1, 2, 3], rng(hash(ex.seed + '|' + v + '|' + it.id + '|o'))); opts = ord.map(i => op[i]); ok = ord.indexOf(0); }
+      if (op) { const ord = shuffle(op.map((x, i) => i), rng(hash(ex.seed + '|' + v + '|' + it.id + '|o'))); opts = ord.map(i => op[i]); ok = ord.indexOf(0); }
       return { id: it.id, b: b, pts: it.pts, rep: it.rep, q: q, opts: opts, ok: ok, vf: b.v, r: r };
     }).filter(Boolean);
     const rnd = rng(hash(ex.seed + '|' + v)), out = [];

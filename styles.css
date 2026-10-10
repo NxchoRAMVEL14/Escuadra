@@ -858,3 +858,20 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .in-corte { border-top: 1px dashed #000; margin: 6mm 0 }
 .rc-list { list-style: none; padding: 0; margin: 0 } .rc-list > li { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--line) }
 .rc-list ul { margin: 4px 0 0; padding-left: 18px }
+/* v1.13 · para aprobar, informe para padres, retroalimentación, banco propio */
+.ap-pend, .ap-list, .mb-list, .rt-hist { list-style: none; padding: 0; margin: 8px 0 }
+.ap-pend li, .ap-list li, .mb-list li, .rt-hist li { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line) }
+.ap-r { display: flex; align-items: center; gap: 6px; flex: none } .ap-r small { color: var(--muted); font-weight: 700 }
+.rt-hist p { margin: 4px 0 }
+.rt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px }
+.rt-chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: inherit; font-size: .84rem; cursor: pointer; text-align: left }
+.rt-chip.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); font-weight: 700 }
+.pr.ap-plan { font-size: 10.5pt; line-height: 1.45; padding: 2mm 0 } .pr.ap-plan p { margin: 5px 0 }
+.pr .apl-chk { list-style: none; padding: 0; margin: 4px 0 } .pr .apl-chk li { margin-bottom: 5px }
+.pr .ap-firmas { display: flex; justify-content: space-around; gap: 20px; margin-top: 22px }
+.pr .ap-firmas span { border-top: 1px solid #000; padding-top: 3px; min-width: 200px; text-align: center; font-size: 8.5pt }
+.ap-corte { border-top: 1px dashed #000; margin: 6mm 0 }
+.pr.padres { font-size: 10pt; line-height: 1.4; page-break-after: always } .pr.padres:last-child { page-break-after: auto }
+.pr.padres h2 { font-size: 14pt; margin: 6px 0 } .pr.padres h3 { font-size: 10.5pt; margin: 8px 0 3px } .pr.padres ul { margin: 0; padding-left: 16px }
+.pr .pd-cal { width: 70%; margin: 4px 0 6px } .pr .pd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.pr .pd-lineas { height: 18mm; background: repeating-linear-gradient(transparent 0 7.5mm, #999 7.5mm 7.8mm) }
