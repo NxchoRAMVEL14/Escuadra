@@ -43,6 +43,7 @@
     play: '<path d="M8 5l11 7-11 7z" fill="currentColor"/>',
     stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor"/>',
     board: '<rect x="3" y="3.5" width="18" height="12.5" rx="1.5"/><path d="M8 20.5l2-4.5M16 20.5l-2-4.5M7 8h10M7 11.5h6"/>',
+    factory: '<path d="M3 21V10l5 3.5V10l5 3.5V5l8-2v18z"/><path d="M7 17h2M12 17h2M17 17h2"/>',
     cube: '<path d="M12 2.5 3.5 7v10l8.5 4.5 8.5-4.5V7z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/>',
     profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M16.5 3.5l1.5 1.5 3-3"/>'
   };
@@ -83,6 +84,10 @@
     }
     const av = C.avisos(hoy);
     if (av.length) h += card('<h3>' + icon('alert') + ' Avisos</h3><ul class="vlist">' + av.map(a => '<li class="' + a.nivel + '">' + esc(a.txt) + '</li>').join('') + '</ul>');
+    h += avisoRespaldo(hoy);
+    if (g && E.fc && E.fc.preparaHTML) h += E.fc.preparaHTML(g, hoy);
+    if (g && E.proyecto) h += E.proyecto.inicioHTML(g, hoy);
+    if (g && E.reconoce) h += E.reconoce.inicioHTML(g, hoy);
     if (g) {
       const bl = C.bloquesDia(g, hoy), asu = C.esAsueto(hoy); let t = '';
       if (asu) t = '<p>🏖️ Hoy es asueto.</p>';
@@ -119,6 +124,17 @@
       '<a href="#/alumnos/paquete">' + icon('download') + 'Pegar datos de Claude</a></div>';
     return { t: 'Inicio', h: h };
   };
+  // respaldo: cada semana si los datos solo viven en este dispositivo, cada mes si ya se sincronizan con Supabase
+  function avisoRespaldo(hoy) {
+    if (!S.keys('grupo:').length) return '';
+    const m = E.sync.meta(), dias = iso => iso ? u.diffDays(String(iso).slice(0, 10), hoy) : null;
+    const ds = dias(m.lastSyncAt), db = dias(m.lastBackupAt), sinc = ds != null && ds <= 3, lim = sinc ? 30 : 7;
+    if (db != null && db < lim) return '';
+    const cr = E.sync.creds(), falta = !cr.url ? 'conecta Supabase' : !E.sync.user ? 'inicia sesión en Supabase' : '';
+    return card('<h3>💾 ' + (sinc ? 'Respaldo del mes' : 'Tus datos solo están en este dispositivo') + '</h3><p class="small">' +
+      (sinc ? 'Ya se sincronizan con Supabase; aun así, guarda un respaldo al mes en Drive por si acaso.' : 'Si Chrome borra sus datos o cambias de celular, se pierden calificaciones y listas. ' + (falta ? 'Para que se guarden solos, ' + falta + ' (Ajustes → Sincronización). Mientras, descarga un respaldo.' : 'Descarga un respaldo y guárdalo en Drive.')) +
+      (db != null ? ' Último respaldo: hace ' + db + (db === 1 ? ' día' : ' días') + '.' : ' Todavía no has descargado ninguno.') + '</p><div class="row gap wrap">' + btn(icon('download') + ' Descargar respaldo', 'backup-dl', '', 'primary') + (sinc ? '' : link('Sincronización', 'ajustes/sync', 'small')) + '</div>', sinc ? '' : 'accent');
+  }
   function ideaDelDia(g, p) {
     const sm = g && p ? 'II-' + ((g.submodulos || {})[p.id] || '') : '';
     const list = E.IDEAS.filter(i => i.sm.indexOf(sm) >= 0 || i.sm.indexOf('gen') >= 0);
@@ -567,6 +583,7 @@
     if (t.ejemplo) h += card('<h3>Ejemplo: ' + esc(t.ejemplo.titulo) + '</h3><ol>' + t.ejemplo.pasos.map(p => '<li>' + esc(p) + '</li>').join('') + '</ol><p class="note ok">' + esc(t.ejemplo.resultado) + '</p>');
     h += card('<h3>Preguntas para verificar</h3>' + (t.preguntas || []).map((q, i) => '<details class="sub"><summary>' + (i + 1) + '. ' + esc(q[0]) + '</summary><p class="small">' + esc(q[1]) + '</p></details>').join(''));
     h += card('<h3>Errores comunes</h3>' + L(t.errores));
+    if (E.industria) h += E.industria.cardHTML(t);
     h += card('<h3>¿Para qué me sirve?</h3><p>' + esc(t.vida) + '</p>', 'accent');
     const ids = (t.ideas || []).map(x => E.IDEAS.find(i => i.id === x)).filter(Boolean);
     if (ids.length) h += card('<h3>' + icon('bulb') + ' Ideas para practicarlo</h3><ul class="risk">' + ids.map(i => '<li><a href="#/ideas/' + i.id + '">' + esc(i.titulo) + '</a><span class="chip">' + esc(i.tipo) + '</span></li>').join('') + '</ul>');
@@ -594,6 +611,7 @@
     if (t.ejemplo) { const ch = chunk(t.ejemplo.pasos, 4); ch.forEach((c, i) => s.push({ k: 'list', h: 'Ejemplo: ' + t.ejemplo.titulo, items: c, foot: i === ch.length - 1 ? t.ejemplo.resultado : '' })); }
     (t.preguntas || []).forEach((q, i) => s.push({ k: 'q', h: 'Pregunta ' + (i + 1) + ' de ' + t.preguntas.length, q: q[0], a: q[1] }));
     md.fin.forEach(x => s.push(x));
+    const ind = E.industria && E.industria.slide(t); if (ind) s.push(ind);
     s.push({ k: 'vida', h: '¿Para qué me sirve?', p: t.vida });
     return s;
   }
@@ -755,6 +773,7 @@
     if (E.apoyos && E.semaforo) h += E.apoyos.alumnoHTML(g, a);
     if (E.tutoria) h += E.tutoria.alumnoHTML(g, a);
     if (E.examen) h += E.examen.alumnoHTML(g, a);
+    if (E.fc && E.fc.alumnoHTML) h += E.fc.alumnoHTML(g, a);
     const p = C.parcialActual(), as = C.asis(g, p, a.id);
     if (as.fechasF.length) h += card('<h3>Faltas en el ' + esc(p.nombre) + '</h3><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
     const acts = C.acts(g, p.id);
@@ -819,7 +838,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -868,7 +887,7 @@
     h += sec('app', '🎨 Apariencia y avisos', sel('tema', 'Tema', [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']], c.tema) +
       ('Notification' in window ? (Notification.permission === 'granted' ? '<p class="note ok">Notificaciones activas: te aviso al abrir la app cuando falten 7 días o menos para capturar.</p>' : btn('Activar notificaciones', 'notif-on', '', 'primary')) : '') +
       '<p class="muted small mt">Los avisos fuertes (captura, cierres y asuetos) ya están en tu Google Calendar con recordatorio por notificación y correo.</p>');
-    h += sec('datos', '💾 Respaldo', '<p class="small">Descarga todo (alumnos, listas, calificaciones y planeaciones) en un archivo. Guárdalo en Drive de vez en cuando.</p><div class="row gap wrap">' + btn(icon('download') + ' Descargar respaldo', 'backup-dl', '', 'primary') + '<label class="btn filebtn">' + icon('upload') + ' Restaurar respaldo<input type="file" accept=".json" data-ch="backup-restore" hidden></label></div>' +
+    h += sec('datos', '💾 Respaldo', '<p class="small">Descarga todo (alumnos, listas, calificaciones y planeaciones) en un archivo. Guárdalo en Drive de vez en cuando.' + (E.sync.meta().lastBackupAt ? ' Último: ' + u.fCorta(String(E.sync.meta().lastBackupAt).slice(0, 10)) + '.' : '') + '</p><div class="row gap wrap">' + btn(icon('download') + ' Descargar respaldo', 'backup-dl', '', 'primary') + '<label class="btn filebtn">' + icon('upload') + ' Restaurar respaldo<input type="file" accept=".json" data-ch="backup-restore" hidden></label></div>' +
       '<p class="muted small mt">Privacidad: el código de la app no contiene nombres de alumnos. Se guardan en este dispositivo y, si conectas Supabase, solo en tu cuenta protegida con tu contraseña.</p>' + btn('Borrar datos de este dispositivo', 'wipe', '', 'ghost danger'));
     h += sec('acerca', 'ℹ️ Acerca de', '<p><b>Escuadra v' + E.VERSION + '</b> · Control docente para ' + esc(c.plantel) + '</p>' + E.CHANGELOG.map(x => '<p class="small"><b>v' + x.v + '</b> (' + x.f + '): ' + esc(x.t) + '</p>').join('') + '<p class="muted small">Programa cargado: ' + esc(E.FUENTE_PROGRAMA) + '.</p>');
     return { t: 'Ajustes', h: h, after: () => { if (sub) { const el = document.getElementById('aj-' + sub); if (el) el.scrollIntoView({ block: 'start' }); } } };
@@ -914,7 +933,7 @@
   };
   A['sync-logout'] = async () => { await E.sync.logout(); E.render(); };
   A['notif-on'] = () => E.notify.pedir();
-  A['backup-dl'] = () => { u.download('escuadra-respaldo-' + u.today() + '.json', JSON.stringify({ app: 'escuadra', version: E.VERSION, fecha: u.now(), docs: S.docs }, null, 1), 'application/json'); };
+  A['backup-dl'] = () => { u.download('escuadra-respaldo-' + u.today() + '.json', JSON.stringify({ app: 'escuadra', version: E.VERSION, fecha: u.now(), docs: S.docs }, null, 1), 'application/json'); E.sync.setMeta({ lastBackupAt: u.now() }); E.render(); };
   CH['backup-restore'] = async el => {
     const file = el.files && el.files[0]; if (!file) return;
     try {

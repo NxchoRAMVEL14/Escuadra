@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.11.0)
+# Escuadra · Control docente (v1.12.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,23 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.12:**
+- **Supabase conectado en `config.js`**: tus dispositivos se conectan solos; en cada uno solo inicias sesión (Ajustes → Sincronización).
+  Inicio te recuerda descargar un respaldo: cada semana si tus datos solo están en el dispositivo, cada mes si ya sincronizan.
+- **FreeCAD por alumno**: en cada práctica, «✅ Revisar por alumno» (✓ 100 · ½ 50 · ✗ 0; sin marca = pendiente). Entra sola a
+  Libreta/Proyecto/Bitácora como «Prácticas de FreeCAD». Cada alumno tiene su **nivel FreeCAD** en su ficha y el guion del viernes
+  sugiere el **acomodo** (quién va junto a un monitor y quién puede serlo).
+- **Prepara tu clase de cómputo**: desde 2 días antes, Inicio te muestra las prácticas que tocan; las haces tú con cronómetro,
+  anotas dónde te atoraste y te calcula cuánto tardará el grupo (2 a 3 veces tu tiempo). Tu nota sale en el guion del día.
+- **Calentamiento** (5 min al inicio) y **boleto de salida** (al final) en el guion de cada clase, para proyectar. Anotas cuántos
+  acertaron (mano alzada) y eso alimenta el examen recomendado y los **temas a reforzar** (en Semáforo y en Examen).
+- **Proyecto por equipo** (Más → Proyecto): equipos equilibrados o al azar, etapas de la garra y de la grúa con fecha meta tomada
+  de tu guion, semáforo por equipo y aviso en Inicio de los equipos atrasados.
+- **Industria** (Más → Industria): «¿Dónde se usa en el Bajío?» en cada tema y en el proyector; planeador de visitas, charlas y
+  demostraciones con lista de pendientes, autorización imprimible para padres y preguntas para el invitado.
+- **Reconocimientos**: cada semana Inicio sugiere hasta 3 alumnos que mejoraron (asistencia, tareas, participación, prácticas o
+  examen contra diagnóstico), con el motivo, para reconocer su esfuerzo.
 
 **Nuevo en v1.11:** todo se proyecta, también los viernes en el centro de cómputo.
 - **Proyectar la clase**: cada actividad del guion (Clases) tiene su botón; proyecta la meta de hoy, lo que harán con minutos,
@@ -172,6 +189,10 @@ al abrirla con internet. Tus datos no se tocan.
 | `banco.js` | Banco de preguntas y problemas con datos variables |
 | `examen.js` | Examen recomendado, versiones, captura y análisis |
 | `practicas.js` | 15 prácticas de FreeCAD con plano acotado, ejercicios del banco para proyectar |
+| `repaso.js` | Calentamiento, boleto de salida y temas a reforzar |
+| `proyecto.js` | Avance del proyecto por equipo |
+| `industria.js` | Ejemplos de la industria del Bajío y planeador de visitas y charlas |
+| `reconoce.js` | Reconocimientos semanales por avance |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
@@ -197,4 +218,6 @@ al abrirla con internet. Tus datos no se tocan.
 - Examen: preguntas escritas a partir del contenido de Temas (programa SEP 2024 y su bibliografía) y revisadas una por una; los problemas calculan su respuesta con las fórmulas del curso. Reparto por horas = tabla de especificaciones. Repaso de temas bajos: práctica de recuperación y espaciada (Dunlosky y col., 2013).
 - Dinámicas: Construye T (SEP-SEMS y PNUD); SEP-DGB (2025) Orientaciones para la formación socioemocional; EEF (aprendizaje socioemocional, aprendizaje colaborativo, retroalimentación); Cook y col. (2018) saludo en la puerta; Yeager y col. (2014) retroalimentación sabia; Roorda y col. (2011) relación docente-alumno; Aronson (rompecabezas); Wujec (2010) reto del malvavisco; Bandura (1977) autoeficacia. Enlaces en Dinámicas → Fuentes.
 - Prácticas de FreeCAD: nombres de herramientas y flujo de trabajo de la documentación oficial de FreeCAD 1.0 (wiki: Part Design, Sketcher, Assembly y TechDraw; espejo en GitHub *FreeCAD-documentation*); fórmulas de los Temas de la app (Grashof, carrera = 2r, i = Z2/Z1, a = m·(Z1+Z2)/2, F = P·A, τ = F·r). Consejos del centro de cómputo: Rosenshine (2012), *Principles of Instruction*.
+- Calentamiento y boleto: práctica de recuperación espaciada (Dunlosky y col., 2013; Roediger y Karpicke, 2006) y revisar la comprensión al cerrar (Rosenshine, 2012). Reconocimientos: elogiar el esfuerzo y la estrategia (Mueller y Dweck, 1998).
+- Industria: armadoras, motores, transmisiones y regiones de Guanajuato según *mexicoindustry.com* (20 ago 2026); Guanajuato primer productor de vehículos ligeros en 2025 según *Mexico Business News* (22 ene 2026, datos de Cluster Industrial).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

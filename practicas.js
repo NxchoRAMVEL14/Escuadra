@@ -5,7 +5,7 @@
    nombre en español. Ejercicios: preguntas del banco del tema, con opciones y respuesta que se revela en el proyector. */
 (function () {
   'use strict';
-  const E = window.E, u = E.u, S = E.store, D = E.data, esc = u.esc;
+  const E = window.E, u = E.u, S = E.store, D = E.data, C = E.calc, esc = u.esc;
   const V = E.views, A = E.actions, H = E.h;
   const card = H.card, btn = H.btn, link = H.link;
   const PI = Math.PI, cos = Math.cos, sin = Math.sin, rad = g => g * PI / 180;
@@ -503,6 +503,7 @@
           E.clases.plan(g, pa.id).bloques.forEach(b => { if (b.perdida || b.fecha >= hoy) return; b.parts.forEach(pt => F.de(pt.it.id).forEach(p => { if (!out[p.id]) out[p.id] = { f: b.fecha, auto: true }; })); });
         });
       } catch (e) { }
+      S.keys('fcal:' + g.id + ':').forEach(k => { const d = S.get(k) || {}; Object.keys(d.fechas || {}).forEach(aid => { const fe = d.fechas[aid] || {}; Object.keys(fe).forEach(id => { if (!out[id] || out[id].auto) out[id] = { f: fe[id], auto: false, rev: true }; else if (fe[id] < out[id].f) out[id].f = fe[id]; }); }); });
       Object.keys(man).forEach(id => { if (man[id]) out[id] = { f: man[id], auto: false }; });
       return out;
     },
@@ -514,13 +515,14 @@
     bloqueHTML(g, pid, b, delDia) {
       const sm = E.clases.smKey(g, pid), hoy = [];
       (delDia || [b]).forEach(bb => bb.parts.forEach(pt => F.de(pt.it.id).forEach(p => { if (hoy.indexOf(p.id) < 0) hoy.push(p.id); })));
-      const sig = F.siguientes(g, sm, hoy, 3);
-      if (!sig.length) return '';
-      return '<div class="fc-blq"><b>💻 Si terminan antes: más prácticas de FreeCAD</b><p class="small muted">Las que este grupo todavía no hace, de la más fácil a la más difícil.</p>' +
+      const sig = F.siguientes(g, sm, hoy, 3), aco = b === (delDia || [b]).filter(x => x.lugar === 'computo')[0] ? F.acomodoHTML(g, b.fecha) : '';
+      if (!sig.length) return aco;
+      return aco + '<div class="fc-blq"><b>💻 Si terminan antes: más prácticas de FreeCAD</b><p class="small muted">Las que este grupo todavía no hace, de la más fácil a la más difícil.</p>' +
         sig.map(p => fila(p)).join('') + '<div class="mt">' + link('Ver las ' + PR.length + ' prácticas', 'freecad', 'small') + '</div></div>';
     }
   };
-  const fila = p => '<div class="fc-fila"><span class="chip">N' + p.nivel + '</span><a href="#/freecad/' + p.id + '">' + esc(p.t) + '</a><span class="muted small">~' + p.min + ' min</span>' + btn('📽 Proyectar', 'fc-proj', 'data-id="' + p.id + '"', 'small ghost') + '</div>';
+  const fila = p => { const r = (S.get('fcprep') || {})[p.id];
+    return '<div class="fc-fila"><span class="chip">N' + p.nivel + '</span><a href="#/freecad/' + p.id + '">' + esc(p.t) + '</a><span class="muted small">~' + p.min + ' min' + (r && r.min ? ' · tú: ' + r.min + ' min' : '') + '</span>' + btn('📽 Proyectar', 'fc-proj', 'data-id="' + p.id + '"', 'small ghost') + link('✅ Revisar', 'freecad/' + p.id + '/revisar', 'small ghost') + '</div>' + (r && r.nota ? '<p class="small fc-tip">🧑‍🏫 Donde tú te atoraste: ' + esc(r.nota) + '</p>' : ''); };
   F.fila = fila;
 
   /* =================== vistas =================== */
@@ -534,17 +536,19 @@
     ['Si algo sale rojo', 'Ctrl + Z, revisa en el árbol qué operación tiene el signo de error y vuelve a abrir su croquis.'],
     ['FreeCAD en español', 'Los íconos son los mismos; el glosario de abajo dice cómo se llama cada herramienta en español.']
   ];
-  V.freecad = id => {
+  V.freecad = (id, sub, pid) => {
     const g = D.grupoActual();
+    if (id && sub === 'revisar') { const p = F.get(id); if (!g) return H.noGroup(); if (p) return revisar(g, p, pid); }
     if (id) return detalle(g, id);
-    const est = F.estado(g);
+    const est = F.estado(g), rv = {};
+    if (g) S.keys('fcal:' + g.id + ':').forEach(k => { const d = S.get(k) || {}; Object.keys(d.marcas || {}).forEach(aid => Object.keys(d.marcas[aid] || {}).forEach(id => { rv[id] = (rv[id] || 0) + 1; })); });
     let h = card('<h3>💻 Prácticas de FreeCAD</h3><p class="muted small">' + PR.length + ' prácticas para el centro de cómputo, cada una con su plano acotado, pasos con el nombre de la herramienta, qué revisar, errores comunes y un reto para quien termina antes. Proyéctalas, imprímelas o márcalas cuando el grupo las termine. Pensadas para FreeCAD 1.0 o más nuevo.</p>' +
       '<div class="row gap wrap">' + btn('🖨 Imprimir cuadernillo (todas)', 'fc-print-all', '', '') + btn('🖨 Solo 2º parcial', 'fc-print-all', 'data-sm="II-2"', 'ghost') + btn('🖨 Solo 3er parcial', 'fc-print-all', 'data-sm="II-3"', 'ghost') + '</div>');
     [1, 2, 3].forEach(n => {
       h += '<h4 class="cl-sem">Nivel ' + n + ' · ' + NIV[n] + '</h4><div class="fc-grid">' + PR.filter(p => p.nivel === n).map(p => {
         const e = est[p.id];
         return '<section class="card fc-card' + (e ? ' hecha' : '') + '"><a class="fc-mini" href="#/freecad/' + p.id + '">' + F.fig(p, { sinPie: true }) + '</a><div class="fc-info"><a href="#/freecad/' + p.id + '"><b>' + esc(p.t) + '</b></a>' +
-          '<div class="row gap wrap"><span class="chip">~' + p.min + ' min</span><span class="chip">' + esc(smTxt(p.sm)) + '</span>' + (e ? '<span class="chip ok">✓ ' + (e.auto ? 'en clase ' : '') + esc(u.fCorta(e.f)) + '</span>' : '') + '</div>' +
+          '<div class="row gap wrap"><span class="chip">~' + p.min + ' min</span><span class="chip">' + esc(smTxt(p.sm)) + '</span>' + (e ? '<span class="chip ok">✓ ' + (e.auto ? 'en clase ' : '') + esc(u.fCorta(e.f)) + '</span>' : '') + (rv[p.id] ? '<span class="chip">' + rv[p.id] + ' revisados</span>' : '') + ((S.get('fcprep') || {})[p.id] ? '<span class="chip">tú: ' + S.get('fcprep')[p.id].min + ' min</span>' : '') + '</div>' +
           '<div class="row gap wrap mt">' + btn('📽 Proyectar', 'fc-proj', 'data-id="' + p.id + '"', 'small primary') + link('Ver', 'freecad/' + p.id, 'small') + '</div></div></section>';
       }).join('') + '</div>';
     });
@@ -559,7 +563,8 @@
     let h = card('<div class="row gap wrap"><span class="chip brand">Nivel ' + p.nivel + ' · ' + NIV[p.nivel] + '</span><span class="chip">~' + p.min + ' min</span><span class="chip">' + esc(smTxt(p.sm)) + '</span>' + (e ? '<span class="chip ok">✓ ' + (e.auto ? 'Vista en clase el ' : 'Hecha el ') + esc(u.fCorta(e.f)) + '</span>' : '') + '</div>' +
       '<h3 class="mt">' + esc(p.t) + '</h3><p>' + esc(p.obj) + '</p>' + F.fig(p) + F.tabla(p) +
       '<div class="row gap wrap mt">' + btn('📽 Proyectar práctica', 'fc-proj', 'data-id="' + p.id + '"', 'primary') + btn('🖨 Imprimir hoja', 'fc-print', 'data-id="' + p.id + '"') +
-      (g ? btn(man ? '↺ Quitar «hecha»' : '✓ El grupo ya la hizo', 'fc-hecha', 'data-id="' + p.id + '"', man ? 'ghost' : '') : '') + link('Todas las prácticas', 'freecad', 'ghost') + '</div>');
+      (g ? link('✅ Revisar por alumno', 'freecad/' + p.id + '/revisar', '') + btn(man ? '↺ Quitar «hecha»' : '✓ El grupo ya la hizo', 'fc-hecha', 'data-id="' + p.id + '"', man ? 'ghost' : '') : '') + link('Todas las prácticas', 'freecad', 'ghost') + '</div>');
+    h += prepCard(p);
     h += card('<h3>Pasos</h3>' + F.pasosHTML(p));
     h += '<div class="grid2">' + card('<h3>Revisa antes de entregar</h3><ul>' + p.revisa.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul><p class="small"><b>Entrega:</b> ' + esc(p.entrega) + '</p>') +
       card('<h3>Errores comunes</h3><ul>' + p.errores.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>') + '</div>';
@@ -571,6 +576,127 @@
     h += '<p class="muted small">Herramientas con su nombre de FreeCAD 1.0 en inglés; en el glosario de la lista de prácticas está su nombre en español. Fuente: documentación oficial de FreeCAD.</p>';
     return { t: 'Práctica FreeCAD', h: h };
   }
+
+  /* =================== revisión por alumno (✓ ½ ✗) → Libreta / Proyecto / Bitácora =================== */
+  const KF = (g, pid) => 'fcal:' + g.id + ':' + pid;
+  const MARK = { 2: ['✓', 'Completa', 'ok'], 1: ['½', 'A medias', 'warn'], 0: ['✗', 'No la hizo', 'bad'] };
+  const corto = n => { const p = String(n).split(' '); return p.length >= 3 ? u.cap(p[p.length - 2].toLowerCase()) + ' ' + u.cap(p[0].toLowerCase()) : n; };
+  const presentes = (g, f) => { const doc = S.get('asis:' + g.id + ':' + f); return D.alumnos(g).filter(a => !doc || ['A', 'R'].indexOf(doc[a.id] || 'A') >= 0); };
+  F.rev = (g, pid) => S.get(KF(g, pid)) || {};
+  // calificación de prácticas de un alumno en un parcial: promedio de las que ya tienen marca (las pendientes no cuentan)
+  F.calif = (g, pid, aid, doc) => {
+    doc = doc || F.rev(g, pid); const m = (doc.marcas || {})[aid] || {}, orden = doc.orden || [], ids = orden.filter(id => m[id] != null);
+    if (!ids.length) return { v: null, n: 0, pend: orden.length, ok: 0 };
+    return { v: Math.round(ids.reduce((a, id) => a + Number(m[id]), 0) / (2 * ids.length) * 100), n: ids.length, pend: orden.length - ids.length, ok: ids.filter(id => Number(m[id]) === 2).length };
+  };
+  // crea (la primera vez) y mantiene al día la actividad «Prácticas de FreeCAD» del parcial
+  F.sync = (g, pid) => {
+    const doc = F.rev(g, pid); if (!(doc.orden || []).length) return false;
+    let id = doc.actId, creada = false;
+    if (!id || !S.get('act:' + g.id + ':' + id)) {
+      const p = C.parcial(pid); id = u.uid('act'); creada = true;
+      S.put('act:' + g.id + ':' + id, { id: id, parcial: pid, categoria: 'trabajos', nombre: 'Prácticas de FreeCAD', peso: 1, max: 100, fecha: p.fin, instrumento: 'LC', cuenta: true, notas: {}, freecad: true }, { silent: true });
+      S.update(KF(g, pid), d => { d.actId = id; }, {});
+    }
+    const k = 'act:' + g.id + ':' + id, a = S.get(k), d2 = F.rev(g, pid), notas = {};
+    D.alumnos(g).forEach(x => { const r = F.calif(g, pid, x.id, d2); notas[x.id] = r.v == null ? '' : r.v; });
+    const n = d2.orden.length, nombre = 'Prácticas de FreeCAD (' + n + (n === 1 ? ' práctica' : ' prácticas') + ')';
+    if (JSON.stringify(a.notas || {}) !== JSON.stringify(notas) || a.nombre !== nombre) S.update(k, x => { x.notas = notas; x.nombre = nombre; });
+    return creada;
+  };
+  // nivel FreeCAD: el más alto en el que tiene al menos una práctica completa
+  F.nivelAlumno = (g, aid) => {
+    const cnt = { 1: { ok: 0, med: 0 }, 2: { ok: 0, med: 0 }, 3: { ok: 0, med: 0 } }, hechas = [];
+    S.keys('fcal:' + g.id + ':').forEach(k => { const d = S.get(k) || {}, m = (d.marcas || {})[aid] || {}, fe = (d.fechas || {})[aid] || {}; Object.keys(m).forEach(id => { const p = F.get(id); if (!p) return; const v = Number(m[id]); if (v === 2) cnt[p.nivel].ok++; else if (v === 1) cnt[p.nivel].med++; hechas.push({ p: p, v: v, f: fe[id] }); }); });
+    let n = 0; [1, 2, 3].forEach(x => { if (cnt[x].ok) n = x; });
+    const pts = [1, 2, 3].reduce((s, x) => s + x * (cnt[x].ok + cnt[x].med / 2), 0);
+    return { n: n, cnt: cnt, hechas: hechas.sort((a, b) => String(a.f || '').localeCompare(String(b.f || ''))), hay: hechas.length > 0, pts: pts };
+  };
+  // acomodo para el centro de cómputo: quién necesita monitor y quién puede serlo
+  F.acomodoHTML = (g, f) => {
+    const al = presentes(g, f); if (!al.length) return '';
+    const nv = al.map(a => ({ a: a, r: F.nivelAlumno(g, a.id) })); if (!nv.some(x => x.r.hay)) return '';
+    const apoyo = nv.filter(x => x.r.n === 0 && x.r.hay), mon = nv.filter(x => x.r.pts > 0).sort((a, b) => b.r.pts - a.r.pts).slice(0, Math.max(2, Math.min(5, Math.ceil(apoyo.length / 2))));
+    if (!apoyo.length && !mon.length) return '';
+    return '<div class="fc-blq"><b>🪑 Acomodo sugerido</b><p class="small muted">Según las prácticas que ya les revisaste.</p>' +
+      (apoyo.length ? '<p class="small"><b>Junto a un monitor</b> (aún sin práctica completa): ' + apoyo.slice(0, 10).map(x => '<a href="#/alumno/' + x.a.id + '">' + esc(corto(x.a.nombre)) + '</a>').join(', ') + (apoyo.length > 10 ? ' y ' + (apoyo.length - 10) + ' más' : '') + '</p>' : '<p class="small">Todos tienen al menos una práctica completa. 👏</p>') +
+      (mon.length ? '<p class="small"><b>Posibles monitores:</b> ' + mon.map(x => '<a href="#/alumno/' + x.a.id + '">' + esc(corto(x.a.nombre)) + '</a> (N' + x.r.n + ')').join(', ') + '</p>' : '') + '</div>';
+  };
+  F.alumnoHTML = (g, a) => {
+    const r = F.nivelAlumno(g, a.id); if (!r.hay) return '';
+    return card('<h3>💻 FreeCAD · ' + (r.n ? 'Nivel ' + r.n + ' (' + NIV[r.n].toLowerCase() + ')' : 'todavía sin práctica completa') + '</h3><p class="small">' + [1, 2, 3].map(n => 'Nivel ' + n + ': ' + r.cnt[n].ok + ' ✓' + (r.cnt[n].med ? ', ' + r.cnt[n].med + ' ½' : '')).join(' · ') + '</p>' +
+      '<ul class="small fc-hechas">' + r.hechas.map(x => '<li><span class="' + MARK[x.v][2] + 'c">' + MARK[x.v][0] + '</span> <a href="#/freecad/' + x.p.id + '">' + esc(x.p.t) + '</a>' + (x.f ? ' <span class="muted">' + u.fCorta(x.f) + '</span>' : '') + '</li>').join('') + '</ul>');
+  };
+  function revisar(g, p, pid) {
+    const al = D.alumnos(g); if (!al.length) return H.needAlumnos('Revisar práctica');
+    const ps = D.parciales(); pid = ps.some(x => x.id === pid) ? pid : C.parcialActual().id; const pa = C.parcial(pid);
+    const doc = F.rev(g, pid), m = doc.marcas || {}, asis = S.get('asis:' + g.id + ':' + u.today());
+    const cnt = { 2: 0, 1: 0, 0: 0, p: 0 }; al.forEach(a => { const v = (m[a.id] || {})[p.id]; if (v == null) cnt.p++; else cnt[v]++; });
+    let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/freecad/' + p.id + '/revisar/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '</div>';
+    h += card('<h3>✅ Revisar: ' + esc(p.t) + '</h3><p class="muted small">' + esc(pa.nombre) + ' · ✓ completa (100) · ½ a medias (50) · ✗ no la hizo (0). Lo que no marques queda pendiente y todavía no cuenta.</p>' +
+      '<p class="small"><b>' + cnt[2] + '</b> ✓ · <b>' + cnt[1] + '</b> ½ · <b>' + cnt[0] + '</b> ✗ · <b>' + cnt.p + '</b> pendientes</p>' +
+      '<ul class="fc-rev">' + al.map(a => { const v = (m[a.id] || {})[p.id], falto = asis && ['A', 'R'].indexOf(asis[a.id] || 'A') < 0;
+        return '<li><span class="fc-al">' + a.num + '. ' + esc(a.nombre) + (falto ? ' <span class="chip">faltó hoy</span>' : '') + '</span><div class="cl-seg">' + [2, 1, 0].map(x => btn(MARK[x][0], 'fc-marca', 'data-id="' + p.id + '" data-pid="' + pid + '" data-aid="' + a.id + '" data-v="' + x + '" aria-label="' + MARK[x][1] + '" title="' + MARK[x][1] + '"', 'small' + (v != null && Number(v) === x ? ' on ' + MARK[x][2] : ''))).join('') + '</div></li>'; }).join('') + '</ul>' +
+      '<div class="row gap wrap mt">' + (cnt.p && cnt.p < al.length ? btn('Pasar pendientes a ✗', 'fc-pend', 'data-id="' + p.id + '" data-pid="' + pid + '"', 'small ghost danger') : '') + link('‹ Volver a la práctica', 'freecad/' + p.id, 'small ghost') + '</div>');
+    const a = doc.actId && S.get('act:' + g.id + ':' + doc.actId);
+    h += card('<h3>📊 A Calificaciones</h3>' + (a ? '<p class="small">Entra sola a <a href="#/actividad/' + a.id + '">' + esc(a.nombre) + '</a> (Libreta / Proyecto / Bitácora): el promedio de las prácticas ya marcadas de cada alumno en el ' + esc(pa.nombre) + '.</p>' : '<p class="small">Con la primera marca se crea sola la actividad «Prácticas de FreeCAD» en Libreta / Proyecto / Bitácora (' + D.cfg().pond.trabajos + '%).</p>') +
+      ((doc.orden || []).length ? '<p class="small muted">Cuentan en este parcial: ' + doc.orden.map(id => esc((F.get(id) || {}).t || id)).join(', ') + '.</p>' : ''));
+    return { t: 'Revisar práctica', h: h };
+  }
+  A['fc-marca'] = el => {
+    const g = D.grupoActual(), pid = el.dataset.pid, id = el.dataset.id, aid = el.dataset.aid, v = Number(el.dataset.v);
+    S.update(KF(g, pid), d => {
+      d.marcas = d.marcas || {}; d.fechas = d.fechas || {}; d.orden = d.orden || [];
+      const m = d.marcas[aid] = d.marcas[aid] || {}, fe = d.fechas[aid] = d.fechas[aid] || {};
+      if (m[id] != null && Number(m[id]) === v) { delete m[id]; delete fe[id]; } else { m[id] = v; fe[id] = u.today(); }
+      if (d.orden.indexOf(id) < 0) d.orden.push(id);
+      if (!Object.keys(d.marcas).some(x => d.marcas[x][id] != null)) d.orden = d.orden.filter(x => x !== id);
+    }, {});
+    if (F.sync(g, pid)) u.toast('Creé la actividad «Prácticas de FreeCAD» en Libreta / Proyecto / Bitácora', 'ok', 4500);
+  };
+  A['fc-pend'] = el => {
+    const g = D.grupoActual(), pid = el.dataset.pid, id = el.dataset.id;
+    if (!confirm('Los alumnos sin marca quedarán con ✗ (no la entregaron). ¿Continuar?')) return;
+    S.update(KF(g, pid), d => { d.marcas = d.marcas || {}; d.fechas = d.fechas || {}; D.alumnos(g).forEach(a => { const m = d.marcas[a.id] = d.marcas[a.id] || {}; if (m[id] == null) { m[id] = 0; (d.fechas[a.id] = d.fechas[a.id] || {})[id] = u.today(); } }); }, {});
+    F.sync(g, pid);
+  };
+
+  /* =================== prepara tu clase: hazla tú primero y mide tu tiempo =================== */
+  const KT = 'escuadra.fcTimer';
+  const timer = () => { try { return JSON.parse(localStorage.getItem(KT) || 'null'); } catch (e) { return null; } };
+  const setTimer = t => { try { if (t) localStorage.setItem(KT, JSON.stringify(t)); else localStorage.removeItem(KT); } catch (e) { } };
+  const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ':' + u.pad(s % 60); };
+  setInterval(() => { const el = document.getElementById('fc-crono'); if (el) el.textContent = mmss(Date.now() - Number(el.dataset.t0)); }, 1000);
+  const prep = () => S.get('fcprep') || {};
+  const estima = (p, r) => '<p class="note ' + (2 * r.min > p.min ? 'warn' : 'ok') + ' small">La hiciste en <b>' + r.min + ' min</b> (' + u.fCorta(r.f) + '). Para el grupo calcula ~' + 2 * r.min + '–' + 3 * r.min + ' min' +
+    (2 * r.min > p.min ? ': más de los ~' + p.min + ' planeados. Deja el reto como opcional o divídela en dos clases.' : ', dentro de lo planeado (~' + p.min + ').') + (r.nota ? '<br>Dónde te atoraste: ' + esc(r.nota) + ' (avísales antes de ese paso).' : '') + '</p>';
+  function prepCard(p) {
+    const r = prep()[p.id], t = timer(), corre = t && t.id === p.id;
+    return card('<h3>🧑‍🏫 Hazla tú primero</h3><p class="small muted">Modelarla antes que el grupo te muestra dónde se van a atorar. Mide tu tiempo: a ellos les tomará de 2 a 3 veces más.</p>' + (r && r.min ? estima(p, r) : '') +
+      '<div class="row gap wrap">' + (corre ? '<span class="fc-crono" id="fc-crono" data-t0="' + t.t0 + '">' + mmss(Date.now() - t.t0) + '</span>' + btn('⏹ Terminé', 'fc-crono-fin', 'data-id="' + p.id + '"', 'primary') + btn('Cancelar', 'fc-crono-x', '', 'ghost') : btn('⏱ Empezar cronómetro', 'fc-crono-ini', 'data-id="' + p.id + '"', r ? '' : 'primary')) + '</div>' +
+      '<details class="sub"' + (r ? '' : ' open') + '><summary>Escribir mis minutos y dónde me atoré</summary><div class="row gap wrap"><label class="fld"><span>Minutos</span><input id="fc-min" type="number" min="1" max="600" inputmode="numeric" value="' + (r && r.min ? r.min : '') + '" style="max-width:110px"></label><label class="fld grow"><span>¿Dónde te atoraste?</span><input id="fc-nota" value="' + esc((r && r.nota) || '') + '" placeholder="Ej. la simetría del canal"></label></div>' + btn('Guardar', 'fc-prep-save', 'data-id="' + p.id + '"', 'small') + '</details>');
+  }
+  const guardaPrep = (id, min, nota) => S.update('fcprep', d => { d[id] = { min: min, f: u.today(), nota: nota == null ? ((d[id] || {}).nota || '') : nota }; }, {});
+  A['fc-crono-ini'] = el => { setTimer({ id: el.dataset.id, t0: Date.now() }); E.render(); };
+  A['fc-crono-x'] = () => { setTimer(null); E.render(); };
+  A['fc-crono-fin'] = el => { const t = timer(); if (!t) return; const min = Math.max(1, Math.round((Date.now() - t.t0) / 60000)), nt = document.getElementById('fc-nota'); setTimer(null); guardaPrep(el.dataset.id, min, nt && nt.value.trim() ? nt.value.trim() : null); u.toast('Guardado: ' + min + ' min', 'ok'); };
+  A['fc-prep-save'] = el => { const min = Number((document.getElementById('fc-min') || {}).value), nota = ((document.getElementById('fc-nota') || {}).value || '').trim(); if (!(min > 0)) { u.toast('Escribe los minutos', 'err'); return; } guardaPrep(el.dataset.id, Math.round(min), nota); u.toast('Guardado', 'ok'); };
+  // tarjeta de Inicio: desde 2 días antes de cada clase en centro de cómputo
+  F.preparaHTML = (g, hoy) => {
+    for (let i = 0; i <= 2; i++) {
+      const f = u.addDays(hoy, i); if (!C.esClase(g, f)) continue;
+      let d = null; try { d = E.clases.dia(g, f); } catch (e) { d = null; }
+      const bs = d ? d.bloques.filter(b => !b.perdida && b.lugar === 'computo') : []; if (!bs.length) continue;
+      let ids = []; bs.forEach(b => b.parts.forEach(pt => F.de(pt.it.id).forEach(p => { if (ids.indexOf(p.id) < 0) ids.push(p.id); })));
+      const extra = !ids.length; if (extra) ids = F.siguientes(g, E.clases.smKey(g, d.p.id), [], 2).map(p => p.id);
+      if (!ids.length) return '';
+      const pr = prep(), falt = ids.filter(id => !pr[id]), cuando = i === 0 ? 'hoy' : i === 1 ? 'mañana' : u.fLarga(f);
+      return card('<h3>🧑‍🏫 Prepara tu clase de cómputo · ' + esc(cuando) + '</h3><p class="small muted">' + (extra ? 'Ese día modelan sus piezas; estas son las que les sugiero si terminan antes. ' : '') + 'Hazla tú primero y mide cuánto tardas: a ellos les tomará de 2 a 3 veces más.</p>' +
+        ids.map(id => { const p = F.get(id), r = pr[id]; return '<div class="fc-fila"><span class="chip ' + (r ? 'ok' : 'warn') + '">' + (r ? '✓ ' + r.min + ' min' : '⏳ pendiente') + '</span><a href="#/freecad/' + id + '">' + esc(p.t) + '</a><span class="muted small">' + (r ? 'grupo ~' + 2 * r.min + '–' + 3 * r.min + ' min' : 'planeada ~' + p.min + ' min') + '</span>' + (r ? '' : link('Hazla tú', 'freecad/' + id, 'small primary')) + '</div>'; }).join('') +
+        link('Ver el guion', 'clase/' + f, 'small'), falt.length ? 'accent' : '');
+    }
+    return '';
+  };
 
   /* ---------- impresión: hoja de práctica ---------- */
   const hoja = p => '<div class="pr pfh"><div class="pfh-top"><span>PRÁCTICA DE FREECAD · NIVEL ' + p.nivel + ' (' + NIV[p.nivel].toUpperCase() + ') · ~' + p.min + ' MIN</span><span>Nombre: ________________________________ Grupo: ______ Fecha: ________</span></div>' +
@@ -592,6 +718,15 @@
   const mezcla = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = b[i]; b[i] = b[j]; b[j] = t; } return b; };
   E.ejer = {
     items: tid => (E.BANCO || []).filter(b => b.tema === tid),
+    // una pregunta del banco lista para el proyector (rnd: azar con semilla para que salga igual todo el día)
+    pregunta(b, rnd) {
+      rnd = rnd || Math.random;
+      const mk = (q, op, a) => { const ord = op.map((v, j) => j); for (let i = ord.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = ord[i]; ord[i] = ord[j]; ord[j] = t; } return { q: q, opts: ord.map(j => op[j]), ok: ord.indexOf(0), a: a }; };
+      if (b.tipo === 'calc') { const gx = E.GEN[b.gen](rnd); return mk(gx.q, gx.op, gx.r); }
+      if (b.tipo === 'vf') return { q: b.q, opts: ['Verdadero', 'Falso'], ok: b.v ? 0 : 1, a: b.exp || '' };
+      if (b.tipo === 'ab') return { q: b.q, opts: null, a: 'Respuesta modelo: ' + b.r };
+      return mk(b.q, b.op, b.exp || '');
+    },
     hay: tid => E.ejer.items(tid).length,
     slides(tid) {
       const t = (E.TEMAS || []).find(x => x.id === tid), its = E.ejer.items(tid).slice().sort((a, b) => a.niv - b.niv), qs = [];

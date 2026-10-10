@@ -761,7 +761,7 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .fc-blq > b { display: block; margin-bottom: 4px }
 .fc-fila { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; border-bottom: 1px solid var(--line) }
 .fc-fila:last-of-type { border-bottom: 0 }
-.fc-fila a { font-weight: 600; flex: 1 1 170px; min-width: 0 }
+.fc-fila > a:not(.btn) { font-weight: 600; flex: 1 1 170px; min-width: 0 }
 .fc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-bottom: 14px }
 .fc-card { display: flex; flex-direction: column; gap: 8px; margin: 0 }
 .fc-card.hecha { border-color: var(--brand) }
@@ -821,3 +821,40 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .pfh ul { margin: 0; padding-left: 16px } .pfh li { margin-bottom: 2px }
 .pfh .pfh-chk { list-style: none; padding-left: 0 }
 @media (max-width: 640px) { .pfig svg.pf-n .dt, .pfig svg.pf-n .lab { font-size: 21px } }
+
+/* v1.12 · revisión de prácticas, preparar la clase */
+.fc-rev { list-style: none; padding: 0; margin: 8px 0 }
+.fc-rev li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap }
+.fc-al { flex: 1 1 200px; min-width: 0; font-size: .92rem }
+.fc-crono { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; padding: 2px 12px; border-radius: 10px; background: var(--brand-soft); color: var(--brand) }
+.fc-tip { margin: 0 0 4px; color: var(--muted) }
+.fc-hechas { list-style: none; padding-left: 0; margin: 6px 0 0 } .fc-hechas li { padding: 2px 0 }
+/* v1.12 · calentamiento y boleto */
+.rp-card h3 { margin: 0 }
+.rp-q { margin: 8px 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px }
+.rp-q li span { display: block }
+.rp-q li small { display: block }
+.rp-in { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 }
+.rp-in .fld { max-width: 110px }
+.rp-res { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px }
+/* v1.12 · proyecto por equipo */
+.pj-res { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 }
+.pj-card.bad { border-left: 5px solid var(--bad) } .pj-card.warn { border-left: 5px solid var(--warn) } .pj-card.ok { border-left: 5px solid var(--ok) }
+.pj-et { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; margin-top: 8px }
+.pj-e { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 6px 8px; font: inherit; font-size: .8rem; cursor: pointer; min-height: 64px }
+.pj-e b { font-size: 1rem } .pj-e small { color: var(--muted) }
+.pj-e.ok { background: var(--brand-soft); border-color: var(--ok) } .pj-e.ok b { color: var(--ok) }
+.pj-e.warn { border-color: var(--warn) } .pj-e.warn b { color: var(--warn) }
+.pj-e.late { border: 2px solid var(--bad) } .pj-e.late small { color: var(--bad); font-weight: 700 }
+.pj-ed { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-top: 10px }
+.pj-edq { border: 1px solid var(--line); border-radius: 12px; padding: 8px }
+.pj-edq > input { width: 100%; font: inherit; font-weight: 700; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; background: var(--surface); color: var(--ink) }
+.pj-edq ul { list-style: none; padding: 0; margin: 6px 0 0 } .pj-edq li { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 3px 0; font-size: .88rem }
+.pj-edq select { max-width: 110px; font-size: .8rem }
+/* v1.12 · industria y reconocimientos */
+.in-list { padding-left: 18px } .in-list li { margin-bottom: 6px }
+.in-ck { list-style: none; padding: 0; margin: 6px 0 } .in-ck li { padding: 3px 0 } .in-ck label { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem }
+.pr.in-perm { font-size: 10.5pt; line-height: 1.6; padding: 4mm 0 } .pr.in-perm p { margin: 4px 0 }
+.in-corte { border-top: 1px dashed #000; margin: 6mm 0 }
+.rc-list { list-style: none; padding: 0; margin: 0 } .rc-list > li { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--line) }
+.rc-list ul { margin: 4px 0 0; padding-left: 18px }

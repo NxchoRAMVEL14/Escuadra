@@ -41,6 +41,8 @@
   // aciertos por tema de los exámenes anteriores del grupo (0 a 1)
   X.debilidad = (g, salvo) => {
     const agg = {}; X.list(g).forEach(ex => { if (ex.id === salvo) return; const r = X.analisis(g, ex); if (!r) return; Object.keys(r.temas).forEach(t => { const a = agg[t] = agg[t] || { s: 0, w: 0 }; a.s += r.temas[t].p * r.temas[t].w; a.w += r.temas[t].w; }); });
+    // boletos de salida y calentamientos (mano alzada): cada pregunta pesa 2 puntos, menos que una de examen
+    if (E.repaso) { const r = E.repaso.desempeno(g); Object.keys(r).forEach(t => { const a = agg[t] = agg[t] || { s: 0, w: 0 }; a.s += r[t].p * 2 * r[t].n; a.w += 2 * r[t].n; }); }
     const out = {}; Object.keys(agg).forEach(t => { if (agg[t].w) out[t] = agg[t].s / agg[t].w; }); return out;
   };
 

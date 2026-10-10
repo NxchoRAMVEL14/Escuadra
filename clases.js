@@ -413,6 +413,7 @@
     let h = '<div class="datebar"><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (ant || f) + '" ' + (ant ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button><div class="datebox"><b>' + u.cap(u.fLarga(f)) + '</b><a class="small" href="#/clases' + (d ? '/' + d.p.id : '') + '">Ver todas las clases</a></div><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (sig || f) + '" ' + (sig ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
     medVistos = new Set();
     if (!d || !d.bloques.length) return { t: 'Clase', h: h + card('<p>No tienes clase con ' + esc(g.nombre) + ' este día.</p>' + (sig ? link('Ir a la próxima clase', 'clase/' + sig, 'primary') : '')) };
+    if (E.repaso) h += E.repaso.calHTML(g, f, d);
     d.bloques.forEach(b => {
       h += card('<div class="row between gap wrap"><h3>' + b.inicio + '–' + b.fin + ' · ' + b.horas + ' h</h3><label class="cl-lugar">' + K.LUGARES[b.lugar][1] + ' <select data-ch="cl-lugar" data-key="' + b.key + '" data-def="' + b.lugarDef + '" aria-label="Lugar de esta clase">' + Object.keys(K.LUGARES).map(k => '<option value="' + k + '" ' + (b.lugar === k ? 'selected' : '') + '>' + K.LUGARES[k][0] + '</option>').join('') + '</select></label></div>' +
         (b.lugar !== b.lugarDef ? '<p class="small muted">Solo este día; en tu horario este bloque es ' + K.LUGARES[b.lugarDef][0].toLowerCase() + '.</p>' : '') + (b.espera && b.libre ? '<p class="note">' + esc(b.espera) + '</p>' : '') +
@@ -424,6 +425,7 @@
         (!b.perdida && b.parts.length ? '<div class="mt">' + (E.run.activo() && E.run.r.key === b.key ? '<span class="chip ok">⏱ Clase en curso</span>' : btn('⏱ Dar esta clase con temporizador', 'run-start', 'data-f="' + f + '" data-key="' + b.key + '"', 'primary')) + '</div>' : '') +
         salioHTML(b), 'cl-bloque');
     });
+    if (E.repaso) h += E.repaso.bolHTML(g, f, d);
     h += '<div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + f, 'primary') + btn(icon('book') + ' Anotar en bitácora', 'cl-bit', 'data-f="' + f + '"') + '</div>';
     return { t: 'Clase', h: h };
   };
