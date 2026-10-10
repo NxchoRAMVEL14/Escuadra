@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.10.0)
+# Escuadra · Control docente (v1.11.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,18 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.11:** todo se proyecta, también los viernes en el centro de cómputo.
+- **Proyectar la clase**: cada actividad del guion (Clases) tiene su botón; proyecta la meta de hoy, lo que harán con minutos,
+  palabras clave, material, qué entregan y, si es de FreeCAD, la práctica completa con su plano y pasos.
+- **Ejercicios para proyectar** (en la clase y en cada tema): las preguntas del banco del tema con opciones A–D; al revelar se
+  marca la correcta y su explicación. Los problemas salen dos veces con números nuevos: «lo resolvemos juntos» y «ahora tú».
+- **15 prácticas de FreeCAD** (Más → FreeCAD) en 3 niveles: placa, eslabón, leva, biela-manivela, escuadra, brida con patrón
+  polar, polea, engranes, abrazadera y carrete de la grúa, plano en TechDraw, resorte, ensamble de cuatro barras, vista
+  explosionada y cilindro neumático. Cada una trae plano acotado (sin internet), pasos con el nombre de la herramienta en
+  inglés y español, qué revisar, errores comunes, reto y entrega. Se proyectan, se imprimen (hoja o cuadernillo) y se marcan
+  como hechas. En los bloques de cómputo, el guion sugiere «si terminan antes» las que el grupo todavía no hace.
+  Pensadas para FreeCAD 1.0 o más nuevo.
 
 **Nuevo en v1.10:** sección **Dinámicas** (Más → Dinámicas). Eliges qué quieres lograr hoy (integrar al grupo,
 desarrollar una capacidad, mejorar la relación contigo, que se sientan mejor consigo mismos o calmar al grupo), el tiempo,
@@ -159,6 +171,7 @@ al abrirla con internet. Tus datos no se tocan.
 | `libreta.js` | Tareas del parcial y revisión de libreta |
 | `banco.js` | Banco de preguntas y problemas con datos variables |
 | `examen.js` | Examen recomendado, versiones, captura y análisis |
+| `practicas.js` | 15 prácticas de FreeCAD con plano acotado, ejercicios del banco para proyectar |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
@@ -183,4 +196,5 @@ al abrirla con internet. Tus datos no se tocan.
 - Tutoría: SEP-SNB, Acuerdo 9/CD/2009 (acción tutorial); SEMS (2014), *Yo no abandono*: manual de alerta temprana; Ley General de Educación, art. 7, fr. IV (aportaciones voluntarias); SEP-DGB (2023) Currículum ampliado y (2025) Orientaciones para la formación socioemocional; IES-WWC (2017) *Preventing Drop-out in Secondary Schools*; EEF (familias, socioemocional, mentoría, tutoría entre pares). Enlaces en Tutoría → Ideas → Fuentes.
 - Examen: preguntas escritas a partir del contenido de Temas (programa SEP 2024 y su bibliografía) y revisadas una por una; los problemas calculan su respuesta con las fórmulas del curso. Reparto por horas = tabla de especificaciones. Repaso de temas bajos: práctica de recuperación y espaciada (Dunlosky y col., 2013).
 - Dinámicas: Construye T (SEP-SEMS y PNUD); SEP-DGB (2025) Orientaciones para la formación socioemocional; EEF (aprendizaje socioemocional, aprendizaje colaborativo, retroalimentación); Cook y col. (2018) saludo en la puerta; Yeager y col. (2014) retroalimentación sabia; Roorda y col. (2011) relación docente-alumno; Aronson (rompecabezas); Wujec (2010) reto del malvavisco; Bandura (1977) autoeficacia. Enlaces en Dinámicas → Fuentes.
+- Prácticas de FreeCAD: nombres de herramientas y flujo de trabajo de la documentación oficial de FreeCAD 1.0 (wiki: Part Design, Sketcher, Assembly y TechDraw; espejo en GitHub *FreeCAD-documentation*); fórmulas de los Temas de la app (Grashof, carrera = 2r, i = Z2/Z1, a = m·(Z1+Z2)/2, F = P·A, τ = F·r). Consejos del centro de cómputo: Rosenshine (2012), *Principles of Instruction*.
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

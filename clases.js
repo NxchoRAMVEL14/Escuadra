@@ -37,7 +37,7 @@
         mat: 'Tiras de cartón de 2 × 15 cm, broches latonados, regla y perforadora.', ev: 'Tabla de predicción y comprobación en la libreta', ideas: ['pares-baratos', 'pr-pausa-predice'], pre: 'grados de libertad · base · par de un grado' },
       { id: 'fc-nivel', h: 2, m: 'd', lugar: 'computo', tipo: 'FreeCAD', t: 'Nivelación FreeCAD: bocetos con restricciones', obj: 'Hacer un boceto totalmente restringido de un eslabón.', ac: 1, dc: 1, tema: 'sm1-restricciones',
         pasos: [[10, 'Resultados del diagnóstico en pantalla, sin nombres: este es nuestro punto de partida.'], [20, 'Yo modelo, tú modelas: boceto de un eslabón con extremos redondos.'], [40, 'Restricciones (horizontal, vertical, coincidente, tangente, distancia, radio) hasta que el boceto quede en verde.'], [20, 'Mini-reto cronometrado: eslabón de 100 mm entre centros con dos barrenos de 5 mm.'], [10, 'Guardan con nombre correcto.']],
-        mat: 'Sienta a los alumnos que necesitan apoyo junto a un monitor.', ideas: ['pr-diagnostico-visible', 'pr-freecad-espejo', 'mini-retos'], pre: 'boceto · restricción · totalmente restringido' },
+        nota: 'Sienta a los alumnos que necesitan apoyo junto a un monitor.', ideas: ['pr-diagnostico-visible', 'pr-freecad-espejo', 'mini-retos'], pre: 'boceto · restricción · totalmente restringido' },
       { id: 'fc-eslabones', h: 2, m: 'd', lugar: 'computo', tipo: 'FreeCAD', t: 'FreeCAD Part Design: eslabones con barrenos', obj: 'Modelar en 3D los eslabones de un cuatro barras con extrusiones y barrenos.', ac: 1, dc: 1, dep: ['fc-nivel'],
         pasos: [[30, 'Yo modelo, tú modelas: Pad (extrusión), Pocket (vaciado) y barrenos.'], [50, 'Modelan base, eslabón motriz, conector y conducido de un cuatro barras.'], [15, 'Revisión por parejas con lista de cotejo.'], [5, 'Boleto de salida.']],
         ev: 'Eslabones modelados (Producto)', ideas: ['pr-freecad-espejo', 'semaforo'], pre: 'Pad · Pocket · barreno' },
@@ -323,6 +323,7 @@
     const w0 = part.antes * 50, w1 = (part.antes + part.h) * 50; let acc = 0;
     if (it.pasos) h += '<ol class="cl-pasos">' + it.pasos.map(x => { const a = acc; acc += x[0]; const fuera = part.h !== it.h && (Math.min(acc, w1) - Math.max(a, w0) <= 0); return '<li class="' + (rp && rp.act === it.t && rp.t === x[1] ? 'now' : fuera ? 'fuera' : '') + '"><span class="min">' + x[0] + ' min</span>' + esc(x[1]) + (fuera ? ' <small>(' + (a < w0 ? 'clase anterior' : 'siguiente clase') + ')</small>' : '') + '</li>'; }).join('') + '</ol>' + (min ? '<p class="muted small">Guion pensado para ' + it.h + ' h de horario (' + it.h * 50 + ' min).</p>' : '');
     if (it.mat) h += '<p class="small"><b>Material:</b> ' + esc(it.mat) + '</p>';
+    if (it.nota) h += '<p class="small"><b>Tip:</b> ' + esc(it.nota) + '</p>';
     if (it.ev) h += '<p class="small"><b>Evidencia:</b> ' + esc(it.ev) + '</p>';
     if (it.tarea) h += '<p class="note info small"><b>Tarea:</b> ' + esc(it.tarea) + '</p>';
     if (it.pre) h += '<p class="small"><b>Para adelantar el tema</b> a quien lo necesite: <i>' + esc(it.pre) + '</i></p>';
@@ -331,9 +332,34 @@
     // imágenes y videos del tema (una sola vez por día aunque el tema siga en otra actividad)
     if (tm && E.medios && !(medVistos && medVistos.has(tm.id))) { if (medVistos) medVistos.add(tm.id); h += E.medios.claseHTML(tm.id); }
     const ids = (it.ideas || []).map(id => E.IDEAS.find(x => x.id === id)).filter(Boolean);
-    if (tm || ids.length) h += '<div class="row gap wrap mt">' + (tm ? btn(icon('screen') + ' Proyectar tema', 'proj-open', 'data-id="' + tm.id + '"', 'small primary') + link('Presentador', 'presentador/' + tm.id, 'small') + link('Ver tema', 'tema/' + tm.id, 'small') : '') + ids.map(x => link(icon('bulb') + ' ' + esc(x.titulo), 'ideas/' + x.id, 'small ghost')).join('') + '</div>';
+    // proyectar: la clase (meta, agenda y prácticas), el tema, sus ejercicios y las prácticas de FreeCAD
+    const prs = E.fc ? E.fc.de(it.id) : [], nEj = tm && E.ejer ? E.ejer.hay(tm.id) : 0;
+    h += '<div class="row gap wrap mt">' + btn('📽 Proyectar la clase', 'cl-proj', 'data-pid="' + pid + '" data-id="' + it.id + '"', 'small primary') +
+      (tm ? btn(icon('screen') + ' Proyectar tema', 'proj-open', 'data-id="' + tm.id + '"', 'small') : '') + (nEj ? btn('📝 Ejercicios', 'ej-proj', 'data-id="' + tm.id + '"', 'small') : '') +
+      (tm ? link('Presentador', 'presentador/' + tm.id, 'small ghost') + link('Ver tema', 'tema/' + tm.id, 'small ghost') : '') + '</div>';
+    if (prs.length) h += '<div class="fc-blq"><b>💻 Práctica' + (prs.length > 1 ? 's' : '') + ' de FreeCAD de esta clase</b>' + prs.map(p => E.fc.fila(p)).join('') + '<p class="small muted">Ya van dentro de «Proyectar la clase»; también puedes imprimir la hoja desde la práctica.</p></div>';
+    if (ids.length) h += '<div class="row gap wrap mt">' + ids.map(x => link(icon('bulb') + ' ' + esc(x.titulo), 'ideas/' + x.id, 'small ghost')).join('') + '</div>';
     return h + '</div>';
   }
+
+  /* ---------- proyectar la clase: meta, agenda, material, prácticas de FreeCAD, palabras clave y entrega ---------- */
+  const chunkK = (a, n) => { const out = []; for (let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n)); return out; };
+  const capi = x => { x = String(x).trim().replace(/\.$/, ''); return x.charAt(0).toUpperCase() + x.slice(1); };
+  K.deck = it => {
+    const lug = it.lugar === 'computo' ? ' · Centro de cómputo' : it.lugar === 'taller' ? ' · Taller' : '';
+    const s = [{ k: 'cover', h: it.t, sub: it.tipo + ' · ' + it.h + ' h' + lug, p: 'Meta de hoy: ' + it.obj }];
+    if (it.pasos) { const ch = chunkK(it.pasos, 6); ch.forEach((c, i) => s.push({ k: 'html', h: 'Lo que haremos hoy' + (ch.length > 1 ? ' (' + (i + 1) + ' de ' + ch.length + ')' : ''), html: '<ol class="pj-agenda">' + c.map(x => '<li><span class="pj-min">' + x[0] + ' min</span><span>' + esc(x[1]) + '</span></li>').join('') + '</ol>' })); }
+    if (it.pre) s.push({ k: 'list', h: 'Palabras clave de hoy', items: it.pre.split(' · ').map(capi) });
+    if (it.mat) s.push({ k: 'list', h: 'Material', items: it.mat.split(/,\s*/).map(capi) });
+    if (E.fc) E.fc.de(it.id).forEach(p => E.fc.slides(p).forEach(x => s.push(x)));
+    if (it.ev || it.tarea) s.push({ k: 'list', h: it.ev ? 'Qué entregas hoy' : 'Tarea', items: [it.ev ? capi(it.ev) : capi(it.tarea)], foot: it.ev && it.tarea ? 'Tarea: ' + it.tarea : '' });
+    return s;
+  };
+  A['cl-proj'] = el => {
+    const g = D.grupoActual(); if (!g) return;
+    const it = K.seq(g, el.dataset.pid).find(x => x.id === el.dataset.id); if (!it) return;
+    E.proj.abrir({ id: 'clase-' + it.id, titulo: it.t }, K.deck(it));
+  };
 
   /* ---------- vista: lista de clases del parcial ---------- */
   V.clases = pid => {
@@ -392,6 +418,7 @@
         (b.lugar !== b.lugarDef ? '<p class="small muted">Solo este día; en tu horario este bloque es ' + K.LUGARES[b.lugarDef][0].toLowerCase() + '.</p>' : '') + (b.espera && b.libre ? '<p class="note">' + esc(b.espera) + '</p>' : '') +
         (b.perdida ? '<p class="muted">Marcaste que esta clase no se dio: sus actividades pasaron a la siguiente.</p>' : (b.parts.map(x => actHTML(g, d.p.id, x, b.key)).join('') || '<p class="muted">Ya no quedan actividades en la secuencia: úsala para repaso, recuperación o avance del proyecto.</p>')) +
         (b.libre && b.parts.length ? '<p class="note">Te sobra ' + b.libre + ' h en este bloque.</p>' : '') +
+        (!b.perdida && b.lugar === 'computo' && E.fc ? E.fc.bloqueHTML(g, d.p.id, b, d.bloques.filter(x => !x.perdida)) : '') +
         (b.recorte ? '<p class="note warn">' + (b.recorte === 1 ? 'Faltó 1 h' : 'Faltaron ' + b.recorte + ' h') + ': aquí queda solo lo que sí se dio y lo que no alcanzaste pasó a la siguiente clase' + (sig ? ' (' + u.fCorta(sig) + ')' : '') + '. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
         (b.adelanto ? '<p class="note ok">Te adelantaste ' + b.adelanto + ' h: esta clase cubrió también lo que venía después y todo el parcial se recorrió hacia antes. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
         (!b.perdida && b.parts.length ? '<div class="mt">' + (E.run.activo() && E.run.r.key === b.key ? '<span class="chip ok">⏱ Clase en curso</span>' : btn('⏱ Dar esta clase con temporizador', 'run-start', 'data-f="' + f + '" data-key="' + b.key + '"', 'primary')) + '</div>' : '') +

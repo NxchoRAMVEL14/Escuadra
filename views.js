@@ -43,6 +43,7 @@
     play: '<path d="M8 5l11 7-11 7z" fill="currentColor"/>',
     stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor"/>',
     board: '<rect x="3" y="3.5" width="18" height="12.5" rx="1.5"/><path d="M8 20.5l2-4.5M16 20.5l-2-4.5M7 8h10M7 11.5h6"/>',
+    cube: '<path d="M12 2.5 3.5 7v10l8.5 4.5 8.5-4.5V7z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/>',
     profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M16.5 3.5l1.5 1.5 3-3"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
@@ -558,7 +559,7 @@
     const L = arr => '<ul>' + (arr || []).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
     let h = '<p><a href="#/temas">‹ Temas</a></p>';
     h += card('<span class="chip brand">' + esc(SM_LBL[t.sm] || '') + '</span><h3 class="mt">' + esc(t.titulo) + '</h3><p class="small"><b>Objetivo:</b> ' + esc(t.objetivo) + '</p>' + (t.ac ? '<p class="muted small">Actividad clave del programa: ' + esc(t.ac) + '</p>' : '') + '<p class="muted small">Duración sugerida: ' + esc(t.dur) + '</p>' +
-      '<div class="row gap wrap">' + btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'primary') + link(icon('screen') + ' Presentador: proyector y celular separados', 'presentador/' + t.id) + btn(icon('copy') + ' Copiar preguntas', 'tema-copy', 'data-id="' + t.id + '"') + btn(icon('book') + ' Registrar en bitácora', 'tema-bit', 'data-id="' + t.id + '"') + '</div>');
+      '<div class="row gap wrap">' + btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'primary') + link(icon('screen') + ' Presentador: proyector y celular separados', 'presentador/' + t.id) + (E.ejer && E.ejer.hay(t.id) ? btn('📝 Ejercicios para proyectar', 'ej-proj', 'data-id="' + t.id + '"') : '') + btn(icon('copy') + ' Copiar preguntas', 'tema-copy', 'data-id="' + t.id + '"') + btn(icon('book') + ' Registrar en bitácora', 'tema-bit', 'data-id="' + t.id + '"') + '</div>');
     if (E.medios) h += card(E.medios.cardHTML(t), 'medios');
     h += card('<h3>Explicación para ti</h3>' + t.explica.map(p => '<p>' + esc(p) + '</p>').join(''));
     h += card('<h3>Lo que se proyecta</h3>' + L(t.pantalla));
@@ -601,7 +602,14 @@
     if (sl.k === 'cover') return '<div class="pj-cover"><span class="pj-kicker">' + esc(sl.sub) + '</span><h1>' + esc(sl.h) + '</h1><p>' + esc(sl.p) + '</p></div>';
     if (sl.k === 'list') return '<h2>' + esc(sl.h) + '</h2><ul class="pj-list">' + sl.items.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' + (sl.foot ? '<p class="pj-foot">' + esc(sl.foot) + '</p>' : '');
     if (sl.k === 'terms') return '<h2>' + esc(sl.h) + '</h2><dl class="pj-terms">' + sl.items.map(x => '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>').join('') + '</dl>';
-    if (sl.k === 'q') return '<h2>' + esc(sl.h) + '</h2><p class="pj-q">' + esc(sl.q) + '</p>' + (rev ? '<p class="pj-a">' + esc(sl.a) + '</p>' : '<button type="button" class="pj-btn pj-reveal" data-act="proj-reveal">Mostrar respuesta</button>');
+    if (sl.k === 'html') return (sl.h ? '<h2>' + esc(sl.h) + '</h2>' : '') + sl.html;
+    if (sl.k === 'q') {
+      // con opciones (ejercicios del banco): al revelar se marca la correcta
+      const op = sl.opts, corta = op && op.every(o => String(o).length <= 34);
+      return '<h2>' + esc(sl.h) + '</h2><p class="pj-q' + (op || String(sl.q).length > 150 ? ' sm' : '') + '">' + esc(sl.q) + '</p>' +
+        (op ? '<ol class="pj-ops' + (corta ? ' c2' : '') + '">' + op.map((o, i) => '<li class="' + (rev ? (i === sl.ok ? 'ok' : 'no') : '') + '"><b>' + 'ABCDE'[i] + '</b><span>' + esc(o) + '</span></li>').join('') + '</ol>' : '') +
+        (rev ? (sl.a ? '<p class="pj-a' + (op ? ' sm' : '') + '">' + esc(sl.a) + '</p>' : '') : '<button type="button" class="pj-btn pj-reveal" data-act="proj-reveal">Mostrar respuesta</button>');
+    }
     return '<h2>' + esc(sl.h) + '</h2><p class="pj-vida">' + esc(sl.p) + '</p>';
   }
   const P = E.proj = {
@@ -811,7 +819,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 

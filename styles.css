@@ -717,3 +717,107 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .dn-run { text-align: center } .dn-run .timer { margin: 6px auto } .dn-paso { font-size: 1.15rem; font-weight: 600; margin: 10px 0 }
 .pr .bingo { page-break-inside: avoid; margin-bottom: 8mm } .pr .bingo-t td { width: 25%; height: 27mm; vertical-align: top; padding: 4px; position: relative }
 .pr .bingo-t td span { display: block; font-size: 8.5pt; line-height: 1.2 } .pr .bingo-t td i { position: absolute; left: 4px; bottom: 3px; font-size: 7pt; color: #555 }
+
+/* v1.11 · prácticas de FreeCAD (planos acotados), ejercicios y proyectar la clase */
+.pfig { --pf-halo: var(--surface) }
+.pfig svg { width: auto; max-width: 100%; height: auto; max-height: 62vh; margin: 0 auto }
+.pfig .pz { fill: var(--fg-fill); stroke: currentColor; stroke-width: 2.6; stroke-linejoin: round }
+.pfig .sec { stroke: currentColor; stroke-width: 2.6; stroke-linejoin: round }
+.pfig .hl { stroke: var(--fg-muted); stroke-width: 1.3 }
+.pfig .hole { fill: var(--pf-halo); stroke: currentColor; stroke-width: 2.2 }
+.pfig .ol { stroke: currentColor; stroke-width: 2.4; fill: none }
+.pfig .ol0 { stroke: currentColor; stroke-width: 1.2; fill: none }
+.pfig .pg { fill: var(--pf-halo); stroke: var(--fg-muted); stroke-width: 1 }
+.pfig .cl, .pfig .clc { stroke: var(--fg-muted); stroke-width: 1.2; stroke-dasharray: 14 4 2 4; fill: none }
+.pfig .hid { stroke: currentColor; stroke-width: 1.4; stroke-dasharray: 5 3.5 }
+.pfig .pj { stroke: var(--fg-muted); stroke-width: .9; stroke-dasharray: 3 4 }
+.pfig .gh { fill: none; stroke: var(--fg-muted); stroke-width: 1.5; stroke-dasharray: 6 4 }
+.pfig .dl { stroke: var(--fg-acc); stroke-width: 1.2; fill: none }
+.pfig .ar { fill: var(--fg-acc) }
+.pfig text { paint-order: stroke; stroke: var(--pf-halo); stroke-width: 4px; stroke-linejoin: round }
+.pfig .dt { fill: var(--fg-acc); font-weight: 700 }
+.pfig .lab { fill: currentColor; font-weight: 700 }
+.pfig .nt { fill: var(--fg-muted); font-size: .86em }
+.pfig .pl { fill: var(--fg-acc2); font-weight: 800; font-size: .8em }
+.pfig .tb { fill: currentColor; font-size: .9em }
+.pfig .vn { fill: var(--fg-muted); font-weight: 700; font-size: .9em; letter-spacing: .05em }
+.pfig .lk { stroke: currentColor; stroke-width: 7; stroke-linecap: round }
+.pfig .lkb { stroke: var(--fg-muted); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 1 8 }
+.pfig .gnd { fill: var(--fg-fill); stroke: currentColor; stroke-width: 1.6 }
+.pfig .pin { fill: var(--pf-halo); stroke: currentColor; stroke-width: 2.2 }
+.pfig .tr { fill: none; stroke: var(--fg-acc2); stroke-width: 1.6; stroke-dasharray: 4 5 }
+.pfig .tr2 { fill: none; stroke: var(--fg-acc2); stroke-width: 2.6; stroke-linecap: round }
+.pfig .glb { fill: var(--pf-halo); stroke: currentColor; stroke-width: 1.6 }
+.pfig .wf { fill: none; stroke: currentColor; stroke-width: var(--pf-ww, 8px); stroke-linecap: round }
+.pfig .wb { fill: none; stroke: var(--fg-muted); stroke-width: var(--pf-ww, 8px); stroke-linecap: round; opacity: .5 }
+.fc-tool { display: inline-flex; align-items: baseline; gap: 4px; font-weight: 700; font-size: .82em; background: var(--brand-soft); color: var(--brand); border-radius: 7px; padding: 1px 7px; margin-right: 6px; white-space: nowrap }
+.fc-tool small { font-weight: 500; opacity: .85; font-size: .92em }
+.fc-pasos { margin: 0; padding-left: 1.7em; display: flex; flex-direction: column; gap: 8px; line-height: 1.4 }
+.fc-pasos li::marker { font-weight: 800; color: var(--brand) }
+.fc-tabla { border-collapse: collapse; font-size: .88rem; margin: 6px auto; font-variant-numeric: tabular-nums }
+.fc-tabla th, .fc-tabla td { border: 1px solid var(--line); padding: 3px 10px; text-align: center }
+.fc-tabla th { background: var(--surface2) }
+.fc-blq { margin-top: 10px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 12px; background: var(--surface2) }
+.fc-blq > b { display: block; margin-bottom: 4px }
+.fc-fila { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; border-bottom: 1px solid var(--line) }
+.fc-fila:last-of-type { border-bottom: 0 }
+.fc-fila a { font-weight: 600; flex: 1 1 170px; min-width: 0 }
+.fc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-bottom: 14px }
+.fc-card { display: flex; flex-direction: column; gap: 8px; margin: 0 }
+.fc-card.hecha { border-color: var(--brand) }
+.fc-mini { display: block; color: inherit }
+.fc-mini .pfig { margin: 0 }
+.fc-mini .pfig svg { width: 100%; max-height: 170px }
+.fc-info { display: flex; flex-direction: column; gap: 6px }
+.fc-info > a { color: inherit; text-decoration: none }
+.fc-tips { padding-left: 18px } .fc-tips li { margin-bottom: 6px }
+.fc-glos { border-collapse: collapse; width: 100%; font-size: .86rem; margin-top: 8px }
+.fc-glos th, .fc-glos td { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: left; vertical-align: top }
+.fc-glos td:first-child { font-weight: 700; white-space: nowrap }
+/* en el proyector */
+#proj .pfig, .pres-mini .pfig { --pf-halo: #ffffff }
+#proj.pj-dark .pfig, .pres-mini.pj-dark .pfig { --pf-halo: #0a1514 }
+#proj .pfig figcaption { display: none }
+#proj .pj-fc { display: flex; gap: 3vw; align-items: center; justify-content: center; min-height: 0 }
+#proj .pj-fc .pfig { flex: 1 1 auto; min-width: 0 }
+#proj .pj-fc .pfig svg { width: 100%; max-height: 68vh }
+#proj .pj-2c { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3vw; align-items: center }
+#proj .pj-2c .pfig svg { width: 100%; max-height: 60vh }
+#proj .fc-pasos { font-size: clamp(1.05rem, 2.3vw, 1.95rem); line-height: 1.3; gap: .6em; font-weight: 600 }
+#proj .fc-pasos li::marker { color: var(--pj-accent) }
+#proj .fc-tool { background: var(--pj-soft); color: var(--pj-accent) }
+#proj .fc-tabla { font-size: clamp(.95rem, 1.9vw, 1.6rem); margin: 0 }
+#proj .fc-tabla th, #proj .fc-tabla td { border-color: rgba(127, 127, 127, .45); padding: .15em .6em }
+#proj .fc-tabla th { background: var(--pj-soft) }
+@media (max-aspect-ratio: 1/1) { #proj .pj-2c { grid-template-columns: 1fr } #proj .pj-fc { flex-direction: column } }
+.pj-agenda { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5em }
+.pj-agenda li { display: grid; grid-template-columns: 4.6em 1fr; gap: .8em; font-size: clamp(1.05rem, 2.5vw, 2.1rem); line-height: 1.25; font-weight: 600 }
+.pj-min { font-weight: 800; color: var(--pj-accent); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap }
+.pj-q.sm { font-size: clamp(1.1rem, 2.7vw, 2.3rem); margin-bottom: .6em }
+.pj-a.sm { font-size: clamp(1rem, 2.2vw, 1.8rem); margin-top: .6em }
+.pj-ops { list-style: none; padding: 0; margin: 0 0 .5em; display: grid; gap: .45em }
+.pj-ops.c2 { grid-template-columns: 1fr 1fr }
+.pj-ops li { display: flex; gap: .6em; align-items: baseline; font-size: clamp(1rem, 2.4vw, 2rem); font-weight: 600; padding: .3em .7em; border-radius: 12px; border: 3px solid transparent; background: var(--pj-soft); line-height: 1.25 }
+.pj-ops li b { color: var(--pj-accent) }
+.pj-ops li.ok { border-color: #1f9d55 }
+.pj-ops li.ok b::after { content: " ✓"; color: #1f9d55 }
+.pj-ops li.no { opacity: .4 }
+.pres-mini .pj-ops li { font-size: 2.3cqw } .pres-mini .pj-agenda li { font-size: 2.4cqw } .pres-mini .fc-pasos { font-size: 2.2cqw } .pres-mini .pfig svg { max-height: 34cqw }
+/* hoja de práctica impresa */
+.pr.pfh { font-size: 10pt; page-break-after: always }
+.pr.pfh:last-child { page-break-after: auto }
+.pfh-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 8pt; border-bottom: 1px solid #000; padding-bottom: 3px }
+.pfh h2 { font-size: 15pt; margin: 6px 0 2px }
+.pfh h3 { font-size: 11pt; margin: 8px 0 3px }
+.pfh-obj { margin: 0 0 4px }
+.pfh-fig { display: flex; gap: 12px; align-items: center; justify-content: center }
+.pr .pfig { --fg-acc: #000; --fg-acc2: #000; --fg-fill: #ececec; --fg-muted: #555; --pf-halo: #fff; --fg-bg: #fff; color: #000; margin: 0 }
+.pr .pfig svg { max-height: 86mm; width: auto; max-width: 100%; border: 1px solid #999; border-radius: 0; background: #fff }
+.pr .fc-tabla { font-size: 8.5pt; margin: 0 } .pr .fc-tabla th, .pr .fc-tabla td { border: 1px solid #000; padding: 1px 6px; background: #fff }
+.pr .fc-pasos { gap: 3px; font-size: 9.5pt; line-height: 1.3 }
+.pr .fc-pasos li::marker { color: #000 }
+.pr .fc-tool { background: none; border: 1px solid #000; color: #000; padding: 0 5px }
+.pfh-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.pfh ul { margin: 0; padding-left: 16px } .pfh li { margin-bottom: 2px }
+.pfh .pfh-chk { list-style: none; padding-left: 0 }
+@media (max-width: 640px) { .pfig svg.pf-n .dt, .pfig svg.pf-n .lab { font-size: 21px } }
