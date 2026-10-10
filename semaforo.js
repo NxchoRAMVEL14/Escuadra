@@ -159,7 +159,7 @@
     h += '<p class="muted small mt">Los niveles cambian solos conforme capturas calificaciones. Ajusta los límites en Ajustes → Calificación.</p>';
     return { t: 'Semáforo', h: h };
   };
-  const nombreCorto = n => { const p = String(n).split(' '); return p.length >= 3 ? p[p.length - 2] + ' ' + p[0] : n; };
+  const nombreCorto = n => u.corto(n, true);
   A['sf-f'] = el => { const ui = E.ui.sf; ui.f = ui.f === el.dataset.f && el.classList.contains('sf-tile') ? 'todos' : el.dataset.f; E.render(); };
   A['sf-col'] = el => { E.ui.sf.col = Number(el.dataset.i); E.render(); };
   CH['sf-orden'] = el => { E.ui.sf.orden = el.value; E.render(); };

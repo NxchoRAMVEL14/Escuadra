@@ -45,7 +45,14 @@
     board: '<rect x="3" y="3.5" width="18" height="12.5" rx="1.5"/><path d="M8 20.5l2-4.5M16 20.5l-2-4.5M7 8h10M7 11.5h6"/>',
     factory: '<path d="M3 21V10l5 3.5V10l5 3.5V5l8-2v18z"/><path d="M7 17h2M12 17h2M17 17h2"/>',
     cube: '<path d="M12 2.5 3.5 7v10l8.5 4.5 8.5-4.5V7z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/>',
-    profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M16.5 3.5l1.5 1.5 3-3"/>'
+    profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M16.5 3.5l1.5 1.5 3-3"/>',
+    grid: '<rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>',
+    inbox: '<path d="M3 13h5l1.5 3h5l1.5-3h5"/><path d="M5.5 4h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/>',
+    search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/>',
+    mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
+    undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+    clip: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>',
+    note: '<path d="M5 3h10l4 4v14H5z"/><path d="M14 3v5h5M8.5 13l2 2 4.5-4.5"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
   E.logo = () => '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
@@ -84,6 +91,8 @@
     }
     const av = C.avisos(hoy);
     if (av.length) h += card('<h3>' + icon('alert') + ' Avisos</h3><ul class="vlist">' + av.map(a => '<li class="' + a.nivel + '">' + esc(a.txt) + '</li>').join('') + '</ul>');
+    if (g && E.cierre) h += E.cierre.inicioHTML(g, hoy);
+    if (g && E.pend) h += E.pend.inicioHTML(g, hoy);
     h += avisoRespaldo(hoy);
     if (g && E.fc && E.fc.preparaHTML) h += E.fc.preparaHTML(g, hoy);
     if (g && E.proyecto) h += E.proyecto.inicioHTML(g, hoy);
@@ -91,7 +100,7 @@
     if (g) {
       const bl = C.bloquesDia(g, hoy), asu = C.esAsueto(hoy); let t = '';
       if (asu) t = '<p>🏖️ Hoy es asueto.</p>';
-      else if (bl.length && C.esClase(g, hoy)) { const rs = E.clases && E.clases.resumenDia(g, hoy); t = '<ul class="blocks">' + (rs ? rs.map(r => '<li><b>' + esc(r.b.inicio) + '–' + esc(r.b.fin) + '</b> · ' + esc(r.txt) + '</li>') : bl.map(b => '<li><b>' + esc(b.inicio) + '–' + esc(b.fin) + '</b> · ' + b.horas + ' h</li>')).join('') + '</ul><div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + hoy, 'primary') + (rs ? link(icon('board') + ' Guion de hoy', 'clase/' + hoy) : '') + '</div>';
+      else if (bl.length && C.esClase(g, hoy)) { const rs = E.clases && E.clases.resumenDia(g, hoy); t = '<ul class="blocks">' + (rs ? rs.map(r => '<li><b>' + esc(r.b.inicio) + '–' + esc(r.b.fin) + '</b> · ' + esc(r.txt) + '</li>') : bl.map(b => '<li><b>' + esc(b.inicio) + '–' + esc(b.fin) + '</b> · ' + b.horas + ' h</li>')).join('') + '</ul><div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + hoy, 'primary') + (E.aula ? link(icon('grid') + ' Modo clase', 'aula/' + hoy) : '') + (rs ? link(icon('board') + ' Guion de hoy', 'clase/' + hoy) : '') + (E.cierre ? link('📝 Cierre del día', 'cierre/' + hoy) : '') + '</div>';
         const nx = C.siguienteClase(g, hoy), rn = nx && E.clases && E.clases.resumenDia(g, nx);
         if (rn) t += '<p class="small mt"><b>Próxima clase (' + u.fLarga(nx) + '):</b> ' + esc(rn.map(r => r.txt).join(' · ')) + ' · <a href="#/clase/' + nx + '">Preparar ›</a></p>'; }
       else { const nx = C.siguienteClase(g, hoy), rs = nx && E.clases && E.clases.resumenDia(g, nx); t = '<p class="muted">Hoy no tienes clase con ' + esc(g.nombre) + '.' + (nx ? ' Próxima: <b>' + u.fLarga(nx) + '</b>.' : '') + '</p>' + (rs ? '<ul class="blocks">' + rs.map(r => '<li><b>' + esc(r.b.inicio) + '</b> · ' + esc(r.txt) + '</li>').join('') + '</ul>' + link(icon('board') + ' Preparar la clase', 'clase/' + nx, 'primary') : ''); }
@@ -107,6 +116,7 @@
       const R = C.riesgos(g, p);
       if (R.length) h += card('<h3>' + icon('alert') + ' Alumnos que necesitan atención</h3><ul class="risk">' + R.slice(0, 6).map(r => '<li><a href="#/alumno/' + r.id + '">' + esc(r.nombre) + '</a> <span class="chip ' + r.kind + '">' + esc(r.txt) + '</span></li>').join('') + '</ul>' +
         (R.length > 6 ? '<p class="small mt"><a href="#/calificaciones/' + p.id + '">Ver los ' + R.length + ' casos en Calificaciones ›</a></p>' : ''));
+      if (E.cierre) h += E.cierre.atencionHTML(g, hoy);
     }
     const smk = g && p && (g.submodulos || {})[p.id] ? 'II-' + g.submodulos[p.id] : null;
     const temasSm = smk ? E.TEMAS.filter(t => t.sm === smk) : [];
@@ -160,24 +170,25 @@
     const pl = (n, s, p) => n + ' ' + (n === 1 ? s : p);
     h += doc ? '<p class="note ok">Lista registrada · ' + pl(cnt.A, 'asistencia', 'asistencias') + ' · ' + pl(cnt.F, 'falta', 'faltas') + (cnt.R ? ' · ' + pl(cnt.R, 'retardo', 'retardos') : '') + (cnt.J ? ' · ' + pl(cnt.J, 'justificada', 'justificadas') : '') + '</p>'
       : '<p class="note">Aún no registras esta lista. Toca la letra de quien falte: los demás quedan como presentes.</p>';
-    h += '<div class="row wrap gap">' + (doc ? '' : btn('✓ Todos presentes', 'asis-todos', 'data-fecha="' + fecha + '"', 'primary')) +
+    h += '<div class="row wrap gap">' + (doc ? '' : btn('✓ Todos presentes', 'asis-todos', 'data-fecha="' + fecha + '"', 'primary')) + (E.aula ? link(icon('grid') + ' Modo clase', 'aula/' + fecha) : '') +
       btn(icon('dice') + ' Al azar', 'azar', 'data-fecha="' + fecha + '"') + btn(icon('team') + ' Equipos', 'equipos', 'data-fecha="' + fecha + '"') +
       link(icon('timer') + ' Temporizador', 'herramientas') + (doc ? btn(icon('trash') + ' Borrar registro', 'asis-borrar', 'data-fecha="' + fecha + '"', 'ghost danger') : '') + '</div>';
-    h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · toca la letra para cambiarla; <b>+</b> suma participación; toca el <b>nombre</b> para anotar una observación (🤝 ❓ 💡…).</p>';
-    h += '<ul class="slist">' + al.map(a => {
+    h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · <b>toca</b> la letra: falta o asistió; <b>mantenla presionada</b> para retardo o justificada; <b>+</b> suma participación; toca el <b>nombre</b> para anotar una observación (🤝 ❓ 💡 ⭐ 👎…).</p>';
+    if (E.rap) h += E.rap.filtroHTML('lista');
+    h += '<ul class="slist" data-kb="lista" data-f="' + fecha + '">' + al.map(a => {
       const st = (doc && doc[a.id]) || 'A', n = Number(pd[a.id] || 0);
-      return '<li class="srow ' + (doc ? '' : 'pending') + '"><button type="button" class="st st-' + st + '" data-act="asis" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Estado de ' + esc(a.nombre) + ': ' + st + '">' + st + '</button>' +
+      return '<li class="srow ' + (doc ? '' : 'pending') + '"' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><button type="button" class="st st-' + st + '" data-act="asis" data-lp="asis-menu" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Estado de ' + esc(a.nombre) + ': ' + st + '. Toca para falta o asistió; mantén presionado para retardo o justificada">' + st + '</button>' +
         '<button type="button" class="sname obsbtn" data-act="obs-open" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Anotar observación de ' + esc(a.nombre) + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button>' +
         '<div class="partc"><button type="button" class="mini" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="-1" aria-label="Quitar participación">−</button><b>' + n + '</b><button type="button" class="mini plus" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="1" aria-label="Sumar participación">+</button></div></li>';
     }).join('') + '</ul>';
     return { t: 'Pase de lista', h: h };
   };
-  const ORDEN = ['A', 'F', 'R', 'J'];
+  // toque: asistió ↔ falta (retardo y justificada: mantener presionado, ver aula.js)
   A.asis = el => {
     const g = D.grupoActual(), f = el.dataset.fecha, aid = el.dataset.aid;
     S.update('asis:' + g.id + ':' + f, doc => {
       if (!Object.keys(doc).length) D.alumnos(g).forEach(a => { doc[a.id] = 'A'; });
-      doc[aid] = ORDEN[(ORDEN.indexOf(doc[aid] || 'A') + 1) % ORDEN.length];
+      doc[aid] = (doc[aid] || 'A') === 'A' ? 'F' : 'A';
     }, {});
     if (navigator.vibrate) navigator.vibrate(12);
   };
@@ -294,6 +305,7 @@
       return { t: 'Calificaciones', h: h };
     }
     const man = D.manual(g, p.id), sm = D.submodulo(g, p.id);
+    if (E.cap) h += E.cap.seguirHTML(g);
     h += '<label class="switch"><input type="checkbox" data-ch="manual-toggle" data-pid="' + p.id + '" ' + (man.activo ? 'checked' : '') + '><span>Captura manual (este parcial lo calificó otro docente)</span></label>';
     if (man.activo) {
       h += card('<h3>' + esc(p.nombre) + ' · captura manual</h3><p class="muted small">Escribe la calificación (base 100), asistencias y faltas que te pasen. Se usan para la calificación final y el acta.</p>');
@@ -363,11 +375,15 @@
       fieldIn('Peso dentro del rubro', 'data-ch="act-field" data-path="peso" id="af-peso" inputmode="decimal" min="0" step="0.5"', a.peso, 'number') +
       (a.categoria === 'diagnostico' ? '<p class="muted small" style="align-self:end">El diagnóstico no cuenta para la calificación: marca el punto de partida en el perfil.</p>' : '<label class="switch" style="align-self:end"><input type="checkbox" data-ch="act-field" data-path="cuenta" ' + (a.cuenta !== false ? 'checked' : '') + '><span>Cuenta para la calificación</span></label>') + '</div>' +
       '<p class="muted small">Capturadas ' + st.capturadas + ' de ' + al.length + (st.prom != null ? ' · promedio del grupo ' + Math.round(st.prom) + '/100' : '') + '.' + (conv ? ' Escribe los <b>puntos</b> (de ' + mx + '); la app los convierte a base 100.' : '') + (a.categoria === 'diagnostico' ? '' : ' Vacío = NE (no entregó): cuenta como 0 a partir del día siguiente a la fecha de entrega' + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : '; ponle fecha para que aplique') + '.') + '</p>' +
-      '<p class="muted small">⭐ = punto extra: se suma a la <b>participación</b> del parcial, no a esta calificación.</p>' + '<div class="fillbar"><span class="muted small">Llenar vacíos con (base 100):</span>' + [100, 90, 80, 70, 60, 0].map(v => btn(String(v), 'act-fill', 'data-id="' + id + '" data-v="' + v + '"', 'small')).join('') + '</div>');
+      '<p class="muted small">⭐ = punto extra: se suma a la <b>participación</b> del parcial, no a esta calificación.</p>' + '<div class="fillbar"><span class="muted small">Llenar solo los vacíos con (base 100):</span>' + [100, 90, 80, 70, 60, 0].map(v => btn(String(v), 'act-fill', 'data-id="' + id + '" data-v="' + v + '"', 'small')).join('') +
+      (a.fecha && S.get('asis:' + g.id + ':' + a.fecha) ? '<label class="ck small"><input type="checkbox" data-ch="fill-pres"' + (E.ui.fillPres !== false ? ' checked' : '') + '><span>solo a quienes asistieron el ' + u.fCorta(a.fecha) + '</span></label>' : '') + '</div>');
+    if (E.cap) { h += E.cap.barraHTML(g, a); E.cap.marcaUlt(id); }
+    const prim = al.find(x => C.nota(a, x.id) == null);
+    if (st.capturadas && prim) h += '<span data-scroll="row-' + prim.id + '"></span>';
     h += '<ul class="slist">' + al.map((x, i) => {
       const v = a.notas && a.notas[x.id], nx = al[i + 1];
       const n100 = C.nota(a, x.id);
-      return '<li class="srow"><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv ? '<span class="conv g ' + gclass(n100) + '">' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + '</li>';
+      return '<li class="srow' + (a.rub ? ' rub' : '') + '" id="row-' + x.id + '"' + (E.rap ? E.rap.qAttr(x) : '') + '><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv ? '<span class="conv g ' + gclass(n100) + '">' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-auto="1" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' enterkeyhint="next" aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + (a.rub && E.cap ? E.cap.rubRow(a, x) : '') + '</li>';
     }).join('') + '</ul>';
     h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
     return { t: a.nombre || 'Actividad', h: h, key: k };
@@ -385,10 +401,14 @@
     if (v !== '') { v = Number(v); v = isNaN(v) ? '' : Math.max(0, Math.min(mx, v)); }
     S.update('act:' + g.id + ':' + id, a => { a.notas = a.notas || {}; a.notas[aid] = v; });
   };
+  // llena solo los vacíos; si hay lista de ese día (y la casilla está marcada), solo a quienes asistieron
   A['act-fill'] = el => {
-    const g = D.grupoActual(), id = el.dataset.id, v = Number(el.dataset.v);
-    S.update('act:' + g.id + ':' + id, a => { const pv = u.round(v * C.maxPts(a) / 100, 1); a.notas = a.notas || {}; D.alumnos(g).forEach(x => { const cur = a.notas[x.id]; if (cur === '' || cur == null) a.notas[x.id] = pv; }); });
+    const g = D.grupoActual(), id = el.dataset.id, v = Number(el.dataset.v), a0 = S.get('act:' + g.id + ':' + id), asis = a0 && a0.fecha ? S.get('asis:' + g.id + ':' + a0.fecha) : null, solo = !!asis && E.ui.fillPres !== false;
+    let n = 0;
+    S.update('act:' + g.id + ':' + id, a => { const pv = u.round(v * C.maxPts(a) / 100, 1); a.notas = a.notas || {}; D.alumnos(g).forEach(x => { const cur = a.notas[x.id]; if (solo && ['A', 'R'].indexOf(asis[x.id] || 'A') < 0) return; if (cur === '' || cur == null) { a.notas[x.id] = pv; n++; } }); });
+    u.toast(n ? n + (n === 1 ? ' vacío llenado' : ' vacíos llenados') + ' con ' + v + (solo ? ' (solo quienes asistieron)' : '') : 'No había vacíos que llenar', n ? 'ok' : '', 2500);
   };
+  CH['fill-pres'] = el => { E.ui.fillPres = el.checked; };
   A['act-del'] = el => {
     const g = D.grupoActual(), k = 'act:' + g.id + ':' + el.dataset.id, a = S.get(k); if (!confirm('¿Eliminar "' + (a && a.nombre) + '" y sus calificaciones?')) return;
     S.del(k); location.hash = '#/calificaciones/' + (a ? a.parcial : '');
@@ -689,13 +709,14 @@
     const al = D.alumnos(g, true), p = C.parcialActual();
     let h = card('<h3>' + icon('upload') + ' Importar o actualizar lista</h3><p class="muted small">Sube el Excel de listas de la escuela y elige la hoja de tu grupo, o pega los nombres (uno por renglón). Si un alumno ya existe, se conserva todo su historial.</p>' +
       '<label class="btn primary filebtn">' + icon('upload') + ' Subir Excel<input type="file" accept=".xlsx,.xls,.csv" data-ch="import-file" hidden></label>' +
-      '<details class="sub"><summary>Pegar nombres</summary><textarea class="inp" id="imp-paste" rows="6" placeholder="BARRIENTOS CORONADO MICHEL ARMANDO&#10;CORTES TAMAYO MIGUEL ALEXANDER&#10;…"></textarea><div class="mt">' + btn('Revisar', 'import-paste', '', 'primary') + '</div></details>' +
+      '<details class="sub"><summary>Pegar nombres</summary><textarea class="inp" id="imp-paste" rows="6" placeholder="PÉREZ RUIZ JUAN CARLOS&#10;GARCÍA HERNÁNDEZ ANA SOFÍA&#10;…"></textarea><div class="mt">' + btn('Revisar', 'import-paste', '', 'primary') + '</div></details>' +
       (E.paquete ? E.paquete.html(sub === 'paquete') : ''));
     if (sub === 'paquete') h += '<span data-scroll="pk-det"></span>';
     if (!al.length) return { t: 'Alumnos', h: h };
+    if (E.rap) h += E.rap.filtroHTML('alumnos');
     h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Asis ' + esc(p.nombre.replace(' parcial', '')) + '</th><th>Calif.</th></tr></thead><tbody>' + al.map(a => {
       const as = C.asis(g, p, a.id), k = C.cal(g, p.id, a.id);
-      return '<tr class="' + (a.activo === false ? 'baja' : '') + '"><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a>' + (a.activo === false ? ' <span class="chip">baja</span>' : '') + '</td><td>' + (as.pct == null ? '—' : Math.round(as.pct) + '%') + '</td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + '</span></td></tr>';
+      return '<tr class="' + (a.activo === false ? 'baja' : '') + '"' + (E.rap ? E.rap.qAttr(a) : '') + '><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a>' + (a.activo === false ? ' <span class="chip">baja</span>' : '') + '</td><td>' + (as.pct == null ? '—' : Math.round(as.pct) + '%') + '</td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + '</span></td></tr>';
     }).join('') + '</tbody></table></div><p class="muted small">' + al.filter(a => a.activo !== false).length + ' alumnos activos.</p>';
     return { t: 'Alumnos', h: h };
   };
@@ -777,7 +798,7 @@
     if (E.fc && E.fc.alumnoHTML) h += E.fc.alumnoHTML(g, a);
     if (E.retro) h += E.retro.alumnoHTML(g, a);
     const p = C.parcialActual(), as = C.asis(g, p, a.id);
-    if (as.fechasF.length) h += card('<h3>Faltas en el ' + esc(p.nombre) + '</h3><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
+    if (as.fechasF.length) h += card('<div class="row between gap wrap"><h3>Faltas en el ' + esc(p.nombre) + '</h3>' + (E.aula ? btn('📄 Justificar faltas', 'jus-open', 'data-aid="' + a.id + '"', 'small') : '') + '</div><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
     const acts = C.acts(g, p.id);
     if (acts.length) h += card('<h3>Actividades del ' + esc(p.nombre) + '</h3><ul class="acts">' + acts.map(x => { const v = x.notas && x.notas[a.id], n = C.nota(x, a.id), mx = C.maxPts(x); return '<li><a href="#/actividad/' + x.id + '"><b>' + esc(x.nombre) + '</b><span class="muted small">' + (CAT_LBL[x.categoria] || '') + (n != null && mx !== 100 ? ' · ' + v + ' de ' + mx + ' pts' : '') + '</span></a><span class="g ' + gclass(n) + '">' + (n == null ? 'NE' : Math.round(n)) + '</span></li>'; }).join('') + '</ul>');
     h += card('<label class="fld"><span>Nombre</span><input id="al-nombre" value="' + esc(a.nombre) + '" data-ch="alumno-f" data-aid="' + a.id + '" data-f="nombre"></label>' +
@@ -840,7 +861,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -889,6 +910,7 @@
     h += sec('app', '🎨 Apariencia y avisos', sel('tema', 'Tema', [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']], c.tema) +
       ('Notification' in window ? (Notification.permission === 'granted' ? '<p class="note ok">Notificaciones activas: te aviso al abrir la app cuando falten 7 días o menos para capturar.</p>' : btn('Activar notificaciones', 'notif-on', '', 'primary')) : '') +
       '<p class="muted small mt">Los avisos fuertes (captura, cierres y asuetos) ya están en tu Google Calendar con recordatorio por notificación y correo.</p>');
+    if (E.rap) h += sec('rapida', '⚡ Captura rápida', E.rap.ajustesHTML(c));
     h += sec('datos', '💾 Respaldo', '<p class="small">Descarga todo (alumnos, listas, calificaciones y planeaciones) en un archivo. Guárdalo en Drive de vez en cuando.' + (E.sync.meta().lastBackupAt ? ' Último: ' + u.fCorta(String(E.sync.meta().lastBackupAt).slice(0, 10)) + '.' : '') + '</p><div class="row gap wrap">' + btn(icon('download') + ' Descargar respaldo', 'backup-dl', '', 'primary') + '<label class="btn filebtn">' + icon('upload') + ' Restaurar respaldo<input type="file" accept=".json" data-ch="backup-restore" hidden></label></div>' +
       '<p class="muted small mt">Privacidad: el código de la app no contiene nombres de alumnos. Se guardan en este dispositivo y, si conectas Supabase, solo en tu cuenta protegida con tu contraseña.</p>' + btn('Borrar datos de este dispositivo', 'wipe', '', 'ghost danger'));
     h += sec('acerca', 'ℹ️ Acerca de', '<p><b>Escuadra v' + E.VERSION + '</b> · Control docente para ' + esc(c.plantel) + '</p>' + E.CHANGELOG.map(x => '<p class="small"><b>v' + x.v + '</b> (' + x.f + '): ' + esc(x.t) + '</p>').join('') + '<p class="muted small">Programa cargado: ' + esc(E.FUENTE_PROGRAMA) + '.</p>');

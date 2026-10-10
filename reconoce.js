@@ -10,7 +10,7 @@
   const card = H.card, btn = H.btn;
   const RC = E.reconoce = {};
   const KC = g => 'recon:' + g.id;
-  const corto = n => { const p = String(n).split(' '); return p.length >= 3 ? u.cap(p[p.length - 2].toLowerCase()) + ' ' + u.cap(p[0].toLowerCase()) : n; };
+  const corto = n => u.corto(n);
   const enRango = (f, a, b) => f >= a && f < b;
 
   // asistencia: sesiones registradas y presentes en [a, b)
@@ -45,6 +45,8 @@
       if (p1 - p0 >= 3) { sc += Math.min(2, (p1 - p0) / 3); rz.push('Participó ' + p1 + ' veces en 2 semanas (antes ' + p0 + ')'); }
       const f1 = practicas(g, al.id, A1, hoy), f0 = practicas(g, al.id, B0, A1);
       if (f1 >= 2 && f1 > f0) { sc += Math.min(2, f1 - f0); rz.push('Completó ' + (f1 % 1 ? f1.toFixed(1) : f1) + ' prácticas de FreeCAD en 2 semanas'); }
+      let st = 0; S.keys('obs:' + g.id + ':').forEach(k => { const f = k.split(':').pop(); if (enRango(f, A1, u.addDays(hoy, 1)) && ((S.get(k) || {})[al.id] || []).indexOf('excelente') >= 0) st++; });
+      if (st >= 2) { sc += Math.min(3, st * 0.8); rz.push('Tuvo ' + st + ' días excelentes en 2 semanas'); }
       const ex = examen(g, al.id, hoy);
       if (ex && ex.dv >= 15) { sc += Math.min(3, ex.dv / 15); rz.push('Su examen subió ' + Math.round(ex.dv) + ' puntos respecto a su diagnóstico (' + Math.round(ex.d) + ' → ' + Math.round(ex.v) + ')'); }
       if (!rz.length) return;

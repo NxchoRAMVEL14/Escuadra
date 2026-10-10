@@ -16,7 +16,7 @@
   const item = id => (E.BANCO || []).find(b => b.id === id);
   const tema = id => E.TEMAS.find(t => t.id === id);
   const tTit = id => { const t = tema(id); return t ? t.titulo : id; };
-  const nombreCorto = n => { const p = String(n).split(' '); return p.length >= 3 ? p[p.length - 2] + ' ' + p[0] : n; };
+  const nombreCorto = n => u.corto(n, true);
 
   /* ---------- azar con semilla (las versiones salen siempre iguales) ---------- */
   const hash = s => { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };

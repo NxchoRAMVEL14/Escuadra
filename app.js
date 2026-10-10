@@ -2,8 +2,10 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.13.0';
+  E.VERSION = '1.15.0';
   E.CHANGELOG = [
+    { v: '1.15.0', f: '2026-10-10', t: 'Captura rápida. «↶ Deshacer» después de cada cambio (y Ctrl+Z en la compu); lupa arriba para buscar a cualquier alumno por número o nombre y buscador dentro de las listas. Modo clase (nombres grandes: toca = participación, mantén = observación ⭐ 👎; con «Asistencia» cada toque cambia falta → retardo → justificada) acomodado según tu mapa del aula o del centro de cómputo. Pase de lista: el toque marca falta y mantener presionado da retardo o justificada; justificar faltas por fechas desde la ficha. Al abrir desde el ícono va a lo que toca (lista durante tu clase, cierre al terminar) y el ícono trae accesos a Pasar lista, Modo clase y Cierre del día; eliges los botones de la barra de abajo. Calificaciones: salta solo al siguiente alumno (85 salta, 10 espera), «llenar vacíos» solo a quienes asistieron, pegar calificaciones (columna, nombre y calificación, Google Forms 17 / 20) con vista previa, capturar desde una foto con Claude, por equipo, rúbricas de un toque editables (cartel, plano, exposición, prototipo, bitácora y reporte) y dictado por voz. Tarjetas para deslizar en libreta, prácticas y cierre (→ ✓ · ↑ ½ · ← ✗). Bandeja de Pendientes de captura con contador, evidencias del guion listas para calificar con su rúbrica, «Seguir capturando» la última actividad y atajos de teclado (? para verlos). Nombres cortos correctos con 3 o 5 palabras.' },
+    { v: '1.14.0', f: '2026-10-09', t: 'Cierre del día (Inicio te lo recuerda desde que termina tu última clase, y también desde el guion y Más): en una sola pantalla pasas o confirmas la lista, confirmas o ajustas lo que se hizo, revisas la tarea que tocaba (✓ ½ ✗, entra a la libreta), sumas participación y puntos extra, marcas ⭐ excelente o 👎 muy mal con motivo (solo escolar) y dejas una nota que va a tu bitácora. Te muestra los días de la última semana sin cerrar y, si activaste notificaciones, te avisa al abrir la app después de clase. Inicio te avisa de quién lleva 2 o más días «muy mal» en 2 semanas; los días ⭐ cuentan para los reconocimientos.' },
     { v: '1.13.0', f: '2026-10-09', t: '¿Qué le falta para aprobar? (Más → Para aprobar y en la ficha de cada alumno): lo pendiente (actividades vencidas, tareas de libreta, prácticas de FreeCAD) y cuánto sube su calificación si lo entrega, con tus ponderaciones; si el examen aún no se aplica, cuánto necesita; tú eliges cuánto vale lo entregado tarde; hoja «Mi plan para aprobar» para dársela en privado. Informe para padres (desde la ficha, Para aprobar o Imprimir): calificación con desglose, asistencia, FreeCAD, fortalezas, lo que le falta, cómo apoyar en casa, tus comentarios y firma. Retroalimentación rápida (💬 al revisar libreta, prácticas y en la ficha): frases de lo que hizo bien, qué mejorar y su siguiente paso; se guarda, se copia y sale en el informe para padres. Banco de preguntas propio (Más → Banco de preguntas): agregas, pegas varias o se las pides a Claude con instrucciones listas; entran solas a ejercicios, calentamiento, boleto y examen.' },
     { v: '1.12.0', f: '2026-10-09', t: 'Supabase listo para conectar (tus dispositivos se conectan solos; solo inicias sesión) y aviso de respaldo en Inicio (cada semana si tus datos solo están en el dispositivo, cada mes si ya sincronizan). FreeCAD por alumno: revisas cada práctica con ✓ ½ ✗ y entra sola a Libreta/Proyecto/Bitácora en la actividad «Prácticas de FreeCAD»; cada alumno tiene su nivel FreeCAD en su ficha y el guion del viernes te sugiere el acomodo (quién va junto a un monitor y quién puede serlo). Prepara tu clase de cómputo: en Inicio, desde 2 días antes, las prácticas que te tocan; las haces tú con cronómetro y te calcula cuánto tardará el grupo. Calentamiento de 5 min al inicio de cada clase (temas de hace 1 a 3 semanas, primero lo más bajo) y boleto de salida al final; anotas cuántos acertaron y eso alimenta el examen recomendado y la lista de temas a reforzar (Semáforo y Examen). Proyecto por equipo (Más → Proyecto): equipos equilibrados o al azar, etapas con fecha meta tomada de tu guion y semáforo por equipo. Industria (Más → Industria): «¿Dónde se usa en el Bajío?» en cada tema y en el proyector, y planeador de visitas, charlas y demostraciones con lista de pendientes, autorización para padres y preguntas para el invitado. Reconocimientos: cada semana te sugiere hasta 3 alumnos que mejoraron, con el motivo.' },
     { v: '1.11.0', f: '2026-10-09', t: 'Todo se proyecta, también en el centro de cómputo: cada actividad del guion tiene «Proyectar la clase» (meta, lo que harán con minutos, palabras clave, material, entrega y, si es de FreeCAD, la práctica con su plano y pasos) y «Ejercicios» con las preguntas del banco del tema (opciones A–D, se marca la correcta al revelar; los problemas salen con números nuevos: lo resolvemos juntos y ahora tú). Nueva sección FreeCAD (Más → FreeCAD): 15 prácticas en 3 niveles con plano acotado, pasos con el nombre de la herramienta en inglés y español, qué revisar, errores comunes, reto y entrega; se proyectan, se imprimen (hoja o cuadernillo) y se marcan como hechas. En los bloques de cómputo el guion sugiere «si terminan antes» las que el grupo todavía no hace.' },
@@ -21,17 +23,25 @@
     { v: '1.0.0', f: '2026-10-05', t: 'Primera versión: inicio con avisos, pase de lista y participación, calificaciones 50/40/5/5 con acta, impresión de listas, cotejo y rúbrica, planeaciones con revisión automática y exportación a Word, banco de ideas, herramientas de clase, bitácora, mejoras y sincronización con Supabase.' }
   ];
 
-  const NAV = [['inicio', 'Inicio', 'home'], ['clases', 'Clases', 'board'], ['lista', 'Lista', 'check'], ['calificaciones', 'Califs', 'grade'], ['mas', 'Más', 'more']];
-  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['clases', 'Clases', 'board'], ['calificaciones', 'Calificaciones', 'grade'], ['examen', 'Examen', 'doc'], ['libreta', 'Libreta', 'book'], ['aprobar', 'Para aprobar', 'grade'], ['banco', 'Banco de preguntas', 'doc'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['semaforo', 'Semáforo', 'grade'], ['estrategias', 'Estrategias', 'star'], ['tutoria', 'Tutoría', 'team'], ['dinamicas', 'Dinámicas', 'sparkle'], ['freecad', 'FreeCAD', 'cube'], ['proyecto', 'Proyecto', 'team'], ['industria', 'Industria', 'factory'], ['perfiles', 'Perfiles', 'profile'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
-  const MAS = ['planeacion', 'plan', 'temas', 'examen', 'libreta', 'aprobar', 'banco', 'semaforo', 'estrategias', 'tutoria', 'dinamicas', 'freecad', 'proyecto', 'industria', 'perfiles', 'imprimir', 'ideas', 'herramientas', 'alumnos', 'calendario', 'bitacora', 'mejoras', 'ajustes', 'mas'];
-  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas', clase: 'clases', presentador: 'temas', dinamica: 'dinamicas' };
+  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['aula', 'Modo clase', 'grid'], ['cierre', 'Cierre del día', 'note'], ['pendientes', 'Pendientes', 'inbox'], ['clases', 'Clases', 'board'], ['calificaciones', 'Calificaciones', 'grade'], ['examen', 'Examen', 'doc'], ['libreta', 'Libreta', 'book'], ['aprobar', 'Para aprobar', 'grade'], ['banco', 'Banco de preguntas', 'doc'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['semaforo', 'Semáforo', 'grade'], ['estrategias', 'Estrategias', 'star'], ['tutoria', 'Tutoría', 'team'], ['dinamicas', 'Dinámicas', 'sparkle'], ['freecad', 'FreeCAD', 'cube'], ['proyecto', 'Proyecto', 'team'], ['industria', 'Industria', 'factory'], ['perfiles', 'Perfiles', 'profile'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
+  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas', clase: 'clases', presentador: 'temas', dinamica: 'dinamicas', mapa: 'aula' };
+  // barra de abajo: 4 botones que eliges en Ajustes → Captura rápida, más «Más»
+  const navKeys = () => E.rap ? E.rap.navKeys() : ['inicio', 'clases', 'lista', 'calificaciones'];
+  const navInfo = k => (E.rap && E.rap.NAV[k]) || [k, 'more'];
+  let navHecha = '';
+  function bnavHTML() { return navKeys().map(k => '<a href="#/' + k + '" data-r="' + k + '">' + E.icon(navInfo(k)[1]) + '<span>' + navInfo(k)[0] + '</span></a>').join('') + '<a href="#/mas" data-r="mas">' + E.icon('more') + '<span>Más</span></a>'; }
+  function renderNav() { const k = navKeys().join(','); if (k === navHecha) return; const b = document.querySelector('.bnav'); if (b) { b.innerHTML = bnavHTML(); navHecha = k; } }
 
   function shell() {
     document.getElementById('app').innerHTML =
       '<div class="layout"><aside class="side"><div class="brand">' + E.logo() + '<div><b>Escuadra</b><small>Control docente · v' + E.VERSION + '</small></div></div>' +
-      '<nav>' + SIDE.map(x => '<a href="#/' + x[0] + '" data-r="' + x[0] + '">' + E.icon(x[2]) + '<span>' + x[1] + '</span></a>').join('') + '</nav><a class="sync" id="sync-side" href="#/ajustes/sync"></a></aside>' +
-      '<div class="main"><header class="top"><div class="top-l"><span class="brand-m">' + E.logo() + '</span><h2 id="vt">Inicio</h2></div><a class="syncdot" id="sync-top" href="#/ajustes/sync" aria-label="Sincronización"></a></header><main id="view" class="view" tabindex="-1"></main></div>' +
-      '<nav class="bnav">' + NAV.map(x => '<a href="#/' + x[0] + '" data-r="' + x[0] + '">' + E.icon(x[2]) + '<span>' + x[1] + '</span></a>').join('') + '</nav></div>';
+      '<nav>' + SIDE.map(x => '<a href="#/' + x[0] + '" data-r="' + x[0] + '">' + E.icon(x[2]) + '<span>' + x[1] + '</span>' + (x[0] === 'pendientes' ? '<b class="navcnt" id="pend-side" hidden></b>' : '') + '</a>').join('') + '</nav><a class="sync" id="sync-side" href="#/ajustes/sync"></a></aside>' +
+      '<div class="main"><header class="top"><div class="top-l"><span class="brand-m">' + E.logo() + '</span><h2 id="vt">Inicio</h2></div><div class="top-r">' +
+      '<button type="button" class="undob" id="undo-top" data-act="undo" hidden></button>' + '<a class="pendb" id="pend-top" href="#/pendientes" hidden aria-label="Pendientes de captura">' + E.icon('inbox') + '<b></b></a>' +
+      '<button type="button" class="iconbtn topbtn" data-act="buscar" aria-label="Buscar alumno (tecla /)">' + E.icon('search') + '</button>' +
+      '<a class="syncdot" id="sync-top" href="#/ajustes/sync" aria-label="Sincronización"></a></div></header><main id="view" class="view" tabindex="-1"></main></div>' +
+      '<nav class="bnav">' + bnavHTML() + '</nav></div>';
+    navHecha = navKeys().join(',');
   }
   function parseHash() {
     const h = location.hash.replace(/^#\/?/, ''); const parts = h.split('/');
@@ -42,20 +52,24 @@
   function doRender() {
     const r = parseHash(); const fn = E.views[r.name] || E.views.inicio; const routeKey = location.hash;
     const view = document.getElementById('view'); if (!view) return;
+    if (E.rap) E.rap.antes(routeKey !== lastRoute);
     const ae = document.activeElement; const fid = ae && ae.id && view.contains(ae) ? ae.id : null; let sel = null;
     try { if (fid && ae.selectionStart != null) sel = [ae.selectionStart, ae.selectionEnd]; } catch (e) { }
     const open = {}; view.querySelectorAll('details[data-sec],details[id]').forEach(d => { open[d.dataset.sec || d.id] = d.open; });
     let out; try { out = fn.apply(null, r.args); } catch (e) { console.error(e); out = { t: 'Error', h: '<section class="card"><h3>Algo falló al mostrar esta sección</h3><p class="muted small">Copia esto en "Mejoras" para pasárselo a Claude:</p><pre class="err">' + u.esc(e.stack || e.message) + '</pre></section>' }; }
     view.innerHTML = out.h; document.getElementById('vt').textContent = out.t; document.title = out.t + ' · Escuadra';
     if (routeKey === lastRoute) view.querySelectorAll('details[data-sec],details[id]').forEach(d => { const k = d.dataset.sec || d.id; if (k in open) d.open = open[k]; });
-    const act = ACTIVO[r.name] || r.name;
-    document.querySelectorAll('[data-r]').forEach(a => { const k = a.dataset.r; a.classList.toggle('on', k === act || (k === 'mas' && !!a.closest('.bnav') && MAS.indexOf(act) >= 0)); });
+    const act = ACTIVO[r.name] || r.name, enBarra = navKeys().indexOf(act) >= 0;
+    renderNav();
+    document.querySelectorAll('[data-r]').forEach(a => { const k = a.dataset.r; a.classList.toggle('on', k === act || (k === 'mas' && !!a.closest('.bnav') && !enBarra)); });
     if (fid) { const el = document.getElementById(fid); if (el) { try { el.focus({ preventScroll: true }); if (sel) el.setSelectionRange(sel[0], sel[1]); } catch (e) { } } }
     const nueva = routeKey !== lastRoute;
     if (nueva) { window.scrollTo(0, 0); lastRoute = routeKey; }
     if (out.after) out.after();
+    if (E.rap) E.rap.despues();
     const sc = nueva && view.querySelector('[data-scroll]'); if (sc) { const t = document.getElementById(sc.dataset.scroll); if (t) setTimeout(() => t.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60); }
     renderSync();
+    if (E.pend) E.pend.badge();
   }
   function renderSync() {
     const sy = E.sync; const t = document.getElementById('sync-top'), s = document.getElementById('sync-side');
@@ -65,17 +79,21 @@
   E.applyTheme = () => { const t = D.cfg().tema; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; };
 
   /* ---------- eventos delegados ---------- */
+  // cada acción que guarda datos queda como un paso que se puede deshacer (ver rapido.js)
+  const paso = (lbl, fn) => E.undo ? E.undo.run(lbl, fn) : fn();
   document.addEventListener('click', e => {
     if (e.target.id === 'modal') { E.modal.close(); return; }
     const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
-    const fn = E.actions[el.dataset.act]; if (fn) { e.preventDefault(); fn(el, e); }
+    const fn = E.actions[el.dataset.act]; if (fn) { e.preventDefault(); paso(el.dataset.act, () => fn(el, e)); }
   });
-  document.addEventListener('change', e => { const el = e.target.closest('[data-ch]'); if (!el) return; const fn = E.changes[el.dataset.ch]; if (fn) fn(el, e); });
+  document.addEventListener('change', e => { const el = e.target.closest('[data-ch]'); if (!el) return; const fn = E.changes[el.dataset.ch]; if (fn) paso(el.dataset.ch, () => fn(el, e)); });
   document.addEventListener('input', e => { const el = e.target.closest('[data-in]'); if (!el) return; const fn = E.inputs[el.dataset.in]; if (fn) fn(el, e); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !(E.proj && E.proj.t)) E.modal.close();
     if (e.key === 'Enter' && e.target.matches && e.target.matches('input[data-next]')) {
-      e.preventDefault(); const nx = document.getElementById(e.target.dataset.next); e.target.blur();
+      e.preventDefault();
+      if (E.rap) { E.rap.siguiente(e.target); return; }
+      const nx = document.getElementById(e.target.dataset.next); e.target.blur();
       if (nx) { nx.focus(); try { nx.select(); } catch (_) { } }
     }
   });
@@ -97,7 +115,9 @@
     S.load(); E.seed(); E.reparar(); E.applyTheme(); shell();
     S.on(key => { if (key === '__sync') { renderSync(); return; } if (key === '__pull') E.reparar(); E.render(); });
     window.addEventListener('hashchange', E.render);
-    if (!location.hash) history.replaceState(null, '', '#/inicio');
+    // abierta desde el ícono: a lo que toca según tu horario (pase de lista, guion o cierre del día)
+    const dest = E.aula && E.aula.alArrancar ? E.aula.alArrancar() : null;
+    if (!dest && !location.hash) history.replaceState(null, '', '#/inicio');
     E.render(); E.sync.init(); registerSW();
     setTimeout(() => E.notify.check(), 1500);
   }

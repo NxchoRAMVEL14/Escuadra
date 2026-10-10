@@ -103,7 +103,7 @@
   AP.lista = g => ((S.get('apoyos:' + g.id) || {}).items || []).filter(x => x && x.aids && est(x.est));
   AP.periodo = g => { const p = C.parcialActual(); return SF.periodos(g).find(x => x.id === p.id) || null; };
   AP.conApoyo = (g, per) => { const s = new Set(); AP.lista(g).forEach(x => { if (!per || (x.fecha >= per.ini && x.fecha <= per.fin)) x.aids.forEach(a => s.add(a)); }); return s; };
-  const nombreCorto = n => { const p = String(n).split(' '); return p.length >= 3 ? p[p.length - 2] + ' ' + p[0] : n; };
+  const nombreCorto = n => u.corto(n, true);
 
   // por qué va mal (para elegir la estrategia)
   AP.causas = r => {

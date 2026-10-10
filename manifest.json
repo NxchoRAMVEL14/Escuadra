@@ -16,7 +16,8 @@
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
   ],
   "shortcuts": [
-    { "name": "Pasar lista", "url": "./#/lista", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
-    { "name": "Calificaciones", "url": "./#/calificaciones", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+    { "name": "Pasar lista", "short_name": "Lista", "description": "Pase de lista de hoy", "url": "./#/lista", "icons": [{ "src": "sc-lista.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Modo clase", "short_name": "Clase", "description": "Nombres grandes: participación y asistencia", "url": "./#/aula", "icons": [{ "src": "sc-clase.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Cierre del día", "short_name": "Cierre", "description": "Tarea, participación y destacados de hoy", "url": "./#/cierre", "icons": [{ "src": "sc-cierre.png", "sizes": "192x192", "type": "image/png" }] }
   ]
 }

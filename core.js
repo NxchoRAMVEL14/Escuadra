@@ -39,6 +39,17 @@
     clone(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); },
     shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; },
     norm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim(); },
+    // lista oficial: APELLIDOS NOMBRES. Respeta partículas («DE LA ROSA», «MARÍA DE JESÚS»).
+    partesNombre(n) {
+      const PART = ['DE', 'DEL', 'LA', 'LAS', 'LOS', 'Y', 'SAN', 'SANTA', 'MC', 'VAN', 'VON', 'DA', 'DOS'];
+      const es = w => PART.indexOf(u.norm(w)) >= 0, p = String(n || '').trim().split(/\s+/).filter(Boolean); let i = 0;
+      const toma = () => { const w = []; while (i < p.length - 1 && es(p[i])) w.push(p[i++]); if (i < p.length) w.push(p[i++]); return w.join(' '); };
+      const ap1 = p.length > 1 ? toma() : '', ap2 = p.length - i >= 2 ? toma() : '', nom = p.slice(i).join(' ');
+      const cw = s => String(s).toLowerCase().split(' ').map(w => es(w) ? w : u.cap(w)).join(' ');
+      return { ap1: cw(ap1), ap2: cw(ap2), nom: cw(nom || ap1) };
+    },
+    // «Juan Pérez»: primer nombre y primer apellido
+    corto(n, mayus) { const x = u.partesNombre(n), s = x.ap1 ? x.nom.split(' ')[0] + ' ' + x.ap1 : x.nom; return mayus ? s.toUpperCase() : s; },
     toast(msg, kind, ms) {
       const box = document.getElementById('toasts'); if (!box) { console.log(msg); return; }
       const t = document.createElement('div'); t.className = 'toast ' + (kind || ''); t.textContent = msg; box.appendChild(t);

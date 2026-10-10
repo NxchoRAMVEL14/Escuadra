@@ -16,7 +16,10 @@
     { id: 'seguro', ico: '🦺', txt: 'Cuidó la seguridad', pos: 1, f: 'Cuida la seguridad en el taller' },
     { id: 'ayuda', ico: '🙋', txt: 'Pidió ayuda', pos: 1, f: 'Sabe pedir ayuda cuando la necesita' },
     { id: 'distrajo', ico: '💤', txt: 'Se distrajo', pos: -1, a: 'Todavía le cuesta mantener la atención' },
-    { id: 'material', ico: '🎒', txt: 'No trajo material', pos: -1, a: 'Todavía olvida su material' }
+    { id: 'material', ico: '🎒', txt: 'No trajo material', pos: -1, a: 'Todavía olvida su material' },
+    // del cierre del día
+    { id: 'excelente', ico: '⭐', txt: 'Excelente hoy', pos: 1, f: 'Ha tenido días excelentes en clase' },
+    { id: 'muymal', ico: '👎', txt: 'Muy mal hoy', pos: -1, a: 'Ha tenido días muy malos en clase' }
   ];
   const OBS_BY = {}; E.OBS.forEach(o => { OBS_BY[o.id] = o; });
   E.obsDia = (g, f, aid) => ((S.get('obs:' + g.id + ':' + f) || {})[aid]) || [];

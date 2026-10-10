@@ -7,7 +7,7 @@
   const card = H.card, btn = H.btn, link = H.link, icon = E.icon;
   const T = E.tutoria = {};
   const $ = n => '$' + (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('es-MX', { maximumFractionDigits: 2 });
-  const nombreCorto = n => { const p = String(n).split(' '); return p.length >= 3 ? p[p.length - 2] + ' ' + p[0] : n; };
+  const nombreCorto = n => u.corto(n, true);
   const KT = g => 'tut:' + g.id, KS = g => 'tutseg:' + g.id, KC = (g, id) => 'coop:' + g.id + ':' + (id || '');
   const val = id => ((document.getElementById(id) || {}).value || '').trim();
   T.cfg = g => S.get(KT(g)) || {};

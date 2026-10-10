@@ -1,6 +1,6 @@
 /* Escuadra · service worker: funciona sin internet y se actualiza solo. Cambia VERSION en cada entrega. */
-const VERSION = 'escuadra-v1.13.0';
-const SHELL = ['./', 'index.html', 'styles.css', 'config.js', 'data.js', 'ideas.js', 'temas.js', 'core.js', 'views.js', 'perfil.js', 'paquete.js', 'clases.js', 'presentador.js', 'semaforo.js', 'figuras.js', 'videos.js', 'estrategias.js', 'tutoria.js', 'dinamicas.js', 'libreta.js', 'banco.js', 'examen.js', 'practicas.js', 'repaso.js', 'proyecto.js', 'industria.js', 'reconoce.js', 'aprobar.js', 'retro.js', 'mibanco.js', 'print.js', 'app.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png'];
+const VERSION = 'escuadra-v1.15.0';
+const SHELL = ['./', 'index.html', 'styles.css', 'config.js', 'data.js', 'ideas.js', 'temas.js', 'core.js', 'views.js', 'perfil.js', 'paquete.js', 'clases.js', 'presentador.js', 'semaforo.js', 'figuras.js', 'videos.js', 'estrategias.js', 'tutoria.js', 'dinamicas.js', 'libreta.js', 'banco.js', 'examen.js', 'practicas.js', 'repaso.js', 'proyecto.js', 'industria.js', 'reconoce.js', 'aprobar.js', 'retro.js', 'mibanco.js', 'cierre.js', 'rapido.js', 'aula.js', 'captura.js', 'pendientes.js', 'print.js', 'app.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'sc-lista.png', 'sc-clase.png', 'sc-cierre.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.13.0)
+# Escuadra · Control docente (v1.15.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,41 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.15 (captura rápida):**
+- **↶ Deshacer** después de cada cambio (arriba, junto a la lupa; en la compu también Ctrl + Z): si te equivocas de alumno o de
+  botón, regresa como estaba.
+- **Buscar alumno**: la lupa de arriba (o la tecla /) busca por número de lista o parte del nombre y abre su ficha; desde ahí
+  también +1 participación u observación. Las listas largas (pase de lista, calificaciones, cierre, revisión de prácticas y Alumnos)
+  tienen su buscador: escribes «12», Enter y capturas; al terminar regresa solo al buscador.
+- **Modo clase** (desde el ícono, Inicio, el pase de lista o el guion): nombres grandes; toca = +1 participación, mantén presionado =
+  observación (⭐ 👎 y más). Con «Asistencia», cada toque cambia falta → retardo → justificada → asistió. Se acomoda como tu
+  **mapa del salón** (uno para el aula y otro para el centro de cómputo; usa el del lugar del bloque) y lo puedes ver «desde el frente».
+- **Pase de lista**: un toque marca falta (otro toque, asistió); mantener presionado (o clic derecho) da retardo o justificada.
+  **Justificar faltas por fechas** desde la ficha del alumno (solo se guarda la fecha, nunca el motivo).
+- **Abre en lo que toca**: desde el ícono, durante tu clase va al pase de lista (o al guion si ya pasaste lista) y al terminar, al
+  cierre del día; se apaga en Ajustes → Captura rápida. **Accesos del ícono** (mantenlo presionado): Pasar lista, Modo clase y Cierre
+  del día. **Barra de abajo**: eliges sus 4 botones.
+- **Calificaciones**: salta solo al siguiente alumno (85 salta; 10 espera por si es 100) y el Enter de costumbre no se salta a nadie;
+  ↑ ↓ en la compu; «llenar vacíos» solo a quienes asistieron ese día; **pegar** una columna, «nombre calificación» (aunque tenga errores
+  de dedo) o la puntuación de Google Forms (17 / 20), siempre con vista previa; **📷 con Claude**: copias instrucciones con tu lista, le
+  mandas la foto y pegas lo que te responda; **por equipo** (los equipos de Proyecto); **rúbricas de un toque** E · B · S · I (cartel,
+  plano, exposición, prototipo, bitácora y reporte; editables e imprimibles) o criterio por criterio; **dictado** en Chrome:
+  «Pérez 85» o «número 12, 85» (usa el reconocimiento de voz de Google y necesita internet).
+- **Tarjetas para deslizar** en libreta, prácticas de FreeCAD y cierre: → completa, ↑ incompleta, ← no la hizo (también con
+  botones o con 1 · 2 · 3).
+- **Pendientes de captura** (contador arriba, en Inicio y en Más): días sin cerrar, listas sin pasar, evidencias del guion,
+  actividades vencidas sin calificar, exámenes sin capturar, tareas y prácticas sin revisar, calentamientos y boletos sin anotar y
+  etapas del proyecto. Las **evidencias del guion** (cartel, plano, prototipo, defensa…) se vuelven actividad con su rúbrica sugerida
+  en un toque, también desde el cierre del día. **«↪ Seguir capturando»** te regresa a la última actividad que dejaste a medias.
+- **Atajos de teclado** en la compu (? para verlos) y nombres cortos correctos con nombres de 3 o 5 palabras.
+
+**Nuevo en v1.14:** **Cierre del día** (Inicio te lo recuerda desde que termina tu última clase; también está en el guion del día
+y en Más). En una sola pantalla: lista (o «todos presentes»), confirmas o ajustas lo que se hizo, revisas la tarea que tocaba
+entregar (✓ ½ ✗, entra a la libreta), sumas participación y puntos extra, marcas ⭐ excelente o 👎 muy mal con motivo (solo escolar)
+y dejas una nota que va a tu bitácora. Te muestra los días de la última semana sin cerrar y, si activaste notificaciones, te avisa al
+abrir la app después de clase. Inicio te dice quién lleva 2 o más días «muy mal» en 2 semanas; los días ⭐ cuentan en los
+reconocimientos y los dos aparecen en el pase de lista y en el perfil.
 
 **Nuevo en v1.13:**
 - **¿Qué le falta para aprobar?** (Más → Para aprobar y en la ficha de cada alumno): lo pendiente (actividades vencidas, tareas de
@@ -207,13 +242,18 @@ al abrirla con internet. Tus datos no se tocan.
 | `aprobar.js` | Qué le falta a cada alumno para aprobar, plan imprimible e informe para padres |
 | `retro.js` | Retroalimentación rápida con banco de frases |
 | `mibanco.js` | Tu propio banco de preguntas (agregar, pegar e instrucciones para Claude) |
+| `cierre.js` | Cierre del día: recordatorio, tarea, participación, destacados y nota |
+| `rapido.js` | Deshacer, buscar alumno, buscador en listas, mantener presionado, atajos de teclado y salto automático |
+| `aula.js` | Modo clase, mapa del salón, pase de lista con mantener presionado, justificar por fechas y abrir en lo que toca |
+| `captura.js` | Pegar calificaciones, capturar con Claude, por equipo, rúbricas de un toque, tarjetas y dictado |
+| `pendientes.js` | Pendientes de captura y evidencias del guion |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
 | `views.js` | Pantallas |
 | `print.js` | Impresión, acta en Excel y planeación en Word |
 | `app.js` | Arranque y navegación |
-| `sw.js`, `manifest.json`, `icon-*` | Instalación como app y funcionamiento sin internet |
+| `sw.js`, `manifest.json`, `icon-*`, `sc-*` | Instalación como app, accesos del ícono y funcionamiento sin internet |
 | `config.js` | (Opcional) conexión a Supabase |
 | `schema.sql` | Tabla y reglas de seguridad para Supabase (no hace falta subirlo a GitHub) |
 
@@ -235,4 +275,7 @@ al abrirla con internet. Tus datos no se tocan.
 - Calentamiento y boleto: práctica de recuperación espaciada (Dunlosky y col., 2013; Roediger y Karpicke, 2006) y revisar la comprensión al cerrar (Rosenshine, 2012). Reconocimientos: elogiar el esfuerzo y la estrategia (Mueller y Dweck, 1998).
 - Retroalimentación: concreta y con siguiente paso (EEF, *Teaching and Learning Toolkit*: Feedback). Informe para padres: consejos de estudio por recuperación (Dunlosky y col., 2013).
 - Industria: armadoras, motores, transmisiones y regiones de Guanajuato según *mexicoindustry.com* (20 ago 2026); Guanajuato primer productor de vehículos ligeros en 2025 según *Mexico Business News* (22 ene 2026, datos de Cluster Industrial).
+- Captura rápida: accesos del ícono según el *Web App Manifest* (Chrome en Android muestra hasta 3; web.dev, «App shortcuts»);
+  dictado con la *Web Speech API* (MDN: en Chrome usa un servicio de reconocimiento en línea, por eso necesita internet); los accesos del ícono se actualizan como máximo una vez al día; rúbricas
+  analíticas de 4 niveles con criterios propios de la app (editables).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

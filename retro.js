@@ -29,7 +29,7 @@
   };
   RT.lista = (g, aid) => (((S.get(KR(g)) || {})[aid]) || []).slice().sort((a, b) => String(b.f).localeCompare(String(a.f)) || String(b.id).localeCompare(String(a.id)));
   RT.paraPadres = (g, aid, n) => RT.lista(g, aid).filter(x => x.padres !== false).slice(0, n || 2);
-  const corto = n => { const p = String(n).split(' '); return p.length >= 3 ? u.cap(p[p.length - 2].toLowerCase()) + ' ' + u.cap(p[0].toLowerCase()) : n; };
+  const corto = n => u.corto(n);
   const texto = sel => SEC.filter(s => (sel[s[0]] || []).length).map(s => s[1] + ': ' + sel[s[0]].join(' ')).join(' ');
 
   /* ---------- ventana para escribirla ---------- */

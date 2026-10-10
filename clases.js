@@ -426,7 +426,7 @@
         salioHTML(b), 'cl-bloque');
     });
     if (E.repaso) h += E.repaso.bolHTML(g, f, d);
-    h += '<div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + f, 'primary') + btn(icon('book') + ' Anotar en bitácora', 'cl-bit', 'data-f="' + f + '"') + '</div>';
+    h += '<div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + f, 'primary') + (E.aula ? link(icon('grid') + ' Modo clase', 'aula/' + f, '') : '') + (E.cierre ? link('📝 Cierre del día', 'cierre/' + f, '') : '') + btn(icon('book') + ' Anotar en bitácora', 'cl-bit', 'data-f="' + f + '"') + '</div>';
     return { t: 'Clase', h: h };
   };
 
@@ -487,8 +487,10 @@
     let quedan = null; if (r.fecha === u.today()) { const fin = u.parse(r.fecha); const hm = r.fin.split(':'); fin.setHours(Number(hm[0]), Number(hm[1]), 0, 0); quedan = (fin.getTime() - Date.now()) / 1000; if (quedan < -1800) quedan = null; }
     return { p: p, el: el, rest: rest, atraso: atraso, falta: falta, quedan: quedan };
   };
+  // la ventana del proyector nunca muestra el temporizador (se revisa la dirección: el aviso puede llegar antes que presentador.js)
+  const enPantalla = () => E.modoPantalla || /^#\/pantalla/.test(location.hash);
   R.barra = () => {
-    if (E.modoPantalla) return;
+    if (enPantalla()) return;
     let el = document.getElementById('runbar');
     if (!R.r) { if (el) el.remove(); document.body.classList.remove('running'); return; }
     if (!el) { el = document.createElement('div'); el.id = 'runbar'; el.className = 'runbar'; document.body.appendChild(el); }
@@ -574,6 +576,6 @@
     u.toast(el.dataset.rec === '1' ? 'Guardado. Lo que faltó pasó a la siguiente clase.' : el.dataset.ade === '1' ? 'Guardado. Te adelantaste: todo se recorrió hacia antes.' : 'Guardado en la bitácora', 'ok', 5000);
   };
   // si la página se recargó a media clase, el temporizador sigue
-  setTimeout(() => { if (E.modoPantalla) return; try { const x = JSON.parse(localStorage.getItem(LS_RUN) || 'null'); if (x && x.pasos && x.pasos.length) { R.r = x; R.barra(); R.loop(); } } catch (e) { } }, 0);
+  setTimeout(() => { if (enPantalla()) return; try { const x = JSON.parse(localStorage.getItem(LS_RUN) || 'null'); if (x && x.pasos && x.pasos.length) { R.r = x; R.barra(); R.loop(); } } catch (e) { } }, 0);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && R.r) { R.tick(false); if (!R.r.pausa) R.wake(true); } });
 })();

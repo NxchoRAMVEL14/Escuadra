@@ -580,7 +580,7 @@
   /* =================== revisión por alumno (✓ ½ ✗) → Libreta / Proyecto / Bitácora =================== */
   const KF = (g, pid) => 'fcal:' + g.id + ':' + pid;
   const MARK = { 2: ['✓', 'Completa', 'ok'], 1: ['½', 'A medias', 'warn'], 0: ['✗', 'No la hizo', 'bad'] };
-  const corto = n => { const p = String(n).split(' '); return p.length >= 3 ? u.cap(p[p.length - 2].toLowerCase()) + ' ' + u.cap(p[0].toLowerCase()) : n; };
+  const corto = n => u.corto(n);
   const presentes = (g, f) => { const doc = S.get('asis:' + g.id + ':' + f); return D.alumnos(g).filter(a => !doc || ['A', 'R'].indexOf(doc[a.id] || 'A') >= 0); };
   F.rev = (g, pid) => S.get(KF(g, pid)) || {};
   // calificación de prácticas de un alumno en un parcial: promedio de las que ya tienen marca (las pendientes no cuentan)
@@ -635,8 +635,9 @@
     let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/freecad/' + p.id + '/revisar/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '</div>';
     h += card('<h3>✅ Revisar: ' + esc(p.t) + '</h3><p class="muted small">' + esc(pa.nombre) + ' · ✓ completa (100) · ½ a medias (50) · ✗ no la hizo (0). Lo que no marques queda pendiente y todavía no cuenta.</p>' +
       '<p class="small"><b>' + cnt[2] + '</b> ✓ · <b>' + cnt[1] + '</b> ½ · <b>' + cnt[0] + '</b> ✗ · <b>' + cnt.p + '</b> pendientes</p>' +
-      '<ul class="fc-rev">' + al.map(a => { const v = (m[a.id] || {})[p.id], falto = asis && ['A', 'R'].indexOf(asis[a.id] || 'A') < 0;
-        return '<li><span class="fc-al">' + a.num + '. ' + esc(a.nombre) + (falto ? ' <span class="chip">faltó hoy</span>' : '') + '</span><div class="cl-seg">' + [2, 1, 0].map(x => btn(MARK[x][0], 'fc-marca', 'data-id="' + p.id + '" data-pid="' + pid + '" data-aid="' + a.id + '" data-v="' + x + '" aria-label="' + MARK[x][1] + '" title="' + MARK[x][1] + '"', 'small' + (v != null && Number(v) === x ? ' on ' + MARK[x][2] : ''))).join('') + (E.retro ? btn('💬', 'rt-open', 'data-aid="' + a.id + '" data-ctx="practica" data-ref="' + p.id + '" aria-label="Retroalimentación" title="Retroalimentación"', 'small ghost') : '') + '</div></li>'; }).join('') + '</ul>' +
+      (E.cap ? '<div class="row gap wrap">' + btn('🃏 Revisar por tarjetas', 'tj-fc', 'data-id="' + p.id + '" data-pid="' + pid + '"', 'small primary') + (cnt.p ? btn('✓ a los presentes sin marca', 'fc-todos', 'data-id="' + p.id + '" data-pid="' + pid + '"', 'small') : '') + '</div>' : '') +
+      (E.rap ? E.rap.filtroHTML('fc') : '') + '<ul class="fc-rev" data-kb="fc">' + al.map(a => { const v = (m[a.id] || {})[p.id], falto = asis && ['A', 'R'].indexOf(asis[a.id] || 'A') < 0;
+        return '<li' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><span class="fc-al">' + a.num + '. ' + esc(a.nombre) + (falto ? ' <span class="chip">faltó hoy</span>' : '') + '</span><div class="cl-seg">' + [2, 1, 0].map(x => btn(MARK[x][0], 'fc-marca', 'data-id="' + p.id + '" data-pid="' + pid + '" data-aid="' + a.id + '" data-v="' + x + '" data-k="' + (3 - x) + '" aria-label="' + MARK[x][1] + '" title="' + MARK[x][1] + '"', 'small' + (v != null && Number(v) === x ? ' on ' + MARK[x][2] : ''))).join('') + (E.retro ? btn('💬', 'rt-open', 'data-aid="' + a.id + '" data-ctx="practica" data-ref="' + p.id + '" aria-label="Retroalimentación" title="Retroalimentación"', 'small ghost') : '') + '</div></li>'; }).join('') + '</ul>' +
       '<div class="row gap wrap mt">' + (cnt.p && cnt.p < al.length ? btn('Pasar pendientes a ✗', 'fc-pend', 'data-id="' + p.id + '" data-pid="' + pid + '"', 'small ghost danger') : '') + link('‹ Volver a la práctica', 'freecad/' + p.id, 'small ghost') + '</div>');
     const a = doc.actId && S.get('act:' + g.id + ':' + doc.actId);
     h += card('<h3>📊 A Calificaciones</h3>' + (a ? '<p class="small">Entra sola a <a href="#/actividad/' + a.id + '">' + esc(a.nombre) + '</a> (Libreta / Proyecto / Bitácora): el promedio de las prácticas ya marcadas de cada alumno en el ' + esc(pa.nombre) + '.</p>' : '<p class="small">Con la primera marca se crea sola la actividad «Prácticas de FreeCAD» en Libreta / Proyecto / Bitácora (' + D.cfg().pond.trabajos + '%).</p>') +
@@ -653,6 +654,14 @@
       if (!Object.keys(d.marcas).some(x => d.marcas[x][id] != null)) d.orden = d.orden.filter(x => x !== id);
     }, {});
     if (F.sync(g, pid)) u.toast('Creé la actividad «Prácticas de FreeCAD» en Libreta / Proyecto / Bitácora', 'ok', 4500);
+  };
+  // ✓ a quienes vinieron hoy y todavía no tienen marca (los que faltaron se quedan pendientes)
+  A['fc-todos'] = el => {
+    const g = D.grupoActual(), pid = el.dataset.pid, id = el.dataset.id, asis = S.get('asis:' + g.id + ':' + u.today()), doc = F.rev(g, pid), m = doc.marcas || {};
+    const ids = presentes(g, u.today()).filter(a => ((m[a.id] || {})[id]) == null).map(a => a.id); if (!ids.length) { u.toast('No hay presentes sin marca', 'err'); return; }
+    if (!confirm('Se marcarán con ✓ (completa) ' + ids.length + (ids.length === 1 ? ' alumno' : ' alumnos') + (asis ? ' presentes hoy' : '') + ' que no tienen marca. ¿Continuar?')) return;
+    S.update(KF(g, pid), d => { d.marcas = d.marcas || {}; d.fechas = d.fechas || {}; d.orden = d.orden || []; ids.forEach(aid => { (d.marcas[aid] = d.marcas[aid] || {})[id] = 2; (d.fechas[aid] = d.fechas[aid] || {})[id] = u.today(); }); if (d.orden.indexOf(id) < 0) d.orden.push(id); }, {});
+    if (F.sync(g, pid)) u.toast('Creé la actividad «Prácticas de FreeCAD» en Libreta / Proyecto / Bitácora', 'ok', 4500); else u.toast(ids.length + ' marcados ✓', 'ok');
   };
   A['fc-pend'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, id = el.dataset.id;

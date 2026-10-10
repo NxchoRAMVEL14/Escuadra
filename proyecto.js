@@ -16,7 +16,7 @@
   };
   const ST = { '': ['○', 'Pendiente', ''], proc: ['◐', 'En proceso', 'warn'], ok: ['✓', 'Lista', 'ok'] };
   const SIG = { '': 'proc', proc: 'ok', ok: '' };
-  const corto = n => { const p = String(n).split(' '); return p.length >= 3 ? u.cap(p[p.length - 2].toLowerCase()) + ' ' + u.cap(p[0].toLowerCase()) : n; };
+  const corto = n => u.corto(n);
   PJ.doc = (g, pid) => S.get(KP(g, pid)) || {};
   PJ.parciales = g => D.parciales().filter(p => PJ.ETAPAS[E.clases.smKey(g, p.id)]);
   // fecha meta de cada etapa: el último día en que termina alguna de sus clases
