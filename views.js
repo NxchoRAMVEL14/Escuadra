@@ -358,7 +358,15 @@
   };
 
   // ⭐ punto extra que se suma a la participación del parcial (no cambia la calificación de la actividad)
-  const extraBtn = (a, x) => { const n = Number((a.extra || {})[x.id] || 0); return '<span class="xtra">' + (n ? '<button type="button" class="xbtn menos" data-act="act-extra" data-id="' + a.id + '" data-aid="' + x.id + '" data-d="-1" aria-label="Quitar punto extra a ' + esc(x.nombre) + '">−</button>' : '') + '<button type="button" class="xbtn' + (n ? ' on' : '') + '" data-act="act-extra" data-id="' + a.id + '" data-aid="' + x.id + '" data-d="1" aria-label="Punto extra a ' + esc(x.nombre) + '">⭐' + (n ? '<b>' + n + '</b>' : '+') + '</button></span>'; };
+  // ⏰ = lo entregó tarde: cuenta solo el % de «Lo entregado tarde vale» (Ajustes → Calificación)
+  const tardeBtn = (a, x) => { const f = C.tardeF(a, x.id), on = f < 1; return '<button type="button" class="xbtn tbtn' + (on ? ' on' : '') + '" data-act="act-tarde" data-id="' + a.id + '" data-aid="' + x.id + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Entregó tarde (cuenta ' + Math.round(f * 100) + ' %): quitar' : 'Marcar que ' + esc(x.nombre) + ' lo entregó tarde') + '" title="' + (on ? 'Entregado tarde: cuenta ' + Math.round(f * 100) + ' %' : 'Lo entregó tarde') + '">⏰</button>'; };
+  A['act-tarde'] = el => {
+    const g = D.grupoActual(), k = 'act:' + g.id + ':' + el.dataset.id, aid = el.dataset.aid, f = C.tardeVale(); let on = false;
+    S.update(k, a => { a.tarde = a.tarde || {}; if (a.tarde[aid]) delete a.tarde[aid]; else { a.tarde[aid] = f; on = true; } });
+    const a = S.get(k), v = a && a.notas && a.notas[aid], n = C.nota(a, aid);
+    u.toast(on ? '⏰ Entregado tarde: cuenta ' + Math.round(f * 100) + ' %' + (n != null && v !== '' ? ' (' + u.round(Number(v) / C.maxPts(a) * 100, 1) + ' → ' + u.round(n, 1) + ')' : '') : 'Ya no cuenta como entregado tarde', 'ok', 3000);
+  };
+  const extraBtn = (a, x) => { const n = Number((a.extra || {})[x.id] || 0); return '<span class="xtra">' + tardeBtn(a, x) + (n ? '<button type="button" class="xbtn menos" data-act="act-extra" data-id="' + a.id + '" data-aid="' + x.id + '" data-d="-1" aria-label="Quitar punto extra a ' + esc(x.nombre) + '">−</button>' : '') + '<button type="button" class="xbtn' + (n ? ' on' : '') + '" data-act="act-extra" data-id="' + a.id + '" data-aid="' + x.id + '" data-d="1" aria-label="Punto extra a ' + esc(x.nombre) + '">⭐' + (n ? '<b>' + n + '</b>' : '+') + '</button></span>'; };
   A['act-extra'] = el => {
     const g = D.grupoActual(), k = 'act:' + g.id + ':' + el.dataset.id, d = Number(el.dataset.d) || 1;
     S.update(k, a => { a.extra = a.extra || {}; const n = Math.max(0, Number(a.extra[el.dataset.aid] || 0) + d); if (n) a.extra[el.dataset.aid] = n; else delete a.extra[el.dataset.aid]; });
@@ -384,8 +392,8 @@
     if (st.capturadas && prim) h += '<span data-scroll="row-' + prim.id + '"></span>';
     h += '<ul class="slist">' + al.map((x, i) => {
       const v = a.notas && a.notas[x.id], nx = al[i + 1];
-      const n100 = C.nota(a, x.id);
-      return '<li class="srow' + (a.rub ? ' rub' : '') + '" id="row-' + x.id + '"' + (E.rap ? E.rap.qAttr(x) : '') + '><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv ? '<span class="conv g ' + gclass(n100) + '">' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-auto="1" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' enterkeyhint="next" aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + (a.rub && E.cap ? E.cap.rubRow(a, x) : '') + '</li>';
+      const n100 = C.nota(a, x.id), tar = C.tardeF(a, x.id) < 1;
+      return '<li class="srow' + (a.rub ? ' rub' : '') + (tar ? ' tarde' : '') + '" id="row-' + x.id + '"' + (E.rap ? E.rap.qAttr(x) : '') + '><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv || tar ? '<span class="conv g ' + gclass(n100) + '"' + (tar ? ' title="Cuenta ' + Math.round(C.tardeF(a, x.id) * 100) + ' % por entregarlo tarde"' : '') + '>' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-auto="1" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' enterkeyhint="next" aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + (a.rub && E.cap ? E.cap.rubRow(a, x) : '') + '</li>';
     }).join('') + '</ul>';
     if (E.evid) h += E.evid.tiraHTML(g, { act: id });
     h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
@@ -804,7 +812,7 @@
     const p = C.parcialActual(), as = C.asis(g, p, a.id);
     if (as.fechasF.length) h += card('<div class="row between gap wrap"><h3>Faltas en el ' + esc(p.nombre) + '</h3>' + (E.aula ? btn('📄 Justificar faltas', 'jus-open', 'data-aid="' + a.id + '"', 'small') : '') + '</div><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
     const acts = C.acts(g, p.id);
-    if (acts.length) h += card('<h3>Actividades del ' + esc(p.nombre) + '</h3><ul class="acts">' + acts.map(x => { const v = x.notas && x.notas[a.id], n = C.nota(x, a.id), mx = C.maxPts(x); return '<li><a href="#/actividad/' + x.id + '"><b>' + esc(x.nombre) + '</b><span class="muted small">' + (CAT_LBL[x.categoria] || '') + (n != null && mx !== 100 ? ' · ' + v + ' de ' + mx + ' pts' : '') + '</span></a><span class="g ' + gclass(n) + '">' + (n == null ? 'NE' : Math.round(n)) + '</span></li>'; }).join('') + '</ul>');
+    if (acts.length) h += card('<h3>Actividades del ' + esc(p.nombre) + '</h3><ul class="acts">' + acts.map(x => { const v = x.notas && x.notas[a.id], n = C.nota(x, a.id), mx = C.maxPts(x); return '<li><a href="#/actividad/' + x.id + '"><b>' + esc(x.nombre) + '</b><span class="muted small">' + (CAT_LBL[x.categoria] || '') + (n != null && mx !== 100 ? ' · ' + v + ' de ' + mx + ' pts' : '') + (C.tardeF(x, a.id) < 1 ? ' · ⏰ tarde (' + Math.round(C.tardeF(x, a.id) * 100) + ' %)' : '') + '</span></a><span class="g ' + gclass(n) + '">' + (n == null ? 'NE' : Math.round(n)) + '</span></li>'; }).join('') + '</ul>');
     h += card('<label class="fld"><span>Nombre</span><input id="al-nombre" value="' + esc(a.nombre) + '" data-ch="alumno-f" data-aid="' + a.id + '" data-f="nombre"></label>' +
       '<label class="fld"><span>Observaciones (solo tú las ves)</span><textarea id="al-notas" rows="4" data-ch="alumno-f" data-aid="' + a.id + '" data-f="notas">' + esc(a.notas || '') + '</textarea></label>' +
       '<div class="row gap wrap">' + btn(a.activo === false ? 'Reactivar' : 'Dar de baja', 'alumno-baja', 'data-aid="' + a.id + '"', 'ghost danger') + (a.activo === false ? btn(icon('trash') + ' Quitar de la lista', 'alumno-quitar', 'data-aid="' + a.id + '"', 'ghost danger') : '') + '</div>');
@@ -899,6 +907,7 @@
     h += sec('cal', '📊 Calificación', '<p class="small">Ponderación del parcial (debe sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.trabajos', 'Libreta/Proyecto/Bitácora %', c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
       '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
       sel('escalaActa', 'Escala del acta', [[100, 'Base 100'], [10, 'Base 10']], c.escalaActa) + sel('conteoActa', 'Asistencias y faltas del acta', [['dias', 'Por día de clase'], ['horas', 'Por hora']], c.conteoActa) + '</div>' +
+      '<div class="fgrid">' + sel('tardeValor', 'Lo entregado tarde vale (al marcar ⏰)', E.TARDE_OPC.map(x => [x, Math.round(x * 100) + ' %' + (x === 1 ? ' (sin descuento)' : '')]), C.tardeVale()) + '</div><p class="muted small">Cuando un alumno te entrega tarde, márcalo con ⏰ en la actividad, la libreta o la práctica (o «📥 Recibir tarde» en su ficha): su calificación se multiplica por este porcentaje. Con 75 %, un trabajo perfecto entregado tarde queda en 75 y uno de 80 queda en 60. Si después cambias el porcentaje, lo que ya marcaste conserva el que tenía.</p>' +
       tog('vaciasCero', 'Actividad sin calificación cuenta como 0 (no entregó) después de su fecha de entrega', c.vaciasCero) + tog('retardoCuenta', 'Retardo cuenta como asistencia', c.retardoCuenta) + tog('justCuenta', 'Falta justificada cuenta como asistencia', c.justCuenta));
     if (g) {
       const gf = (path, label, val, type) => fieldIn(label, 'data-ch="grupo" data-path="' + path + '" id="gf-' + path + '"', val, type);
@@ -923,7 +932,7 @@
   };
   CH.cfg = el => {
     const path = el.dataset.path; let v = el.type === 'checkbox' ? el.checked : el.value;
-    if (el.type === 'number' || ['escalaActa'].indexOf(path) >= 0) v = Number(v);
+    if (el.type === 'number' || ['escalaActa', 'tardeValor'].indexOf(path) >= 0) v = Number(v);
     S.update('config', cfg => { u.set(cfg, path, v); }, {});
     if (path === 'tema') E.applyTheme();
   };

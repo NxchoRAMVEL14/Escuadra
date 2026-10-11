@@ -118,7 +118,8 @@
       h += '<label class="fld"><span>Tarea que revisas (cada QR = ✓ completa; luego puedes cambiarla a ½ o ✗)</span><select data-ch="esc-key">' + (ts.length ? ts.slice().reverse().map(t => '<option value="' + esc(t.key) + '"' + (t.key === s.key ? ' selected' : '') + '>' + (t.f ? u.fCorta(t.f) + ' · ' : '') + esc(corto(t.t, 70)) + '</option>').join('') : '<option value="">No hay tareas en el ' + esc(p.nombre) + '</option>') + '</select></label>';
     } else if (s.modo === 'fc') {
       const pr = practicas(); h += '<label class="fld"><span>Práctica que revisas (cada QR = ✓ completa)</span><select data-ch="esc-prac">' + pr.map(x => '<option value="' + x.id + '"' + (x.id === s.prac ? ' selected' : '') + '>N' + x.nivel + ' · ' + esc(x.t) + '</option>').join('') + '</select></label>';
-    } else if (s.modo === 'asis') h += '<p class="small">Pasa lista del <b>' + u.fLarga(s.f) + '</b> escaneando las libretas que te entregan; al final, «Terminar» marca falta a quien no escaneaste.</p>';
+    }
+    if (s.modo === 'tarea' || s.modo === 'fc') h += '<label class="switch small"><input type="checkbox" data-ch="esc-tarde"' + (s.tarde ? ' checked' : '') + '><span>⏰ Son entregas tarde (valen ' + Math.round(E.calc.tardeVale() * 100) + ' %)</span></label>'; else if (s.modo === 'asis') h += '<p class="small">Pasa lista del <b>' + u.fLarga(s.f) + '</b> escaneando las libretas que te entregan; al final, «Terminar» marca falta a quien no escaneaste.</p>';
     else if (s.modo === 'part') h += '<p class="small">Cada QR suma +1 participación de hoy (el mismo alumno cuenta otra vez después de 6 segundos).</p>';
     else h += '<p class="small">Escanea y se abre la ficha del alumno.</p>';
     h += '<div class="row gap wrap mt">' + btn('📷 Abrir cámara', 'esc-go', '', 'primary') + btn('🖨 Imprimir etiquetas QR', 'qr-print', '', 'small') + '</div>' +
@@ -137,6 +138,7 @@
   A['esc-modo'] = el => { E.ui.esc.modo = el.dataset.m; E.modal.body(escHTML()); };
   CH['esc-key'] = el => { E.ui.esc.key = el.value; };
   CH['esc-prac'] = el => { E.ui.esc.prac = el.value; };
+  CH['esc-tarde'] = el => { E.ui.esc.tarde = el.checked; };
   // aplica lo que toca con un alumno escaneado
   CAM.aplicaQR = (txt, ahora) => {
     const g = D.grupoActual(), s = E.ui.esc, p = String(txt || '').split('|'); if (!g || !s) return null;
@@ -148,13 +150,14 @@
     UD.run('qr', () => {
       if (s.modo === 'tarea') {
         if (!s.key) { msg = 'Elige primero la tarea'; return; }
-        S.update('libreta:' + g.id + ':' + s.pid, d => { d.marcas = d.marcas || {}; d.quitar = d.quitar || {}; d.poner = d.poner || {}; d.extra = d.extra || []; (d.marcas[a.id] = d.marcas[a.id] || {})[s.key] = 2; }, {});
-        E.libreta.sync(g, s.pid); msg = '✓ Tarea completa';
+        const f = s.tarde ? E.calc.tardeVale() : 1;
+        S.update('libreta:' + g.id + ':' + s.pid, d => { d.marcas = d.marcas || {}; d.quitar = d.quitar || {}; d.poner = d.poner || {}; d.extra = d.extra || []; (d.marcas[a.id] = d.marcas[a.id] || {})[s.key] = 2; if (f < 1) { d.tarde = d.tarde || {}; (d.tarde[a.id] = d.tarde[a.id] || {})[s.key] = f; } }, {});
+        E.libreta.sync(g, s.pid); msg = '✓ Tarea completa' + (f < 1 ? ' · ⏰ tarde' : '');
       } else if (s.modo === 'asis') { E.aula.setAsis(g, s.f, a.id, 'A'); msg = '✅ Presente'; }
       else if (s.modo === 'part') { S.update('part:' + g.id + ':' + s.f, d => { d[a.id] = Number(d[a.id] || 0) + 1; }, {}); msg = '⭐ +1 participación (lleva ' + ((S.get('part:' + g.id + ':' + s.f) || {})[a.id] || 1) + ')'; }
       else if (s.modo === 'fc') {
-        const pid = s.pid, id = s.prac; S.update('fcal:' + g.id + ':' + pid, d => { d.marcas = d.marcas || {}; d.fechas = d.fechas || {}; d.orden = d.orden || []; (d.marcas[a.id] = d.marcas[a.id] || {})[id] = 2; (d.fechas[a.id] = d.fechas[a.id] || {})[id] = u.today(); if (d.orden.indexOf(id) < 0) d.orden.push(id); }, {});
-        E.fc.sync(g, pid); msg = '✓ Práctica completa';
+        const pid = s.pid, id = s.prac, f = s.tarde ? E.calc.tardeVale() : 1; S.update('fcal:' + g.id + ':' + pid, d => { d.marcas = d.marcas || {}; d.fechas = d.fechas || {}; d.orden = d.orden || []; (d.marcas[a.id] = d.marcas[a.id] || {})[id] = 2; (d.fechas[a.id] = d.fechas[a.id] || {})[id] = u.today(); if (d.orden.indexOf(id) < 0) d.orden.push(id); if (f < 1) { d.tarde = d.tarde || {}; (d.tarde[a.id] = d.tarde[a.id] || {})[id] = f; } }, {});
+        E.fc.sync(g, pid); msg = '✓ Práctica completa' + (f < 1 ? ' · ⏰ tarde' : '');
       }
     });
     if (s.modo === 'ficha') { CAM.cerrar(true); E.modal.close(); location.hash = '#/alumno/' + a.id; return { a: a, msg: 'Ficha' }; }
@@ -180,7 +183,7 @@
   A['esc-cambia'] = el => {
     const s = E.ui.esc, g = D.grupoActual(), aid = s.ult; if (!aid) return; const v = Number(el.dataset.v);
     S.update('libreta:' + g.id + ':' + s.pid, d => { d.marcas = d.marcas || {}; (d.marcas[aid] = d.marcas[aid] || {})[s.key] = v; }, {}); E.libreta.sync(g, s.pid);
-    s.log[0] = { aid: aid, t: v === 2 ? '✓ Tarea completa' : v === 1 ? '½ Tarea incompleta' : '✗ No la hizo' }; CAM.panel();
+    s.log[0] = { aid: aid, t: (v === 2 ? '✓ Tarea completa' : v === 1 ? '½ Tarea incompleta' : '✗ No la hizo') + (s.tarde && v ? ' · ⏰ tarde' : '') }; CAM.panel();
   };
   A['esc-fin-asis'] = () => {
     const s = E.ui.esc, g = D.grupoActual(), al = D.alumnos(g), faltan = al.filter(a => !s.vistos[a.id]);

@@ -1143,3 +1143,11 @@ body.con-cam #toasts { top: calc(64px + env(safe-area-inset-top)); bottom: auto 
 .pj-qrbox { display: flex; align-items: center; justify-content: center; gap: 4vw; flex-wrap: wrap; text-align: left; font-size: clamp(1.1rem, 2.6vw, 2rem) }
 .pj-qr { width: min(58vh, 70vw); height: auto; border-radius: 12px; background: #fff }
 .pj-qrurl { font-weight: 800; color: var(--pj-accent, #0e5e5a); word-break: break-all }
+/* v1.16.1 · entregas tarde (⏰) */
+.xbtn.tbtn { min-width: 36px; padding: 0 6px; filter: grayscale(1); opacity: .6 }
+.xbtn.tbtn.on { filter: none; opacity: 1; background: var(--warn-soft); border-color: var(--warn); color: var(--warn) }
+.srow.tarde .score { border-color: var(--warn) }
+.ap-acc { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none }
+.ap-rec-l { list-style: none; padding: 0; margin: 8px 0 12px }
+.ap-rec-l li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line) }
+.ap-rec-l li > div:first-child { flex: 1 1 200px; min-width: 0; font-size: .9rem }

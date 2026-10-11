@@ -51,7 +51,7 @@
     return { cnt: cnt, n: n };
   };
   const wavg = l => { let s = 0, w = 0; l.forEach(o => { const k = Number(o.x.peso || 1); s += o.v * k; w += k; }); return w ? s / w : null; };
-  const pts = (x, aid) => { const v = x.notas[aid], m = C.maxPts(x); return m !== 100 ? v + ' de ' + m + ' pts' : Math.round(C.nota(x, aid)) + '/100'; };
+  const pts = (x, aid) => { const v = x.notas[aid], m = C.maxPts(x), t = C.tardeF(x, aid) < 1 ? ' · ⏰ tarde (' + Math.round(C.tardeF(x, aid) * 100) + ' %)' : ''; return (m !== 100 ? v + ' de ' + m + ' pts' : Math.round(C.nota(x, aid)) + '/100') + t; };
   const veces = n => n + (n === 1 ? ' vez' : ' veces');
 
   P.calc = (g, a) => {

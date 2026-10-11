@@ -1,7 +1,8 @@
 /* Escuadra · ¿Qué le falta para aprobar? y hoja para padres.
    Para cada alumno: lo pendiente (actividades vencidas, tareas de libreta, prácticas de FreeCAD) y cuánto subiría su
    calificación del parcial si lo entrega, con tus ponderaciones; si el examen aún no se aplica, cuánto necesita sacar.
-   Lo entregado tarde vale lo que elijas (100 %, 80 % o 60 %). Solo datos escolares. */
+   Lo entregado tarde vale lo que elijas en Ajustes → Calificación (75 % por omisión: «sobre 75»); desde la ficha lo recibes
+   con «📥 Recibir» y queda marcado ⏰. Solo datos escolares. */
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data, C = E.calc, esc = u.esc;
@@ -9,7 +10,8 @@
   const card = H.card, btn = H.btn, link = H.link;
   const AP = E.aprobar = {};
   const minA = () => Number(D.cfg().minAprob) || 60;
-  const fac = () => { const v = Number(D.cfg().tardeValor); return v > 0 && v <= 1 ? v : 1; };
+  const fac = () => C.tardeVale();
+  const pct = f => Math.round(f * 100) + ' %';
   const corto = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
   const R1 = v => Math.round(v * 10) / 10;
   const KEYS = ['examen', 'trabajos', 'asistencia', 'participacion'];
@@ -38,25 +40,27 @@
     C.acts(g, pid).filter(a => (a.categoria === 'examen' || a.categoria === 'trabajos') && a.cuenta !== false && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
       const v = C.nota(a, aid), venc = a.fecha && a.fecha < hoy; if (!((v == null && venc) || v === 0)) return;
       const nv = 100 * f; todo[a.id] = nv;
-      out.push({ tipo: a.categoria === 'examen' ? 'Examen' : 'Trabajo', t: a.nombre + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : ''), det: v === 0 ? 'Calificado con 0: entrégalo o preséntalo de nuevo.' : 'No está entregado.', gain: gan({ [a.id]: nv }) });
+      out.push({ k: 'act', id: a.id, tipo: a.categoria === 'examen' ? 'Examen' : 'Trabajo', t: a.nombre + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : ''), det: v === 0 ? 'Calificado con 0: entrégalo o preséntalo de nuevo.' : 'No está entregado.', gain: gan({ [a.id]: nv }) });
     });
     // tareas de libreta incompletas o no entregadas
     if (lib.actId && S.get('act:' + g.id + ':' + lib.actId)) {
       const ts = E.libreta.tareas(g, pid).cuentan, m = ((lib.marcas || {})[aid]) || {}, fal = [];
       ts.forEach((t, i) => { if (Number(m[t.key]) !== 2) fal.push({ n: 'T' + (i + 1), t: t.t, inc: Number(m[t.key]) === 1 }); });
       if (fal.length && ts.length) {
-        const sNew = ts.reduce((s, t) => s + (Number(m[t.key]) === 2 ? 2 : Math.max(Number(m[t.key]) || 0, 2 * f)), 0), nv = Math.round(sNew / (2 * ts.length) * 100);
+        const ef = t => (Number(m[t.key]) || 0) * E.libreta.factor(lib, aid, t.key);
+        const sNew = ts.reduce((s, t) => s + (Number(m[t.key]) === 2 ? ef(t) : Math.max(ef(t), 2 * f)), 0), nv = Math.round(sNew / (2 * ts.length) * 100);
         todo[lib.actId] = nv;
-        out.push({ tipo: 'Libreta', t: fal.length + (fal.length === 1 ? ' tarea por completar' : ' tareas por completar'), det: fal.map(x => x.n + ' ' + corto(x.t, 70) + (x.inc ? ' (incompleta)' : '')).join(' · '), gain: gan({ [lib.actId]: nv }) });
+        out.push({ k: 'lib', tipo: 'Libreta', t: fal.length + (fal.length === 1 ? ' tarea por completar' : ' tareas por completar'), det: fal.map(x => x.n + ' ' + corto(x.t, 70) + (x.inc ? ' (incompleta)' : '')).join(' · '), gain: gan({ [lib.actId]: nv }) });
       }
     }
     // prácticas de FreeCAD pendientes, a medias o no hechas
     if (fcd.actId && S.get('act:' + g.id + ':' + fcd.actId)) {
       const ids = fcd.orden || [], m = ((fcd.marcas || {})[aid]) || {}, fal = ids.filter(id => Number(m[id]) !== 2);
       if (fal.length && ids.length) {
-        const nv = Math.round(ids.reduce((s, id) => s + (Number(m[id]) === 2 ? 2 : Math.max(Number(m[id]) || 0, 2 * f)), 0) / (2 * ids.length) * 100);
+        const ef = id => (Number(m[id]) || 0) * (E.fc.factor ? E.fc.factor(fcd, aid, id) : 1);
+        const nv = Math.round(ids.reduce((s, id) => s + (Number(m[id]) === 2 ? ef(id) : Math.max(ef(id), 2 * f)), 0) / (2 * ids.length) * 100);
         todo[fcd.actId] = nv;
-        out.push({ tipo: 'FreeCAD', t: fal.length + (fal.length === 1 ? ' práctica por terminar' : ' prácticas por terminar'), det: fal.map(id => ((E.fc.get(id) || {}).t || id) + (m[id] == null ? ' (pendiente)' : Number(m[id]) === 1 ? ' (a medias)' : ' (no la hizo)')).join(' · '), gain: gan({ [fcd.actId]: nv }) });
+        out.push({ k: 'fc', tipo: 'FreeCAD', t: fal.length + (fal.length === 1 ? ' práctica por terminar' : ' prácticas por terminar'), det: fal.map(id => ((E.fc.get(id) || {}).t || id) + (m[id] == null ? ' (pendiente)' : Number(m[id]) === 1 ? ' (a medias)' : ' (no la hizo)')).join(' · '), gain: gan({ [fcd.actId]: nv }) });
       }
     }
     out.sort((a, b) => (b.gain || 0) - (a.gain || 0));
@@ -73,9 +77,10 @@
     const btns = '<div class="row gap wrap mt">' + btn('🖨 Mi plan para aprobar', 'ap-plan', 'data-aid="' + a.id + '" data-pid="' + p.id + '"', 'small') + btn('🖨 Hoja para padres', 'ap-padres', 'data-aid="' + a.id + '" data-pid="' + p.id + '"', 'small') + (E.retro ? btn('💬 Retroalimentación', 'rt-open', 'data-aid="' + a.id + '" data-ctx="actitud"', 'small') : '') + '</div>';
     if (!r.pend.length && r.nec == null) return card('<h3>🎯 ' + esc(p.nombre) + ': ' + (r.final == null ? 'sin calificación todavía' : r.aprueba ? 'va aprobando' : 'va abajo de ' + minA()) + '</h3><p class="small">' + (r.final != null ? 'Calificación actual: ' + chipCal(r.final) + '. ' : '') + 'No tiene pendientes registrados.</p>' + btns);
     return card('<h3>🎯 ¿Qué le falta para aprobar? · ' + esc(p.nombre) + '</h3><p class="small">Va en ' + chipCal(r.final) + (r.k.enCurso ? ' (en curso)' : '') + ' · aprobatorio ' + minA() + (r.todo != null ? ' · si entrega todo: ' + chipCal(r.todo) : '') + '</p>' +
-      (r.pend.length ? '<ul class="ap-pend">' + r.pend.map(x => '<li><span><b>' + esc(x.tipo) + ':</b> ' + esc(x.t) + '<br><small class="muted">' + esc(x.det) + '</small></span>' + (x.gain != null ? '<span class="chip ok">+' + R1(x.gain) + '</span>' : '') + '</li>').join('') + '</ul>' : '') +
+      (r.pend.length ? '<ul class="ap-pend">' + r.pend.map(x => '<li><span><b>' + esc(x.tipo) + ':</b> ' + esc(x.t) + '<br><small class="muted">' + esc(x.det) + '</small></span><span class="ap-acc">' + (x.gain != null ? '<span class="chip ok">+' + R1(x.gain) + '</span>' : '') +
+        btn('📥 Recibir', x.k === 'act' ? 'ap-rec' : 'ap-rec-lista', 'data-k="' + x.k + '" data-id="' + (x.id || '') + '" data-aid="' + a.id + '" data-pid="' + p.id + '"', 'small') + '</span></li>').join('') + '</ul>' : '') +
       (r.nec != null ? '<p class="note small">' + necTxt(r.nec) + (r.necTodo != null && r.necTodo !== r.nec && r.pend.length ? ' Si entrega lo pendiente: ' + (r.necTodo > 100 ? 'aún no alcanza.' : r.necTodo <= 0 ? 'ya no depende del examen.' : 'basta con ' + r.necTodo + '.') : '') + '</p>' : '') +
-      '<p class="muted small">«+» = cuánto sube su calificación del parcial. Lo entregado tarde vale ' + Math.round(fac() * 100) + ' % (cámbialo en Más → Para aprobar).</p>' + btns);
+      '<p class="muted small">«+» = cuánto sube su calificación del parcial si lo entrega ahora: lo entregado tarde vale ' + pct(fac()) + ' (cámbialo en Ajustes → Calificación). Con «📥 Recibir» lo registras y queda marcado ⏰.</p>' + btns);
   };
 
   /* ---------- vista del grupo ---------- */
@@ -89,7 +94,7 @@
     const abajo = rs.filter(x => nivel(x.r) === 'abajo').sort(orden), cerca = rs.filter(x => nivel(x.r) === 'orilla').sort(orden), exP = rs.some(x => x.r.exPend);
     let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/aprobar/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '</div>';
     h += card('<h3>🎯 Para aprobar · ' + esc(p.nombre) + '</h3><p class="muted small">Quién va abajo de ' + mn + ', qué le falta y cuánto sube si lo entrega, con tus ponderaciones. Dale a cada uno su plan impreso en privado: saber exactamente qué hacer motiva más que «échale ganas».</p>' +
-      '<div class="row gap wrap"><label class="fld"><span>Lo entregado tarde vale</span><select data-ch="ap-fac">' + [[1, '100 %'], [0.8, '80 %'], [0.6, '60 %']].map(o => '<option value="' + o[0] + '"' + (fac() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label></div>' +
+      '<div class="row gap wrap"><label class="fld"><span>Lo entregado tarde vale</span><select data-ch="ap-fac">' + E.TARDE_OPC.map(o => '<option value="' + o + '"' + (fac() === o ? ' selected' : '') + '>' + pct(o) + (o === 1 ? ' (sin descuento)' : '') + '</option>').join('') + '</select></label></div>' +
       '<p class="small"><b>' + abajo.length + '</b> abajo · <b>' + cerca.length + '</b> en la orilla · ' + (rs.length - abajo.length - cerca.length) + ' bien</p>' + (exP ? '<p class="note small">El examen aún no se aplica: «abajo» = necesita más de 80 en el examen (o no le alcanza); «en la orilla» = necesita de ' + (mn + 1) + ' a 80.</p>' : '') +
       '<div class="row gap wrap">' + (abajo.length ? btn('🖨 Planes de los que van abajo', 'ap-plan-todos', 'data-pid="' + pid + '"', 'primary') : '') + btn('🖨 Hojas para padres (todo el grupo)', 'ap-padres-todos', 'data-pid="' + pid + '"') + '</div>');
     const fila = x => { const r = x.r; return '<li><div><a href="#/alumno/' + x.a.id + '"><b>' + x.a.num + '. ' + esc(x.a.nombre) + '</b></a><br><small class="muted">' + (r.pend.length ? r.pend.slice(0, 3).map(y => esc(y.tipo + ': ' + y.t) + (y.gain != null ? ' (+' + R1(y.gain) + ')' : '')).join(' · ') : 'Sin pendientes registrados') + (r.nec != null ? ' · examen: ' + (r.nec > 100 ? 'no le alcanza solo con examen' : 'necesita ' + Math.max(0, r.nec)) : '') + '</small></div><div class="ap-r">' + chipCal(r.final) + (r.todo != null ? '<small>→ ' + Math.round(r.todo) + '</small>' : '') + btn('🖨', 'ap-plan', 'data-aid="' + x.a.id + '" data-pid="' + pid + '" aria-label="Imprimir plan"', 'small ghost') + '</div></li>'; };
@@ -100,6 +105,48 @@
   };
   CH['ap-fac'] = el => S.update('config', c => { c.tardeValor = Number(el.value); }, {});
 
+  /* ---------- 📥 recibir lo pendiente (queda marcado ⏰ si es tarde) ---------- */
+  const val = id => ((document.getElementById(id) || {}).value || '').trim();
+  const ejemplo = f => '100 → ' + R1(100 * f) + ', 80 → ' + R1(80 * f);
+  function recActHTML() {
+    const s = E.ui.apRec, g = D.grupoActual(), a = S.get('act:' + g.id + ':' + s.id), al = D.alumno(g, s.aid); if (!a || !al) return '';
+    const mx = C.maxPts(a), f = fac(), cur = a.notas && a.notas[s.aid];
+    return '<p class="small"><b>' + esc(al.nombre) + '</b> te entrega «' + esc(a.nombre) + '»' + (a.fecha ? ' (era para el ' + u.fCorta(a.fecha) + ')' : '') + '.</p>' +
+      '<label class="fld"><span>Calificación del trabajo (sobre ' + mx + ')</span><input class="inp" id="ap-rec-v" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" value="' + esc(cur == null || cur === 0 ? '' : cur) + '" placeholder="Ej. ' + mx + '"></label>' +
+      '<label class="ck"><input type="checkbox" data-ch="ap-rec-t"' + (s.tarde ? ' checked' : '') + '><span>⏰ Entregado tarde: cuenta ' + pct(f) + (f < 1 ? ' (' + ejemplo(f) + ')' : '') + '</span></label>' +
+      '<p class="muted small">Desmárcalo solo si el retraso está justificado.</p><div class="row gap wrap">' + btn('✓ Guardar', 'ap-rec-ok', '', 'primary') + btn('Cancelar', 'modal-close', '', 'ghost') + '</div>';
+  }
+  A['ap-rec'] = el => { E.ui.apRec = { k: 'act', id: el.dataset.id, aid: el.dataset.aid, pid: el.dataset.pid, tarde: true }; E.modal.open('📥 Recibir trabajo', recActHTML()); setTimeout(() => { const i = document.getElementById('ap-rec-v'); if (i) i.focus(); }, 60); };
+  CH['ap-rec-t'] = el => { E.ui.apRec.tarde = el.checked; };
+  A['ap-rec-ok'] = () => {
+    const s = E.ui.apRec, g = D.grupoActual(), k = 'act:' + g.id + ':' + s.id, a = S.get(k); if (!a) return;
+    const mx = C.maxPts(a), t = val('ap-rec-v').replace(',', '.'), v = Number(t), f = fac();
+    if (t === '' || isNaN(v) || v < 0 || v > mx) { u.toast('Escribe la calificación (de 0 a ' + mx + ')', 'err'); return; }
+    S.update(k, x => { x.notas = x.notas || {}; x.notas[s.aid] = v; x.tarde = x.tarde || {}; if (s.tarde && f < 1) x.tarde[s.aid] = f; else delete x.tarde[s.aid]; });
+    const n = C.nota(S.get(k), s.aid); E.modal.close();
+    u.toast('Recibido: ' + R1(v / mx * 100) + (s.tarde && f < 1 ? ' → cuenta ' + R1(n) + ' por ser tarde' : ''), 'ok', 3500);
+  };
+  // tareas de libreta o prácticas de FreeCAD pendientes: ✓ o ½ (con ⏰ si es tarde)
+  function recListaHTML() {
+    const s = E.ui.apRec, g = D.grupoActual(), al = D.alumno(g, s.aid), f = fac(); if (!al) return '';
+    let filas = [];
+    if (s.k === 'lib') { const doc = E.libreta.doc(g, s.pid), m = ((doc.marcas || {})[s.aid]) || {}; E.libreta.tareas(g, s.pid).cuentan.forEach((t, i) => { if (Number(m[t.key]) !== 2 || s.hechos[t.key]) filas.push({ key: t.key, n: 'T' + (i + 1), t: t.t, v: m[t.key], f: E.libreta.factor(doc, s.aid, t.key) }); }); }
+    else { const doc = E.fc.rev(g, s.pid), m = ((doc.marcas || {})[s.aid]) || {}; (doc.orden || []).forEach(id => { if (Number(m[id]) !== 2 || s.hechos[id]) filas.push({ key: id, n: '', t: (E.fc.get(id) || {}).t || id, v: m[id], f: E.fc.factor(doc, s.aid, id) }); }); }
+    const est = x => x.v == null ? 'pendiente' : Number(x.v) === 2 ? '✓ completa' : Number(x.v) === 1 ? '½ incompleta' : '✗ no la hizo';
+    return '<p class="small"><b>' + esc(al.nombre) + '</b> te entrega ' + (s.k === 'lib' ? 'tareas de la libreta' : 'prácticas de FreeCAD') + '. Marca cómo vienen:</p>' +
+      '<label class="ck"><input type="checkbox" data-ch="ap-rec-t"' + (s.tarde ? ' checked' : '') + '><span>⏰ Entregadas tarde: valen ' + pct(f) + '</span></label>' +
+      (filas.length ? '<ul class="ap-rec-l">' + filas.map(x => '<li><div><b>' + esc(x.n ? x.n + ' · ' : '') + '</b>' + esc(corto(x.t, 80)) + '<br><small class="muted">' + est(x) + (x.f < 1 ? ' · ⏰ tarde (' + pct(x.f) + ')' : '') + '</small></div><div class="cl-seg">' +
+        btn('✓ Completa', 'ap-rec-m', 'data-key="' + esc(x.key) + '" data-v="2"', 'small' + (Number(x.v) === 2 ? ' on ok' : '')) + btn('½ Incompleta', 'ap-rec-m', 'data-key="' + esc(x.key) + '" data-v="1"', 'small' + (Number(x.v) === 1 ? ' on warn' : '')) + '</div></li>').join('') + '</ul>' : '<p class="small">No tiene pendientes aquí.</p>') +
+      btn('Listo', 'ap-rec-fin', '', 'primary');
+  }
+  A['ap-rec-lista'] = el => { const k = el.dataset.k; E.ui.apRec = { k: k, aid: el.dataset.aid, pid: el.dataset.pid, tarde: true, hechos: {} }; E.modal.open(k === 'lib' ? '📥 Recibir tareas' : '📥 Recibir prácticas', recListaHTML()); };
+  A['ap-rec-m'] = el => {
+    const s = E.ui.apRec, g = D.grupoActual(), key = el.dataset.key, v = Number(el.dataset.v), f = s.tarde ? fac() : 1;
+    if (s.k === 'lib') E.libreta.marcar(g, s.pid, s.aid, key, v, f); else E.fc.marcar(g, s.pid, s.aid, key, v, f);
+    s.hechos[key] = true; E.modal.body(recListaHTML());
+  };
+  A['ap-rec-fin'] = () => { E.modal.close(); E.render(); };
+
   /* ---------- impresión: mi plan para aprobar ---------- */
   const plan = (g, a, pid) => {
     const r = AP.analiza(g, pid, a.id), p = C.parcial(pid), cf = D.cfg(); if (!r) return '';
@@ -107,7 +154,7 @@
       '<p><b>' + esc(a.nombre) + '</b> · Hoy vas en <b>' + (r.final == null ? '—' : r.final) + '</b>' + (r.exPend ? ' (sin examen todavía)' : '') + '. Para aprobar necesitas <b>' + minA() + '</b>.' + (r.todo != null ? ' Si entregas todo lo de abajo puedes llegar a <b>' + Math.round(r.todo) + '</b>.' : r.exPend && r.necTodo != null && r.pend.length ? ' Si entregas todo lo de abajo, ' + (r.necTodo > 100 ? 'todavía necesitarás más que el examen.' : r.necTodo <= 0 ? 'ya no dependes del examen.' : 'en el examen te basta con <b>' + r.necTodo + '</b>.') : '') + '</p>' +
       (r.pend.length ? '<p><b>Lo que te falta</b> (y cuánto sube tu calificación):</p><ul class="apl-chk">' + r.pend.map(x => '<li>☐ <b>' + esc(x.tipo) + ':</b> ' + esc(x.t) + (x.gain != null ? ' <b>(+' + R1(x.gain) + ')</b>' : '') + '<br><span class="tiny">' + esc(x.det) + '</span></li>').join('') + '</ul>' : '<p>No tienes pendientes registrados.</p>') +
       (r.nec != null ? '<p>' + necTu(r.nec) + '</p>' : '') +
-      '<p>Fecha límite para entregar: ____________________ · Lo entregado tarde vale ' + Math.round(fac() * 100) + ' %.</p><p class="tiny">Ve uno por uno, empezando por el que más sube. Si tienes dudas, pregúntame antes de la fecha: estoy para ayudarte.</p>' +
+      '<p>Fecha límite para entregar: ____________________ · Lo entregado tarde vale ' + pct(fac()) + (fac() < 1 ? ' (si está perfecto, cuenta ' + Math.round(100 * fac()) + ')' : '') + '.</p><p class="tiny">Ve uno por uno, empezando por el que más sube. Si tienes dudas, pregúntame antes de la fecha: estoy para ayudarte.</p>' +
       '<div class="ap-firmas"><span>Firma del alumno</span><span>' + esc(cf.docente || 'Docente') + '</span></div></div>';
   };
   A['ap-plan'] = el => { const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (a) E.print.run(plan(g, a, el.dataset.pid), { title: 'Plan para aprobar · ' + a.nombre, margin: '10mm' }); };

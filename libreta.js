@@ -35,11 +35,13 @@
     out.forEach(x => { x.cuenta = poner[x.key] ? true : quitar[x.key] ? false : !x.material; });
     return { todas: out, cuentan: out.filter(x => x.cuenta), prox: prox };
   };
+  // ⏰ entregada tarde: la marca vale el % que tenía lo tardío cuando se marcó (ej. 0.75)
+  LB.factor = (doc, aid, key) => { const f = Number((((doc || {}).tarde || {})[aid] || {})[key]); return f > 0 && f < 1 ? f : 1; };
   // calificación de libreta de un alumno: completa = 2, incompleta = 1, no = 0; sin marcar cuenta como no entregada
   LB.calif = (g, pid, aid, ts) => {
-    ts = ts || LB.tareas(g, pid).cuentan; const m = ((LB.doc(g, pid).marcas || {})[aid]) || {};
+    ts = ts || LB.tareas(g, pid).cuentan; const doc = LB.doc(g, pid), m = ((doc.marcas || {})[aid]) || {};
     const marcadas = ts.filter(t => m[t.key] != null).length; if (!ts.length || !marcadas) return { v: null, marcadas: 0, n: ts.length };
-    const s = ts.reduce((acc, t) => acc + (Number(m[t.key]) || 0), 0);
+    const s = ts.reduce((acc, t) => acc + (Number(m[t.key]) || 0) * LB.factor(doc, aid, t.key), 0);
     return { v: Math.round(s / (2 * ts.length) * 100), marcadas: marcadas, n: ts.length, comp: ts.filter(t => Number(m[t.key]) === 2).length };
   };
   // mantiene al día la actividad ligada en Calificaciones
@@ -75,14 +77,15 @@
       '<select data-ch="lb-al" data-pid="' + pid + '" aria-label="Alumno">' + al.map(a => '<option value="' + a.id + '" ' + (a.id === sel.id ? 'selected' : '') + '>' + a.num + '. ' + esc(a.nombre) + (LB.calif(g, pid, a.id, ts).v != null ? ' ✓' : '') + '</option>').join('') + '</select>' +
       btn('›', 'go', 'data-to="libreta/' + pid + '/' + (next || sel).id + '" aria-label="Siguiente"' + (next ? '' : ' disabled'), '') + '</div>' +
       '<div class="lb-res"><span>Libreta de <b>' + esc(sel.nombre) + '</b></span><span class="g ' + (r.v == null ? 'na' : H.gclass(r.v)) + '">' + (r.v == null ? '—' : r.v) + '</span></div>' +
-      '<ul class="lb-rev" data-kb="lb"' + (prev ? ' data-ant="libreta/' + pid + '/' + prev.id + '"' : '') + (next ? ' data-sig="libreta/' + pid + '/' + next.id + '"' : '') + '>' + ts.map(t => '<li data-kbr="' + esc(t.key) + '"><div class="lb-t"><b>' + num[t.key] + '</b> ' + esc(corto(t.t, 90)) + '</div><div class="cl-seg">' + [2, 1, 0].map(v => btn(MARCA[v][0] + ' ' + MARCA[v][1], 'lb-marca', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-v="' + v + '" data-k="' + (3 - v) + '"', 'small' + (m[t.key] != null && Number(m[t.key]) === v ? ' on ' + MARCA[v][2] : ''))).join('') + '</div></li>').join('') + '</ul>' +
+      '<ul class="lb-rev" data-kb="lb"' + (prev ? ' data-ant="libreta/' + pid + '/' + prev.id + '"' : '') + (next ? ' data-sig="libreta/' + pid + '/' + next.id + '"' : '') + '>' + ts.map(t => { const f = LB.factor(doc, sel.id, t.key); return '<li data-kbr="' + esc(t.key) + '"><div class="lb-t"><b>' + num[t.key] + '</b> ' + esc(corto(t.t, 90)) + (f < 1 ? ' <span class="chip warn">⏰ tarde · vale ' + Math.round(f * 100) + ' %</span>' : '') + '</div><div class="cl-seg">' + [2, 1, 0].map(v => btn(MARCA[v][0] + ' ' + MARCA[v][1], 'lb-marca', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-v="' + v + '" data-k="' + (3 - v) + '"', 'small' + (m[t.key] != null && Number(m[t.key]) === v ? ' on ' + MARCA[v][2] : ''))).join('') +
+        btn('⏰ Tarde', 'lb-tarde', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-k="t" aria-pressed="' + (f < 1) + '" title="La entregó tarde: vale ' + Math.round((f < 1 ? f : C.tardeVale()) * 100) + ' %"', 'small' + (f < 1 ? ' on warn' : '')) + '</div></li>'; }).join('') + '</ul>' +
       '<div class="row gap wrap">' + btn('✓ Todas completas', 'lb-todas', 'data-pid="' + pid + '" data-aid="' + sel.id + '"', 'small') + (E.cap ? btn('🃏 Por tarjetas (una tarea, todo el grupo)', 'tj-lib', 'data-pid="' + pid + '"', 'small') : '') + (E.retro ? btn('💬 Retroalimentación', 'rt-open', 'data-aid="' + sel.id + '" data-ctx="libreta"', 'small') : '') + (next ? btn('Siguiente alumno ›', 'go', 'data-to="libreta/' + pid + '/' + next.id + '"', 'small primary') : '') + '</div>' +
-      '<p class="muted small">Completa = 2 · incompleta = 1 · no la hizo = 0. Lo que no marques cuenta como no entregado; un alumno sin ninguna marca queda sin calificación. En la compu: ↑ ↓ eliges la tarea, 1 ✓ · 2 ½ · 3 ✗ y ← → cambias de alumno.</p>');
+      '<p class="muted small">Completa = 2 · incompleta = 1 · no la hizo = 0 · ⏰ entregada tarde: vale ' + Math.round(C.tardeVale() * 100) + ' % de lo que marques. Lo que no marques cuenta como no entregado; un alumno sin ninguna marca queda sin calificación. En la compu: ↑ ↓ eliges la tarea, 1 ✓ · 2 ½ · 3 ✗ · T tarde y ← → cambias de alumno.</p>');
     // 3) calificaciones
     const a = doc.actId && S.get('act:' + g.id + ':' + doc.actId);
     h += card('<h3>📊 A Calificaciones</h3>' + (a ? '<p class="small">Ligada a <a href="#/actividad/' + a.id + '">' + esc(a.nombre) + '</a> (Libreta / Proyecto / Bitácora). Se actualiza sola cada vez que marcas.</p>' : '<p class="small">Crea la actividad de libreta para que la calificación entre al rubro Libreta / Proyecto / Bitácora (' + D.cfg().pond.trabajos + '%).</p>' + btn('Crear actividad de libreta', 'lb-act', 'data-pid="' + pid + '"', 'primary')) +
       '<details class="sub" id="lb-tabla"><summary>Tabla del grupo</summary><div class="tbl-wrap"><table class="tbl lb-tbl"><thead><tr><th>#</th><th class="l">Alumno</th>' + ts.map(t => '<th title="' + esc(t.t) + '">' + num[t.key] + '</th>').join('') + '<th>Calif.</th></tr></thead><tbody>' +
-      al.map(x => { const mm = ((doc.marcas || {})[x.id]) || {}, rr = LB.calif(g, pid, x.id, ts); return '<tr><td>' + x.num + '</td><td class="l"><a href="#/libreta/' + pid + '/' + x.id + '">' + esc(x.nombre) + '</a></td>' + ts.map(t => { const v = mm[t.key]; return '<td class="' + (v == null ? 'muted' : MARCA[v][2] + 'c') + '">' + (v == null ? '·' : MARCA[v][0]) + '</td>'; }).join('') + '<td><b>' + (rr.v == null ? '—' : rr.v) + '</b></td></tr>'; }).join('') + '</tbody></table></div></details>' +
+      al.map(x => { const mm = ((doc.marcas || {})[x.id]) || {}, rr = LB.calif(g, pid, x.id, ts); return '<tr><td>' + x.num + '</td><td class="l"><a href="#/libreta/' + pid + '/' + x.id + '">' + esc(x.nombre) + '</a></td>' + ts.map(t => { const v = mm[t.key], tf = LB.factor(doc, x.id, t.key) < 1; return '<td class="' + (v == null ? 'muted' : MARCA[v][2] + 'c') + '"' + (tf ? ' title="Entregada tarde"' : '') + '>' + (v == null ? (tf ? '⏰' : '·') : MARCA[v][0] + (tf ? '⏰' : '')) + '</td>'; }).join('') + '<td><b>' + (rr.v == null ? '—' : rr.v) + '</b></td></tr>'; }).join('') + '</tbody></table></div></details>' +
       '<div class="row gap wrap mt">' + btn(icon('print') + ' Imprimir lista de cotejo', 'lb-print', 'data-pid="' + pid + '"', 'small') + '</div>');
     return { t: 'Libreta', h: h };
   };
@@ -94,6 +97,13 @@
   A['lb-add'] = el => { const t = val('lb-t'); if (!t) { u.toast('Escribe la tarea', 'err'); return; } upd(el.dataset.pid, d => { d.extra.push({ id: u.uid('lt'), f: val('lb-f') || u.today(), t: t }); }); u.toast('Tarea agregada', 'ok'); };
   A['lb-del'] = el => { if (!confirm('¿Borrar esta tarea y sus marcas?')) return; const k = el.dataset.key; upd(el.dataset.pid, d => { d.extra = d.extra.filter(x => 'ex:' + x.id !== k); Object.keys(d.marcas).forEach(aid => { delete d.marcas[aid][k]; }); }); };
   A['lb-marca'] = el => upd(el.dataset.pid, d => { const m = d.marcas[el.dataset.aid] = d.marcas[el.dataset.aid] || {}, v = Number(el.dataset.v); if (m[el.dataset.key] != null && Number(m[el.dataset.key]) === v) delete m[el.dataset.key]; else m[el.dataset.key] = v; });
+  A['lb-tarde'] = el => {
+    const aid = el.dataset.aid, key = el.dataset.key, f = C.tardeVale(); let on = false;
+    upd(el.dataset.pid, d => { d.tarde = d.tarde || {}; const t = d.tarde[aid] = d.tarde[aid] || {}; if (t[key]) delete t[key]; else { t[key] = f; on = true; } if (!Object.keys(t).length) delete d.tarde[aid]; });
+    u.toast(on ? '⏰ Entregada tarde: vale ' + Math.round(f * 100) + ' %' : 'Ya no cuenta como tarde', 'ok', 2200);
+  };
+  // marca varias tareas de un alumno (desde «Recibir tarde» de su ficha)
+  LB.marcar = (g, pid, aid, key, v, f) => { S.update(KL(g, pid), d => { d.marcas = d.marcas || {}; (d.marcas[aid] = d.marcas[aid] || {})[key] = v; d.tarde = d.tarde || {}; const t = d.tarde[aid] = d.tarde[aid] || {}; if (f && f < 1) t[key] = f; else delete t[key]; if (!Object.keys(t).length) delete d.tarde[aid]; }, {}); LB.sync(g, pid); };
   A['lb-todas'] = el => { const g = D.grupoActual(), ts = LB.tareas(g, el.dataset.pid).cuentan; upd(el.dataset.pid, d => { const m = d.marcas[el.dataset.aid] = d.marcas[el.dataset.aid] || {}; ts.forEach(t => { m[t.key] = 2; }); }); };
   A['lb-act'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, p = C.parcial(pid), id = u.uid('act');
@@ -104,7 +114,7 @@
     const g = D.grupoActual(), pid = el.dataset.pid, p = C.parcial(pid), ts = LB.tareas(g, pid).cuentan, al = D.alumnos(g), cf = D.cfg(), doc = LB.doc(g, pid);
     E.print.run('<div class="pr"><div class="p-title">LISTA DE COTEJO · REVISIÓN DE LIBRETA · ' + esc(p.nombre.toUpperCase()) + '</div><p class="tiny c">' + esc(cf.plantelNombre || cf.plantel || '') + ' · ' + esc(g.carrera || '') + ' · Grupo ' + esc(g.nombre) + ' · Docente: ' + esc(cf.docente) + '</p>' +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">NOMBRE</th>' + ts.map((t, i) => '<th>T' + (i + 1) + '</th>').join('') + '<th>CALIF.</th></tr></thead><tbody>' +
-      al.map(a => { const m = ((doc.marcas || {})[a.id]) || {}, r = LB.calif(g, pid, a.id, ts); return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + ts.map(t => '<td class="c">' + (m[t.key] == null ? '' : MARCA[m[t.key]][0]) + '</td>').join('') + '<td class="c">' + (r.v == null ? '' : r.v) + '</td></tr>'; }).join('') + '</tbody></table>' +
-      '<ol class="tiny">' + ts.map(t => '<li><b>' + (t.f ? u.fCorta(t.f) + ':' : '') + '</b> ' + esc(t.t) + '</li>').join('') + '</ol><p class="tiny">✓ completa (2) · ½ incompleta (1) · ✗ no la hizo (0). Calificación = puntos obtenidos / puntos posibles × 100.</p></div>', { landscape: true, title: 'Libreta ' + g.grupo + ' ' + p.nombre, margin: '8mm' });
+      al.map(a => { const m = ((doc.marcas || {})[a.id]) || {}, r = LB.calif(g, pid, a.id, ts); return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + ts.map(t => '<td class="c">' + (m[t.key] == null ? '' : MARCA[m[t.key]][0] + (LB.factor(doc, a.id, t.key) < 1 ? '*' : '')) + '</td>').join('') + '<td class="c">' + (r.v == null ? '' : r.v) + '</td></tr>'; }).join('') + '</tbody></table>' +
+      '<ol class="tiny">' + ts.map(t => '<li><b>' + (t.f ? u.fCorta(t.f) + ':' : '') + '</b> ' + esc(t.t) + '</li>').join('') + '</ol><p class="tiny">✓ completa (2) · ½ incompleta (1) · ✗ no la hizo (0) · * entregada tarde (vale el % indicado al recibirla; ahora ' + Math.round(C.tardeVale() * 100) + ' %). Calificación = puntos obtenidos / puntos posibles × 100.</p></div>', { landscape: true, title: 'Libreta ' + g.grupo + ' ' + p.nombre, margin: '8mm' });
   };
 })();

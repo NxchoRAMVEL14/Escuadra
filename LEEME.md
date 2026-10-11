@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.16.0)
+# Escuadra · Control docente (v1.16.1)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,12 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.16.1 · entregas tarde «sobre 75»:** cuando un alumno te entregue tarde, márcalo con **⏰** (en la actividad, en
+cada tarea de la libreta con el botón «⏰ Tarde» o la tecla T, en las prácticas de FreeCAD, al escanear su QR con «Son entregas
+tarde», o con **«📥 Recibir»** en «¿Qué le falta para aprobar?» de su ficha). Su calificación se multiplica por lo que vale lo
+tardío: **75 %** por omisión (perfecto → 75; un 80 → 60). Lo cambias en **Ajustes → Calificación** (100, 90, 80, 75, 70, 60 o 50 %);
+lo que ya marcaste conserva el porcentaje con el que lo recibiste. Si el retraso está justificado, desmarca «Entregado tarde» al recibir.
 
 **Nuevo en v1.16 (con la cámara · Más → Cámara):**
 - **Libretas con QR**: imprimes una etiqueta por alumno (el QR solo trae un número interno de Escuadra, nunca el nombre) y la pegas

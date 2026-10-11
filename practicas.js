@@ -584,10 +584,21 @@
   const presentes = (g, f) => { const doc = S.get('asis:' + g.id + ':' + f); return D.alumnos(g).filter(a => !doc || ['A', 'R'].indexOf(doc[a.id] || 'A') >= 0); };
   F.rev = (g, pid) => S.get(KF(g, pid)) || {};
   // calificación de prácticas de un alumno en un parcial: promedio de las que ya tienen marca (las pendientes no cuentan)
+  // ⏰ entregada tarde: la marca vale el % que tenía lo tardío cuando se marcó (ej. 0.75)
+  F.factor = (doc, aid, id) => { const f = Number((((doc || {}).tarde || {})[aid] || {})[id]); return f > 0 && f < 1 ? f : 1; };
   F.calif = (g, pid, aid, doc) => {
     doc = doc || F.rev(g, pid); const m = (doc.marcas || {})[aid] || {}, orden = doc.orden || [], ids = orden.filter(id => m[id] != null);
     if (!ids.length) return { v: null, n: 0, pend: orden.length, ok: 0 };
-    return { v: Math.round(ids.reduce((a, id) => a + Number(m[id]), 0) / (2 * ids.length) * 100), n: ids.length, pend: orden.length - ids.length, ok: ids.filter(id => Number(m[id]) === 2).length };
+    return { v: Math.round(ids.reduce((a, id) => a + Number(m[id]) * F.factor(doc, aid, id), 0) / (2 * ids.length) * 100), n: ids.length, pend: orden.length - ids.length, ok: ids.filter(id => Number(m[id]) === 2).length };
+  };
+  // marca una práctica de un alumno (desde «Recibir tarde» de su ficha); f < 1 = entregada tarde
+  F.marcar = (g, pid, aid, id, v, f) => {
+    S.update(KF(g, pid), d => {
+      d.marcas = d.marcas || {}; d.fechas = d.fechas || {}; d.orden = d.orden || []; d.tarde = d.tarde || {};
+      (d.marcas[aid] = d.marcas[aid] || {})[id] = v; (d.fechas[aid] = d.fechas[aid] || {})[id] = u.today(); if (d.orden.indexOf(id) < 0) d.orden.push(id);
+      const t = d.tarde[aid] = d.tarde[aid] || {}; if (f && f < 1) t[id] = f; else delete t[id]; if (!Object.keys(t).length) delete d.tarde[aid];
+    }, {});
+    F.sync(g, pid);
   };
   // crea (la primera vez) y mantiene al día la actividad «Prácticas de FreeCAD» del parcial
   F.sync = (g, pid) => {
@@ -607,7 +618,7 @@
   // nivel FreeCAD: el más alto en el que tiene al menos una práctica completa
   F.nivelAlumno = (g, aid) => {
     const cnt = { 1: { ok: 0, med: 0 }, 2: { ok: 0, med: 0 }, 3: { ok: 0, med: 0 } }, hechas = [];
-    S.keys('fcal:' + g.id + ':').forEach(k => { const d = S.get(k) || {}, m = (d.marcas || {})[aid] || {}, fe = (d.fechas || {})[aid] || {}; Object.keys(m).forEach(id => { const p = F.get(id); if (!p) return; const v = Number(m[id]); if (v === 2) cnt[p.nivel].ok++; else if (v === 1) cnt[p.nivel].med++; hechas.push({ p: p, v: v, f: fe[id] }); }); });
+    S.keys('fcal:' + g.id + ':').forEach(k => { const d = S.get(k) || {}, m = (d.marcas || {})[aid] || {}, fe = (d.fechas || {})[aid] || {}; Object.keys(m).forEach(id => { const p = F.get(id); if (!p) return; const v = Number(m[id]); if (v === 2) cnt[p.nivel].ok++; else if (v === 1) cnt[p.nivel].med++; hechas.push({ p: p, v: v, f: fe[id], tarde: F.factor(d, aid, id) < 1 }); }); });
     let n = 0; [1, 2, 3].forEach(x => { if (cnt[x].ok) n = x; });
     const pts = [1, 2, 3].reduce((s, x) => s + x * (cnt[x].ok + cnt[x].med / 2), 0);
     return { n: n, cnt: cnt, hechas: hechas.sort((a, b) => String(a.f || '').localeCompare(String(b.f || ''))), hay: hechas.length > 0, pts: pts };
@@ -625,7 +636,7 @@
   F.alumnoHTML = (g, a) => {
     const r = F.nivelAlumno(g, a.id); if (!r.hay) return '';
     return card('<h3>💻 FreeCAD · ' + (r.n ? 'Nivel ' + r.n + ' (' + NIV[r.n].toLowerCase() + ')' : 'todavía sin práctica completa') + '</h3><p class="small">' + [1, 2, 3].map(n => 'Nivel ' + n + ': ' + r.cnt[n].ok + ' ✓' + (r.cnt[n].med ? ', ' + r.cnt[n].med + ' ½' : '')).join(' · ') + '</p>' +
-      '<ul class="small fc-hechas">' + r.hechas.map(x => '<li><span class="' + MARK[x.v][2] + 'c">' + MARK[x.v][0] + '</span> <a href="#/freecad/' + x.p.id + '">' + esc(x.p.t) + '</a>' + (x.f ? ' <span class="muted">' + u.fCorta(x.f) + '</span>' : '') + '</li>').join('') + '</ul>');
+      '<ul class="small fc-hechas">' + r.hechas.map(x => '<li><span class="' + MARK[x.v][2] + 'c">' + MARK[x.v][0] + '</span> <a href="#/freecad/' + x.p.id + '">' + esc(x.p.t) + '</a>' + (x.f ? ' <span class="muted">' + u.fCorta(x.f) + '</span>' : '') + (x.tarde ? ' <span class="muted">⏰ tarde</span>' : '') + '</li>').join('') + '</ul>');
   };
   function revisar(g, p, pid) {
     const al = D.alumnos(g); if (!al.length) return H.needAlumnos('Revisar práctica');
@@ -633,11 +644,11 @@
     const doc = F.rev(g, pid), m = doc.marcas || {}, asis = S.get('asis:' + g.id + ':' + u.today());
     const cnt = { 2: 0, 1: 0, 0: 0, p: 0 }; al.forEach(a => { const v = (m[a.id] || {})[p.id]; if (v == null) cnt.p++; else cnt[v]++; });
     let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/freecad/' + p.id + '/revisar/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '</div>';
-    h += card('<h3>✅ Revisar: ' + esc(p.t) + '</h3><p class="muted small">' + esc(pa.nombre) + ' · ✓ completa (100) · ½ a medias (50) · ✗ no la hizo (0). Lo que no marques queda pendiente y todavía no cuenta.</p>' +
+    h += card('<h3>✅ Revisar: ' + esc(p.t) + '</h3><p class="muted small">' + esc(pa.nombre) + ' · ✓ completa (100) · ½ a medias (50) · ✗ no la hizo (0) · ⏰ entregada tarde: vale ' + Math.round(C.tardeVale() * 100) + ' % (tecla T). Lo que no marques queda pendiente y todavía no cuenta.</p>' +
       '<p class="small"><b>' + cnt[2] + '</b> ✓ · <b>' + cnt[1] + '</b> ½ · <b>' + cnt[0] + '</b> ✗ · <b>' + cnt.p + '</b> pendientes</p>' +
       (E.cap ? '<div class="row gap wrap">' + btn('🃏 Revisar por tarjetas', 'tj-fc', 'data-id="' + p.id + '" data-pid="' + pid + '"', 'small primary') + (cnt.p ? btn('✓ a los presentes sin marca', 'fc-todos', 'data-id="' + p.id + '" data-pid="' + pid + '"', 'small') : '') + '</div>' : '') +
       (E.rap ? E.rap.filtroHTML('fc') : '') + '<ul class="fc-rev" data-kb="fc">' + al.map(a => { const v = (m[a.id] || {})[p.id], falto = asis && ['A', 'R'].indexOf(asis[a.id] || 'A') < 0;
-        return '<li' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><span class="fc-al">' + a.num + '. ' + esc(a.nombre) + (falto ? ' <span class="chip">faltó hoy</span>' : '') + '</span><div class="cl-seg">' + [2, 1, 0].map(x => btn(MARK[x][0], 'fc-marca', 'data-id="' + p.id + '" data-pid="' + pid + '" data-aid="' + a.id + '" data-v="' + x + '" data-k="' + (3 - x) + '" aria-label="' + MARK[x][1] + '" title="' + MARK[x][1] + '"', 'small' + (v != null && Number(v) === x ? ' on ' + MARK[x][2] : ''))).join('') + (E.retro ? btn('💬', 'rt-open', 'data-aid="' + a.id + '" data-ctx="practica" data-ref="' + p.id + '" aria-label="Retroalimentación" title="Retroalimentación"', 'small ghost') : '') + '</div></li>'; }).join('') + '</ul>' +
+        return '<li' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><span class="fc-al">' + a.num + '. ' + esc(a.nombre) + (falto ? ' <span class="chip">faltó hoy</span>' : '') + '</span><div class="cl-seg">' + [2, 1, 0].map(x => btn(MARK[x][0], 'fc-marca', 'data-id="' + p.id + '" data-pid="' + pid + '" data-aid="' + a.id + '" data-v="' + x + '" data-k="' + (3 - x) + '" aria-label="' + MARK[x][1] + '" title="' + MARK[x][1] + '"', 'small' + (v != null && Number(v) === x ? ' on ' + MARK[x][2] : ''))).join('') + (tf => btn('⏰', 'fc-tarde', 'data-id="' + p.id + '" data-pid="' + pid + '" data-aid="' + a.id + '" data-k="t" aria-pressed="' + (tf < 1) + '" aria-label="La entregó tarde" title="' + (tf < 1 ? 'Entregada tarde: vale ' + Math.round(tf * 100) + ' %' : 'La entregó tarde (vale ' + Math.round(C.tardeVale() * 100) + ' %)') + '"', 'small' + (tf < 1 ? ' on warn' : '')))(F.factor(doc, a.id, p.id)) + (E.retro ? btn('💬', 'rt-open', 'data-aid="' + a.id + '" data-ctx="practica" data-ref="' + p.id + '" aria-label="Retroalimentación" title="Retroalimentación"', 'small ghost') : '') + '</div></li>'; }).join('') + '</ul>' +
       '<div class="row gap wrap mt">' + (cnt.p && cnt.p < al.length ? btn('Pasar pendientes a ✗', 'fc-pend', 'data-id="' + p.id + '" data-pid="' + pid + '"', 'small ghost danger') : '') + link('‹ Volver a la práctica', 'freecad/' + p.id, 'small ghost') + '</div>');
     const a = doc.actId && S.get('act:' + g.id + ':' + doc.actId);
     h += card('<h3>📊 A Calificaciones</h3>' + (a ? '<p class="small">Entra sola a <a href="#/actividad/' + a.id + '">' + esc(a.nombre) + '</a> (Libreta / Proyecto / Bitácora): el promedio de las prácticas ya marcadas de cada alumno en el ' + esc(pa.nombre) + '.</p>' : '<p class="small">Con la primera marca se crea sola la actividad «Prácticas de FreeCAD» en Libreta / Proyecto / Bitácora (' + D.cfg().pond.trabajos + '%).</p>') +
@@ -654,6 +665,11 @@
       if (!Object.keys(d.marcas).some(x => d.marcas[x][id] != null)) d.orden = d.orden.filter(x => x !== id);
     }, {});
     if (F.sync(g, pid)) u.toast('Creé la actividad «Prácticas de FreeCAD» en Libreta / Proyecto / Bitácora', 'ok', 4500);
+  };
+  A['fc-tarde'] = el => {
+    const g = D.grupoActual(), pid = el.dataset.pid, id = el.dataset.id, aid = el.dataset.aid, f = C.tardeVale(); let on = false;
+    S.update(KF(g, pid), d => { d.tarde = d.tarde || {}; const t = d.tarde[aid] = d.tarde[aid] || {}; if (t[id]) delete t[id]; else { t[id] = f; on = true; } if (!Object.keys(t).length) delete d.tarde[aid]; }, {});
+    F.sync(g, pid); u.toast(on ? '⏰ Entregada tarde: vale ' + Math.round(f * 100) + ' %' : 'Ya no cuenta como tarde', 'ok', 2200);
   };
   // ✓ a quienes vinieron hoy y todavía no tienen marca (los que faltaron se quedan pendientes)
   A['fc-todos'] = el => {

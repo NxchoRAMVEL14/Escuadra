@@ -14,7 +14,7 @@
   /* =================== deshacer =================== */
   // Cada toque o cambio que guarda datos queda como un paso; «↶ Deshacer» (o Ctrl+Z) regresa los documentos a como estaban.
   const UD = E.undo = { stack: [], cur: null, depth: 0, busy: false };
-  const NOMBRE = { asis: 'asistencia', 'asis-set': 'asistencia', 'asis-todos': 'lista', 'asis-borrar': 'lista', part: 'participación', 'cr-part': 'participación', 'au-tap': 'Modo clase', 'bs-part': 'participación', nota: 'calificación', 'act-fill': 'calificaciones', 'act-extra': 'punto extra', 'lb-marca': 'libreta', 'lb-todas': 'libreta', 'cr-mk': 'tarea', 'cr-mk-todos': 'tarea', 'fc-marca': 'práctica', 'fc-pend': 'prácticas', 'fc-todos': 'prácticas', 'obs-tog': 'observación', 'cr-obs': 'destacado', 'cap-niv': 'rúbrica', 'cap-crit-ok': 'rúbrica', 'cap-pg-ok': 'calificaciones pegadas', 'cap-eq-ok': 'calificación por equipo', tarjeta: 'tarjeta', dictado: 'dictado', 'jus-ok': 'justificación', 'mp-seat': 'mapa', 'mp-al': 'mapa', 'mp-llenar': 'mapa', 'mp-vaciar': 'mapa', 'pd-omit': 'pendientes', 'pd-ev': 'actividad', 'pj-st': 'proyecto', qr: 'escaneo', 'esc-cambia': 'tarea', 'esc-fin-asis': 'lista', 'tj2-guardar': 'tarjetas', omr: 'hoja de respuestas', 'omr-ok': 'hoja de respuestas', formulario: 'formulario', 'fm-aplicar': 'formulario' };
+  const NOMBRE = { asis: 'asistencia', 'asis-set': 'asistencia', 'asis-todos': 'lista', 'asis-borrar': 'lista', part: 'participación', 'cr-part': 'participación', 'au-tap': 'Modo clase', 'bs-part': 'participación', nota: 'calificación', 'act-fill': 'calificaciones', 'act-extra': 'punto extra', 'lb-marca': 'libreta', 'lb-todas': 'libreta', 'cr-mk': 'tarea', 'cr-mk-todos': 'tarea', 'fc-marca': 'práctica', 'fc-pend': 'prácticas', 'fc-todos': 'prácticas', 'obs-tog': 'observación', 'cr-obs': 'destacado', 'cap-niv': 'rúbrica', 'cap-crit-ok': 'rúbrica', 'cap-pg-ok': 'calificaciones pegadas', 'cap-eq-ok': 'calificación por equipo', tarjeta: 'tarjeta', dictado: 'dictado', 'jus-ok': 'justificación', 'mp-seat': 'mapa', 'mp-al': 'mapa', 'mp-llenar': 'mapa', 'mp-vaciar': 'mapa', 'pd-omit': 'pendientes', 'pd-ev': 'actividad', 'pj-st': 'proyecto', qr: 'escaneo', 'esc-cambia': 'tarea', 'esc-fin-asis': 'lista', 'tj2-guardar': 'tarjetas', omr: 'hoja de respuestas', 'omr-ok': 'hoja de respuestas', formulario: 'formulario', 'fm-aplicar': 'formulario', 'act-tarde': 'entrega tarde', 'lb-tarde': 'entrega tarde', 'fc-tarde': 'entrega tarde', 'ap-rec-ok': 'entrega tarde', 'ap-rec-m': 'entrega tarde' };
   const put0 = S.put.bind(S), del0 = S.del.bind(S);
   const foto = k => { const d = S.docs[k]; return d ? { data: u.clone(d.data), deleted: !!d.deleted } : null; };
   const anota = k => { const c = UD.cur; if (c && !UD.busy && !Object.prototype.hasOwnProperty.call(c.prev, k)) c.prev[k] = foto(k); };
@@ -155,7 +155,7 @@
   function ayuda() {
     const k = (t, d) => '<li><kbd>' + t + '</kbd><span>' + d + '</span></li>';
     E.modal.open('⌨️ Atajos de teclado', '<ul class="kb-help">' + k('/', 'Buscar alumno y abrir su ficha') + k('Ctrl + Z', 'Deshacer el último cambio') + k('↑ ↓', 'Cambiar de alumno (calificaciones, pase de lista, revisión de prácticas y cierre)') +
-      k('Enter', 'Guardar y pasar al siguiente alumno; con el buscador de la lista, regresa a él') + k('1 · 2 · 3', '✓ completa · ½ incompleta · ✗ no la hizo (libreta, prácticas, cierre y tarjetas)') +
+      k('Enter', 'Guardar y pasar al siguiente alumno; con el buscador de la lista, regresa a él') + k('1 · 2 · 3', '✓ completa · ½ incompleta · ✗ no la hizo (libreta, prácticas, cierre y tarjetas)') + k('T', '⏰ La entregó tarde (libreta y prácticas): vale el % de Ajustes → Calificación') +
       k('A · F · R · J', 'En el pase de lista: asistió, falta, retardo o justificada') + k('+ · −', 'En el pase de lista: sumar o quitar participación') + k('O', 'En el pase de lista: anotar observación') +
       k('→ ↑ ←', 'En las tarjetas: completa, incompleta, no la hizo') + k('?', 'Ver esta ayuda') + '</ul><p class="muted small">En el celular: mantén presionado para más opciones (retardo, justificada, observaciones) y usa «↶ Deshacer» si te equivocas.</p>');
   }
@@ -181,6 +181,7 @@
     if (i < 0) { if (/^[123]$/.test(k)) { i = 0; marcaFila(L, rows[0]); } else { const fn0 = R.KB[L.dataset.kb]; if (fn0 && fn0(k, null, L)) e.preventDefault(); return; } }
     const row = rows[i];
     if (/^[123]$/.test(k)) { const b = row.querySelector('[data-k="' + k + '"]'); if (b) { e.preventDefault(); b.click(); avanza(L, rows, i); } return; }
+    if (k === 't' || k === 'T') { const b = row.querySelector('[data-k="t"]'); if (b) { e.preventDefault(); b.click(); return; } }   // ⏰ entregada tarde (no avanza)
     const fn = R.KB[L.dataset.kb]; if (!fn) return;
     const r = fn(k, row, L); if (r) { e.preventDefault(); if (r === 'next') avanza(L, rows, i); }
   });

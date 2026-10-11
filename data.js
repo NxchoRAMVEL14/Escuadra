@@ -214,7 +214,7 @@ window.E = window.E || {};
       minAprob: 60, umbralBien: 80,
       grupoActivo: '3AMEC',
       tema: 'auto',
-      abrirDonde: true, autoSalto: true
+      abrirDonde: true, autoSalto: true, tardeValor: 0.75
     },
     parciales: [
       { id: 'P1', nombre: '1er parcial', inicio: '2026-08-31', fin: '2026-09-25', captura: '2026-10-01', asuetos: ['2026-09-16', '2026-09-25'] },

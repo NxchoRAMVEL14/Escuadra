@@ -253,6 +253,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
   /* ---------------- cálculos ---------------- */
   // caché del máximo de participación; se limpia con cualquier cambio de datos
   let partCache = {}; S.on(() => { partCache = {}; });
+  E.TARDE_OPC = [1, 0.9, 0.8, 0.75, 0.7, 0.6, 0.5];   // cuánto puede valer lo entregado tarde
   const C = E.calc = {
     parcial(pid) { return D.parciales().find(p => p.id === pid); },
     parcialActual(f) { f = f || u.today(); const ps = D.parciales(); return ps.find(p => f >= p.inicio && f <= p.fin) || ps.find(p => f < p.inicio) || ps[ps.length - 1]; },
@@ -315,7 +316,10 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
     // puntos máximos de una actividad (ej. examen de 94 puntos); 100 si no se indica
     maxPts(a) { const m = Number(a && a.max); return m > 0 ? m : 100; },
     // calificación de una actividad convertida a base 100 (null si no tiene)
-    nota(a, aid) { const v = a && a.notas && a.notas[aid]; if (v === '' || v == null || isNaN(Number(v))) return null; return Math.max(0, Math.min(100, Number(v) / C.maxPts(a) * 100)); },
+    // (opciones en Ajustes: E.TARDE_OPC) lo entregado tarde vale «sobre 75» (o lo que elijas): la calificación se multiplica por el valor que tenía lo tardío al marcarlo
+    tardeVale() { const v = Number(D.cfg().tardeValor); return v > 0 && v <= 1 ? v : 0.75; },
+    tardeF(a, aid) { const t = a && a.tarde && a.tarde[aid]; if (!t) return 1; const f = Number(t); return f > 0 && f <= 1 ? f : C.tardeVale(); },
+    nota(a, aid) { const v = a && a.notas && a.notas[aid]; if (v === '' || v == null || isNaN(Number(v))) return null; return Math.max(0, Math.min(100, Number(v) / C.maxPts(a) * 100 * C.tardeF(a, aid))); },
     actStats(a, al) {
       let cap = 0, s = 0; al.forEach(x => { const v = C.nota(a, x.id); if (v != null) { cap++; s += v; } });
       return { capturadas: cap, faltan: al.length - cap, prom: cap ? s / cap : null };
@@ -468,6 +472,8 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
   E.esNombreRaro = n => /[\[\]{}"]|:\s*\[|^\s*[\],]+\s*$/.test(String(n || ''));
   E.reparar = function () {
     let total = 0;
+    // v1.16.1: lo entregado tarde vale 75 % («sobre 75»); antes solo servía para proyectar en «Para aprobar»
+    const cf0 = S.get('config'); if (cf0 && !cf0.tardeV1161) S.update('config', c => { c.tardeValor = 0.75; c.tardeV1161 = true; }, {});
     S.keys('grupo:').forEach(k => {
       const g = S.get(k); if (!g || !Array.isArray(g.alumnos)) return;
       const malos = g.alumnos.filter(a => E.esNombreRaro(a.nombre)); if (!malos.length) return;
