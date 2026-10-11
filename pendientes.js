@@ -143,10 +143,13 @@
   V.pendientes = () => {
     const g = D.grupoActual(); if (!g) return H.noGroup(); if (!D.alumnos(g).length) return H.needAlumnos('Pendientes');
     const L = P.lista(g), om = Object.keys(S.get(KO(g)) || {}).length + Object.keys(S.get(KG(g)) || {}).length;
-    let h = card('<h3>📥 Pendientes de captura</h3><p class="muted small">Lo que falta anotar de tus clases del parcial. Toca uno para ir directo; «Ignorar» lo quita de aquí si no aplica.</p>' + (E.cap ? E.cap.seguirHTML(g) : '') +
+    let h = card('<h3>📥 Pendientes de captura' + ((D.gruposActivos ? D.gruposActivos().length : 1) > 1 ? ' · ' + esc(g.nombre || g.id) : '') + '</h3><p class="muted small">Lo que falta anotar de tus clases del parcial. Toca uno para ir directo; «Ignorar» lo quita de aquí si no aplica.</p>' + (E.cap ? E.cap.seguirHTML(g) : '') +
       (L.length ? '<div class="pd-res">' + Object.keys(TIPOS).filter(t => L.some(x => x.tipo === t)).map(t => '<span class="chip">' + TIPOS[t][0] + ' ' + L.filter(x => x.tipo === t).length + '</span>').join('') + '</div>' : '<p class="note ok">🎉 No tienes pendientes de captura: todo al día.</p>'));
     Object.keys(TIPOS).forEach(t => { const xs = L.filter(x => x.tipo === t); if (xs.length) h += card('<div class="row between gap wrap"><h3>' + TIPOS[t][0] + ' ' + TIPOS[t][1] + ' <span class="chip">' + xs.length + '</span></h3>' + (xs.length >= 3 && t !== 'guion' ? btn('Ignorar todos', 'pd-omit-t', 'data-t="' + t + '"', 'small ghost') : '') + '</div><ul class="pd-l">' + xs.map(itemLi).join('') + '</ul>'); });
     if (om) h += '<p class="muted small">Ignoraste ' + om + (om === 1 ? ' pendiente' : ' pendientes') + '. ' + btn('Volver a mostrarlos', 'pd-reset', '', 'small ghost') + '</p>';
+    // tus otros grupos
+    const otros = (D.gruposActivos ? D.gruposActivos() : []).filter(x => x.id !== g.id && D.alumnos(x).length).map(x => ({ g: x, n: P.lista(x).length }));
+    if (otros.length) h += card('<h3>👥 Tus otros grupos</h3><ul class="pd-l">' + otros.map(x => '<li><div><b>' + esc(x.g.nombre || x.g.id) + '</b><small class="muted">' + (x.n ? x.n + (x.n === 1 ? ' pendiente' : ' pendientes') : 'al día') + '</small></div>' + (x.n ? btn('Ver', 'g-ir', 'data-gid="' + x.g.id + '" data-to="pendientes"', 'small') : '') + '</li>').join('') + '</ul>');
     return { t: 'Pendientes', h: h };
   };
   A['pd-omit'] = el => { const g = D.grupoActual(); S.update(KO(g), d => { d[el.dataset.k] = u.today(); }, {}); u.toast('Quitado de pendientes', 'ok', 1600); };
@@ -162,7 +165,8 @@
   P.badge = () => {
     clearTimeout(bt);
     bt = setTimeout(() => {
-      let n = 0; try { const g = D.grupoActual(); n = g ? P.lista(g).length : 0; } catch (e) { n = 0; }
+      // con varios grupos cuenta los de todos (los archivados no)
+      let n = 0; try { const gs = D.gruposActivos ? D.gruposActivos() : [D.grupoActual()]; gs.forEach(g => { if (g && D.alumnos(g).length) n += P.lista(g).length; }); } catch (e) { n = 0; }
       ['pend-top', 'pend-side'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.hidden = !n; const b = el.querySelector('b') || el; b.textContent = n > 99 ? '99+' : String(n); });
     }, 250);
   };

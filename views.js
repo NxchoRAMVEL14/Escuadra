@@ -68,7 +68,7 @@
   const link = (label, to, cls) => '<a class="btn ' + (cls || '') + '" href="#/' + to + '">' + label + '</a>';
   const gclass = v => { if (v == null) return 'na'; const c = D.cfg(); return v >= (Number(c.umbralBien) || 80) ? 'ok' : v >= c.minAprob ? 'warn' : 'bad'; };
   const gfmt = v => v == null ? '—' : Math.round(v);
-  const noGroup = () => ({ t: 'Escuadra', h: card('<div class="empty"><h3>No hay grupo configurado</h3><p>Ve a Ajustes → Grupo para crearlo.</p>' + link('Ir a Ajustes', 'ajustes', 'primary') + '</div>') });
+  const noGroup = () => ({ t: 'Escuadra', h: card('<div class="empty"><h3>No hay grupo configurado</h3><p>Agrega tu grupo con su horario en Mis grupos.</p>' + link('Ir a Mis grupos', 'grupos', 'primary') + '</div>') });
   const needAlumnos = t => ({ t: t, h: card('<div class="empty"><h3>Primero importa tu lista</h3><p>Sube el Excel de listas de la escuela o pega los nombres.</p>' + link(icon('upload') + ' Importar lista', 'alumnos', 'primary') + '</div>') });
   const fieldIn = (label, attrs, val, type) => '<label class="fld"><span>' + label + '</span><input type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '" ' + attrs + '></label>';
   E.h = { card: card, btn: btn, link: link, gclass: gclass, gfmt: gfmt, fieldIn: fieldIn, noGroup: noGroup, needAlumnos: needAlumnos };
@@ -83,8 +83,11 @@
   /* =================== INICIO =================== */
   V.inicio = () => {
     const c = D.cfg(), g = D.grupoActual(), hoy = u.today(), p = C.parcialActual(hoy), ps = D.parciales();
-    let h = '<div class="hello"><div><h1>Hola, ' + esc(c.docenteCorto || 'profe') + '</h1><p class="muted">' + u.cap(u.fLargaA(hoy)) + '</p></div>' + (g ? '<span class="chip brand">' + esc(g.nombre) + '</span>' : '') + '</div>';
-    if (g && !D.alumnos(g).length) h += card('<h3>' + icon('upload') + ' Primer paso: importa tu lista</h3><p>Sube el Excel de listas de la escuela (eliges la hoja "LISTA DE ASISTENCIA 3A MEC") o pega los nombres. Tus alumnos se guardan solo en tu cuenta, nunca en el código.</p>' + link('Importar lista', 'alumnos', 'primary'), 'accent');
+    const multi = D.gruposActivos().length > 1;
+    let h = '<div class="hello"><div><h1>Hola, ' + esc(c.docenteCorto || 'profe') + '</h1><p class="muted">' + u.cap(u.fLargaA(hoy)) + '</p></div>' + (g ? (multi || g.archivado ? '<button type="button" class="chip brand chipbtn" data-act="g-menu" aria-label="Cambiar de grupo">' + esc(g.nombre) + ' ▾</button>' : '<span class="chip brand">' + esc(g.nombre) + '</span>') : '') + '</div>';
+    if (E.grupos) h += E.grupos.hoyHTML(hoy);
+    if (g && g.archivado) h += card('<p class="small">🗄 Estás viendo <b>' + esc(g.nombre) + '</b>, un grupo archivado (con sus fechas de parciales de entonces). ' + link('Mis grupos', 'grupos', 'small') + '</p>', 'accent');
+    if (g && !D.alumnos(g).length) h += card('<h3>' + icon('upload') + ' Primer paso: importa la lista de ' + esc(g.nombre) + '</h3><p>Sube el Excel de listas de la escuela (eliges la hoja de tu grupo, por ejemplo "LISTA DE ASISTENCIA ' + esc(g.grupo || '') + ' MEC") o pega los nombres. Tus alumnos se guardan solo en tu cuenta, nunca en el código.</p>' + link('Importar lista', 'alumnos', 'primary'), 'accent');
     const cap = ps.filter(x => x.captura >= hoy).sort((a, b) => a.captura.localeCompare(b.captura))[0];
     if (cap) {
       const d = u.diffDays(hoy, cap.captura), urg = d <= 3 ? 'bad' : d <= 10 ? 'warn' : 'ok';
@@ -119,7 +122,7 @@
         (R.length > 6 ? '<p class="small mt"><a href="#/calificaciones/' + p.id + '">Ver los ' + R.length + ' casos en Calificaciones ›</a></p>' : ''));
       if (E.cierre) h += E.cierre.atencionHTML(g, hoy);
     }
-    const smk = g && p && (g.submodulos || {})[p.id] ? 'II-' + g.submodulos[p.id] : null;
+    const smk = g && p ? D.smKey(g, p.id) : null;
     const temasSm = smk ? E.TEMAS.filter(t => t.sm === smk) : [];
     if (temasSm.length) h += card('<h3>' + icon('screen') + ' Temas para proyectar</h3><p class="muted small">' + temasSm.length + ' temas del ' + esc(SM_LBL[smk] || '') + ' listos para tu clase.</p><ul class="risk">' + temasSm.slice(0, 4).map(t => '<li><a href="#/tema/' + t.id + '">' + esc(t.titulo) + '</a>' + btn('📽', 'proj-open', 'data-id="' + t.id + '" aria-label="Proyectar"', 'small ghost') + '</li>').join('') + '</ul>' + link('Ver todos', 'temas/' + smk, 'small'));
     const idea = ideaDelDia(g, p);
@@ -147,7 +150,7 @@
       (db != null ? ' Último respaldo: hace ' + db + (db === 1 ? ' día' : ' días') + '.' : ' Todavía no has descargado ninguno.') + '</p><div class="row gap wrap">' + btn(icon('download') + ' Descargar respaldo', 'backup-dl', '', 'primary') + (sinc ? '' : link('Sincronización', 'ajustes/sync', 'small')) + '</div>', sinc ? '' : 'accent');
   }
   function ideaDelDia(g, p) {
-    const sm = g && p ? 'II-' + ((g.submodulos || {})[p.id] || '') : '';
+    const sm = (g && p ? D.smKey(g, p.id) : '') || '';
     const list = E.IDEAS.filter(i => i.sm.indexOf(sm) >= 0 || i.sm.indexOf('gen') >= 0);
     if (!list.length) return null;
     const n = u.diffDays('2026-01-01', u.today());
@@ -591,7 +594,7 @@
   /* =================== TEMAS =================== */
   const SM_LBL = { 'II-1': 'Nivelación · Submódulo 1', 'II-2': 'Submódulo 2 · Mecanismos', 'II-3': 'Submódulo 3 · Neumática e hidráulica', gen: 'Formación integral' };
   const TFILT = [['todos', 'Todos'], ['II-1', 'Nivelación (SM1)'], ['II-2', 'Mecanismos (SM2)'], ['II-3', 'Neumática e hidráulica (SM3)'], ['gen', 'Formación integral']];
-  function smActual() { const g = D.grupoActual(), p = C.parcialActual(); const n = g && p && (g.submodulos || {})[p.id]; return n ? 'II-' + n : 'todos'; }
+  function smActual() { const g = D.grupoActual(), p = C.parcialActual(), k = g && p ? D.smKey(g, p.id) : null; return k && /^II-/.test(k) ? k : 'todos'; }
   V.temas = f => {
     f = f || E.ui.temasF || smActual(); E.ui.temasF = f;
     const list = E.TEMAS.filter(t => f === 'todos' || t.sm === f);
@@ -718,7 +721,7 @@
   V.alumnos = sub => {
     const g = D.grupoActual(); if (!g) return noGroup();
     const al = D.alumnos(g, true), p = C.parcialActual();
-    let h = card('<h3>' + icon('upload') + ' Importar o actualizar lista</h3><p class="muted small">Sube el Excel de listas de la escuela y elige la hoja de tu grupo, o pega los nombres (uno por renglón). Si un alumno ya existe, se conserva todo su historial.</p>' +
+    let h = card('<h3>' + icon('upload') + ' Importar o actualizar lista' + (D.gruposActivos().length > 1 ? ' · ' + esc(g.nombre) : '') + '</h3><p class="muted small">Sube el Excel de listas de la escuela y elige la hoja de tu grupo, o pega los nombres (uno por renglón). Si un alumno ya existe, se conserva todo su historial.' + (D.gruposActivos().length > 1 ? ' La lista entra a <b>' + esc(g.nombre) + '</b>; para otro grupo, cámbialo arriba.' : '') + '</p>' +
       '<label class="btn primary filebtn">' + icon('upload') + ' Subir Excel<input type="file" accept=".xlsx,.xls,.csv" data-ch="import-file" hidden></label>' +
       '<details class="sub"><summary>Pegar nombres</summary><textarea class="inp" id="imp-paste" rows="6" placeholder="PÉREZ RUIZ JUAN CARLOS&#10;GARCÍA HERNÁNDEZ ANA SOFÍA&#10;…"></textarea><div class="mt">' + btn('Revisar', 'import-paste', '', 'primary') + '</div></details>' +
       (E.paquete ? E.paquete.html(sub === 'paquete') : ''));
@@ -843,7 +846,7 @@
 
   /* =================== BITÁCORA =================== */
   V.bitacora = () => {
-    const g = D.grupoActual(), list = S.list('bit:').sort((a, b) => (b.fecha + (b.id || '')).localeCompare(a.fecha + (a.id || '')));
+    const g = D.grupoActual(), list = S.list('bit:').filter(b => !g || !b.grupoId || b.grupoId === g.id || D.grupos().length < 2).sort((a, b) => (b.fecha + (b.id || '')).localeCompare(a.fecha + (a.id || '')));
     let h = card('<h3>' + icon('book') + ' Nueva nota</h3><div class="fgrid">' + fieldIn('Fecha', 'id="bit-f"', u.today(), 'date') + '<div></div></div><label class="fld"><span>¿Qué pasó hoy? Avances, pendientes, incidentes</span><textarea id="bit-txt" rows="4" placeholder="Ej. Terminaron plantillas 4 de 6 equipos. Equipo 3 sin material. Mañana: ensamble."></textarea></label>' + btn('Guardar', 'bit-add', '', 'primary'));
     if (!list.length) h += card('<p class="muted">Aún no hay notas. Úsala al final de cada clase: te sirve para la planeación y para defender calificaciones.</p>');
     h += list.map(b => card('<div class="row between"><b>' + u.cap(u.fLarga(b.fecha)) + '</b>' + btn(icon('trash'), 'bit-del', 'data-id="' + b.id + '" aria-label="Eliminar nota"', 'ghost small') + '</div><p class="bitp">' + esc(b.texto) + '</p>')).join('');
@@ -873,7 +876,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['grupos', 'team', 'Mis grupos', 'Agregar grupos y horarios, cambiar o archivar'], ['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -911,7 +914,7 @@
       tog('vaciasCero', 'Actividad sin calificación cuenta como 0 (no entregó) después de su fecha de entrega', c.vaciasCero) + tog('retardoCuenta', 'Retardo cuenta como asistencia', c.retardoCuenta) + tog('justCuenta', 'Falta justificada cuenta como asistencia', c.justCuenta));
     if (g) {
       const gf = (path, label, val, type) => fieldIn(label, 'data-ch="grupo" data-path="' + path + '" id="gf-' + path + '"', val, type);
-      h += sec('grupo', '👥 Grupo y horario', '<div class="fgrid">' + gf('nombre', 'Nombre corto', g.nombre) + gf('grupo', 'Grupo', g.grupo) + gf('semestre', 'Semestre', g.semestre) + gf('inicioDocente', 'Inicio con el grupo', g.inicioDocente, 'date') + '</div>' + gf('carrera', 'Carrera (como en la lista oficial)', g.carrera) +
+      h += sec('grupo', '👥 Grupo y horario' + (D.grupos().length > 1 ? ' · ' + esc(g.nombre) : ''), '<p class="small">Estás editando <b>' + esc(g.nombre) + '</b>. ' + link(icon('team') + ' Mis grupos: agregar otro o cambiar', 'grupos', 'small') + '</p><div class="fgrid">' + gf('nombre', 'Nombre corto', g.nombre) + gf('grupo', 'Grupo', g.grupo) + gf('semestre', 'Semestre', g.semestre) + gf('inicioDocente', 'Inicio con el grupo', g.inicioDocente, 'date') + '</div>' + gf('carrera', 'Carrera (como en la lista oficial)', g.carrera) +
         '<div class="fgrid c4"><label class="fld"><span>Módulo</span><select data-ch="grupo" data-path="modulo">' + Object.keys(E.PROGRAMA.modulos).map(k => '<option ' + (g.modulo === k ? 'selected' : '') + '>' + k + '</option>').join('') + '</select></label>' +
         ps.map(p => '<label class="fld"><span>Submódulo ' + esc(p.nombre) + '</span><select data-ch="grupo" data-path="submodulos.' + p.id + '"><option value="">—</option>' + Object.keys((E.PROGRAMA.modulos[g.modulo] || { sub: {} }).sub).map(k => '<option ' + ((g.submodulos || {})[p.id] === k ? 'selected' : '') + '>' + k + '</option>').join('') + '</select></label>').join('') + '</div>' +
         '<h4>Horario (' + (g.horario || []).reduce((a, b) => a + Number(b.horas || 0), 0) + ' h/semana)</h4>' + (g.horario || []).map((b, i) => '<div class="hrow"><select data-ch="hor" data-i="' + i + '" data-f="dia" aria-label="Día">' + [1, 2, 3, 4, 5, 6].map(d => '<option value="' + d + '" ' + (Number(b.dia) === d ? 'selected' : '') + '>' + u.DIAS3[d] + '</option>').join('') + '</select><input type="time" value="' + esc(b.inicio) + '" data-ch="hor" data-i="' + i + '" data-f="inicio" aria-label="Inicio"><input type="time" value="' + esc(b.fin) + '" data-ch="hor" data-i="' + i + '" data-f="fin" aria-label="Fin"><input type="number" value="' + esc(b.horas) + '" data-ch="hor" data-i="' + i + '" data-f="horas" inputmode="numeric" aria-label="Horas"><button type="button" class="iconbtn" data-act="hor-del" data-i="' + i + '" aria-label="Quitar">' + icon('x') + '</button><select class="hlugar" data-ch="hor" data-i="' + i + '" data-f="lugar" aria-label="Lugar">' + [['aula', '🏫 Aula'], ['computo', '💻 Centro de cómputo'], ['taller', '🛠️ Taller']].map(o => '<option value="' + o[0] + '" ' + ((b.lugar || 'aula') === o[0] ? 'selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>').join('') + '<p class="muted small">El lugar de cada bloque se usa en Clases para acomodar lo de computadora y las prácticas. Actualízalo cada semestre; si un día cambia, ajústalo solo en ese día desde Clases.</p>' +

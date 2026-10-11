@@ -85,9 +85,13 @@
   AU.alArrancar = () => {
     try {
       if (D.cfg().abrirDonde === false || !AU.lanzamiento()) return null;
-      const r = AU.donde(D.grupoActual()); if (!r) return null;
+      // con varios grupos: entra al que tiene clase ahora (o al que le falta su cierre del día)
+      let r = null, con = '';
+      if (E.grupos && D.gruposActivos().length > 1) { const x = E.grupos.ahora(); if (x) { if (!D.grupoActual() || D.grupoActual().id !== x.g.id) D.setGrupo(x.g.id); r = x.ruta; con = ' con ' + E.grupos.corto(x.g); } }
+      else r = AU.donde(D.grupoActual());
+      if (!r) return null;
       history.replaceState(null, '', location.pathname + '#/' + r);
-      const m = /^lista/.test(r) ? 'Estás en clase: te abrí el pase de lista' : /^clase/.test(r) ? 'Estás en clase: te abrí el guion de hoy' : 'Ya terminaron tus clases: te abrí el cierre del día';
+      const m = /^lista/.test(r) ? 'Estás en clase' + con + ': te abrí el pase de lista' : /^clase/.test(r) ? 'Estás en clase' + con + ': te abrí el guion de hoy' : 'Ya terminó tu clase' + con + ': te abrí el cierre del día';
       setTimeout(() => u.toast(m + ' (puedes apagarlo en Ajustes)', 'ok', 4200), 700);
       return r;
     } catch (e) { return null; }

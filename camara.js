@@ -143,7 +143,7 @@
   CAM.aplicaQR = (txt, ahora) => {
     const g = D.grupoActual(), s = E.ui.esc, p = String(txt || '').split('|'); if (!g || !s) return null;
     if (p[0] !== QRP) return { err: 'Ese QR no es una etiqueta de Escuadra' };
-    if (p[1] !== g.id) return { err: 'Esa etiqueta es de otro grupo' };
+    if (p[1] !== g.id) { const og = D.grupo(p[1]); return { err: og ? 'Esa etiqueta es de ' + (og.nombre || og.id) + ': cambia de grupo arriba para escanearla' : 'Esa etiqueta es de otro grupo' }; }
     const a = D.alumno(g, p[2]); if (!a || a.activo === false) return { err: 'No encontré a ese alumno en la lista' };
     const t = ahora || Date.now(); if (s.vistos[a.id] && t - s.vistos[a.id] < (s.modo === 'part' ? 6000 : 3000)) return null;
     s.vistos[a.id] = t; s.ult = a.id; let msg = '';

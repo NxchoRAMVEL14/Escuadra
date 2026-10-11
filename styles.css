@@ -1151,3 +1151,27 @@ body.con-cam #toasts { top: calc(64px + env(safe-area-inset-top)); bottom: auto 
 .ap-rec-l { list-style: none; padding: 0; margin: 8px 0 12px }
 .ap-rec-l li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line) }
 .ap-rec-l li > div:first-child { flex: 1 1 200px; min-width: 0; font-size: .9rem }
+/* v1.17 · Mis grupos */
+.ttl { display: flex; flex-direction: column; min-width: 0; overflow: hidden }
+.gtop { align-self: flex-start; border: 0; background: var(--brand-soft); color: var(--brand); font: inherit; font-size: .74rem; font-weight: 700; border-radius: 999px; padding: 1px 9px; margin-top: 1px; cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.hrow input[type="time"] { padding: 8px 4px; font-variant-numeric: tabular-nums }
+.hrow input[type="time"]::-webkit-calendar-picker-indicator { margin: 0 0 0 2px; padding: 0; width: 12px }
+.gtop[hidden] { display: none }
+.chipbtn { border: 0; font: inherit; cursor: pointer }
+.linkbtn { border: 0; background: none; padding: 0; font: inherit; color: var(--brand); text-decoration: underline; cursor: pointer }
+.g-menu { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 8px }
+.g-op { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer }
+.g-op small { color: var(--muted); font-size: .8rem }
+.g-op.on { border-color: var(--brand); background: var(--brand-soft) }
+.g-list { list-style: none; padding: 0; margin: 8px 0 0 }
+.g-list li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line) }
+.g-list li:last-child { border: 0 }
+.g-list li > div:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 220px }
+.g-hoy { list-style: none; padding: 0; margin: 6px 0 0 }
+.g-hoy li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line) }
+.g-hoy li:last-child { border: 0 }
+.g-hoy li.ahora { background: var(--ok-soft); border-radius: 10px; padding: 8px }
+.g-h { font-variant-numeric: tabular-nums; font-weight: 700; font-size: .86rem }
+.g-n { display: flex; flex-direction: column; min-width: 0 }
+.g-n small { color: var(--muted); font-size: .78rem }
+.g-list li > div:first-child .chip { align-self: flex-start }

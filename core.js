@@ -231,12 +231,23 @@ create policy "escuadra: editar lo mío" on public.escuadra_docs for update usin
 create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete using (auth.uid() = user_id);`;
 
   /* ---------------- acceso a datos ---------------- */
+  // grupo con el que trabajas en ESTE aparato (cada celular o compu puede estar en un grupo distinto)
+  let gLoc = null; try { gLoc = localStorage.getItem('escuadra.grupo'); } catch (e) { gLoc = null; }
   const D = E.data = {
     cfg() { const raw = S.get('config') || {}; const d = E.DEFAULTS.config; return Object.assign({}, d, raw, { pond: Object.assign({}, d.pond, raw.pond || {}) }); },
-    parciales() { return S.get('parciales') || E.DEFAULTS.parciales; },
+    // fechas de parciales: las del semestre (Ajustes); un grupo archivado conserva las suyas
+    parciales() { const g = D.grupoActual(); return (g && g.archivado && Array.isArray(g.parciales) && g.parciales.length ? g.parciales : null) || S.get('parciales') || E.DEFAULTS.parciales; },
     grupos() { return S.list('grupo:').sort((a, b) => String(a.id).localeCompare(String(b.id))); },
-    grupo(id) { return S.get('grupo:' + id); },
-    grupoActual() { const c = D.cfg(); return D.grupo(c.grupoActivo) || D.grupos()[0] || null; },
+    gruposActivos() { return D.grupos().filter(g => !g.archivado); },
+    grupo(id) { return id ? S.get('grupo:' + id) : null; },
+    grupoActual() {
+      const g = gLoc && D.grupo(gLoc); if (g) return g;
+      const a = D.grupo(D.cfg().grupoActivo); if (a && !a.archivado) return a;
+      const act = D.gruposActivos(); return act[0] || D.grupos()[0] || null;
+    },
+    setGrupo(id) { gLoc = id || null; try { if (id) localStorage.setItem('escuadra.grupo', id); else localStorage.removeItem('escuadra.grupo'); } catch (e) { } },
+    // clave del submódulo de un parcial: «II-2», «IV-1»…
+    smKey(g, pid) { const n = g && (g.submodulos || {})[pid]; return n ? (g.modulo || 'II') + '-' + n : null; },
     alumnos(g, todos) { return ((g && g.alumnos) || []).filter(a => todos || a.activo !== false).slice().sort((a, b) => a.num - b.num); },
     alumno(g, id) { return ((g && g.alumnos) || []).find(a => a.id === id); },
     submodulo(g, pid) {

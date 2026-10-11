@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.16.1)
+# Escuadra · Control docente (v1.17.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,22 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.17 · Mis grupos (Más → Mis grupos, o Ajustes → Grupo y horario → «Mis grupos»):**
+- **Agregar grupo**: grupo (ej. 5B), semestre, carrera, nombre corto, módulo, submódulo de cada parcial y su **horario** (día, hora
+  de inicio y fin, horas —se calculan solas con módulos de 50 min— y si es aula, centro de cómputo o taller). Avisa si choca con
+  el horario de otro grupo. Al crearlo te lleva a importar su lista (Excel de la escuela o pegando nombres).
+- Cada grupo tiene **por separado** su lista, asistencias, participación, calificaciones, acta, libreta, exámenes, mapa del salón,
+  evidencias y formularios. Las fechas de los parciales y asuetos, las ponderaciones y lo que vale lo entregado tarde son las mismas
+  para todos (Ajustes).
+- **Cambiar de grupo**: el botón debajo del título (aparece cuando tienes 2 o más grupos) o el de Inicio. Cada aparato recuerda el
+  suyo. **Al abrir desde el ícono** entra solo al grupo que tiene clase en ese momento (o al que le falta su cierre del día).
+- **Inicio → «Tus grupos hoy»**: las clases del día de todos tus grupos en orden, si ya pasaste lista y sus pendientes. El contador
+  de **Pendientes** suma todos tus grupos y su pantalla te muestra los de tus otros grupos.
+- **Fin de semestre → Archivar**: el grupo deja de salir para cambiar y en pendientes, y guarda sus fechas de parciales para que su
+  historial no cambie cuando pongas las del semestre nuevo. Lo puedes ver, reactivar o **borrar con todo** (escribiendo su grupo).
+- Clases, Temas, Banco de preguntas y Examen recomendado traen contenido del **Módulo II** (submódulos 2 y 3). Para otro módulo,
+  Clases te avisa; pídele a Claude la secuencia con el programa SEP y tu horario. Lo demás funciona igual con cualquier módulo.
 
 **Nuevo en v1.16.1 · entregas tarde «sobre 75»:** cuando un alumno te entregue tarde, márcalo con **⏰** (en la actividad, en
 cada tarea de la libreta con el botón «⏰ Tarde» o la tecla T, en las prácticas de FreeCAD, al escanear su QR con «Son entregas
@@ -243,6 +259,7 @@ y se guarda solo en tu dispositivo y en tu Supabase, protegida con tu contraseñ
 2. **Ajustes → Sincronización**: pega URL y llave → *Guardar y conectar* → inicia sesión.
    - Atajo: si pones la URL y la llave en `config.js` antes de subirlo, todos tus dispositivos se conectan solos.
 3. **Alumnos → Subir Excel** → elige el archivo de listas de la escuela → hoja **LISTA DE ASISTENCIA 3A MEC** → *Importar*.
+4. ¿Más de un grupo? **Más → Mis grupos → Agregar grupo** (con su horario) y luego importa su lista igual que en el paso 3.
 
 ## 4. Actualizar a una versión nueva
 
@@ -286,6 +303,7 @@ al abrirla con internet. Tus datos no se tocan.
 | `omr.js` | Hoja de respuestas de burbujas: impresión, lectura con la cámara o con fotos y revisión |
 | `evidencias.js` | Fotos de evidencias de trabajos (nunca caras), respaldo privado en Supabase |
 | `formularios.js` | QR de tus formularios e importación de respuestas (cuestionario, autoevaluación y coevaluación) |
+| `grupos.js` | Mis grupos: agregar con horario, cambiar de grupo, quién tiene clase ahora, archivar y borrar |
 | `lib-qrcode.js`, `lib-jsqr.js`, `lib-aruco.js` | Bibliotecas libres para dibujar y leer QR y leer las tarjetas (ver `LICENCIAS.txt`) |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |

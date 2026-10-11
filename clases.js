@@ -226,7 +226,7 @@
   const K = E.clases = {};
   const MOM = { a: ['Apertura', 'brand'], d: ['Desarrollo', 'info'], c: ['Cierre', 'warn'] };
   const MOMK = { a: 'apertura', d: 'desarrollo', c: 'cierre' };
-  K.smKey = (g, pid) => { const n = (g.submodulos || {})[pid]; return n ? 'II-' + n : null; };
+  K.smKey = (g, pid) => D.smKey(g, pid);
   K.estado = g => S.get('clases:' + g.id) || {};
   K.LUGARES = { aula: ['Aula', '🏫'], computo: ['Centro de cómputo', '💻'], taller: ['Taller', '🛠️'] };
   K.seq = (g, pid) => {
@@ -365,9 +365,9 @@
   V.clases = pid => {
     const g = D.grupoActual(); if (!g) return H.noGroup();
     const hoy = u.today(), ps = D.parciales().filter(p => E.CLASES[K.smKey(g, p.id)]);
-    if (!ps.length) return { t: 'Clases', h: card('<p>No hay secuencia de clases para este grupo.</p>') };
+    if (!ps.length) { const m = E.PROGRAMA.modulos[g.modulo] || {}; return { t: 'Clases', h: card('<h3>' + icon('board') + ' Clases de ' + esc(g.nombre) + '</h3><p>Todavía no hay secuencia de clases para el <b>Módulo ' + esc(g.modulo || '') + (m.nombre ? ' · ' + esc(m.nombre) : '') + '</b> (las que trae Escuadra son del Módulo II, submódulos 2 y 3).</p><p class="muted small">Pídele a Claude que la prepare con el programa SEP de ese módulo y tu horario, como se hizo con el Módulo II. Mientras, el pase de lista, calificaciones, acta y todo lo demás funcionan igual.</p>' + link('Ver Mis grupos', 'grupos', 'small')) }; }
     const act = C.parcialActual(hoy); pid = pid || (ps.find(p => p.id === act.id) || ps[0]).id;
-    const pl = K.plan(g, pid), p = pl.p, sm = E.PROGRAMA.modulos.II.sub[(g.submodulos || {})[pid]];
+    const pl = K.plan(g, pid), p = pl.p, sm = (E.PROGRAMA.modulos[g.modulo] || E.PROGRAMA.modulos.II).sub[(g.submodulos || {})[pid]];
     const plan = D.planes(g.id).find(x => x.parcial === pid);
     let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/clases/' + x.id + '">' + esc(x.nombre) + ' · SM' + (g.submodulos || {})[x.id] + '</a>').join('') + '</div>';
     const porM = { a: 0, d: 0, c: 0 }; pl.seq.forEach(x => { porM[x.m] += x.h; });
