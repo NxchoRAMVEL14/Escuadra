@@ -37,7 +37,7 @@
     const agg = {};
     S.keys('rep:' + g.id + ':').forEach(k => {
       const f = k.slice(('rep:' + g.id + ':').length); if (desde && f < desde) return; const d = S.get(k) || {};
-      ['cal', 'bol'].forEach(t => { const x = d[t]; if (!x || !(x.n > 0)) return; (x.items || []).forEach(it => { if (it.ok == null || it.ok === '') return; const a = agg[it.tema] = agg[it.tema] || { s: 0, n: 0 }; a.s += Math.min(1, Number(it.ok) / x.n); a.n++; }); });
+      ['cal', 'bol'].forEach(t => { const x = d[t]; if (!x || !(x.n > 0)) return; (x.items || []).forEach(it => { if (it.ok == null || it.ok === '') return; const a = agg[it.tema] = agg[it.tema] || { s: 0, n: 0 }; a.s += Math.min(1, Number(it.ok) / (Number(it.n) || x.n)); a.n++; }); });
     });
     const out = {}; Object.keys(agg).forEach(t => { out[t] = { p: agg[t].s / agg[t].n, n: agg[t].n }; }); return out;
   };
@@ -91,10 +91,12 @@
     let h = '<details class="sub rp-reg"' + (reg ? '' : '') + '><summary>' + (reg ? '✓ Registrado: ' : '') + '¿Cuántos acertaron?</summary><div class="rp-in">' +
       set.items.map((it, i) => '<label class="fld"><span>Pregunta ' + (i + 1) + '</span><input type="number" min="0" max="' + n + '" inputmode="numeric" id="' + pre + i + '" value="' + ok(it.id) + '" placeholder="#"></label>').join('') +
       '<label class="fld"><span>Presentes</span><input type="number" min="1" inputmode="numeric" id="' + pre + 'n" value="' + n + '"></label></div>' + btn('Guardar aciertos', 'rp-reg', 'data-f="' + f + '" data-t="' + tipo + '"', 'small primary') + '</details>';
-    if (reg) h += '<div class="rp-res">' + x.items.map((it, i) => { const p = it.ok === '' || it.ok == null ? null : Math.round(Math.min(1, it.ok / x.n) * 100); return p == null ? '' : '<span class="chip ' + (p >= 80 ? 'ok' : p >= 60 ? 'warn' : 'bad') + '">P' + (i + 1) + ' ' + p + '%</span>'; }).join('') + '</div>';
+    if (reg) h += '<div class="rp-res">' + x.items.map((it, i) => { const p = it.ok === '' || it.ok == null ? null : Math.round(Math.min(1, it.ok / (Number(it.n) || x.n)) * 100); return p == null ? '' : '<span class="chip ' + (p >= 80 ? 'ok' : p >= 60 ? 'warn' : 'bad') + '"' + (it.tj ? ' title="Con tarjetas: ' + it.n + ' respuestas · ' + 'ABCD'.split('').map(L => L + ' ' + (it.tj[L] || 0)).join(', ') + '"' : '') + '>P' + (i + 1) + ' ' + p + '%' + (it.tj ? ' 🃏' : '') + '</span>'; }).join('') + '</div>';
     return h;
   };
-  const lista = (g, f, tipo, set) => '<ol class="rp-q">' + preguntas(g, f, tipo, set).map(x => '<li><span>' + esc(corto(x.q, 140)) + '</span><small class="muted">' + esc(tTit(x.it.tema)) + (x.it.dias != null ? ' · visto hace ' + x.it.dias + (x.it.dias === 1 ? ' día' : ' días') : '') + (x.opts ? ' · R: ' + 'ABCDE'[x.ok] + ') ' + esc(corto(x.opts[x.ok], 60)) : '') + '</small></li>').join('') + '</ol>';
+  // con 🃏 se contesta con las tarjetas de respuesta y la cámara cuenta los aciertos
+  const lista = (g, f, tipo, set) => '<ol class="rp-q">' + preguntas(g, f, tipo, set).map(x => '<li><span>' + esc(corto(x.q, 140)) + '</span><small class="muted">' + esc(tTit(x.it.tema)) + (x.it.dias != null ? ' · visto hace ' + x.it.dias + (x.it.dias === 1 ? ' día' : ' días') : '') + (x.opts ? ' · R: ' + 'ABCDE'[x.ok] + ') ' + esc(corto(x.opts[x.ok], 60)) : '') + '</small>' +
+    (E.cam && x.opts && x.opts.length <= 4 ? btn('🃏 Con tarjetas', 'tj2-rep', 'data-f="' + f + '" data-t="' + tipo + '" data-i="' + set.items.indexOf(x.it) + '" title="Todos contestan con su tarjeta y la cámara cuenta los aciertos"', 'small ghost rp-tj') : '') + '</li>').join('') + '</ol>';
   R.calHTML = (g, f, d) => {
     if (!d || !d.bloques.some(b => !b.perdida)) return '';
     const set = R.calentamiento(g, f); if (!set) return '';
@@ -113,6 +115,21 @@
     return card('<h3>🎯 Temas a reforzar (calentamientos y boletos)</h3>' + (ts.length ? '<ul class="risk">' + ts.map(t => '<li><span><a href="#/tema/' + t + '">' + esc(tTit(t)) + '</a><br><small class="muted">' + r[t].n + (r[t].n === 1 ? ' pregunta' : ' preguntas') + ' en el último mes</small></span><span class="row gap"><span class="chip ' + (r[t].p < 0.4 ? 'bad' : 'warn') + '">' + Math.round(r[t].p * 100) + '%</span>' + btn('📝', 'ej-proj', 'data-id="' + t + '" aria-label="Ejercicios"', 'small ghost') + '</span></li>').join('') + '</ul><p class="muted small">Ya cuentan en el examen recomendado y salen primero en los próximos calentamientos.</p>' : '<p class="small">Todo lo registrado del último mes va arriba de 60 %. 👏</p>'));
   };
 
+  /* ---------- tarjetas de respuesta (cámara) ---------- */
+  const setDe = (g, f, t) => { if (t === 'cal') return R.calentamiento(g, f); let d = null; try { d = E.clases.dia(g, f); } catch (e) { d = null; } return R.boleto(g, f, d); };
+  // la misma pregunta que se proyecta (mismo orden de opciones)
+  R.pregunta = (g, f, t, i) => { const set = setDe(g, f, t), it = set && set.items[i]; if (!it) return null; const x = preguntas(g, f, t, { items: [it] })[0]; return x ? { q: x.q, opts: x.opts, ok: x.ok } : null; };
+  // guarda lo que leyó la cámara: aciertos de esa pregunta sobre quienes contestaron (solo el conteo, no quién)
+  R.guardaTarjetas = (g, f, t, i, res, okL) => {
+    const set = setDe(g, f, t); if (!set || !set.items[i]) return;
+    const ids = Object.keys(res), n = ids.length, tj = {}; ids.forEach(id => { tj[res[id]] = (tj[res[id]] || 0) + 1; });
+    S.update(KR(g, f), doc => {
+      if (!doc[t] || !(doc[t].items || []).length) doc[t] = { items: set.items.map(it => ({ id: it.id, tema: it.tema, dias: it.dias })) };
+      const x = doc[t], it = x.items[i]; if (!it) return;
+      it.ok = okL ? (tj[okL] || 0) : null; it.n = n; it.tj = tj; x.n = Math.max(Number(x.n) || presentes(g, f), n);
+    }, {});
+  };
+
   /* ---------- acciones ---------- */
   A['rp-proj'] = el => {
     const g = D.grupoActual(), f = el.dataset.f, t = el.dataset.t; if (!g) return;
@@ -126,7 +143,9 @@
     const g = D.grupoActual(), f = el.dataset.f, t = el.dataset.t, pre = 'rp-' + t + '-', d = E.clases.dia(g, f);
     const set = t === 'cal' ? R.calentamiento(g, f) : R.boleto(g, f, d); if (!set) return;
     const n = Math.max(1, Number((document.getElementById(pre + 'n') || {}).value) || presentes(g, f));
-    const items = set.items.map((it, i) => { const v = (document.getElementById(pre + i) || {}).value; return { id: it.id, tema: it.tema, dias: it.dias, ok: v === '' || v == null ? null : Math.max(0, Math.min(n, Math.round(Number(v)))) }; });
+    const prev = ((S.get(KR(g, f)) || {})[t] || {}).items || [];
+    const items = set.items.map((it, i) => { const v = (document.getElementById(pre + i) || {}).value, o = { id: it.id, tema: it.tema, dias: it.dias, ok: v === '' || v == null ? null : Math.max(0, Math.min(n, Math.round(Number(v)))) }, p = prev[i];
+      if (p && p.id === it.id && p.tj && Number(p.ok) === o.ok) { o.n = p.n; o.tj = p.tj; } return o; });
     if (items.every(it => it.ok == null)) { u.toast('Escribe cuántos acertaron al menos una pregunta', 'err'); return; }
     S.update(KR(g, f), doc => { doc[t] = { items: items, n: n }; }, {});
     u.toast('Guardado: ya cuenta para el examen recomendado', 'ok', 3500);

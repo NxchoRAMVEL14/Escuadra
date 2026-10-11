@@ -1045,3 +1045,101 @@ body.dictando #toasts { bottom: calc(160px + env(safe-area-inset-bottom)) }
 .pg-x select { flex: 1 1 170px; min-width: 0; font: inherit; font-size: .84rem; padding: 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink) }
 .pg-v { min-width: 38px; text-align: center; font-size: 1.05rem }
 @media (min-width: 760px) { .srow.rub { flex-wrap: nowrap } .srow.rub .rubn { flex-basis: auto; padding-left: 0 } }
+/* v1.16 · cámara: visor, etiquetas QR y tarjetas de respuesta */
+body.con-cam { overflow: hidden }
+#cam { position: fixed; inset: 0; z-index: 75; background: #000; color: #fff; display: flex; flex-direction: column }
+.cam-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; background: #000 }
+.cam-top b { font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0 }
+.cam-top .iconbtn { background: rgba(255, 255, 255, .12); border-color: transparent; color: #fff }
+.cam-vid { position: relative; flex: 1; min-height: 0; overflow: hidden }
+.cam-vid video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000 }
+.cam-ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none }
+.cam-guia.qr { position: absolute; left: 50%; top: 50%; width: min(62vw, 44vh); aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, .8); border-radius: 18px; pointer-events: none }
+.cam-guia.hoja { position: absolute; left: 50%; top: 50%; height: 88%; aspect-ratio: 216 / 279; transform: translate(-50%, -50%); border: 3px dashed rgba(255, 255, 255, .7); border-radius: 8px; pointer-events: none; max-width: 92% }
+.cam-msg { position: absolute; left: 0; right: 0; top: 45%; text-align: center; color: #fff; opacity: .85; margin: 0 }
+.cam-pan { background: var(--surface); color: var(--ink); padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 46vh; overflow: auto; display: grid; gap: 8px }
+.cam-res { display: flex; flex-direction: column; gap: 2px; min-height: 46px }
+.cam-res b { font-size: 1.2rem }
+.cam-seg .btn { flex: 1 1 0 }
+body.con-cam #toasts { top: calc(64px + env(safe-area-inset-top)); bottom: auto }
+@media (orientation: landscape) and (max-height: 560px) {
+  #cam { display: grid; grid-template-columns: 1fr minmax(260px, 34vw); grid-template-rows: auto 1fr }
+  #cam .cam-top { grid-column: 1 / -1 }
+  #cam .cam-pan { max-height: none; border-radius: 16px 0 0 0; align-content: start }
+}
+.tj2-cnt { display: grid; grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 6px }
+.tj2-cnt span { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; border-radius: 10px; background: var(--surface2); font-weight: 800; font-size: 1.35rem; line-height: 1.1 }
+.tj2-cnt span b { font-size: .8rem; color: var(--muted) }
+.tj2-cnt span small { font-size: .68rem; font-weight: 500; color: var(--muted); text-align: center; line-height: 1.15; word-break: break-word }
+.tj2-cnt span.ok { background: var(--ok-soft); color: var(--ok) }
+.tj2-cnt span.ok b { color: var(--ok) }
+.rp-q .rp-tj { margin-top: 4px; padding: 3px 10px; min-height: 0; font-size: .8rem }
+@media (min-width: 900px) { .cam-pan { max-width: 720px; width: 100%; margin: 0 auto } }
+/* impresión: etiquetas QR (4 × 8 por hoja carta) */
+.pr.qr-hoja .qr-grid { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 3mm }
+.pr .qr-cel { display: flex; align-items: center; gap: 2mm; height: 31mm; padding: 2mm; border: 1px dashed #999; margin: -.5px; page-break-inside: avoid; break-inside: avoid; overflow: hidden }
+.pr .qr-cel svg { width: 25mm; height: 25mm; flex: none }
+.pr .qr-cel div { display: flex; flex-direction: column; min-width: 0; line-height: 1.15 }
+.pr .qr-cel b { font-size: 15pt }
+.pr .qr-cel span { font-size: 8pt; font-weight: bold; word-break: break-word }
+.pr .qr-cel small { font-size: 6.5pt; color: #444 }
+/* impresión: tarjetas de respuesta (2 por hoja, 12.5 cm) */
+.pr.tj2-hoja { height: 258mm; display: flex; flex-direction: column; align-items: center; justify-content: space-between; page-break-after: always; break-after: page }
+.pr.tj2-hoja:last-child { page-break-after: auto; break-after: auto }
+.pr .tj2-card { position: relative; width: 125mm; height: 125mm; border: .3mm dashed #bbb; flex: none }
+.pr .tj2-m { position: absolute; left: 12.5mm; top: 12.5mm; width: 100mm; height: 100mm }
+.pr .tj2-m svg { width: 100%; height: 100%; display: block }
+.pr .tj2-l { position: absolute; font: bold 7mm/1 Arial, Helvetica, sans-serif; color: #666; width: 10mm; height: 10mm; display: grid; place-items: center }
+.pr .tj2-l.t { top: 1.5mm; left: 57.5mm }
+.pr .tj2-l.r { right: 1.5mm; top: 57.5mm; transform: rotate(90deg) }
+.pr .tj2-l.b { bottom: 1.5mm; left: 57.5mm; transform: rotate(180deg) }
+.pr .tj2-l.l { left: 1.5mm; top: 57.5mm; transform: rotate(-90deg) }
+.pr .tj2-n { position: absolute; left: 3mm; top: 3mm; font: bold 7mm/1 Arial, Helvetica, sans-serif; color: #555 }
+.pr.tj2-inst { height: auto; display: block; font-size: 11pt; line-height: 1.5 }
+.pr.tj2-inst h2 { font-size: 15pt }
+/* v1.16 · hojas de respuestas con foto */
+.pr.omr-hoja { page-break-after: always; break-after: page }
+.pr.omr-hoja:last-child { page-break-after: auto; break-after: auto }
+.omr-svg { display: block; margin: 0 auto }
+.omr-rev { display: grid; gap: 8px }
+.omr-al select { flex: 1 1 180px; min-width: 0; font: inherit; padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink) }
+.omr-pts { margin: 0; font-size: .92rem }
+.omr-pts b { font-size: 1.3rem }
+.omr-pts .bad { color: var(--bad) } .omr-pts .warn { color: var(--warn) }
+.omr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 5px }
+.omr-q { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 4px 2px; min-height: 52px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface2); color: var(--ink); font: inherit; cursor: pointer; line-height: 1.1 }
+.omr-q small { font-size: .7rem; color: var(--muted) }
+.omr-q b { font-size: 1.1rem }
+.omr-q i { font-style: normal; font-size: .72rem; font-weight: 700; color: var(--ok) }
+.omr-q.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok) }
+.omr-q.bad { background: var(--bad-soft); border-color: var(--bad); color: var(--bad) }
+.omr-q.warn { background: var(--warn-soft); border-color: var(--warn); color: var(--warn) }
+.omr-vista { display: block; max-width: 100%; max-height: 38vh; margin: 0 auto 8px; border-radius: 10px; border: 1px solid var(--line) }
+.omr-pasos { margin: 4px 0 10px; padding-left: 1.3em }
+.omr-pasos li { margin: 3px 0 }
+.omr-lista { list-style: none; padding: 0; margin: 0; columns: 2 220px; column-gap: 18px }
+.omr-lista li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); break-inside: avoid; font-size: .88rem }
+/* v1.16 · evidencias (fotos de trabajos) */
+.ev-tira { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-top: 6px }
+.ev-t { position: relative; padding: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface2); aspect-ratio: 1; cursor: pointer }
+.ev-t img { width: 100%; height: 100%; object-fit: cover; display: block }
+.ev-t i { position: absolute; right: 3px; bottom: 3px; font-style: normal; font-size: .8rem; background: var(--surface); border-radius: 6px; padding: 0 3px }
+.ev-t.ev-nube::after { content: "☁️"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 1.4rem; opacity: .6 }
+.ev-ok { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border-radius: 12px; background: var(--warn-soft); margin-bottom: 8px }
+.ev-ok input { width: 22px; height: 22px; flex: none; margin-top: 2px }
+.ev-al { display: flex; flex-wrap: wrap; gap: 6px; max-height: 30vh; overflow: auto; padding: 2px }
+.ev-chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 10px; font: inherit; font-size: .84rem; cursor: pointer }
+.ev-chip.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); font-weight: 700 }
+.btn.disabled { opacity: .45; pointer-events: none }
+.ev-big { background: #000; border-radius: 12px; overflow: hidden; display: grid; place-items: center; min-height: 160px }
+.ev-big img { max-width: 100%; max-height: 62vh; display: block }
+/* v1.16 · formularios */
+.fm-l { list-style: none; padding: 0; margin: 0 }
+.fm-l li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line) }
+.fm-l li:last-child { border: 0 }
+.fm-l li > div:first-child { display: flex; flex-direction: column; min-width: 0 }
+.fm-cols { display: flex; flex-direction: column; gap: 4px; max-height: 26vh; overflow: auto; margin-bottom: 8px }
+.fm-res { margin-bottom: 8px }
+.pj-qrbox { display: flex; align-items: center; justify-content: center; gap: 4vw; flex-wrap: wrap; text-align: left; font-size: clamp(1.1rem, 2.6vw, 2rem) }
+.pj-qr { width: min(58vh, 70vw); height: auto; border-radius: 12px; background: #fff }
+.pj-qrurl { font-weight: 800; color: var(--pj-accent, #0e5e5a); word-break: break-all }

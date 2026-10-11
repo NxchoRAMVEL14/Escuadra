@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.15.0)
+# Escuadra · Control docente (v1.16.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,30 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.16 (con la cámara · Más → Cámara):**
+- **Libretas con QR**: imprimes una etiqueta por alumno (el QR solo trae un número interno de Escuadra, nunca el nombre) y la pegas
+  en la portada de su libreta. Al revisar, escaneas y queda ✓ la tarea; con un toque la cambias a ½ o ✗. El mismo escaneo sirve para
+  pasar lista («Terminar: los demás faltan»), sumar participación, revisar una práctica de FreeCAD o abrir su ficha. Suena y vibra con
+  cada lectura y se deshace con «↶ Deshacer».
+- **Tarjetas de respuesta** (como Plickers): imprimes las tarjetas (2 por hoja, sin nombre: cada alumno usa la de su número de lista).
+  Para contestar giran la tarjeta para que su letra (A, B, C o D) quede arriba y la levantan; tú escaneas el salón y ves cuántos
+  contestaron cada letra, cuántos acertaron y quiénes faltan. Desde **Herramientas** (pregunta rápida, con +1 participación a quien
+  acierte) y con el botón **🃏 Con tarjetas** del calentamiento y del boleto de salida del guion (guarda los aciertos solo).
+  En pruebas con imágenes simuladas, una tarjeta de 12.5 cm se lee bien desde unos 4 a 5 m con buena luz.
+- **Hojas de respuestas que se califican con la cámara** (Examen → Capturar resultados → 📷 Con foto): imprimes la hoja de burbujas de
+  tu examen (una por alumno con su número ya relleno, o en blanco para fotocopiar). La escaneas con la hoja quieta sobre la mesa y se
+  lee sola: número de lista, versión A o B y cada respuesta, calificada con la clave de su versión. Ves en verde lo bien, en rojo lo mal
+  (con la correcta) y en amarillo lo que hay que revisar (dos marcas o muy tenue); corriges con un toque y guardas: la calificación llega
+  a la actividad del examen. Las abiertas se califican «Por alumno» y no se borran al volver a escanear. También puedes subir fotos.
+- **Evidencias de trabajos**: fotos de libretas, planos, prototipos y maquetas, **nunca de caras** (primero confirmas que no sale
+  ningún alumno). Se ligan a la actividad y a los alumnos (en equipo, a todos), se reducen a 1280 px y pierden los datos de la cámara
+  (ubicación, modelo). Se guardan en el aparato y se respaldan en un **espacio privado** de tu Supabase (paso 2b). Las ves en la
+  actividad, en la ficha de cada alumno y en Más → Evidencias.
+- **Formularios** (Más → Formularios): guardas el enlace de tu Google Forms, proyectas su QR para que lo abran en el celular y luego pegas
+  las respuestas (o subes el .csv): cuestionario (columna «Puntuación»), autoevaluación o coevaluación (promedio de lo que le pusieron
+  sus compañeros, sin contar su propia evaluación). La calificación cae en la actividad que elijas; las respuestas no se guardan.
+- Todo lo de la cámara se procesa en tu aparato; la imagen no sale de él (salvo las fotos de evidencias, a tu Supabase privado).
 
 **Nuevo en v1.15 (captura rápida):**
 - **↶ Deshacer** después de cada cambio (arriba, junto a la lupa; en la compu también Ctrl + Z): si te equivocas de alumno o de
@@ -190,6 +214,11 @@ Te recomiendo un proyecto **nuevo** y separado de Brida, porque aquí vivirán d
 4. **Authentication → Sign In / Providers → Email**: desactiva **Allow new users to sign up** (así nadie más puede crear cuenta).
 5. **Project Settings → API** (o *Data API / API Keys*): copia **Project URL** y la **anon public key** (o *publishable key*).
 
+**2b. Para las fotos de evidencias (una sola vez, aunque ya hayas hecho el paso 2):** en **SQL Editor → New query** pega todo
+`schema-fotos.sql` (o en la app: Ajustes → Sincronización → «Copiar SQL de fotos») → **Run**. Crea un espacio de archivos
+**privado** llamado `evidencias` (solo fotos JPG de hasta 3 MB) y reglas para que cada usuario solo vea, suba y borre lo de su
+propia carpeta. Sin este paso, las fotos se quedan solo en el aparato donde las tomaste.
+
 > Si Supabase no te deja crear otro proyecto gratis, la app funciona igual **solo en un dispositivo** (sin Supabase) y puedes pasar datos con *Ajustes → Respaldo*.
 
 ## 2. GitHub Pages
@@ -247,6 +276,11 @@ al abrirla con internet. Tus datos no se tocan.
 | `aula.js` | Modo clase, mapa del salón, pase de lista con mantener presionado, justificar por fechas y abrir en lo que toca |
 | `captura.js` | Pegar calificaciones, capturar con Claude, por equipo, rúbricas de un toque, tarjetas y dictado |
 | `pendientes.js` | Pendientes de captura y evidencias del guion |
+| `camara.js`, `cam-worker.js` | Visor de cámara, etiquetas QR de libretas y tarjetas de respuesta (la lectura de tarjetas corre en un hilo aparte) |
+| `omr.js` | Hoja de respuestas de burbujas: impresión, lectura con la cámara o con fotos y revisión |
+| `evidencias.js` | Fotos de evidencias de trabajos (nunca caras), respaldo privado en Supabase |
+| `formularios.js` | QR de tus formularios e importación de respuestas (cuestionario, autoevaluación y coevaluación) |
+| `lib-qrcode.js`, `lib-jsqr.js`, `lib-aruco.js` | Bibliotecas libres para dibujar y leer QR y leer las tarjetas (ver `LICENCIAS.txt`) |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
 | `paquete.js` | "Pegar datos de Claude": carga de listas y calificaciones desde texto |
@@ -256,6 +290,8 @@ al abrirla con internet. Tus datos no se tocan.
 | `sw.js`, `manifest.json`, `icon-*`, `sc-*` | Instalación como app, accesos del ícono y funcionamiento sin internet |
 | `config.js` | (Opcional) conexión a Supabase |
 | `schema.sql` | Tabla y reglas de seguridad para Supabase (no hace falta subirlo a GitHub) |
+| `schema-fotos.sql` | Espacio privado para las fotos de evidencias en Supabase (paso 2b; tampoco hace falta subirlo) |
+| `LICENCIAS.txt` | Licencias de las bibliotecas de terceros incluidas (MIT, BSD y Apache 2.0) |
 
 ## Fuentes de los datos cargados
 
@@ -278,4 +314,11 @@ al abrirla con internet. Tus datos no se tocan.
 - Captura rápida: accesos del ícono según el *Web App Manifest* (Chrome en Android muestra hasta 3; web.dev, «App shortcuts»);
   dictado con la *Web Speech API* (MDN: en Chrome usa un servicio de reconocimiento en línea, por eso necesita internet); los accesos del ícono se actualizan como máximo una vez al día; rúbricas
   analíticas de 4 niveles con criterios propios de la app (editables).
+- Cámara (v1.16): QR con *qrcode-generator* (Kazuhiko Arase, MIT) y lectura con el lector del navegador (*Shape Detection API*,
+  `BarcodeDetector`) o, si no hay, con *jsQR* (Apache 2.0). Tarjetas: marcadores del diccionario ARUCO_MIP_36h12 de ArUco
+  (Garrido-Jurado, Muñoz-Salinas y col., *Pattern Recognition*, 2016) leídos con *js-aruco2* (MIT); se aceptan lecturas con hasta 5
+  bits dudosos, menos de la mitad de la distancia mínima del diccionario (12), para que nunca confunda un número con otro.
+  Hoja de respuestas: diseño y lectura propios de la app (4 marcas de esquina, homografía y comparación de cada burbuja con el papel
+  de alrededor), probados con fotos simuladas: giradas, con perspectiva, sombra, desenfoque y JPEG. Espacio de fotos y reglas de
+  acceso según la guía de Supabase *Storage Access Control* (supabase.com/docs/guides/storage/security/access-control).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

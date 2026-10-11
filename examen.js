@@ -188,7 +188,8 @@
       '<p class="small">' + ex.items.length + ' preguntas · ' + ex.total + ' puntos · recordar ' + niv[1] + ' · comprender ' + niv[2] + ' · aplicar ' + niv[3] + '</p>' +
       '<div class="row gap wrap">' + btn(icon('print') + ' Versión A', 'ex-print', 'data-id="' + ex.id + '" data-v="A"', 'primary') + btn(icon('print') + ' Versión B', 'ex-print', 'data-id="' + ex.id + '" data-v="B"') + btn(icon('print') + ' Clave de respuestas', 'ex-clave', 'data-id="' + ex.id + '"') +
       (a ? link('Ver en Calificaciones', 'actividad/' + a.id, 'small') : btn(icon('plus') + ' Crear actividad en Calificaciones', 'ex-act', 'data-id="' + ex.id + '"', 'small')) + '</div>' +
-      '<p class="muted small">Versión B: mismas preguntas en otro orden, opciones revueltas y otros datos en los problemas.</p>');
+      '<p class="muted small">Versión B: mismas preguntas en otro orden, opciones revueltas y otros datos en los problemas.</p>' +
+      (E.omr ? '<div class="row gap wrap">' + btn(icon('print') + ' Hoja de respuestas (burbujas)', 'omr-print', 'data-id="' + ex.id + '" data-m="alumnos"', 'small') + btn('📷 Calificar con foto', 'ex-foto', 'data-id="' + ex.id + '"', 'small') + '</div>' : ''));
     h += card('<h3>📐 Tabla de especificaciones</h3><div class="tbl-wrap"><table class="tbl"><thead><tr><th class="l">Tema</th><th>Horas vistas</th><th>Preguntas</th><th>Puntos</th><th>%</th></tr></thead><tbody>' +
       Object.keys(porT).sort((x, y) => porT[y].pts - porT[x].pts).map(t => '<tr><td class="l">' + esc(tTit(t)) + (porT[t].rep ? ' <span class="chip">repaso</span>' : '') + (deb[t] != null && deb[t] < 0.6 ? ' <span class="chip warn">antes ' + Math.round(deb[t] * 100) + '%</span>' : '') + '</td><td>' + (horas[t] || '—') + '</td><td>' + porT[t].n + '</td><td>' + u.round(porT[t].pts, 1) + '</td><td>' + Math.round(porT[t].pts / ex.total * 100) + '</td></tr>').join('') + '</tbody></table></div>' +
       '<p class="muted small">Las preguntas se reparten según las horas que le diste a cada tema en Clases; los temas que salieron bajos antes llevan más peso y "repaso" son temas de parciales anteriores que conviene volver a evaluar.</p>');
@@ -262,7 +263,8 @@
   function capturaV(g, ex) {
     const al = D.alumnos(g), modo = E.ui.exModo || 'alumno', a = ex.actId && S.get('act:' + g.id + ':' + ex.actId);
     let h = (a ? '' : card('<p class="small">Para que las calificaciones lleguen solas a Calificaciones, crea la actividad del examen.</p>' + btn(icon('plus') + ' Crear actividad en Calificaciones', 'ex-act', 'data-id="' + ex.id + '"', 'primary')));
-    h += '<div class="filters">' + [['alumno', 'Por alumno'], ['rapido', 'Rápido: cuántos fallaron']].map(x => '<button type="button" class="tab ' + (modo === x[0] ? 'on' : '') + '" data-act="ex-modo" data-m="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>';
+    h += '<div class="filters">' + [['alumno', 'Por alumno'], ['foto', '📷 Con foto'], ['rapido', 'Rápido: cuántos fallaron']].filter(x => x[0] !== 'foto' || E.omr).map(x => '<button type="button" class="tab ' + (modo === x[0] ? 'on' : '') + '" data-act="ex-modo" data-m="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>';
+    if (modo === 'foto' && E.omr) return h + E.omr.capturaHTML(g, ex);
     if (modo === 'rapido') {
       const rp = ex.rapido || {}, its = X.version(ex, 'A');
       return h + card('<h3>Captura rápida</h3><p class="muted small">Sin calificar alumno por alumno: anota cuántos presentaron y cuántos fallaron cada pregunta (numeración de la versión A). Sirve para el análisis del grupo; las calificaciones las capturas en la actividad.</p>' +
@@ -287,6 +289,7 @@
     return h;
   }
   A['ex-modo'] = el => { E.ui.exModo = el.dataset.m; E.render(); };
+  A['ex-foto'] = el => { E.ui.exModo = 'foto'; location.hash = '#/examen/' + el.dataset.id + '/captura'; };
   A['ex-al'] = el => { (E.ui.exSel = E.ui.exSel || {})[el.dataset.id] = el.dataset.aid; E.render(); };
   CH['ex-al'] = el => { (E.ui.exSel = E.ui.exSel || {})[el.dataset.id] = el.value; E.render(); };
   const updRes = (id, aid, fn) => updEx(id, ex => { ex.res = ex.res || {}; const r = ex.res[aid] = ex.res[aid] || { v: 'A', m: {} }; r.m = r.m || {}; fn(r, ex); });

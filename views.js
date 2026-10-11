@@ -52,7 +52,8 @@
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
     undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
     clip: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>',
-    note: '<path d="M5 3h10l4 4v14H5z"/><path d="M14 3v5h5M8.5 13l2 2 4.5-4.5"/>'
+    note: '<path d="M5 3h10l4 4v14H5z"/><path d="M14 3v5h5M8.5 13l2 2 4.5-4.5"/>',
+    cam: '<path d="M4 7.5h3.2L9 5h6l1.8 2.5H20a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
   E.logo = () => '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
@@ -253,7 +254,8 @@
       '<div class="row gap wrap center mt">' + (t.run ? btn('Pausar', 'tm-pause', '', 'primary') : btn('Iniciar', 'tm-start', '', 'primary')) + btn('Reiniciar', 'tm-reset') + btn('Pantalla completa', 'tm-fs') + '</div></section>';
     h += '<div class="grid2">' + card('<h3>' + icon('dice') + ' Alumno al azar</h3><p class="muted small">Elige entre los presentes de hoy (o todo el grupo si no has pasado lista) sin repetir.</p>' + btn('Abrir', 'azar', 'data-fecha="' + hoy + '"', 'primary')) +
       card('<h3>🎯 Dinámicas</h3><p class="muted small">Para integrar al grupo, desarrollar una capacidad o calmar al grupo, con guion y temporizador.</p>' + link('Abrir', 'dinamicas', 'primary')) +
-      card('<h3>' + icon('team') + ' Formar equipos</h3><p class="muted small">Equipos balanceados al azar con los presentes; puedes guardarlos en la bitácora.</p>' + btn('Abrir', 'equipos', 'data-fecha="' + hoy + '"', 'primary')) + '</div>';
+      card('<h3>' + icon('team') + ' Formar equipos</h3><p class="muted small">Equipos balanceados al azar con los presentes; puedes guardarlos en la bitácora.</p>' + btn('Abrir', 'equipos', 'data-fecha="' + hoy + '"', 'primary')) +
+      (E.cam ? card('<h3>🃏 Tarjetas de respuesta</h3><p class="muted small">Todos contestan a la vez girando su tarjeta; escaneas el salón con la cámara y ves cuántos acertaron.</p><div class="row gap wrap">' + btn('Pregunta rápida', 'tjl-abrir', '', 'primary') + link(icon('cam') + ' Más con la cámara', 'camara', 'small') + '</div>') : '') + '</div>';
     return { t: 'Herramientas de clase', h: h };
   };
   function tmTick() {
@@ -385,6 +387,7 @@
       const n100 = C.nota(a, x.id);
       return '<li class="srow' + (a.rub ? ' rub' : '') + '" id="row-' + x.id + '"' + (E.rap ? E.rap.qAttr(x) : '') + '><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv ? '<span class="conv g ' + gclass(n100) + '">' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-auto="1" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' enterkeyhint="next" aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + (a.rub && E.cap ? E.cap.rubRow(a, x) : '') + '</li>';
     }).join('') + '</ul>';
+    if (E.evid) h += E.evid.tiraHTML(g, { act: id });
     h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
     return { t: a.nombre || 'Actividad', h: h, key: k };
   };
@@ -796,6 +799,7 @@
     if (E.examen) h += E.examen.alumnoHTML(g, a);
     if (E.aprobar) h += E.aprobar.alumnoHTML(g, a);
     if (E.fc && E.fc.alumnoHTML) h += E.fc.alumnoHTML(g, a);
+    if (E.evid) h += E.evid.alumnoHTML(g, a);
     if (E.retro) h += E.retro.alumnoHTML(g, a);
     const p = C.parcialActual(), as = C.asis(g, p, a.id);
     if (as.fechasF.length) h += card('<div class="row between gap wrap"><h3>Faltas en el ' + esc(p.nombre) + '</h3>' + (E.aula ? btn('📄 Justificar faltas', 'jus-open', 'data-aid="' + a.id + '"', 'small') : '') + '</div><p>' + as.fechasF.map(f => '<a class="chip bad" href="#/lista/' + f + '">' + u.fCorta(f) + '</a>').join(' ') + '</p>');
@@ -861,7 +865,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -879,7 +883,8 @@
     h += sec('sync', '☁️ Sincronización (Supabase)', '<p class="note ' + ({ ok: 'ok', error: 'bad', offline: 'warn', auth: 'warn', syncing: 'info', local: '' })[sy.state] + '">' + esc(sy.msg) + (S.dirtyCount() ? ' · ' + S.dirtyCount() + ' cambios por subir' : '') + '</p>' +
       (guia ? '<details class="sub" ' + (sy.state === 'local' || sy.state === 'error' ? 'open' : '') + '><summary>Cómo conectarla, paso a paso (una sola vez, unos 10 minutos)</summary><ol class="steps">' +
         '<li>En <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com</a> → <b>New project</b>, nombre <code>escuadra</code>. Guarda la contraseña de la base (no la vas a usar aquí).</li>' +
-        '<li><b>SQL Editor → New query</b> → pega el SQL → <b>Run</b>. ' + btn(icon('copy') + ' Copiar SQL', 'sync-sql', '', 'small') + '</li>' +
+        '<li><b>SQL Editor → New query</b> → pega el SQL → <b>Run</b>. ' + btn(icon('copy') + ' Copiar SQL', 'sync-sql', '', 'small') +
+          (E.STORAGE_SQL ? '<br><b>2b (para las fotos de evidencias):</b> en otra <b>New query</b> pega y corre también este. ' + btn(icon('copy') + ' Copiar SQL de fotos', 'sync-sql-fotos', '', 'small') : '') + '</li>' +
         '<li><b>Authentication → Users → Add user → Create new user</b>: tu correo y una contraseña, con <b>Auto Confirm User</b> marcado.</li>' +
         '<li><b>Authentication → Sign In / Providers → Email</b>: apaga <b>Allow new users to sign up</b> para que nadie más se registre.</li>' +
         '<li><b>Project Settings → API</b> (o <i>API Keys</i>): copia la <b>Project URL</b> y la llave <b>anon public</b> (o <i>publishable</i>) y pégalas abajo → <b>Guardar y conectar</b>.</li>' +
