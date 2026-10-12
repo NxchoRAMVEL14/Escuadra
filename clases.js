@@ -10,7 +10,8 @@
 
   /* id: clave · m: a = apertura, d = desarrollo, c = cierre · lugar: 'computo' (necesita computadoras) o 'taller'
      (práctica con herramientas; también se puede en el aula) · noComputo: no se hace en el centro de cómputo (agua,
-     corte) · dep: actividades que deben estar terminadas antes · ac/dc: actividad clave y renglón de "desarrollo de la
+     corte) · dep: actividades que deben estar terminadas antes (si son de otro lugar, la clase solo avisa) · firme: de esas,
+     las que sí detienen la clase aunque sean de otro lugar (no se arma sin piezas cortadas, no se programa sin diagnóstico) · ac/dc: actividad clave y renglón de "desarrollo de la
      competencia" del programa · pasos: [minutos, qué hacer] (1 h de horario = 50 min) · pre: palabras para adelantar el tema */
   E.CLASES = {
     'II-2': [
@@ -229,11 +230,39 @@
   K.smKey = (g, pid) => D.smKey(g, pid);
   K.estado = g => S.get('clases:' + g.id) || {};
   K.LUGARES = { aula: ['Aula', '🏫'], computo: ['Centro de cómputo', '💻'], taller: ['Taller', '🛠️'] };
+  // los planes se guardan mientras no cambie nada (se piden muchas veces al pintar)
+  let PC = {}; S.on(() => { PC = {}; }); K.limpia = () => { PC = {}; };
+  // «de corrido»: los submódulos siguen de un parcial al otro (módulos IV y V); el submódulo de cada parcial es con el que arranca
+  K.flujo = g => !!(g && g.flujo);
+  const todosSM = g => {
+    const out = []; (E.mods ? E.mods.smKeys(g.modulo) : []).forEach((k, smi) => (E.CLASES[k] || []).forEach(x => out.push(Object.assign({}, x, { sm: k.split('-')[1], smi: smi }))));
+    return out;
+  };
+  K.tiene = (g, pid) => {
+    if (!g || !(g.submodulos || {})[pid]) return false;
+    return K.flujo(g) ? todosSM(g).some(x => Number(x.sm) >= Number(g.submodulos[pid])) : !!E.CLASES[K.smKey(g, pid)];
+  };
+  const baseDe = (g, pid) => {
+    if (!K.flujo(g)) { const n = (g.submodulos || {})[pid]; return (E.CLASES[K.smKey(g, pid)] || []).map(x => Object.assign({}, x, { sm: n, smi: 0 })); }
+    const ps = D.parciales(), i = ps.findIndex(p => p.id === pid), n = Number((g.submodulos || {})[pid]) || 0;
+    if (i < 0 || !n) return [];
+    const prev = i > 0 && (g.submodulos || {})[ps[i - 1].id] ? ps[i - 1] : null;
+    const pend = prev ? K.plan(g, prev.id).resto : todosSM(g).map(x => ({ it: x, rem: x.h }));
+    // lo pendiente del parcial anterior sigue completo (aunque sea de un submódulo anterior): de corrido nada se pierde
+    return pend.filter(x => x.rem > 0 && (prev || Number(x.it.sm) >= n)).map(x => Object.assign({}, x.it, x.rem < x.it.h ? { h0: x.rem } : {}));
+  };
+  // de corrido: el examen de cada parcial va al final del parcial aunque el submódulo siga en el siguiente
+  K.examenFlujo = (g, pid, h) => {
+    const p = C.parcial(pid); if (!p || !K.flujo(g)) return null; h = h || 2;
+    return { id: 'examen-' + pid, h: h, m: 'c', tipo: 'Evaluación', t: 'Examen del ' + p.nombre, obj: 'Evaluar lo visto en el parcial: Escuadra arma el examen con los temas que diste (Más → Examen recomendado).', ac: null, auto: true,
+      sm: String((g.submodulos || {})[pid] || ''), smi: 0, pasos: h >= 2 ? [[10, 'Indicaciones y respiración antes del examen.'], [h * 50 - 20, 'Examen escrito con los temas del parcial.'], [10, 'Recoges y comentas lo que viene.']] : [[5, 'Indicaciones.'], [40, 'Examen escrito con los temas del parcial.'], [5, 'Recoges.']],
+      ev: 'Examen del parcial', ideas: ['pr-respira'] };
+  };
   K.seq = (g, pid) => {
-    const base = E.CLASES[K.smKey(g, pid)] || []; const ord = (K.estado(g).orden || {})[pid];
+    const base = baseDe(g, pid); const ord = (K.estado(g).orden || {})[pid];
     const ids = base.map(x => x.id);
     const ok = Array.isArray(ord) && ord.length === ids.length && ids.every(id => ord.indexOf(id) >= 0);
-    return (ok ? ord : ids).map((id, pos) => Object.assign({ idx: ids.indexOf(id), pos: pos }, base[ids.indexOf(id)]));
+    return (ok ? ord : ids).map((id, pos) => Object.assign({}, base[ids.indexOf(id)], { idx: ids.indexOf(id), pos: pos }));
   };
   K.bloques = (g, p) => {
     const out = [], st = K.estado(g), lug = st.lugares || {};
@@ -246,15 +275,21 @@
   // Acomoda la secuencia en los bloques: lo de computadora solo en el centro de cómputo, el taller jala las prácticas,
   // respeta apertura → desarrollo → cierre y las dependencias (por ejemplo, cortar después de tener el plano).
   K.plan = (g, pid) => {
+    const ck = g.id + '|' + pid; if (PC[ck]) return PC[ck];
+    const r = planCalc(g, pid); PC[ck] = r; return r;
+  };
+  const planCalc = (g, pid) => {
     const p = C.parcial(pid), seq = K.seq(g, pid), st = K.estado(g), perd = st.perdidas || {}, rec = st.recortes || {}, ade = st.adelantos || {};
-    const bl = K.bloques(g, p), rem = seq.map(x => x.h), done = seq.map(() => false), ORD = { a: 0, d: 1, c: 2 };
+    const bl = K.bloques(g, p), rem = seq.map(x => x.h0 != null ? x.h0 : x.h), done = seq.map(() => false), ORD = { a: 0, d: 1, c: 2 };
     const pos = {}; seq.forEach((x, j) => { pos[x.id] = j; });
     const lane = x => x.lugar === 'computo' ? 'c' : 'g';
     // si la dependencia es de otro lugar (aula ↔ cómputo) es "blanda": la clase no se detiene, solo avisa
-    const blandas = j => (seq[j].dep || []).filter(id => pos[id] != null && !done[pos[id]] && lane(seq[j]) !== lane(seq[pos[id]]));
-    // apertura → desarrollo → cierre; lo pendiente de cómputo no detiene el cierre del aula (y viceversa)
-    const bloquea = (k, j) => ORD[seq[k].m] < ORD[seq[j].m] && (seq[k].m === 'a' || lane(seq[k]) === lane(seq[j]));
-    const elegible = j => !done[j] && seq.every((x, k) => done[k] || !bloquea(k, j)) && (seq[j].dep || []).every(id => pos[id] == null || done[pos[id]] || blandas(j).indexOf(id) >= 0);
+    const deps = j => (seq[j].dep || []).concat((seq[j].firme || []).filter(id => (seq[j].dep || []).indexOf(id) < 0));
+    const blandas = j => deps(j).filter(id => pos[id] != null && !done[pos[id]] && lane(seq[j]) !== lane(seq[pos[id]]) && (seq[j].firme || []).indexOf(id) < 0);
+    // apertura → desarrollo → cierre (de cada submódulo, en orden); lo pendiente de cómputo no detiene el cierre del aula (y viceversa)
+    const rk = x => (x.smi || 0) * 3 + ORD[x.m];
+    const bloquea = (k, j) => rk(seq[k]) < rk(seq[j]) && (seq[k].m === 'a' || lane(seq[k]) === lane(seq[j]));
+    const elegible = j => !done[j] && seq.every((x, k) => done[k] || !bloquea(k, j)) && deps(j).every(id => pos[id] == null || done[pos[id]] || blandas(j).indexOf(id) >= 0);
     const primero = L => seq.findIndex((x, k) => !done[k] && lane(x) === L);
     const cur = { c: -1, g: -1 };
     const tomar = (j, b, cap) => {
@@ -264,12 +299,21 @@
       if (rem[j] <= 0) { done[j] = true; if (cur[L] === j) cur[L] = -1; } else cur[L] = j;
       return take;
     };
+    // de corrido: se aparta el último bloque de 2 h o más (fuera del centro de cómputo) para el examen del parcial
+    let exK = null, exIt = null;
+    if (K.flujo(g) && seq.length) {
+      const vivos = bl.filter(b => !perd[b.key]);
+      for (let i = vivos.length - 1; i >= 0 && !exK; i--) if (vivos[i].lugar !== 'computo' && vivos[i].horas >= 2) exK = vivos[i].key;
+      for (let i = vivos.length - 1; i >= 0 && !exK; i--) if (vivos[i].lugar !== 'computo') exK = vivos[i].key;
+      if (exK) { const bx = vivos.find(b => b.key === exK); exIt = K.examenFlujo(g, pid, Math.min(2, bx.horas)); }
+    }
     bl.forEach(b => {
       b.perdida = !!perd[b.key]; b.parts = []; b.libre = 0; if (b.perdida) return;
       b.recorte = Math.min(b.horas, Number(rec[b.key]) || 0);
       // te adelantaste: el bloque cubrió más horas del plan de las que dura (lo siguiente se jala aquí)
       b.adelanto = b.recorte ? 0 : Math.max(0, Number(ade[b.key]) || 0);
       let cap = b.horas - b.recorte + b.adelanto;
+      const exH = b.key === exK && exIt ? Math.min(exIt.h, Math.max(0, cap)) : 0; cap -= exH;
       while (cap > 0) {
         let j = -1; const L = b.lugar, cg = cur.g >= 0 && !done[cur.g] ? cur.g : -1, cc = cur.c >= 0 && !done[cur.c] ? cur.c : -1;
         if (L === 'computo') {
@@ -286,9 +330,12 @@
           if (cg >= 0) j = cg;
           if (j < 0) { const k = primero('g'); if (k >= 0 && elegible(k)) j = k; }
         }
+        // si lo que sigue espera algo del centro de cómputo (dependencia firme), avanza con lo siguiente que ya se puede dar
+        if (j < 0 && L !== 'computo') j = seq.findIndex((x, k) => lane(x) === 'g' && elegible(k));
         if (j < 0) break;
         cap -= tomar(j, b, cap);
       }
+      if (exH) b.parts.push({ it: exIt, h: exH, antes: 0, sigue: false, aviso: '' });
       b.libre = cap;
       if (cap > 0) {
         const kg = primero('g'), kc = primero('c');
@@ -297,9 +344,11 @@
       }
     });
     const pend = seq.filter((x, j) => !done[j]), faltan = seq.reduce((s, x, j) => s + (done[j] ? 0 : rem[j]), 0);
-    const tot = seq.reduce((s, x) => s + x.h, 0), cal = bl.filter(b => !b.perdida).reduce((s, b) => s + b.horas, 0);
-    const hc = { nec: seq.filter(x => x.lugar === 'computo').reduce((s, x) => s + x.h, 0), hay: bl.filter(b => !b.perdida && b.lugar === 'computo').reduce((s, b) => s + b.horas, 0) };
-    return { p: p, seq: seq, bloques: bl, faltan: faltan, pend: pend, tot: tot, cal: cal, computo: hc };
+    const hh = x => x.h0 != null ? x.h0 : x.h, tot = seq.reduce((s, x) => s + hh(x), 0) + (exIt ? exIt.h : 0), cal = bl.filter(b => !b.perdida).reduce((s, b) => s + b.horas, 0);
+    const hc = { nec: seq.filter(x => x.lugar === 'computo').reduce((s, x) => s + hh(x), 0), hay: bl.filter(b => !b.perdida && b.lugar === 'computo').reduce((s, b) => s + b.horas, 0) };
+    // lo que queda para el parcial siguiente (de corrido)
+    const resto = seq.map((x, j) => { const it = Object.assign({}, x); delete it.idx; delete it.pos; delete it.h0; return { it: it, rem: done[j] ? 0 : rem[j] }; });
+    return { p: p, seq: seq, bloques: bl, faltan: faltan, pend: pend, tot: tot, cal: cal, computo: hc, resto: resto, examen: exIt };
   };
   K.dia = (g, f) => { const p = D.parciales().find(x => f >= x.inicio && f <= x.fin); if (!p) return null; const pl = K.plan(g, p.id); return { p: p, plan: pl, bloques: pl.bloques.filter(b => b.fecha === f) }; };
   K.resumenDia = (g, f) => { const d = K.dia(g, f); if (!d || !d.bloques.length) return null; return d.bloques.map(b => ({ b: b, txt: b.perdida ? 'Sin clase (se recorrió)' : (b.parts.map(x => x.it.t).join(' + ') || 'Libre: ' + (b.espera || 'repaso o avance del proyecto')) })); };
@@ -308,7 +357,7 @@
   const momChip = m => '<span class="chip ' + MOM[m][1] + '">' + MOM[m][0] + '</span>';
   function programa(g, pid, it) {
     if (it.ac == null) return '';
-    const sm = E.PROGRAMA.modulos.II.sub[(g.submodulos || {})[pid]]; const ac = sm && sm.ac[it.ac]; if (!ac) return '';
+    const m = E.PROGRAMA.modulos[g.modulo] || {}, sm = (m.sub || {})[it.sm || (g.submodulos || {})[pid]]; const ac = sm && sm.ac[it.ac]; if (!ac) return '';
     const dc = it.dc != null && ac.desarrollo ? ac.desarrollo[it.dc] : '';
     return '<details class="sub"><summary>Programa SEP: «' + esc(ac.titulo) + '» (p. ' + esc(ac.pag) + ')</summary><p class="small">' + (dc ? esc(dc) : '') + '</p><p class="small muted">Producto de la actividad clave: ' + esc(ac.producto) + '</p></details>';
   }
@@ -316,7 +365,7 @@
   function actHTML(g, pid, part, bloqueKey) {
     const it = part.it, min = it.pasos ? it.pasos.reduce((s, x) => s + x[0], 0) : 0;
     let h = '<div class="cl-act"><div class="row between gap wrap"><div>' + momChip(it.m) + ' <span class="chip">' + esc(it.tipo) + '</span>' + (part.h !== it.h ? ' <span class="chip">' + part.h + ' de ' + it.h + ' h</span>' : ' <span class="chip">' + it.h + ' h</span>') + '</div>' +
-      btn('⇄ Cambiar con la siguiente', 'cl-swap', 'data-pid="' + pid + '" data-pos="' + it.pos + '"', 'small ghost') + '</div>' +
+      (it.auto ? '<span class="chip">Automático: fin del parcial</span>' : btn('⇄ Cambiar con la siguiente', 'cl-swap', 'data-pid="' + pid + '" data-pos="' + it.pos + '"', 'small ghost')) + '</div>' +
       '<h4>' + esc(it.t) + '</h4>' + (it.lugar === 'computo' ? '<p class="small muted">💻 Necesita centro de cómputo.</p>' : it.lugar === 'taller' ? '<p class="small muted">🛠️ Mejor en taller (también se puede en el aula).</p>' : '') + (part.antes ? '<p class="note">Continúa de la clase anterior (' + part.antes + ' h ya dadas).</p>' : '') + (part.sigue ? '<p class="note">Sigue en la próxima clase.</p>' : '') + (part.aviso ? '<p class="note warn">' + esc(part.aviso) + '</p>' : '') +
       '<p><b>Objetivo:</b> ' + esc(it.obj) + '</p>';
     const rp = E.run && E.run.r && E.run.r.key === bloqueKey ? E.run.r.pasos[E.run.r.i] : null;
@@ -327,6 +376,7 @@
     if (it.ev) h += '<p class="small"><b>Evidencia:</b> ' + esc(it.ev) + '</p>';
     if (it.tarea) h += '<p class="note info small"><b>Tarea:</b> ' + esc(it.tarea) + '</p>';
     if (it.pre) h += '<p class="small"><b>Para adelantar el tema</b> a quien lo necesite: <i>' + esc(it.pre) + '</i></p>';
+    if (it.guia) h += K.guiaHTML(it, pid);
     h += programa(g, pid, it);
     const tm = it.tema && E.TEMAS.find(t => t.id === it.tema);
     // imágenes y videos del tema (una sola vez por día aunque el tema siga en otra actividad)
@@ -342,6 +392,35 @@
     return h + '</div>';
   }
 
+  /* ---------- hoja de práctica de una clase (simuladores, mediciones, armado): pasos, tabla para llenar, revisión y entrega ---------- */
+  const pasoTxt = x => Array.isArray(x) ? x : ['', x];
+  K.guiaHTML = (it, pid) => {
+    const gu = it.guia;
+    return '<details class="sub cl-guia"><summary>🧪 Hoja de práctica' + (gu.sw ? ' · ' + esc(gu.sw) : '') + '</summary>' +
+      (gu.link ? '<p class="small"><a href="' + esc(gu.link) + '" target="_blank" rel="noopener">↗ Abrir ' + esc(gu.sw || gu.link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]) + '</a></p>' : '') +
+      '<ol class="fc-pasos">' + gu.pasos.map(x => { x = pasoTxt(x); return '<li>' + (x[0] ? '<span class="fc-tool">' + esc(x[0]) + '</span>' : '') + '<span>' + esc(x[1]) + '</span></li>'; }).join('') + '</ol>' +
+      (gu.tabla ? '<div class="tbl-wrap"><table class="fc-tabla"><thead><tr>' + gu.tabla.cab.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' + (Array.isArray(gu.tabla.filas) ? gu.tabla.filas : Array.from({ length: Math.min(3, gu.tabla.filas || 3) }, () => gu.tabla.cab.map(() => ''))).map(f => '<tr>' + f.map(c => '<td>' + esc(String(c)) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' : '') +
+      (gu.revisa ? '<p class="small"><b>Revisa antes de entregar:</b></p><ul class="small">' + gu.revisa.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') +
+      (gu.seguridad ? '<p class="note warn small">⚠️ ' + esc(gu.seguridad) + '</p>' : '') +
+      (gu.entrega ? '<p class="small"><b>Entrega:</b> ' + esc(gu.entrega) + '</p>' : '') +
+      btn('🖨 Imprimir hoja de práctica', 'cl-hoja', 'data-pid="' + pid + '" data-id="' + it.id + '"', 'small') + '</details>';
+  };
+  K.hojaHTML = (g, pid, it) => {
+    const gu = it.guia, p = C.parcial(pid), m = E.PROGRAMA.modulos[g.modulo] || {}, sm = (m.sub || {})[it.sm] || {};
+    const filas = gu.tabla ? (Array.isArray(gu.tabla.filas) ? gu.tabla.filas : Array.from({ length: gu.tabla.filas || 6 }, () => gu.tabla.cab.map(() => ''))) : [];
+    return '<div class="pr hoja-pr"><div class="p-title">HOJA DE PRÁCTICA · ' + esc(it.t.toUpperCase()) + '</div>' +
+      '<p class="tiny c">' + esc(D.cfg().plantel) + ' · ' + esc(g.nombre) + ' · Módulo ' + esc(g.modulo) + (it.sm ? ', Submódulo ' + esc(it.sm) + (sm.nombre ? ': ' + esc(sm.nombre) : '') : '') + (p ? ' · ' + esc(p.nombre) : '') + '</p>' +
+      '<table class="grid"><tr><td><b>Nombre / equipo:</b> ________________________________________</td><td><b>Fecha:</b> ____________</td></tr></table>' +
+      '<p><b>Objetivo:</b> ' + esc(it.obj) + '</p>' + (it.mat ? '<p><b>Material:</b> ' + esc(it.mat) + '</p>' : '') + (gu.sw ? '<p><b>Programa:</b> ' + esc(gu.sw) + (gu.link ? ' (' + esc(gu.link) + ')' : '') + '</p>' : '') +
+      (gu.seguridad ? '<p><b>Seguridad:</b> ' + esc(gu.seguridad) + '</p>' : '') +
+      '<ol>' + gu.pasos.map(x => { x = pasoTxt(x); return '<li>' + (x[0] ? '<b>' + esc(x[0]) + ':</b> ' : '') + esc(x[1]) + '</li>'; }).join('') + '</ol>' +
+      (filas.length ? '<table class="grid"><tr>' + gu.tabla.cab.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr>' + filas.map(f => '<tr>' + f.map(c => '<td style="height:22px">' + esc(String(c)) + '</td>').join('') + '</tr>').join('') + '</table>' : '') +
+      (gu.revisa ? '<p><b>Revisa antes de entregar</b></p><ul>' + gu.revisa.map(x => '<li>☐ ' + esc(x) + '</li>').join('') + '</ul>' : '') +
+      (gu.preguntas ? '<p><b>Preguntas</b></p><ol>' + gu.preguntas.map(q => '<li>' + esc(q) + '<br>_______________________________________________________________</li>').join('') + '</ol>' : '') +
+      (gu.entrega ? '<p><b>Entrega:</b> ' + esc(gu.entrega) + '</p>' : '') + '</div>';
+  };
+  A['cl-hoja'] = el => { const g = D.grupoActual(); if (!g) return; const it = K.seq(g, el.dataset.pid).find(x => x.id === el.dataset.id) || (E.CLASES[K.smKey(g, el.dataset.pid)] || []).find(x => x.id === el.dataset.id); if (it && it.guia) E.print.run(K.hojaHTML(g, el.dataset.pid, it), { title: 'Práctica · ' + it.t, margin: '10mm' }); };
+
   /* ---------- proyectar la clase: meta, agenda, material, prácticas de FreeCAD, palabras clave y entrega ---------- */
   const chunkK = (a, n) => { const out = []; for (let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n)); return out; };
   const capi = x => { x = String(x).trim().replace(/\.$/, ''); return x.charAt(0).toUpperCase() + x.slice(1); };
@@ -351,34 +430,51 @@
     if (it.pasos) { const ch = chunkK(it.pasos, 6); ch.forEach((c, i) => s.push({ k: 'html', h: 'Lo que haremos hoy' + (ch.length > 1 ? ' (' + (i + 1) + ' de ' + ch.length + ')' : ''), html: '<ol class="pj-agenda">' + c.map(x => '<li><span class="pj-min">' + x[0] + ' min</span><span>' + esc(x[1]) + '</span></li>').join('') + '</ol>' })); }
     if (it.pre) s.push({ k: 'list', h: 'Palabras clave de hoy', items: it.pre.split(' · ').map(capi) });
     if (it.mat) s.push({ k: 'list', h: 'Material', items: it.mat.split(/,\s*/).map(capi) });
+    if (it.guia) {
+      const ps = it.guia.pasos.map(pasoTxt), ch = chunkK(ps, 4);
+      ch.forEach((c, i) => s.push({ k: 'html', h: 'Práctica' + (it.guia.sw ? ' · ' + it.guia.sw : '') + (ch.length > 1 ? ' (' + (i + 1) + ' de ' + ch.length + ')' : ''), html: '<ol class="fc-pasos" start="' + (i * 4 + 1) + '">' + c.map(x => '<li>' + (x[0] ? '<span class="fc-tool">' + esc(x[0]) + '</span>' : '') + '<span>' + esc(x[1]) + '</span></li>').join('') + '</ol>' }));
+      if (it.guia.revisa) s.push({ k: 'list', h: 'Revisa antes de entregar', items: it.guia.revisa, foot: it.guia.entrega ? 'Entrega: ' + it.guia.entrega : '' });
+    }
     if (E.fc) E.fc.de(it.id).forEach(p => E.fc.slides(p).forEach(x => s.push(x)));
     if (it.ev || it.tarea) s.push({ k: 'list', h: it.ev ? 'Qué entregas hoy' : 'Tarea', items: [it.ev ? capi(it.ev) : capi(it.tarea)], foot: it.ev && it.tarea ? 'Tarea: ' + it.tarea : '' });
     return s;
   };
   A['cl-proj'] = el => {
     const g = D.grupoActual(); if (!g) return;
-    const it = K.seq(g, el.dataset.pid).find(x => x.id === el.dataset.id); if (!it) return;
+    const it = K.seq(g, el.dataset.pid).find(x => x.id === el.dataset.id) || (el.dataset.id === 'examen-' + el.dataset.pid ? K.examenFlujo(g, el.dataset.pid) : null); if (!it) return;
     E.proj.abrir({ id: 'clase-' + it.id, titulo: it.t }, K.deck(it));
   };
 
   /* ---------- vista: lista de clases del parcial ---------- */
   V.clases = pid => {
     const g = D.grupoActual(); if (!g) return H.noGroup();
-    const hoy = u.today(), ps = D.parciales().filter(p => E.CLASES[K.smKey(g, p.id)]);
-    if (!ps.length) { const m = E.PROGRAMA.modulos[g.modulo] || {}; return { t: 'Clases', h: card('<h3>' + icon('board') + ' Clases de ' + esc(g.nombre) + '</h3><p>Todavía no hay secuencia de clases para el <b>Módulo ' + esc(g.modulo || '') + (m.nombre ? ' · ' + esc(m.nombre) : '') + '</b> (las que trae Escuadra son del Módulo II, submódulos 2 y 3).</p><p class="muted small">Pídele a Claude que la prepare con el programa SEP de ese módulo y tu horario, como se hizo con el Módulo II. Mientras, el pase de lista, calificaciones, acta y todo lo demás funcionan igual.</p>' + link('Ver Mis grupos', 'grupos', 'small')) }; }
-    const act = C.parcialActual(hoy); pid = pid || (ps.find(p => p.id === act.id) || ps[0]).id;
-    const pl = K.plan(g, pid), p = pl.p, sm = (E.PROGRAMA.modulos[g.modulo] || E.PROGRAMA.modulos.II).sub[(g.submodulos || {})[pid]];
+    const hoy = u.today(), ps = D.parciales().filter(p => K.tiene(g, p.id));
+    if (!ps.length) {
+      const m = E.PROGRAMA.modulos[g.modulo] || {}, cargando = E.mods && E.mods.cargando(g.modulo), sinSM = !Object.keys(g.submodulos || {}).some(k => g.submodulos[k]);
+      return { t: 'Clases', h: card('<h3>' + icon('board') + ' Clases de ' + esc(g.nombre) + '</h3>' + (cargando ? '<p>Cargando las clases del Módulo ' + esc(g.modulo) + '…</p>' :
+        sinSM ? '<p>Elige qué submódulo va en cada parcial (Ajustes → Grupo y horario) y aquí aparece la secuencia de clases del <b>Módulo ' + esc(g.modulo || '') + (m.nombre ? ' · ' + esc(m.nombre) : '') + '</b>.</p>' + link('Ir a Ajustes', 'ajustes/grupo', 'small primary') :
+        '<p>Todavía no hay secuencia de clases para este submódulo del <b>Módulo ' + esc(g.modulo || '') + (m.nombre ? ' · ' + esc(m.nombre) : '') + '</b>.</p><p class="muted small">Mientras, el pase de lista, calificaciones, acta y todo lo demás funcionan igual.</p>' + link('Ver Mis grupos', 'grupos', 'small'))) };
+    }
+    const act = C.parcialActual(hoy); pid = ps.some(p => p.id === pid) ? pid : (ps.find(p => p.id === act.id) || ps[0]).id;
+    const pl = K.plan(g, pid), p = pl.p, flujo = K.flujo(g), smsP = Array.from(new Set(flujo ? pl.bloques.reduce((a, b) => a.concat(b.parts.filter(t => !t.it.auto).map(t => t.it.sm)), []) : pl.seq.map(x => x.sm))).filter(Boolean).sort();
+    const smTab = x => { if (!flujo) return 'SM' + (g.submodulos || {})[x.id]; const ss = Array.from(new Set(K.plan(g, x.id).bloques.reduce((a, b) => a.concat(b.parts.map(t => t.it.sm)), []))).filter(Boolean).sort(); return ss.length ? 'SM' + ss.join('→SM') : 'SM' + (g.submodulos || {})[x.id]; };
     const plan = D.planes(g.id).find(x => x.parcial === pid);
-    let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/clases/' + x.id + '">' + esc(x.nombre) + ' · SM' + (g.submodulos || {})[x.id] + '</a>').join('') + '</div>';
-    const porM = { a: 0, d: 0, c: 0 }; pl.seq.forEach(x => { porM[x.m] += x.h; });
+    let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/clases/' + x.id + '">' + esc(x.nombre) + ' · ' + smTab(x) + '</a>').join('') + '</div>';
+    // de corrido la secuencia trae todo lo que falta del módulo: se cuentan solo las horas que caen en este parcial
+    const porM = { a: 0, d: 0, c: 0 }; if (flujo) pl.bloques.forEach(b => b.parts.forEach(t => { porM[t.it.m] += t.h; })); else pl.seq.forEach(x => { porM[x.m] += x.h0 != null ? x.h0 : x.h; });
+    const totP = flujo ? porM.a + porM.d + porM.c : pl.tot, usoC = pl.bloques.reduce((s, b) => s + b.parts.filter(t => t.it.lugar === 'computo').reduce((a, t) => a + t.h, 0), 0);
+    const sm = smsP.length;
     let chk = '';
     if (plan && plan.secuencia) { const dif = ['a', 'd', 'c'].filter(k => plan.secuencia[MOMK[k]] && Number(plan.secuencia[MOMK[k]].horas) !== porM[k]); if (dif.length) chk = '<p class="note warn">Tu planeación marca ' + dif.map(k => MOM[k][0].toLowerCase() + ' ' + plan.secuencia[MOMK[k]].horas + ' h').join(', ') + '; esta secuencia usa ' + dif.map(k => porM[k] + ' h').join(', ') + '.</p>'; }
     const hechas = pl.bloques.filter(b => b.fecha < hoy && !b.perdida).reduce((s, b) => s + b.horas, 0);
-    h += card('<h3>' + icon('board') + ' Clases del ' + esc(p.nombre) + (sm ? ' · Submódulo ' + (g.submodulos || {})[pid] : '') + '</h3>' +
-      '<p class="muted small">' + pl.tot + ' h de secuencia en ' + pl.cal + ' h de tu horario · apertura ' + porM.a + ' h, desarrollo ' + porM.d + ' h, cierre ' + porM.c + ' h, igual que tu planeación. Cada clase dice qué actividad clave del programa SEP 2024 trabaja.</p>' +
+    const ips = D.parciales().findIndex(x => x.id === pid), sigP = D.parciales()[ips + 1], sigue = flujo && sigP && (g.submodulos || {})[sigP.id];
+    // empezaste con el grupo después de este parcial: la secuencia queda de referencia, sin avisos de horas que faltan
+    const antes = !!(g.inicioDocente && g.inicioDocente > p.fin);
+    h += card('<h3>' + icon('board') + ' Clases del ' + esc(p.nombre) + (sm ? ' · Submódulo' + (smsP.length > 1 ? 's ' + smsP.slice(0, -1).join(', ') + ' y ' + smsP[smsP.length - 1] : ' ' + smsP[0]) : '') + '</h3>' + (flujo ? '<p class="small muted">De corrido: lo que no alcance en este parcial sigue en el siguiente, y al terminar un submódulo empieza el otro.</p>' : '') +
+      '<p class="muted small">' + totP + ' h de ' + (flujo ? 'clases' : 'secuencia') + ' en ' + pl.cal + ' h de tu horario · apertura ' + porM.a + ' h, desarrollo ' + porM.d + ' h, cierre ' + porM.c + ' h, igual que tu planeación. Cada clase dice qué actividad clave del programa SEP 2024 trabaja.</p>' +
       '<div class="bar"><span style="width:' + (pl.cal ? Math.min(100, hechas / pl.cal * 100) : 0) + '%"></span></div><p class="small">' + hechas + ' de ' + pl.cal + ' h dadas</p>' + chk +
-      (pl.computo.nec > pl.computo.hay ? '<p class="note warn">Las actividades de computadora suman ' + pl.computo.nec + ' h y tu horario tiene ' + pl.computo.hay + ' h en centro de cómputo: marca otro bloque como 💻 o cambia de orden.</p>' : '<p class="small muted">💻 ' + pl.computo.nec + ' h de computadora acomodadas en tus ' + pl.computo.hay + ' h de centro de cómputo.</p>') +
-      (pl.faltan ? '<p class="note bad">Por clases que no se dieron o por el lugar, te faltan ' + pl.faltan + ' h: no caben "' + pl.pend.map(x => x.t).slice(0, 3).join('", "') + '"' + (pl.pend.length > 3 ? '…' : '') + '. Junta o recorta actividades.</p>' : ''));
+      (antes ? '<p class="note info">Empezaste con este grupo el ' + esc(u.fLarga(g.inicioDocente)) + ': este parcial no te tocó. La secuencia queda como referencia para cuando des este submódulo.</p>' : sigue ? '<p class="small muted">💻 ' + usoC + ' h de computadora en tus ' + pl.computo.hay + ' h de centro de cómputo; lo que no alcance sigue en el ' + esc(sigP.nombre) + '.</p>' : pl.computo.nec > pl.computo.hay ? '<p class="note warn">Las actividades de computadora suman ' + pl.computo.nec + ' h y tu horario tiene ' + pl.computo.hay + ' h en centro de cómputo: marca otro bloque como 💻 o cambia de orden.</p>' : '<p class="small muted">💻 ' + pl.computo.nec + ' h de computadora acomodadas en tus ' + pl.computo.hay + ' h de centro de cómputo.</p>') +
+      (!antes && pl.faltan ? (sigue ? '<p class="note info">Lo demás del módulo (' + pl.faltan + ' h) sigue en el ' + esc(sigP.nombre) + ', de corrido: «' + pl.pend.map(x => x.t).slice(0, 2).join('», «') + '»' + (pl.pend.length > 2 ? '…' : '') + '.</p>' : '<p class="note bad">Por clases que no se dieron o por el lugar, te faltan ' + pl.faltan + ' h: no caben "' + pl.pend.map(x => x.t).slice(0, 3).join('", "') + '"' + (pl.pend.length > 3 ? '…' : '') + '. Junta o recorta actividades.</p>') : ''));
     const hoyD = K.resumenDia(g, hoy), sig = C.siguienteClase(g, hoy), sigD = sig && K.resumenDia(g, sig);
     if (hoyD || sigD) h += '<div class="grid2">' + (hoyD ? card('<div class="kicker">Hoy</div>' + diaMini(hoyD) + link('Ver guion de hoy', 'clase/' + hoy, 'small primary'), 'cl-hoy') : '') + (sigD ? card('<div class="kicker">Próxima clase · ' + u.fLarga(sig) + '</div>' + diaMini(sigD) + link('Preparar', 'clase/' + sig, 'small')) : '') + '</div>';
     const semanas = {}; pl.bloques.forEach(b => { const d = u.parse(b.fecha); const lun = u.addDays(b.fecha, -((d.getDay() + 6) % 7)); (semanas[lun] = semanas[lun] || {})[b.fecha] = (semanas[lun][b.fecha] || []).concat([b]); });

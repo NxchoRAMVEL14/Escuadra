@@ -14,10 +14,109 @@ window.E = window.E || {};
       I: {
         nombre: 'Construye circuitos electrónicos', horas: 272, semestre: 2, pag: 13,
         resultados: ['Construir circuitos electrónicos', 'Comprobar el funcionamiento de circuitos electrónicos', 'Ensamblar circuitos electrónicos analógicos', 'Diseñar circuitos electrónicos digitales'],
+        sinco: ['2633 Técnicos en mantenimiento y reparación de maquinaria e instrumentos industriales', '2634 Mecánicos en mantenimiento y reparación de maquinaria e instrumentos industriales'],
+        scian: ['334519 Fabricación de otros instrumentos de medición, control, navegación, y equipo médico electrónico', '811410 Reparación y mantenimiento de aparatos eléctricos para el hogar y personales', '811219 Reparación y mantenimiento de otro equipo electrónico y de equipo de precisión'],
+        fuentes: [
+          'Bolton, W. (2013). Mecatrónica: sistemas de control electrónico en ingeniería (5ª ed.). Alfaomega.',
+          'Botero, O. (2022). Electrónica digital. Conceptos y métodos básicos. Red Educativa Digital Descartes.',
+          'Boylestad, R. L. y Nashelsky, L. (2009). Electrónica: teoría de circuitos y dispositivos electrónicos (10ª ed.). Pearson.',
+          'Datasheetcatalog (2010). Hojas de datos de componentes electrónicos. datasheetcatalog.com',
+          'Hayt, W., Kemmerly, J. y Durbin, S. (2012). Análisis de circuitos en ingeniería (8ª ed.). McGraw-Hill.',
+          'Hermosa, A. (2009). Principios de electricidad y electrónica 1 (3ª ed.). Alfaomega.',
+          'Lajara, J. y Pelegrí, J. (2013). Diseño de circuitos impresos con Eagle. Marcombo.',
+          'Pérez Montiel, H. (2015). Física general, unidad 12: Electricidad. Grupo Editorial Patria.',
+          'Tocci, R. (2007). Sistemas digitales: principios y aplicaciones (10ª ed.). Pearson.',
+          'NMX-J-136-ANCE-2019. Abreviaturas y símbolos para diagramas, planos y equipos eléctricos.',
+          'NOM-008-SCFI-2002. Sistema general de unidades de medida.',
+          'NOM-017-STPS-2008. Equipo de protección personal.',
+          'NOM-018-STPS-2000. Identificación y comunicación de peligros por sustancias químicas.',
+          'PROY-NOM-005-STPS-2017. Manejo de sustancias químicas peligrosas.',
+          'NOM-022-STPS-2008. Electricidad estática.'
+        ],
         sub: {
-          '1': { nombre: 'Comprueba el funcionamiento de circuitos electrónicos', horas: 64, ac: [{ titulo: 'Interpreta planos y diagramas electrónicos' }, { titulo: 'Verifica las variables eléctricas del circuito electrónico' }] },
-          '2': { nombre: 'Ensambla circuitos electrónicos analógicos', horas: 112, ac: [{ titulo: 'Arma circuitos electrónicos analógicos' }, { titulo: 'Monta circuitos electrónicos en placas de circuito impreso' }] },
-          '3': { nombre: 'Diseña circuitos electrónicos digitales', horas: 96, ac: [{ titulo: 'Elabora el diagrama del circuito electrónico digital' }, { titulo: 'Verifica el funcionamiento del circuito digital' }] }
+          '1': {
+            nombre: 'Comprueba el funcionamiento de circuitos electrónicos', horas: 64,
+            ac: [
+              {
+                titulo: 'Interpreta planos y diagramas electrónicos', pag: 14, ev: 'D',
+                producto: 'La identificación de los componentes electrónicos, funciones, simbología y sus interconexiones en un plano y diagramas', instr: 'R',
+                desarrollo: [
+                  'Identifica los componentes físicos y las funciones (fuentes de voltaje, resistores, capacitores, inductores, transformadores, transistores, líneas de conexión, entre otros) del circuito electrónico desarmando diversos dispositivos electrónicos; siguiendo instrucciones del jefe inmediato, utilizando herramientas y equipos y atendiendo las normas de seguridad e higiene.',
+                  'Distingue el tipo de conexión de acuerdo con su diseño en serie, paralelo o mixto utilizando resistencias, capacitancias, inductancias y otros elementos electrónicos en conexiones RC y RLC, colaborando en equipos de trabajo, asumiendo una actitud de respeto con sus pares y comunicación empática.',
+                  'Reconoce los elementos, nombres, valores, códigos de colores y simbología electrónica en un plano y diagrama, identificando sus componentes, su funcionamiento y cómo se conectan entre ellos, trabajando en equipo y reportando su resultado a su jefe inmediato mediante el uso de las TIC.'
+                ],
+                tx: [[2,7,14,18,22],[0,2,7,10,11,13,14,15,18,22],[0,2,4,7,11,14,18,22]],
+                criterios: ['Identifica cada componente físico y su función (fuente, resistor, capacitor, inductor, diodo, transistor, transformador)', 'Relaciona cada componente con su símbolo en el diagrama', 'Lee el valor de resistores (código de colores) y de capacitores', 'Distingue conexiones en serie, paralelo y mixtas en el diagrama', 'Desarma y extrae componentes con la herramienta adecuada, sin dañar la placa', 'Trabaja con orden y sigue las normas de seguridad (EPP, cautín, descarga electrostática)']
+              },
+              {
+                titulo: 'Verifica las variables eléctricas del circuito electrónico', pag: 15, ev: 'P',
+                producto: 'Los valores de las variables eléctricas del circuito electrónico calculadas y contrastadas con la hoja del fabricante', instr: 'R',
+                desempeno: 'La comparación de los valores de las mediciones de los componentes electrónicos con las especificaciones de las hojas del fabricante, utilizando herramientas de diagnóstico', instrD: 'GO',
+                desarrollo: [
+                  'Calcula los valores de corriente, voltaje y potencia eléctrica, utilizando las leyes fundamentales de la electrónica (ley de Ohm, ley de Watt, leyes de Kirchhoff) siguiendo métodos matemáticos establecidos, trabajando de manera autónoma y en colaboración con el equipo; reportando sus resultados a su jefe inmediato mediante las TIC.',
+                  'Interpreta los datos de los componentes electrónicos analizando las partes, simbología, tipos de conexión, tabla de valores, entre otros, especificadas en la hoja del fabricante (datasheet); utilizando el pensamiento matemático y asumiendo una postura crítica al resolver problemas y tomar decisiones.',
+                  'Compara el valor real de las variables eléctricas del circuito electrónico con la especificación de las hojas del fabricante; utilizando herramientas y equipos de medición, aplicando técnicas y métodos establecidos, regulando sus emociones para concentrarse y evitar accidentes, siguiendo las normas de seguridad e higiene vigentes para el logro de metas; reportando a su jefe inmediato sus resultados mediante las TIC.'
+                ],
+                tx: [[2,7,18,21],[0,2,4,7,18,20,22],[0,2,4,7,9,12,15,18,20,21]],
+                criterios: ['Calcula corriente, voltaje y potencia con la ley de Ohm y la ley de Watt', 'Aplica las leyes de Kirchhoff en circuitos serie, paralelo y mixtos', 'Obtiene los datos clave de la hoja del fabricante (valores máximos, terminales, tolerancia)', 'Mide voltaje, corriente y resistencia con el multímetro en la función y conexión correctas', 'Compara lo calculado con lo medido y explica la diferencia (tolerancia, error)', 'Reporta los resultados en tabla y con unidades']
+              }
+            ]
+          },
+          '2': {
+            nombre: 'Ensambla circuitos electrónicos analógicos', horas: 112,
+            ac: [
+              {
+                titulo: 'Arma circuitos electrónicos analógicos', pag: 17, ev: 'P',
+                producto: 'El circuito electrónico analógico armado, utilizando el software de simulación y la tablilla experimental', instr: 'LC',
+                desarrollo: [
+                  'Selecciona los componentes del sistema electrónico, considerando su funcionamiento (pasivo o activo), de acuerdo con su aplicación y las hojas de especificaciones; colaborando en equipos de trabajo, regulando sus emociones para concentrarse y evitar accidentes, siguiendo las normas de seguridad e higiene vigentes y considerando la economía ecológica.',
+                  'Comprueba el diseño de circuitos electrónicos establecido, utilizando software de simulación; considerando el impacto ecológico de los desechos, siguiendo instrucciones, trabajando en equipo y comunicándose asertivamente.',
+                  'Ensambla los circuitos electrónicos, utilizando la tablilla experimental (protoboard); siguiendo instrucciones de su jefe inmediato, colaborando en equipo y de forma autónoma; comunicándose de manera asertiva y empática; regulando sus emociones para concentrarse y evitar accidentes, siguiendo las normas de seguridad e higiene vigentes.'
+                ],
+                tx: [[0,1,7,9,12,14,18,22,26],[0,2,4,7,9,14,18,21,22,26],[0,2,4,7,9,12,14,22,26]],
+                criterios: ['Selecciona componentes según su función y la hoja de datos (pasivos y activos)', 'Simula el circuito antes de armarlo y corrige errores', 'Arma en protoboard con orden, sin puentes sueltos ni cortos', 'Respeta la polaridad de diodos, LED, capacitores electrolíticos y transistores', 'El circuito funciona y sus mediciones coinciden con la simulación', 'Separa los desechos electrónicos para reciclaje']
+              },
+              {
+                titulo: 'Monta circuitos electrónicos en placas de circuito impreso', pag: 18, ev: 'P',
+                producto: 'El circuito electrónico montado en placas impresas', instr: 'LC',
+                desarrollo: [
+                  'Dibuja el circuito en placas de fabricación, optimizando el espacio, utilizando software de diseño PCB y aplicando técnicas e ideas creativas para la resolución de problemas, colaborando en equipo y asumiendo una actitud de respeto con sus pares para el logro de metas.',
+                  'Instala los circuitos electrónicos en placas de circuito impreso (PCB) aplicando técnicas y metodologías establecidas (impresión y/o maquinado con fresadora CNC) optimizando el uso de los materiales disponibles; colaborando en equipo de trabajo y de forma autónoma, regulando sus emociones para concentrarse y evitar accidentes, siguiendo las normas de seguridad e higiene y atendiendo las instrucciones del jefe inmediato.',
+                  'Suelda los componentes en placa PCB, de acuerdo con el diseño del circuito electrónico de forma autónoma y colaborativa; utilizando materiales y equipo, optimizando los recursos; asumiendo una actitud de respeto y responsabilidad, siguiendo las normas de seguridad e higiene para evitar accidentes.'
+                ],
+                tx: [[2,4,7,11,14,17,18,20,22,26],[7,9,11,12,15,18,20,22,26],[7,9,11,12,14,18,22,26]],
+                criterios: ['Diseña el PCB a partir del esquemático, con pistas sin cruces y de ancho adecuado', 'Acomoda los componentes optimizando el espacio de la placa', 'Fabrica o arma la placa siguiendo el procedimiento y las medidas de seguridad', 'Suelda con puntos brillantes, sin puentes ni soldadura fría', 'Comprueba continuidad y ausencia de cortos antes de energizar', 'El circuito funciona en la placa']
+              }
+            ]
+          },
+          '3': {
+            nombre: 'Diseña circuitos electrónicos digitales', horas: 96,
+            ac: [
+              {
+                titulo: 'Elabora el diagrama del circuito electrónico digital', pag: 20, ev: 'P',
+                producto: 'El diagrama del circuito electrónico digital elaborado, aplicando métodos y técnicas', instr: 'LC',
+                desarrollo: [
+                  'Define la función del circuito digital aplicando el sistema de numeración adecuado (decimal, binario, octal, hexadecimal y BCD) al realizar las conversiones entre sistemas de numeración; utilizando el pensamiento matemático, siguiendo instrucciones y comunicando sus resultados a su jefe inmediato.',
+                  'Diseña circuitos lógicos digitales, identificando el funcionamiento de las compuertas lógicas y su simbología combinándolas mediante diversos métodos como, circuito esquemático, expresión booleana y tabla de verdad, utilizando las tecnologías de información y comunicación; trabajando de forma autónoma y colaborativa, asumiendo una actitud empática hacia las ideas y opiniones de sus pares.',
+                  'Aplica técnicas de reducción de circuitos lógicos (álgebra de Boole, mapas de Karnaugh) optimizando la cantidad de elementos necesarios para la construcción del circuito regulando sus emociones y sentimientos para concentrarse y mejorar la toma de decisiones para la resolución de problemas.',
+                  'Determina la secuencia lógica (síncrona y asíncrona), en contadores (ascendentes y descendentes) para representar esquemas y diagramas de circuitos digitales, utilizando el pensamiento matemático, trabajando de forma individual y en equipo; respetando las ideas y opiniones de sus pares para el logro de sus objetivos y metas.'
+                ],
+                tx: [[0,2,4,7,18,20],[2,4,7,11,14,16,18,20,22],[2,4,7,11,12,18,20,22,26],[2,4,7,10,12,14,16,18,20,21,22]],
+                criterios: ['Convierte entre decimal, binario, octal, hexadecimal y BCD', 'Obtiene la tabla de verdad a partir del enunciado', 'Escribe la expresión booleana y la simplifica (álgebra de Boole o mapa de Karnaugh)', 'Dibuja el diagrama con la simbología de compuertas y la numeración de terminales', 'Determina la secuencia de un contador (ascendente o descendente)']
+              },
+              {
+                titulo: 'Verifica el funcionamiento del circuito digital', pag: 22, ev: 'P',
+                producto: 'El circuito digital en funcionamiento', instr: 'LC',
+                desarrollo: [
+                  'Simula el circuito digital, utilizando software de diseño o aplicaciones móviles, trabajando de forma creativa, autónoma y colaborativa; respetando las ideas y opiniones de sus pares en la solución de problemas, logro de sus objetivos y metas; ahorrando los recursos energéticos.',
+                  'Arma el circuito digital en la tablilla experimental (protoboard) optimizando la cantidad de compuertas y cableado para su construcción, considerando el concepto central del Nexo impacto ecológico; trabajando de forma autónoma y colaborativa, regulando sus emociones, sentimientos e impulsos en la toma de decisiones para la resolución de problemas y logro de metas.',
+                  'Valida el funcionamiento del circuito controlando las señales de entrada con interruptores dip switch o señales de reloj, visualizando las de salida en lámparas lógicas y display de 7 segmentos, colaborando en equipo y con mentalidad de crecimiento, respetando las ideas y opiniones de sus pares en la toma de decisiones en la solución de problemas y logro de metas.'
+                ],
+                tx: [[1,2,4,7,10,14,17,18,21,22,23],[2,4,7,12,14,20,21,22,23],[1,2,4,7,10,11,14,18,20,21,26]],
+                criterios: ['Simula el circuito y comprueba la tabla de verdad', 'Arma en protoboard con los circuitos integrados bien alimentados (Vcc y GND)', 'Usa interruptores DIP o reloj en las entradas y LED o display en las salidas', 'El circuito cumple la tabla de verdad o la secuencia del contador', 'Optimiza compuertas y cableado', 'Localiza y corrige fallas con método']
+              }
+            ]
+          }
         }
       },
       II: {
@@ -147,30 +246,364 @@ window.E = window.E || {};
       III: {
         nombre: 'Programa dispositivos de control', horas: 272, semestre: 4, pag: 54,
         resultados: ['Programar dispositivos de control', 'Instalar elementos de potencia y control', 'Programar controladores lógicos', 'Programar sistemas embebidos'],
+        sinco: ['2633 Técnicos en mantenimiento y reparación de maquinaria e instrumentos industriales', '2634 Mecánicos en mantenimiento y reparación de maquinaria e instrumentos industriales', '2640 Supervisores de técnicos eléctricos, en electrónica y de equipos en telecomunicaciones y electromecánicos', '2643 Técnicos en instalación y reparación de equipos electrónicos, telecomunicaciones y electrodomésticos', '2645 Técnicos en reparación de equipos electromecánicos', '8181 Ensambladores y montadores de herramientas, maquinaria, equipos y productos metálicos', '8211 Operadores de máquinas e instalaciones para la generación de energía'],
+        scian: ['3399 Otras industrias manufactureras'],
+        fuentes: [
+          'Alcalde, M., García, J. J. y Salmerón, F. (2021). Representación gráfica de sistemas mecatrónicos. Paraninfo.',
+          'Antonsen, T. M. (2020). Controles PLC con texto estructurado (ST): IEC 61131-3. BoD.',
+          'Baker, R. (2021). Proyectos Arduino: su guía para crear proyectos sencillos de Arduino. KDP.',
+          'Berger, H. (1998). Automating with STEP 7 in STL and SCL. Siemens.',
+          'Grey, G. (2018). Raspberry Pi: guía paso a paso para principiantes.',
+          'Kosow, I. L. (1977). Control de máquinas eléctricas. Reverté.',
+          'Siemens. LOGO! Basic Modules (siemens.com).',
+          'Perdigones, A. (2011). PLC Programming LOGO! by Siemens. Universidad Politécnica de Madrid.',
+          'Raspberry Pi documentation: Getting started (raspberrypi.com).',
+          'Ruiz Vázquez, T. (2004). Análisis básico de circuitos eléctricos y electrónicos. Pearson.',
+          'Tello, S. S. (2020). Prácticas de automatización. Marcombo.',
+          'Thorpe, E. (2019). Arduino para principiantes.',
+          'Arduino. UNO R3 documentation (docs.arduino.cc).'
+        ],
         sub: {
-          '1': { nombre: 'Instala elementos de potencia y control', horas: 96, ac: [{ titulo: 'Interpreta planos y diagramas del tablero de control' }, { titulo: 'Selecciona componentes periféricos del sistema de potencia y control' }, { titulo: 'Ensambla elementos de potencia y control' }, { titulo: 'Comprueba el funcionamiento del sistema de potencia y control' }] },
-          '2': { nombre: 'Programa controladores lógicos', horas: 96, ac: [{ titulo: 'Inspecciona el funcionamiento y cableado del PLC' }, { titulo: 'Formula el programa para el controlador' }, { titulo: 'Verifica el funcionamiento del programa' }] },
-          '3': { nombre: 'Programa sistemas embebidos', horas: 80, ac: [{ titulo: 'Inspecciona el funcionamiento interno y cableado del sistema embebido' }, { titulo: 'Programa el código para la tarjeta' }, { titulo: 'Verifica el funcionamiento del sistema' }] }
+          '1': {
+            nombre: 'Instala elementos de potencia y control', horas: 96,
+            ac: [
+              {
+                titulo: 'Interpreta planos y diagramas del tablero de control', pag: 55, ev: 'D',
+                producto: 'La interpretación de planos y diagramas de elementos eléctricos y electrónicos en un tablero de control', instr: 'GO',
+                desarrollo: [
+                  'Identifica elementos eléctricos y electrónicos en un tablero de control de forma física y mediante simbología; trabajando de manera autónoma o colaborativa, siguiendo las instrucciones del jefe inmediato y manteniendo comunicación empática y mentalidad de crecimiento.',
+                  'Determina los voltajes de operación de cada elemento en el plano o diagrama, empleando el pensamiento matemático, siguiendo las instrucciones del jefe inmediato y las normas de seguridad e higiene; trabajando de manera autónoma o colaborativa.'
+                ],
+                tx: [[0,1,4,11,13,14,19,22],[0,2,11,14,22]],
+                criterios: ['Identifica los elementos del tablero (interruptor termomagnético, contactor, relevador, guardamotor, botones, luces piloto) en físico y en símbolo', 'Lee diagramas de fuerza y de control con simbología normalizada', 'Determina el voltaje de operación de cada elemento (bobinas, control y fuerza)', 'Explica la secuencia de funcionamiento del circuito']
+              },
+              {
+                titulo: 'Selecciona componentes periféricos del sistema de potencia y control', pag: 56, ev: 'P',
+                producto: 'Los componentes periféricos del sistema de potencia y control, seleccionados de acuerdo con las dimensiones, mediciones y normas', instr: 'LC',
+                desarrollo: [
+                  'Mide los voltajes y amperajes del tablero, utilizando equipo de medición, registrando los datos obtenidos en la bitácora u hoja de servicio, aplicando las normas de seguridad e higiene vigentes; cuidando su bienestar físico corporal; trabajando de forma autónoma y colaborativa, reportando sus resultados al jefe inmediato.',
+                  'Determina el calibre del conductor, dimensiones de los componentes y protecciones del circuito, de acuerdo con las tablas de especificaciones, realizando cálculos de voltaje, amperaje y potencia, economizando recursos y materiales, empleando el pensamiento matemático; siguiendo las instrucciones del jefe inmediato y considerando las normas de seguridad e higiene.'
+                ],
+                tx: [[0,1,4,7,9,11,14,23],[0,1,2,4,7,11,20,22]],
+                criterios: ['Mide voltaje y corriente con el equipo y el EPP adecuados', 'Calcula la corriente de la carga y elige el calibre del conductor con tabla', 'Elige la protección (fusible, termomagnético, relevador de sobrecarga) según la corriente', 'Registra las mediciones en la bitácora u hoja de servicio', 'Justifica la selección con hojas de datos y normas']
+              },
+              {
+                titulo: 'Ensambla elementos de potencia y control', pag: 57, ev: 'P',
+                producto: 'El ensamble de los elementos de potencia y control del circuito o tablero, realizando las mediciones correspondientes', instr: 'LC',
+                desarrollo: [
+                  'Selecciona las herramientas y equipo considerando el tamaño, forma y dimensión de los elementos de potencia y control, así como el espacio de trabajo, aplicando las normas de seguridad e higiene; trabajando de forma autónoma y colaborativa.',
+                  'Realiza mediciones de voltaje con las herramientas y equipo de medición, siguiendo las instrucciones del jefe inmediato, aplicando las normas de seguridad e higiene trabajando en forma individual o colaborativa, y cuidando en todo momento su integridad física corporal; tomando decisiones basadas en evidencia al resolver problemas.',
+                  'Conecta los elementos de potencia y control del circuito o tablero, optimizando recursos, trabajando de manera autónoma o colaborativa, siguiendo las instrucciones del jefe inmediato y aplicando las normas de seguridad e higiene vigentes.'
+                ],
+                tx: [[0,4,9,11,14,17,18,20,22],[0,4,9,14,18,20,22,23],[0,1,4,7,9,11,14,18,21,22,24]],
+                criterios: ['Selecciona la herramienta adecuada para cada elemento', 'Monta los elementos ordenados y bien fijos', 'Cablea según el diagrama, con terminales y colores de conductor', 'Mide voltajes antes y después de conectar, con el circuito protegido', 'Cablea sin energía (bloqueo y etiquetado)']
+              },
+              {
+                titulo: 'Comprueba el funcionamiento del sistema de potencia y control', pag: 58, ev: 'P',
+                producto: 'El circuito con interruptores, sensores y actuadores funcionando', instr: 'LC',
+                desarrollo: [
+                  'Realiza la verificación del sistema activando interruptores, sensores y actuadores, utilizando equipo de medición, trabajando de forma colaborativa o autónoma, siguiendo las normas de seguridad e higiene y reportando al jefe inmediato sus resultados; cuidando en todo momento su integridad física corporal y la de sus compañeros.',
+                  'Corrige el circuito, de acuerdo con las hojas de especificaciones del proveedor implementando un plan de trabajo, reportando sus resultados a su jefe inmediato y siguiendo normas de seguridad e higiene; encaminado al logro de metas y regulando sus emociones durante el desarrollo de la competencia.'
+                ],
+                tx: [[0,7,9,11,14,18,22,23],[0,2,4,7,9,11,14,18,22,23]],
+                criterios: ['Prueba la secuencia completa: arranque, paro, enclavamiento y protecciones', 'Verifica sensores y actuadores con mediciones', 'Localiza y corrige fallas con el diagrama y la hoja del fabricante', 'Reporta resultados y correcciones']
+              }
+            ]
+          },
+          '2': {
+            nombre: 'Programa controladores lógicos', horas: 96,
+            ac: [
+              {
+                titulo: 'Inspecciona el funcionamiento y cableado del PLC', pag: 59, ev: 'P',
+                producto: 'El diagrama eléctrico para ensamblar el PLC en el tablero con los puertos de entrada, salida, voltaje y comunicación del PLC en funcionamiento', instr: 'LC',
+                desarrollo: [
+                  'Identifica los puertos de entrada y salida del controlador, así como de voltaje y comunicación, considerando información de manuales, tutoriales, hojas de datos; trabajando de manera autónoma o colaborativa.',
+                  'Determina el funcionamiento de los periféricos del controlador, generando ideas y técnicas innovadoras, siguiendo las instrucciones del jefe inmediato; trabajando de forma autónoma o colaborativa y aplicando las normas de seguridad e higiene vigentes.',
+                  'Clasifica las funciones que pueden realizarse utilizando el controlador; logrando la meta asignada por el jefe inmediato; regulando sus emociones durante el trabajo colaborativo y mantiene una comunicación empática.',
+                  'Elabora un diagrama eléctrico para ensamblar el PLC en el tablero, empleando el pensamiento matemático y la lengua extranjera; haciendo uso de técnicas y las TIC; trabajando de manera autónoma o colaborativa.'
+                ],
+                tx: [[0,1,4,7,14,18,21],[0,1,4,14,17,20,22],[0,4,7,14,16],[0,1,2,4,7,14,22]],
+                criterios: ['Identifica entradas, salidas, alimentación y puerto de comunicación del controlador', 'Distingue entradas digitales y analógicas, y salidas a relevador o a transistor', 'Elabora el diagrama de conexión del controlador con botones, sensores y cargas', 'Clasifica las funciones del controlador (enclavar, temporizar, contar, comparar)']
+              },
+              {
+                titulo: 'Formula el programa para el controlador', pag: 60, ev: 'P',
+                producto: 'El programa de acuerdo con las especificaciones lógicas de las entradas y salidas del controlador', instr: 'R',
+                desarrollo: [
+                  'Identifica las funciones booleanas y tablas de verdad, estableciendo planes de trabajo y logro de metas, utilizando el pensamiento matemático, un segundo idioma y trabajando de manera autónoma o colaborativa.',
+                  'Determina los estados lógicos de las entradas y salida, para encontrar una solución deseada, reportando sus resultados al jefe inmediato mediante el uso de las TIC.',
+                  'Realiza una tabla de verdad para obtener la función booleana y las compuertas lógicas, estableciendo un plan de trabajo encaminado al logro de metas, utilizando el pensamiento matemático y trabajando de manera autónoma o colaborativa.',
+                  'Elabora un diagrama de escalera para cargarlo al PLC, implementando ideas o técnicas innovadoras, siguiendo las instrucciones de su jefe inmediato y trabajando de manera autónoma o colaborativa.'
+                ],
+                tx: [[0,1,2,4,14,18,20,21,22],[0,1,2,4,14,18,20,21,22],[0,2,4,11,14,18,20,22],[0,2,4,14,17,18,20,21,22]],
+                criterios: ['Define los estados lógicos de entradas y salidas para la solución', 'Obtiene la tabla de verdad y la función booleana', 'Traduce la lógica a diagrama de escalera (contactos, bobinas, enclavamiento)', 'Usa temporizadores y contadores cuando se requieren', 'Documenta la tabla de direcciones (entradas, salidas y marcas)']
+              },
+              {
+                titulo: 'Verifica el funcionamiento del programa', pag: 62, ev: 'P',
+                producto: 'El circuito lógico programable con sus especificaciones lógicas del entorno funcionando', instr: 'R',
+                desarrollo: [
+                  'Identifica el puerto de comunicación del programador, trabajando de forma autónoma o colaborativa, siguiendo las instrucciones del jefe inmediato.',
+                  'Ensambla los elementos de potencia y control, de manera física o mediante simulación, estableciendo un plan de trabajo; siguiendo las instrucciones de su jefe inmediato; trabajando de manera autónoma o colaborativa y reporta los resultados obtenidos; cuidando los recursos disponibles para evitar desperdicios.',
+                  'Captura el programa en el software del PLC trabajando de forma autónoma o colaborativa; atendiendo las instrucciones del jefe inmediato.',
+                  'Carga el programa en el PLC utilizando el puerto de comunicación o simulador, siguiendo las instrucciones de su jefe inmediato y trabajando de manera autónoma o colaborativa.',
+                  'Comprueba el funcionamiento del circuito lógico programado, optimizando el uso de energía y componentes económicos, ecológicos y tecnológicos; reporta los resultados al jefe inmediato utilizando las TIC y la comunicación asertiva.'
+                ],
+                tx: [[0,4,7,11,22],[0,1,4,14,18,21,22,24],[0,1,4,11,14,18,20,22],[0,1,4,11,14,18,22],[0,4,11,14,17,18,21,25]],
+                criterios: ['Captura el programa en el software sin errores', 'Carga el programa al controlador o al simulador', 'Prueba todas las condiciones de la tabla de verdad o de la secuencia', 'Corrige fallas y documenta la versión final', 'Cablea entradas y salidas de forma segura']
+              }
+            ]
+          },
+          '3': {
+            nombre: 'Programa sistemas embebidos', horas: 80,
+            ac: [
+              {
+                titulo: 'Inspecciona el funcionamiento interno y cableado del sistema embebido', pag: 63, ev: 'D',
+                producto: 'La inspección durante el funcionamiento interno y cableado del sistema embebido considerando el diagrama', instr: 'GO',
+                desarrollo: [
+                  'Identifica los puertos de entrada, salida, voltaje y comunicación del sistema embebido, haciendo uso de la información disponible y trabajando de manera autónoma o colaborativa.',
+                  'Determina la función de los periféricos del sistema embebido; trabajando en forma creativa, autónoma o colaborativa y siguiendo las instrucciones del jefe inmediato.',
+                  'Elabora el diagrama para ensamblar o simular el sistema embebido, utilizando la creatividad y las TIC; empleando el pensamiento matemático, siguiendo las instrucciones del jefe inmediato y trabajando en forma autónoma y colaborativa.',
+                  'Verifica el funcionamiento interno del sistema embebido utilizando el diagrama y tecnología, herramientas y el pensamiento matemático; siguiendo las instrucciones del jefe inmediato y reportando sus resultados.'
+                ],
+                tx: [[0,1,4,11,18],[0,1,4,7,11,14,17,19,21,22],[0,2,4,22],[0,2,4,11,14,17,21,22]],
+                criterios: ['Identifica terminales digitales, analógicas, PWM, de alimentación y de comunicación de la tarjeta', 'Explica la función de los periféricos (sensores, actuadores, módulos)', 'Elabora el diagrama de conexión en simulador o en papel', 'Verifica conexiones y voltajes antes de energizar']
+              },
+              {
+                titulo: 'Programa el código para la tarjeta', pag: 65, ev: 'P',
+                producto: 'El programa con las especificaciones lógicas y la compilación', instr: 'R',
+                desarrollo: [
+                  'Identifica el software, instrucciones o bloques para realizar el programa, estableciendo de manera creativa planes de trabajo, siguiendo las instrucciones del jefe inmediato.',
+                  'Aplica las instrucciones o bloques para elaborar el código, siguiendo las instrucciones del jefe inmediato; manteniendo comunicación empática y reportando las inconsistencias para su solución.',
+                  'Captura el código con la sintaxis correcta utilizando compilador o simulador, de forma individual o colaborativa, utilizando el pensamiento matemático.'
+                ],
+                tx: [[0,1,4,11,17,22],[0,1,4,11,18,19,20,22],[0,1,4,14,21,22]],
+                criterios: ['Estructura el programa (setup, loop, variables y funciones)', 'Usa las instrucciones correctas para entradas, salidas, tiempos y decisiones', 'Compila sin errores y comenta el código', 'El programa resuelve la lógica pedida']
+              },
+              {
+                titulo: 'Verifica el funcionamiento del sistema', pag: 65, ev: 'P',
+                producto: 'El sistema embebido con los elementos de potencia y control del circuito, especificaciones lógicas del programa en funcionamiento', instr: 'LC',
+                desarrollo: [
+                  'Ensambla los elementos de potencia y control del circuito, siguiendo las normas de seguridad e higiene vigentes; trabajando de forma autónoma o colaborativa, reportando sus resultados a su jefe inmediato.',
+                  'Carga el programa en la tarjeta utilizando el puerto de comunicación o simulador, siguiendo el plan de trabajo y reporta sus resultados a su jefe inmediato.',
+                  'Comprueba el funcionamiento del sistema embebido, optimizando el uso de energía y aplicando el nexo Agua Energía-Alimento, trabajando en forma autónoma y colaborativa, y siguiendo las instrucciones de su jefe inmediato.'
+                ],
+                tx: [[0,1,4,9,14,21,22],[0,1,4,9,14,18,21,22],[0,1,4,14,18,21,22,23,24]],
+                criterios: ['Ensambla la etapa de potencia (transistor, relevador o driver) de forma segura', 'Carga el programa y comprueba cada función', 'Usa el monitor serie para diagnosticar', 'Optimiza el consumo de energía', 'Documenta los resultados']
+              }
+            ]
+          }
         }
       },
       IV: {
         nombre: 'Opera sistemas flexibles de manufactura de piezas mecánicas', horas: 192, semestre: 5, pag: 76,
         resultados: ['Operar sistemas flexibles de manufactura de piezas mecánicas', 'Configurar equipos de manufactura de piezas mecánicas', 'Programar sistemas robóticos'],
+        sinco: ['2633 Técnicos en mantenimiento y reparación de maquinaria e instrumentos industriales', '2634 Mecánicos en mantenimiento y reparación de maquinaria e instrumentos industriales', '8211 Ensambladores y montadores de herramientas, maquinaria, equipos y productos metálicos', '8123 Operadores de máquinas que cortan, perforan, doblan, troquelan y sueldan piezas y productos metálicos'],
+        scian: ['332710 Maquinado de piezas metálicas para maquinaria y equipo en general', '3363 Fabricación de partes para vehículos automotores'],
+        fuentes: [
+          'Chang, T.-C., Wysk, R. A. y Wang, H.-P. (2006). Computer-Aided Manufacturing. Pearson.',
+          'Cruz, F. (2007). Control numérico y programación. Alfaomega.',
+          'Giesecke, F. E. et al. (2012). Technical Drawing with Engineering Graphics. Pearson.',
+          'Groover, M. P. (1997). Fundamentos de manufactura moderna. Pearson.',
+          'Groover, M. P. (2008). Automation, Production Systems, and Computer-Integrated Manufacturing. Pearson.',
+          'Krar, S., Gill, A. y Smid, P. (2009). Tecnología de las máquinas herramienta. Alfaomega.',
+          'Mompín, J. (1988). Sistemas CAD/CAM/CAE. Marcombo.',
+          'Puncochar, D. E. y Evans, K. (2010). Interpretation of Geometric Dimensioning and Tolerancing. Industrial Press.',
+          'Smid, P. (2005). CNC Control Setup for Milling and Turning. Industrial Press.',
+          'Smid, P. (2013). CNC Programming Handbook. Industrial Press.',
+          'Hammer, W. (2000). Cómo leer dibujos industriales. Industrial Press.'
+        ],
         sub: {
-          '1': { nombre: 'Configura equipos de manufactura de piezas mecánicas', horas: 96, ac: [{ titulo: 'Manipula equipos y máquinas-herramienta para la manufactura de piezas mecánicas' }, { titulo: 'Programa equipos (CNC) para la manufactura de piezas mecánicas' }, { titulo: 'Comprueba la manufactura de piezas mecánicas con simuladores y materiales de prueba' }] },
-          '2': { nombre: 'Programa sistemas robóticos', horas: 96, ac: [{ titulo: 'Prepara el sistema robótico de acuerdo con el proceso de producción' }, { titulo: 'Desarrolla la programación del sistema robótico de acuerdo con el proceso de producción' }, { titulo: 'Valida la programación del sistema robótico por medio de simuladores de producción' }] }
+          '1': {
+            nombre: 'Configura equipos de manufactura de piezas mecánicas', horas: 96,
+            ac: [
+              {
+                titulo: 'Manipula equipos y máquinas-herramienta para la manufactura de piezas mecánicas', pag: 77, ev: 'D',
+                producto: 'La operación de máquinas-herramienta para la manufactura de piezas mecánicas', instr: 'GO',
+                desarrollo: [
+                  'Identifica las diferentes operaciones de los equipos o máquinas-herramienta para la manufactura de piezas mecánicas, empleando pensamiento crítico y el pensamiento matemático, utilizando los manuales del fabricante disponibles y haciendo uso de las tecnologías de la información y la lengua extranjera.',
+                  'Realiza los cálculos de velocidades (de giro y de avance) para el funcionamiento de una máquina-herramienta y a la elección sostenible del material de acuerdo con las especificaciones para la fabricación de una pieza, utilizando el pensamiento matemático y trabajando de manera individual y en equipo; verificando los resultados para entregarlos al jefe inmediato y recibir retroalimentación.',
+                  'Acondiciona la máquina-herramienta de acuerdo con sus parámetros de operación (lubricación, iluminación, presión de aire, nivelación, refrigeración y colocación de herramientas de corte) especificados en los estándares para el manejo eficiente de las mismas, trabajando en equipo y atendiendo las instrucciones de su jefe inmediato; cuidando en todo momento su integridad física y corporal.',
+                  'Opera máquinas-herramientas convencionales para la fabricación de piezas mecánicas, de acuerdo con especificaciones, considerando el impacto ecológico de los desechos, siguiendo instrucciones, trabajando y de forma individual y en equipo; comunicándose asertivamente y aplicando las normas de seguridad e higiene vigentes.'
+                ],
+                tx: [[1,4,7,18,22],[0,2,7,14,18,20,22],[1,7,9,14,23],[0,1,8,11,14,20,22,23]],
+                criterios: ['Identifica las operaciones de torno, fresadora, taladro y cortadora láser', 'Calcula velocidad de corte, revoluciones por minuto y avance', 'Acondiciona la máquina (lubricación, herramienta, sujeción, iluminación)', 'Opera con EPP y normas de seguridad', 'Elige el material considerando su impacto ecológico']
+              },
+              {
+                titulo: 'Programa equipos (CNC) para la manufactura de piezas mecánicas', pag: 79, ev: 'P',
+                producto: 'El equipo (CNC) programado para la manufactura de piezas mecánicas', instr: 'LC',
+                desarrollo: [
+                  'Reconoce el principio de funcionamiento de las máquinas de control numérico, tipos, sus partes, sistemas de referencia, ventajas y desventajas para la fabricación de piezas mecánicas considerando un enfoque sostenible, trabajando de manera individual y en equipo, comunicándose de manera asertiva y empática; regulando sus emociones para concentrarse y evitar accidentes, siguiendo las normas de seguridad e higiene vigentes.',
+                  'Reconoce los códigos G y M (funciones básicas y ciclos de maquinado) para la programación de máquinas de control numérico, de acuerdo con estándares industriales trabajando de manera individual y en equipo, comunicándose de manera asertiva y empática.',
+                  'Aplica los códigos G y M de programación de máquinas de control numérico en el desarrollo de programas para la manufactura de piezas mecánicas, trabajando de manera individual y en equipo, siguiendo las instrucciones de su jefe inmediato; comunicándose de manera asertiva y empática.'
+                ],
+                tx: [[1,2,4,7,11,14,15,25],[0,2,7,13,16,18,21],[0,2,7,14,16,18,21,22]],
+                criterios: ['Explica partes, ejes y sistemas de referencia de una máquina CNC', 'Usa los códigos G y M básicos y los ciclos de maquinado', 'Escribe el programa con encabezado, cero pieza, trayectoria y fin', 'Calcula coordenadas absolutas e incrementales']
+              },
+              {
+                titulo: 'Comprueba la manufactura de piezas mecánicas con simuladores y materiales de prueba', pag: 81, ev: 'P',
+                producto: 'Las piezas mecánicas en funcionamiento mediante simuladores y materiales de prueba', instr: 'LC',
+                desarrollo: [
+                  'Registra el código G en la herramienta de software de simulación de CNC de acuerdo con su operación y configuración del entorno: definición de espacio de máquina, medidas del material en bruto, herramientas, trabajando de forma creativa, autónoma y colaborativa; respetando las ideas y opiniones de sus pares en la solución de problemas, logro de sus objetivos y metas.',
+                  'Valida el correcto funcionamiento del programa desarrollado, verificando los cambios de herramienta, que no existan colisiones o trayectorias inadecuadas y/o habilita la máquina CNC con las condiciones necesarias para su ejecución: home de pieza, altura de herramientas, herramientas de corte, refrigerante y la correcta colocación del material para poner en funcionamiento la máquina CNC en la manufactura de piezas mecánicas, colaborando en equipo y con mentalidad de crecimiento, respetando las ideas y opiniones de sus pares en la toma de decisiones en la solución de problemas y logro de metas; siguiendo las normas de seguridad vigentes.',
+                  'Verifica las dimensiones de la pieza mecánica obtenida, haciendo uso de instrumentos de medición para determinar el cumplimiento de las tolerancias de acuerdo con las especificaciones y a las normas industriales vigentes; colaborando en equipo y con mentalidad de crecimiento, respetando las ideas y opiniones de sus pares en la toma de decisiones para la solución de problemas y logro de metas, reportando sus resultados a su jefe inmediato; siguiendo las normas de seguridad vigentes.'
+                ],
+                tx: [[0,3,6,20,26],[0,2,7,13,14,18,19,20],[0,2,7,11,18,20,22]],
+                criterios: ['Configura el simulador: material en bruto, herramientas y cero pieza', 'Detecta y corrige colisiones o trayectorias inadecuadas', 'Fabrica la pieza de prueba (láser o material blando) con seguridad', 'Mide la pieza y verifica tolerancias']
+              }
+            ]
+          },
+          '2': {
+            nombre: 'Programa sistemas robóticos', horas: 96,
+            ac: [
+              {
+                titulo: 'Prepara el sistema robótico de acuerdo con el proceso de producción', pag: 83, ev: 'P',
+                producto: 'El sistema robótico articulado de acuerdo con el proceso de producción', instr: 'LC',
+                desarrollo: [
+                  'Distingue los diferentes tipos de robots que se emplean, derivado de la elección entre diferentes opciones, con base en las necesidades del sector de aplicación y la resolución de problemas; trabajando de manera individual y en equipo, asumiendo una actitud de respeto con sus pares.',
+                  'Reconoce el funcionamiento y articulación de las diferentes opciones de robots por medio de una toma de decisiones, con una perspectiva innovadora y con orientación al logro de metas, trabajando de manera individual y en equipo.',
+                  'Selecciona el robot que cumpla con las metas de aplicación para encontrar una solución al proceso de manufactura, trabajando de forma individual y en equipo; respetando las ideas y opiniones de sus pares para el logro de sus objetivos y metas y reporta sus resultados a su jefe inmediato.',
+                  'Acondiciona la aplicación de robots, respetando sus condiciones iniciales de operación, funcionamiento y la articulación de las diferentes opciones, por medio de una toma de decisiones con una perspectiva innovadora, trabajando de forma individual y en equipo; aplicando las normas de higiene y seguridad vigentes.'
+                ],
+                tx: [[0,1,4,14,18,20,22],[0,1,4,14,17,22],[0,1,4,14,18,21],[1,4,11,16,17,20,26]],
+                criterios: ['Distingue tipos de robots y su aplicación (cartesiano, SCARA, articulado, delta, colaborativo)', 'Identifica grados de libertad, área de trabajo y efector final', 'Selecciona el robot adecuado para la tarea', 'Arma o acondiciona el brazo para operar con seguridad']
+              },
+              {
+                titulo: 'Desarrolla la programación del sistema robótico de acuerdo con el proceso de producción', pag: 85, ev: 'P',
+                producto: 'La programación del sistema robótico de acuerdo con el proceso de producción', instr: 'R',
+                desarrollo: [
+                  'Diseña el diagrama de flujo planificando el logro del objetivo entre diferentes opciones del algoritmo de programación, utilizando el pensamiento matemático, trabajando de forma individual y en equipo; respetando las ideas y opiniones de sus pares para el logro de sus objetivos y metas.',
+                  'Reconoce las diferentes opciones de programación de un robot (en línea y fuera de línea) identificando comandos y software de programación para la implementación de una solución; trabajando de forma individual y en equipo; respetando las ideas y opiniones de sus pares para el logro de sus objetivos y metas.',
+                  'Registra y establece el código derivado del algoritmo de programación para el funcionamiento de la aplicación deseada del robot, utilizando el pensamiento matemático, trabajando de forma individual y en equipo; respetando las ideas y opiniones de sus pares para el logro de sus objetivos y metas. Reporta sus resultados a su jefe inmediato.',
+                  'Verifica el funcionamiento del robot a través del simulador y de manera física considerando las normas de seguridad e higiene vigentes, las instrucciones del jefe inmediato; reportando sus resultados en la bitácora mediante el uso de las TIC.'
+                ],
+                tx: [[1,2,4,11,16,17,19,20,21,26],[1,2,4,11,16,18,20,21,22,26],[0,1,4,11,12,14,18,19,21,22],[0,4,18,20,22]],
+                criterios: ['Elabora el diagrama de flujo de la tarea', 'Distingue la programación en línea y fuera de línea', 'Programa posiciones y secuencia (puntos, movimientos y pinza)', 'Verifica en simulador y en físico']
+              },
+              {
+                titulo: 'Valida la programación del sistema robótico por medio de simuladores de producción', pag: 87, ev: 'P',
+                producto: 'El sistema robótico en funcionamiento por medio de simuladores de producción', instr: 'R',
+                desarrollo: [
+                  'Verifica el funcionamiento simulado y físico de operación de un robot, trabajando de forma creativa, autónoma y colaborativa; respetando las ideas y opiniones de sus pares en la solución de problemas, logro de sus objetivos y metas; considerando las normas de seguridad e higiene vigentes. Reporta sus resultados a su jefe inmediato.',
+                  'Realiza los ajustes en la programación en caso de ser necesario, tomando medidas lógicas a fin de encontrar una solución deseada acorde a la aplicación del robot, trabajando de forma creativa, autónoma y colaborativa; respetando las ideas y opiniones de sus pares en la solución de problemas, logro de sus objetivos y metas. Reporta sus resultados a su jefe inmediato.'
+                ],
+                tx: [[1,4,7,14,18,19,21],[0,1,4,7,11,18,19,20,21,22]],
+                criterios: ['Comprueba el ciclo completo sin colisiones', 'Ajusta posiciones, velocidades y tiempos', 'Reporta resultados en la bitácora', 'Respeta la zona de seguridad']
+              }
+            ]
+          }
         }
       },
       V: {
         nombre: 'Opera sistemas mecatrónicos', horas: 192, semestre: 6, pag: 97,
         resultados: ['Operar sistemas mecatrónicos', 'Automatizar sistemas mecatrónicos', 'Mantener sistemas mecatrónicos en funcionamiento'],
+        sinco: ['2633 Técnicos en mantenimiento y reparación de maquinaria e instrumentos industriales', '2634 Mecánicos en mantenimiento y reparación de maquinaria e instrumentos industriales', '2645 Técnicos en reparación de equipos electromecánicos', '8181 Operadores de máquinas e instalaciones para la generación de energía'],
+        scian: ['333510 Fabricación de maquinaria y equipo para la industria metalmecánica', '3399 Otras industrias manufactureras'],
+        fuentes: [
+          'Bolton, W. (2013). Mecatrónica: sistemas de control electrónico en la ingeniería mecánica y eléctrica. Alfaomega.',
+          'Emd, E. (2022). Mantenimiento mecatrónico: TPM, 5S, procedimiento, control, calidad. KDP.',
+          'García, J., Escaño, J. M. y Nuevo, A. (2019). Integración de sistemas de automatización industrial. Paraninfo.',
+          'González, R. H. (2016). Mantenimiento industrial: organización, control y gestión.',
+          'Mantenimiento industrial práctico (2ª ed., 2022). Fidestec.',
+          'Mora, A. (2009). Mantenimiento: planeación, ejecución y control. Alfaomega.',
+          'Reyes, F., Cid, J. y Vargas, E. (2013). Mecatrónica: control y automatización. Alfaomega.',
+          'NOM-004-STPS-1999. Sistemas de protección y dispositivos de seguridad en la maquinaria.',
+          'NOM-029-STPS-2011. Mantenimiento de las instalaciones eléctricas en los centros de trabajo.',
+          'NOM-009-STPS-2011. Trabajos en altura.',
+          'NOM-033-STPS-2015. Trabajos en espacios confinados.'
+        ],
         sub: {
-          '1': { nombre: 'Automatiza sistemas mecatrónicos', horas: 96, ac: [{ titulo: 'Diseña soluciones para automatizar sistemas mecatrónicos' }, { titulo: 'Ensambla componentes del sistema automatizado' }, { titulo: 'Comprueba el funcionamiento del sistema automatizado' }] },
-          '2': { nombre: 'Mantiene sistemas mecatrónicos en funcionamiento', horas: 96, ac: [{ titulo: 'Ejecuta órdenes de mantenimiento preventivo de componentes del sistema mecatrónico' }, { titulo: 'Ejecuta órdenes de mantenimiento correctivo del sistema mecatrónico' }, { titulo: 'Ejecuta órdenes de mantenimiento predictivo del sistema mecatrónico' }] }
+          '1': {
+            nombre: 'Automatiza sistemas mecatrónicos', horas: 96,
+            ac: [
+              {
+                titulo: 'Diseña soluciones para automatizar sistemas mecatrónicos', pag: 98, ev: 'P',
+                producto: 'El diseño de diagramas eléctricos, electrónicos, neumáticos e hidráulicos con soluciones de automatización', instr: 'R',
+                desarrollo: [
+                  'Reconoce las condiciones y características de operación del proceso a automatizar, para encontrar una solución deseada; atendiendo las indicaciones y requerimientos del jefe inmediato; comunicándose asertivamente y utilizando las TIC al registrar sus resultados.',
+                  'Identifica tareas que se pueden automatizar, tomando medidas lógicas a fin de encontrar una solución; considera la eficiencia de los recursos materiales y económicos, validados por el jefe inmediato.',
+                  'Selecciona sensores, actuadores, controladores e interfaces y tecnologías necesarias basados en criterios específicos e información disponible para la automatización del sistema mecatrónico, ya sea en forma individual o grupal, notificando a su jefe inmediato por medio de una tabla comparativa.',
+                  'Elabora dibujos y diagramas eléctricos, electrónicos, neumáticos e hidráulicos, así como, algoritmos de programación y sistemas control, necesarios en la automatización de las tareas seleccionadas; utilizando las TIC, la creatividad y mentalidad de crecimiento; trabajando ya sea en forma individual o grupal, reportando a su jefe inmediato.'
+                ],
+                tx: [[0,4,5,7,22],[0,2,4,18,20,24],[0,1,2,4,7,8,14,20,24],[0,2,4,7,14,17,19,22]],
+                criterios: ['Describe el proceso y sus condiciones de operación', 'Identifica las tareas que conviene automatizar y lo justifica', 'Selecciona sensores, actuadores y controlador con una tabla comparativa', 'Elabora los diagramas (eléctrico, electrónico, neumático o hidráulico) y el algoritmo de control', 'Estima costo y uso eficiente de recursos']
+              },
+              {
+                titulo: 'Ensambla componentes del sistema automatizado', pag: 100, ev: 'P',
+                producto: 'El ensamble de los componentes del sistema automatizado establecido en el diseño', instr: 'LC',
+                desarrollo: [
+                  'Reúne los componentes del sistema mecatrónico para ensamblarlos de acuerdo con el diseño de la automatización, planificando el trabajo para lograr la meta ya sea de forma individual o grupal, maximizando los recursos materiales y evitando desperdicios.',
+                  'Instala los componentes mecánicos, eléctricos, electrónicos, neumáticos, hidráulicos y de control de acuerdo con el resultado del diseño de la automatización del sistema mecatrónico; aplicando las medidas de seguridad e higiene; evitando accidentes y manteniendo una comunicación efectiva con su equipo de trabajo y con su jefe inmediato para el logro de la meta.',
+                  'Prepara los sistemas control, tarjetas de potencia, microcontroladores, PLC, compresores, válvulas reguladoras, bombas, para poner en funcionamiento el sistema mecatrónico, aplicando ideas, técnicas e ideas innovadoras ya sea de forma individual o colaborativa; siguiendo las instrucciones y las medidas de seguridad e higiene.'
+                ],
+                tx: [[0,4,9,14,21,22,23],[0,2,4,8,14,18,20,21,22],[0,4,9,10,14,17,20,22]],
+                criterios: ['Reúne los componentes de acuerdo con el diseño', 'Instala componentes mecánicos, eléctricos, electrónicos y de control', 'Prepara el controlador (tarjeta o PLC) y la etapa de potencia', 'Aplica las medidas de seguridad y mantiene orden en el cableado']
+              },
+              {
+                titulo: 'Comprueba el funcionamiento del sistema automatizado', pag: 101, ev: 'P',
+                producto: 'El sistema automatizado en funcionamiento', instr: 'LC',
+                desarrollo: [
+                  'Verifica el funcionamiento de la automatización del sistema mecatrónico, siguiendo las instrucciones del jefe inmediato y normas de seguridad vigentes; mantiene comunicación con su equipo de trabajo para resolver problemas y tomar decisiones.',
+                  'Modifica los componentes, conexiones, parámetros y programación en caso de ser necesario, estableciendo objetivos tangibles; optimizando los recursos materiales y económicos; trabajando de forma individual o grupal; comunica sus decisiones al jefe inmediato y corrige de ser necesario.'
+                ],
+                tx: [[0,14,18,20,22],[0,4,11,12,14,18,19,21,22]],
+                criterios: ['Verifica la secuencia completa del sistema automatizado', 'Detecta y corrige fallas en componentes, conexiones o programa', 'Ajusta parámetros (tiempos, umbrales)', 'Comunica y documenta los cambios']
+              }
+            ]
+          },
+          '2': {
+            nombre: 'Mantiene sistemas mecatrónicos en funcionamiento', horas: 96,
+            ac: [
+              {
+                titulo: 'Ejecuta órdenes de mantenimiento preventivo de componentes del sistema mecatrónico', pag: 102, ev: 'D',
+                producto: 'El mantenimiento preventivo al sistema mecatrónico, conforme al diagnóstico y a la orden', instr: 'GO',
+                desarrollo: [
+                  'Manipula equipo, herramientas, insumos e instrumentos (engrasadora, llaves, pinzas, estopas, desarmadores, calibradores, micrómetros, extractores, multímetro, equipo de seguridad, entre otros) que se utilizan en el mantenimiento preventivo; utilizando manuales de operación; reconociendo su propósito, proceso y actividades en las que se utilizan. Sigue las instrucciones del jefe inmediato y las normas de seguridad e higiene vigentes (NOM-004-STPS-1999, NOM-029-STPS-2011, NOM-009-STPS-2011, NOM-033-STPS-2015); registrando la información de puntos a considerar durante el mantenimiento.',
+                  'Diagnostica el funcionamiento del sistema mecatrónico; identificando sus componentes, conexiones, parámetros y programación, describiendo el estado físico de cada elemento; registrando la información en el instrumento que le proporciona el jefe inmediato; aplicando la normatividad vigente y utilizando las TIC y lenguaje técnico en el reporte general de funcionamiento del sistema mecatrónico.',
+                  'Elabora plan de mantenimiento preventivo considerando las inconsistencias detectadas en el diagnóstico en colaboración con el jefe inmediato y su equipo de trabajo; manteniendo una mentalidad de crecimiento, comunicación empática; considerando en sus decisiones el cuidado de los recursos disponibles y el menor daño al medio ambiente; utilizando las TIC y lenguaje técnico para presentar el resultado.',
+                  'Realiza mantenimiento preventivo al sistema mecatrónico de acuerdo con la orden que le proporciona el jefe inmediato; aplicando la normatividad vigente; manteniendo comunicación con el equipo de trabajo; resolviendo problemas y tomando decisiones consultadas previamente. Registrando en el instrumento las actividades realizadas, manejando lenguaje técnico.'
+                ],
+                tx: [[0,4,7,8,9,19,21,22,23],[0,4,18,20,22],[0,1,4,5,8,11,14,19,20,22,23,26],[0,1,4,22,23]],
+                criterios: ['Usa herramientas e instrumentos según su manual y propósito', 'Aplica bloqueo y etiquetado y las NOM de seguridad', 'Diagnostica el estado de cada componente y lo registra', 'Elabora el plan de mantenimiento preventivo', 'Ejecuta la orden y registra las actividades con lenguaje técnico']
+              },
+              {
+                titulo: 'Ejecuta órdenes de mantenimiento correctivo del sistema mecatrónico', pag: 105, ev: 'D',
+                producto: 'El mantenimiento correctivo al sistema mecatrónico, conforme al diagnóstico y a la orden', instr: 'GO',
+                desarrollo: [
+                  'Manipula equipo, herramientas, insumos e instrumentos (engrasadora, llaves, pinzas, estopas, desarmadores, calibradores, micrómetros, extractores, multímetro, escáner, taladro, aspiradora, compresor, gatos hidráulicos, prensas, escalera telescópica, grúa, polipastos, patines, montacargas, esmeril, cortadoras, equipo de seguridad, entre otros) que se utilizan en el mantenimiento correctivo; utilizando manuales de operación; reconociendo su propósito, proceso y actividades en las que se utilizan. Sigue las instrucciones del jefe inmediato y las normas de seguridad e higiene vigentes (NOM-004-STPS-1999, NOM-029-STPS-2011, NOM-009-STPS-2011, NOM-033-STPS-2015); registrando la información de puntos a considerar durante el mantenimiento.',
+                  'Diagnostica el funcionamiento del sistema mecatrónico; verificando el funcionamiento de sus componentes, conexiones, parámetros y programación, describiendo el estado físico de cada uno de ellos; registrando la información la orden de trabajo, bitácora, reporte de falla o en el instrumento que le proporciona el jefe inmediato; utilizando las TIC y lenguaje técnico; aplicando la normatividad vigente.',
+                  'Elabora plan de mantenimiento correctivo considerando las fallas detectadas en el diagnóstico en colaboración con el jefe inmediato y su equipo de trabajo; manteniendo una mentalidad de crecimiento, comunicación empática; considerando en sus decisiones el cuidado de los recursos disponibles y el menor daño al medio ambiente; utilizando las TIC y lenguaje técnico para presentar el resultado.',
+                  'Repara la falla detectada en el sistema, equipo o maquinaria, realizando ajustes, cambio de piezas, calibraciones, actualizaciones del código de programación de la tarjeta, entre otras acciones que le indique el jefe inmediato; organizando el trabajo, gestionando el tiempo adecuadamente, sosteniendo el impulso y motivación del compromiso de reparación, optimizando los recursos materiales y económicos.'
+                ],
+                tx: [[0,4,7,8,9,19,21,22,23],[0,4,18,20,22],[0,1,4,5,8,11,14,19,20,22,23,26],[0,1,4,22,23]],
+                criterios: ['Diagnostica la falla con método (del síntoma a la causa)', 'Elabora el plan de reparación con materiales y tiempos', 'Repara (ajuste, cambio de pieza, calibración o código)', 'Prueba el equipo después de reparar', 'Registra la orden de trabajo']
+              },
+              {
+                titulo: 'Ejecuta órdenes de mantenimiento predictivo del sistema mecatrónico', pag: 108, ev: 'D',
+                producto: 'El mantenimiento predictivo al sistema mecatrónico, conforme al diagnóstico de funcionamiento y a la orden', instr: 'GO',
+                desarrollo: [
+                  'Manipula equipo, herramientas, insumos e instrumentos (llaves, pinzas, desarmadores, calibradores, micrómetros, multímetro, analizador de vibraciones, cámara termografía, equipo de seguridad, entre otros) que se utilizan en el mantenimiento predictivo; utilizando manuales de operación; reconociendo su propósito, proceso y actividades en las que se utilizan. Sigue las instrucciones del jefe inmediato y las normas de seguridad e higiene vigentes (NOM-004-STPS-1999, NOM-029-STPS-2011, NOM-009-STPS-2011, NOM-033-STPS-2015); registrando la información de puntos a considerar durante el mantenimiento.',
+                  'Diagnostica el estado funcional de los sistemas mecatrónicos, identificando parámetros funcionales, deterioro de piezas internas, vibraciones, señales acústicas, detección de fugas, temperatura, alineaciones, balanceos, entre otras, en tiempo real; utilizando técnicas de monitoreo, equipos, materiales y herramientas; registrando en instrumentos que le proporcione el jefe inmediato la información y las predicciones de posibles fallas; empleando un lenguaje técnico y utilizando las TIC.',
+                  'Repara la falla detectada en el sistema, equipo o maquinaria durante el diagnóstico; realizando las actividades y tareas que le indique el jefe inmediato; organizando el trabajo, gestionando el tiempo adecuadamente, sosteniendo el impulso y motivación del compromiso de reparación, optimizando los recursos materiales y económicos.'
+                ],
+                tx: [[0,4,7,8,9,19,21,22,23],[0,4,18,20,22],[0,1,4,5,8,11,14,19,20,22,23,26]],
+                criterios: ['Mide variables de condición (temperatura, vibración, corriente, ruido)', 'Compara con valores de referencia y su tendencia', 'Predice fallas y propone la intervención', 'Registra en el formato con lenguaje técnico']
+              }
+            ]
+          }
         }
       }
     }
   };
+
+  // Columnas de elementos transversales de las tablas «Proceso para la formación en competencias» (programa 2024).
+  // Cada actividad clave trae en «tx» las columnas marcadas con X en cada renglón de «desarrollo de la competencia».
+  E.TX_COLS = ['Lengua y Comunicación', 'Inglés', 'Pensamiento Matemático', 'Conciencia Histórica', 'Cultura Digital', 'Humanidades', 'Ciencias Sociales', 'Ciencias Naturales, Exp. y Tecnología',
+    'Responsabilidad Social', 'Cuidado Físico Corporal', 'Bienestar Emocional Afectivo',
+    'Comunicación', 'Regulación de emociones', 'Autoconocimiento', 'Colaboración y trabajo en equipo', 'Conciencia social', 'Empatía', 'Creatividad', 'Resolución de problemas', 'Mentalidad de crecimiento', 'Toma de decisiones', 'Logro de metas', 'Autonomía en el trabajo',
+    'Nexo Agua-Energía-Alimento', 'Servicios ecosistémicos', 'Sistemas socioecológicos', 'Economía ecológica'];
+  (function () {
+    const TX = {"1":[[[2,7,13,17,22],[2,14,17,22],[0,2,7,11,17,19,22]],[[0,2,4,7,11,17,18,21,22],[4,7,8,14,17,18,21,22,26],[4,7,14,17,18,20],[4,7,11,14,17,18,21,22,26]]],"2":[[[4,7,11,14,17,21,23],[2,4,7,11,17,18,21,26],[0,2,4,7,11,12,17,18,26]],[[0,2,7,14,21],[2,4,11,14,17,22,26]],[[2,4,7,14,17,18,21,22],[2,4,7,12,14,17,18,21,26],[0,2,4,7,9,14,17,18,21,26],[0,2,7,11,12,14,17,18,20,21,22,26]]],"3":[[[0,5,12,16,20,24,25],[2,7,11,14,18,22]],[[0,2,4,7,11,20,23,25],[0,2,4,7,11,17,19]],[[0,7,14,18,22,23],[0,2,7,9,11,14,18,20,22,23]],[[0,7,9,20,21],[0,2,7,9,11,12,19,20,21,22]]]};
+    Object.keys(TX).forEach(s => TX[s].forEach((t, i) => { const ac = E.PROGRAMA.modulos.II.sub[s].ac[i]; if (ac) ac.tx = t; }));
+  })();
 
   // Catálogos del formato de planeación (programa, pp. 14 y 146-152)
   E.FUND = {

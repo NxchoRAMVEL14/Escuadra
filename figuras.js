@@ -319,6 +319,8 @@
 
   /* ---------- motor de animación ---------- */
   const F = E.fig = { vivos: new Set(), raf: 0, last: 0 };
+  // piezas de dibujo para las figuras de los otros módulos (archivos m1s1.js, m3s2.js…)
+  F.d = { f: f, ln: ln, pl: pl, pg: pg, ci: ci, rc: rc, tx: tx, path: path, pin: pin, flecha: flecha, arcoFlecha: arcoFlecha, engrane: engrane, suave: suave };
   F.html = (id, o) => {
     const d = FIG[id]; if (!d) return ''; o = o || {};
     return '<figure class="fig' + (o.cls ? ' ' + o.cls : '') + '" data-fig="' + id + '"' + (o.pausa ? ' data-pausa="1"' : '') + '><svg viewBox="0 0 ' + d.w + ' ' + d.h + '" role="img" aria-label="' + esc(d.t + '. ' + d.d) + '"></svg>' +

@@ -1,4 +1,4 @@
-/* Escuadra · Avance del proyecto por equipo (garra en el 2º parcial, grúa en el 3er parcial).
+/* Escuadra · Avance del proyecto por equipo (un proyecto por submódulo: en el Módulo II, garra en el 2º parcial y grúa en el 3er parcial).
    Las etapas salen del guion de Clases y su fecha meta es el día que te toca esa clase; cada equipo lleva su semáforo:
    verde al día, amarillo con una etapa atrasada, rojo con dos o más (o una atrasada más de una semana).
    Es seguimiento: no entra a calificación. */
@@ -18,11 +18,14 @@
   const SIG = { '': 'proc', proc: 'ok', ok: '' };
   const corto = n => u.corto(n);
   PJ.doc = (g, pid) => S.get(KP(g, pid)) || {};
-  PJ.parciales = g => D.parciales().filter(p => PJ.ETAPAS[E.clases.smKey(g, p.id)]);
+  // un proyecto por submódulo: si el submódulo dura dos parciales (de corrido), se lleva en el primero
+  PJ.parciales = g => { const vistos = {}; return D.parciales().filter(p => { const k = E.clases.smKey(g, p.id); if (!PJ.ETAPAS[k] || vistos[k]) return false; vistos[k] = true; return true; }); };
+  PJ.canon = (g, pid) => { const k = E.clases.smKey(g, pid), p = PJ.parciales(g).find(x => E.clases.smKey(g, x.id) === k); return p ? p.id : pid; };
   // fecha meta de cada etapa: el último día en que termina alguna de sus clases
   PJ.metas = (g, pid) => {
     const def = PJ.ETAPAS[E.clases.smKey(g, pid)]; if (!def) return null; const fin = {};
-    try { E.clases.plan(g, pid).bloques.forEach(b => { if (b.perdida) return; b.parts.forEach(pt => { if (!pt.sigue) fin[pt.it.id] = b.fecha; }); }); } catch (e) { }
+    const ps = E.clases.flujo && E.clases.flujo(g) ? D.parciales().filter(p => E.clases.tiene(g, p.id)) : [C.parcial(pid)];
+    try { ps.forEach(pp => E.clases.plan(g, pp.id).bloques.forEach(b => { if (b.perdida) return; b.parts.forEach(pt => { if (!pt.sigue) fin[pt.it.id] = b.fecha; }); })); } catch (e) { }
     return def.et.map(e => ({ id: e[0], t: e[1], f: e[2].map(i => fin[i]).filter(Boolean).sort().slice(-1)[0] || null }));
   };
   PJ.estado = (g, pid, eq, hoy) => {
@@ -39,9 +42,9 @@
   V.proyecto = pid => {
     const g = D.grupoActual(); if (!g) return H.noGroup(); const al = D.alumnos(g); if (!al.length) return H.needAlumnos('Proyecto');
     const ps = PJ.parciales(g); if (!ps.length) return { t: 'Proyecto', h: card('<p>Configura los submódulos del grupo en Ajustes → Grupo.</p>') };
-    const act = C.parcialActual(); pid = ps.some(p => p.id === pid) ? pid : (ps.find(p => p.id === act.id) || ps[0]).id;
+    const act = C.parcialActual(); pid = ps.some(p => p.id === pid) ? pid : (ps.find(p => p.id === PJ.canon(g, act.id)) || ps[0]).id;
     const p = C.parcial(pid), def = PJ.ETAPAS[E.clases.smKey(g, pid)], doc = PJ.doc(g, pid), eqs = doc.equipos || [], ms = PJ.metas(g, pid), hoy = u.today();
-    let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/proyecto/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '</div>';
+    let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/proyecto/' + x.id + '">' + esc(x.nombre) + ' · ' + esc((PJ.ETAPAS[E.clases.smKey(g, x.id)] || {}).nombre || '') + '</a>').join('') + '</div>';
     if (!eqs.length || E.ui.pjEdit === pid) return { t: 'Proyecto', h: h + editor(g, pid, al, eqs) };
     const est = eqs.map(eq => ({ eq: eq, r: PJ.estado(g, pid, eq, hoy) })), cnt = { ok: 0, warn: 0, bad: 0 }; est.forEach(x => cnt[x.r.nv]++);
     h += card('<div class="row between gap wrap"><h3>🧩 ' + esc(def.nombre) + ' · ' + esc(p.nombre) + '</h3>' + btn('Editar equipos', 'pj-edit', 'data-pid="' + pid + '"', 'small ghost') + '</div>' +
@@ -61,7 +64,7 @@
   };
   function editor(g, pid, al, eqs) {
     const k = eqs.length || Math.max(2, Math.round(al.length / 4.5)), de = {}; eqs.forEach((eq, i) => eq.al.forEach(id => { de[id] = i; }));
-    return card('<h3>👥 Equipos del ' + esc(C.parcial(pid).nombre) + '</h3><p class="muted small">Ármalos equilibrados (según Perfiles: un alumno fuerte en cada equipo) o al azar, y luego mueve a quien quieras. Para la grúa puedes conservar los del parcial anterior.</p>' +
+    return card('<h3>👥 Equipos del ' + esc(C.parcial(pid).nombre) + '</h3><p class="muted small">Ármalos equilibrados (según Perfiles: un alumno fuerte en cada equipo) o al azar, y luego mueve a quien quieras. Si el proyecto continúa del parcial anterior, puedes conservar los mismos equipos.</p>' +
       '<div class="row gap wrap"><label class="fld"><span>Número de equipos</span><input id="pj-k" type="number" min="2" max="10" value="' + k + '" style="max-width:90px"></label>' + btn('⚖️ Equilibrados', 'pj-armar', 'data-pid="' + pid + '" data-m="bal"', 'primary') + btn('🎲 Al azar', 'pj-armar', 'data-pid="' + pid + '" data-m="azar"') +
       (PJ.parciales(g).some(p => p.id !== pid && (PJ.doc(g, p.id).equipos || []).length) ? btn('Copiar del otro parcial', 'pj-copiar', 'data-pid="' + pid + '"', 'ghost') : '') + '</div>' +
       (eqs.length ? '<div class="pj-ed">' + eqs.map((eq, i) => '<div class="pj-edq"><input data-ch="pj-nom" data-pid="' + pid + '" data-i="' + i + '" value="' + esc(eq.nombre) + '" aria-label="Nombre del equipo"><ul>' + eq.al.map(id => { const a = D.alumno(g, id); return a ? '<li>' + esc(corto(a.nombre)) + '<select data-ch="pj-mover" data-pid="' + pid + '" data-aid="' + id + '" aria-label="Mover a">' + eqs.map((e2, j) => '<option value="' + j + '"' + (j === i ? ' selected' : '') + '>' + esc(e2.nombre) + '</option>').join('') + '</select></li>' : ''; }).join('') + '</ul></div>').join('') + '</div>' +
@@ -71,7 +74,7 @@
 
   /* ---------- Inicio: equipos atrasados ---------- */
   PJ.inicioHTML = (g, hoy) => {
-    const p = C.parcialActual(hoy); if (!p || !PJ.ETAPAS[E.clases.smKey(g, p.id)]) return '';
+    const p0 = C.parcialActual(hoy); if (!p0 || !PJ.ETAPAS[E.clases.smKey(g, p0.id)]) return ''; const p = C.parcial(PJ.canon(g, p0.id));
     const dp = PJ.doc(g, p.id), eqs = dp.equipos || []; if (!eqs.length || !Object.keys(dp.etapas || {}).some(k => Object.keys(dp.etapas[k] || {}).length)) return ''; // solo si ya llevas el avance
     const mal = eqs.map(eq => ({ eq: eq, r: PJ.estado(g, p.id, eq, hoy) })).filter(x => x.r.nv !== 'ok');
     if (!mal.length) return '';

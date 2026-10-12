@@ -31,7 +31,7 @@
     const out = [];
     D.parciales().forEach(p => {
       if (p.fin < desde || p.inicio > hasta) return;
-      let pl = null; try { pl = planFn ? planFn(p.id) : (E.CLASES[E.clases.smKey(g, p.id)] ? E.clases.plan(g, p.id) : null); } catch (e) { pl = null; } if (!pl) return;
+      let pl = null; try { pl = planFn ? planFn(p.id) : (E.clases.tiene(g, p.id) ? E.clases.plan(g, p.id) : null); } catch (e) { pl = null; } if (!pl) return;
       const acts = C.acts(g, p.id), hayDiag = acts.some(a => a.categoria === 'diagnostico'), vistos = {};
       pl.bloques.forEach(b => {
         if (b.perdida || b.fecha < desde || b.fecha > hasta) return;
@@ -72,7 +72,7 @@
     if (memo.k === key) return memo.v;
     const out = [], om = S.get(KO(g)) || {}, omG = S.get(KG(g)) || {}, al = D.alumnos(g), N = al.length, planes = {};
     memo = { k: key, v: out }; if (!N) return out;
-    const plan = pid => { if (!(pid in planes)) { try { planes[pid] = E.CLASES[E.clases.smKey(g, pid)] ? E.clases.plan(g, pid) : null; } catch (e) { planes[pid] = null; } } return planes[pid]; };
+    const plan = pid => { if (!(pid in planes)) { try { planes[pid] = E.clases.tiene(g, pid) ? E.clases.plan(g, pid) : null; } catch (e) { planes[pid] = null; } } return planes[pid]; };
     const add = (tipo, k, t, sub, to, extra) => { if (om[k]) return; out.push(Object.assign({ tipo: tipo, k: k, t: t, sub: sub || '', to: to || '' }, extra || {})); };
     const abiertos = D.parciales().filter(p => p.inicio <= hoy && p.captura >= hoy);
     const desdeP = p => { const a = C.inicioEfectivo(g, p), b = u.addDays(hoy, -35); return a > b ? a : b; };
@@ -125,7 +125,7 @@
       });
       // 9) etapas del proyecto vencidas sin marcar (solo si ya llevas el avance)
       if (E.proyecto) {
-        const p = C.parcialActual(hoy);
+        const p0 = C.parcialActual(hoy), p = p0 && E.proyecto.canon ? C.parcial(E.proyecto.canon(g, p0.id)) : p0;
         if (p && E.proyecto.ETAPAS[E.clases.smKey(g, p.id)]) {
           const dp = E.proyecto.doc(g, p.id), eqs = dp.equipos || [];
           if (eqs.length && Object.keys(dp.etapas || {}).some(k => Object.keys(dp.etapas[k] || {}).length)) {

@@ -107,6 +107,17 @@
       d.txt(50, 25, 'Espesor 4 · medidas en mm', { c: 'nt' });
       return d.svg('Eslabón de 100 mm entre centros, extremos de radio 10 y barrenos de 5 mm');
     },
+    bloque() {
+      const d = dib(-30, -22, 165, 125);
+      d.rect(0, 0, 60, 30); d.line(0, 15, 60, 15); d.line(25, 15, 25, 30, 'hid'); d.line(35, 15, 35, 30, 'hid'); d.line(30, 11, 30, 34, 'cl');
+      d.rect(0, 45, 60, 40); d.line(0, 65, 60, 65); d.circ(30, 75, 5, 'hole'); d.line(-4, 75, 38, 75, 'cl'); d.line(30, 67, 30, 89, 'cl');
+      d.poly([[75, 0], [95, 0], [95, 15], [115, 15], [115, 30], [75, 30]]); d.line(100, 15, 100, 30, 'hid'); d.line(110, 15, 110, 30, 'hid'); d.line(105, 11, 105, 34, 'cl');
+      d.dimH(0, 60, 0, -9, '60'); d.dimV(0, 30, 0, -10, '30'); d.dimH(75, 115, 0, -9, '40'); d.dimV(15, 30, 115, 124, '15');
+      d.dimV(75, 85, 0, -8, '10', { o1: -4, g: 0 }); d.dimV(65, 85, 0, -18, '20'); d.dimH(0, 30, 85, 94, '30', { o2: 89, g: 0 });
+      d.dia(30, 75, 5, 15, 30, 'Ø10 pasado');
+      d.txt(100, 52, 'Primer diedro', { c: 'nt' }); d.txt(100, 58, 'medidas en mm', { c: 'nt' });
+      return d.svg('Bloque escalonado de 60 por 40 por 30 con escalón de 20 por 15 y barreno de 10 mm, en tres vistas de primer diedro');
+    },
     escuadra() {
       const d = dib(-28, -16, 96, 96);
       d.path([['M', 0, 0], ['L', 6, 0], ['L', 6, 41], ['A', 3, 0, 0, 9, 44], ['L', 50, 44], ['L', 50, 50], ['L', 0, 50], ['Z']]);
@@ -153,6 +164,16 @@
       ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'].forEach((n, i) => { const p = P[i], dx = [1.5, 2, 2, -1.5, 2, 2, 1.5][i], dy = [4.4, 4.4, 1.8, 1.4, 1.8, -1.6, -1.6][i]; d.txt(p[0] + dx, p[1] + dy, n, { c: 'pl', a: dx < 0 ? 'end' : 'start' }); });
       d.txt(0, 30.5, 'Rayado: tu croquis (la mitad derecha)', { c: 'nt' }); d.txt(0, 35.5, 'Trazo y punto: eje de giro', { c: 'nt' });
       return d.svg('Perfil de polea con canal en V: exterior 60, fondo del canal 48, barreno 8, ancho 16');
+    },
+    caja() {
+      const d = dib(-22, -14, 112, 74);
+      const rr = (x, y, w, h, r, c) => d.path([['M', x + r, y], ['L', x + w - r, y], ['A', r, 0, 1, x + w, y + r], ['L', x + w, y + h - r], ['A', r, 0, 1, x + w - r, y + h], ['L', x + r, y + h], ['A', r, 0, 1, x, y + h - r], ['L', x, y + r], ['A', r, 0, 1, x + r, y], ['Z']], c);
+      rr(0, 0, 60, 40, 6); rr(2, 2, 56, 36, 4, 'hole');
+      d.line(-4, 20, 64, 20, 'cl'); d.line(30, -4, 30, 44, 'cl');
+      d.dimH(0, 60, 40, 49, '60'); d.dimV(0, 40, 0, -9, '40');
+      d.lead(55.76, 1.76, 66, -7, 'R6'); d.lead(59, 30, 70, 36, 'pared 2');
+      d.txt(30, 57, 'Vista superior · alto 30 · paredes y fondo de 2 · abierta arriba · medidas en mm', { c: 'nt' });
+      return d.svg('Caja de 60 por 40 por 30 con esquinas de radio 6 y paredes de 2 mm, abierta arriba');
     },
     leva() {
       const d = dib(-34, -38, 86, 72);
@@ -288,7 +309,7 @@
 
   /* =================== las prácticas =================== */
   const PR = E.PRACTICAS = [
-    { id: 'placa', t: 'Placa de montaje con dos barrenos', nivel: 1, min: 35, sm: ['II-2'], en: ['fc-nivel'],
+    { id: 'placa', t: 'Placa de montaje con dos barrenos', nivel: 1, min: 35, sm: ['II-1', 'II-2'], en: ['fc-nivel', 'm2a-fc-entorno'],
       obj: 'Dibujar un boceto totalmente restringido (en verde) y convertirlo en sólido con Pad.',
       pasos: [['Body', 'Archivo → Nuevo. Entra al banco Part Design y crea un cuerpo (Body).'], ['Sketch', 'Crea un croquis en el plano XY.'],
         ['Rectangle', 'Dibuja un rectángulo empezando justo en el origen (el punto rojo donde se cruzan los ejes).'],
@@ -302,7 +323,7 @@
       errores: ['El rectángulo no empieza en el origen y el croquis nunca queda verde: usa Coincident con el origen.', 'Poner 8 como radio: el barreno sale del doble. La cota debe decir Ø.', 'Croquis con esquinas sin unir: Pad marca error. Revisa que el contorno esté cerrado.'],
       reto: 'Cambia el 80 por 100 (doble clic en la cota). ¿El barreno derecho sigue a 12 mm del borde? Si lo acotaste desde el borde derecho, sí: eso es intención de diseño.',
       entrega: 'Captura de pantalla con el árbol del modelo y la pieza, y el archivo .FCStd.' },
-    { id: 'eslabon', t: 'Eslabón de 100 mm entre centros', nivel: 1, min: 30, sm: ['II-2'], en: ['fc-nivel', 'fc-eslabones'],
+    { id: 'eslabon', t: 'Eslabón de 100 mm entre centros', nivel: 1, min: 30, sm: ['II-1', 'II-2'], en: ['fc-nivel', 'fc-eslabones', 'm2a-fc-croquis'],
       obj: 'Usar la ranura del croquis y las restricciones de radio y distancia para hacer el eslabón del cuatro barras.',
       pasos: [['Sketch', 'Body nuevo y croquis en el plano XY.'], ['Slot', 'Dibuja una ranura (Slot) horizontal: es el contorno del eslabón con extremos redondos.'],
         ['Coincident', 'Pon el centro del arco izquierdo en el origen.'], ['Dimension', 'Distancia horizontal entre los centros de los arcos: 100. Radio de un arco: 10.'],
@@ -330,7 +351,17 @@
       errores: ['Cambiar la cota en el archivo original sin «Guardar como»: pierdes el eslabón de 100.', 'Barreno de la corredera fuera del centro: la biela jala chueco.'],
       reto: '¿Qué manivela necesitas para una carrera de 50 mm? r = 50 / 2 = 25. Hazla y compárala con la de 30.',
       entrega: 'Los tres archivos y una captura de cada pieza.' },
-    { id: 'escuadra', t: 'Escuadra de refuerzo en L', nivel: 2, min: 40, sm: ['II-2'], en: ['fc-eslabones'],
+    { id: 'bloque', t: 'Bloque escalonado: del isométrico al modelo', nivel: 1, min: 30, sm: ['II-1'], en: ['m2a-fc-3d'],
+      obj: 'Modelar desde su perfil la pieza que dibujaste en isométrico y en vistas: un Pad y un Pocket.',
+      tabla: { cab: ['Punto', 'Horizontal (fondo)', 'Vertical (alto)'], filas: [['P1', 0, 0], ['P2', 40, 0], ['P3', 40, 30], ['P4', 20, 30], ['P5', 20, 15], ['P6', 0, 15]] },
+      pasos: [['Body', 'Archivo → Nuevo. Part Design → crea un cuerpo (Body).'], ['Sketch', 'Croquis en el plano YZ: ahí va el perfil en L del costado.'], ['Polyline', 'Dibuja el perfil cerrado P1 → P6 → P1 de la tabla, empezando en el origen.'],
+        ['Dimension', 'Cotas 40, 30, 20 y 15 hasta que quede verde (Fully constrained).'], ['Pad', 'Cierra el croquis → Pad → Length 60 → OK.'],
+        ['Sketch', 'Croquis en el plano XY: círculo Ø10 con centro a 30 del costado y a 10 del frente (en el escalón).'], ['Pocket', 'Pocket → Through all + Symmetric to plane: el barreno atraviesa el escalón.'], ['Ctrl+S', 'Guarda como Apellido_Bloque.FCStd.']],
+      revisa: ['Bloque de 60 × 40 × 30 con escalón de 20 × 15 al frente.', 'Barreno Ø10 pasado en el escalón.', 'En el árbol: Sketch, Pad, Sketch001 y Pocket.'],
+      errores: ['Dibujar el perfil en el plano XY: el bloque sale acostado.', 'Poner 10 como radio: el barreno sale de Ø20.', 'Pocket sin Through all o hacia el lado equivocado: no corta; activa Symmetric to plane.'],
+      reto: 'Cambia el 15 del escalón por 10. ¿El barreno sigue atravesando el escalón? Compara tu modelo con el isométrico de tu lámina 4.',
+      entrega: 'Captura de la pieza en vista isométrica (tecla 0) con el árbol.' },
+    { id: 'escuadra', t: 'Escuadra de refuerzo en L', nivel: 2, min: 40, sm: ['II-1', 'II-2'], en: ['fc-eslabones', 'm2a-fc-3d'],
       obj: 'Extruir un perfil, redondear una arista y hacer barrenos pasados en dos direcciones con Pocket.',
       pasos: [['Sketch', 'Body nuevo y croquis en el plano XZ (así la L queda parada).'], ['Polyline', 'Dibuja la L con Polyline (6 líneas) y ciérrala en el punto inicial.'],
         ['Dimension', '50 y 50 por fuera y 6 de espesor en cada ala; la esquina exterior en el origen.'], ['Pad', 'Cierra el croquis → Pad 20 con «Symmetric to plane» ✓.'],
@@ -350,7 +381,7 @@
       errores: ['Dibujar los 6 círculos a mano: si cambia una medida hay que mover 6.', 'Eje equivocado en Polar pattern: los barrenos salen fuera de la pieza.', 'Olvidar que 22 es radio: el plano dice Ø44.'],
       reto: 'Cambia Occurrences a 8 y el diámetro exterior a 70. ¿Cuántas cotas tuviste que tocar?',
       entrega: 'Captura con el árbol mostrando el PolarPattern.' },
-    { id: 'polea', t: 'Polea con canal en V (Revolution)', nivel: 2, min: 40, sm: ['II-2'], en: [],
+    { id: 'polea', t: 'Polea con canal en V (Revolution)', nivel: 2, min: 40, sm: ['II-1', 'II-2'], en: ['m2a-fc-revolucion'],
       obj: 'Hacer una pieza redonda dibujando solo medio perfil y girándolo con Revolution.',
       tabla: { cab: ['Punto', 'Del eje (x)', 'Altura (y)'], filas: [['P1', 4, 0], ['P2', 30, 0], ['P3', 30, 5.82], ['P4', 24, 8], ['P5', 30, 10.18], ['P6', 30, 16], ['P7', 4, 16]] },
       pasos: [['Sketch', 'Body nuevo; croquis en XY. El eje vertical del croquis será el eje de la polea.'], ['Polyline', 'Dibuja el perfil cerrado P1 → P7 → P1 de la tabla, todo a la derecha del eje.'],
@@ -392,7 +423,16 @@
       errores: ['Usar el diámetro (10) como radio en τ = F · r: sale el doble.', 'Barreno más grande que el eje: el carrete patina.'],
       reto: '¿Y con un tambor de Ø20? r = 10 mm → τ = 0.05 N·m, el doble. Un tambor chico ayuda a un motor débil, pero enrolla más lento.',
       entrega: 'Captura y tu cálculo del par.' },
-    { id: 'techdraw', t: 'Plano en TechDraw y PDF a escala 1:1', nivel: 2, min: 45, sm: ['II-2', 'II-3'], en: ['fc-plano', 'doc-grua'],
+    { id: 'caja', t: 'Caja con paredes de 2 mm (Thickness)', nivel: 2, min: 30, sm: ['II-1'], en: ['m2a-fc-revolucion'],
+      obj: 'Ahuecar un sólido dejando paredes de espesor fijo: el «vaciado» que pide el programa.',
+      pasos: [['Body', 'Body nuevo y croquis en el plano XY.'], ['Rectangle', 'Rectángulo centrado en el origen: Symmetric entre dos esquinas opuestas y el origen.'], ['Dimension', '60 de largo y 40 de ancho hasta que quede verde.'],
+        ['Pad', 'Cierra el croquis → Pad 30.'], ['Fillet', 'Selecciona las 4 aristas verticales (Ctrl + clic) → Fillet → radio 6.'],
+        ['Thickness', 'Selecciona la cara de arriba → Thickness → 2 mm, con el espesor hacia adentro (Make thickness inwards).'], ['Ctrl+S', 'Guarda como Apellido_Caja.FCStd.']],
+      revisa: ['Caja de 60 × 40 × 30 por fuera.', 'Esquinas verticales R6.', 'Paredes y fondo de 2 mm; abierta arriba.'],
+      errores: ['Thickness antes del Fillet: las esquinas de adentro quedan en punta.', 'Seleccionar la cara de abajo: la caja queda abierta por abajo.', 'Espesor hacia afuera: la caja crece 2 mm por lado.'],
+      reto: 'Haz un barreno de Ø6 en una pared con Pocket para que pase un cable. ¿En qué plano dibujas el croquis?',
+      entrega: 'Captura de la caja en isométrico mostrando el interior, con el árbol (Pad, Fillet y Thickness).' },
+    { id: 'techdraw', t: 'Plano en TechDraw y PDF a escala 1:1', nivel: 2, min: 45, sm: ['II-1', 'II-2', 'II-3'], en: ['fc-plano', 'doc-grua', 'm2a-fc-plano'],
       obj: 'Sacar el plano de una pieza en primer diedro con cotas y cuadro de datos, y comprobar la escala impresa.',
       pasos: [['', 'Abre tu placa (o una pieza del proyecto) y cambia al banco TechDraw.'], ['Insert Default Page', 'Insert Default Page: hoja con cuadro de datos.'],
         ['Insert Projection Group', 'Selecciona el Body en el árbol → Insert Projection Group: Projection First angle, marca frente, superior y lateral, Scale 1:1.'],
@@ -455,7 +495,7 @@
     ['Horizontal · Vertical', 'Horizontal · Vertical', 'Endereza líneas o alinea puntos'], ['Equal', 'Igualdad', 'Mismo tamaño'], ['Symmetric', 'Simetría', 'Dos puntos simétricos respecto a otro o a una línea'], ['Tangent', 'Tangente', 'Línea que toca un arco sin cortarlo'],
     ['Dimension', 'Cota', 'Distancia, radio o diámetro (en versiones viejas: Constrain distance, radius, diameter)'], ['Fully constrained', 'Totalmente restringido', 'El croquis ya no se mueve: se pone verde'],
     ['Pad', 'Pastilla (extrusión)', 'Le da espesor al croquis'], ['Pocket', 'Cajera (vaciado)', 'Quita material; Through all = pasado'], ['Symmetric to plane', 'Simétrico al plano', 'Extruye o corta hacia los dos lados'],
-    ['Revolution', 'Revolución', 'Gira el croquis alrededor de un eje'], ['Fillet · Chamfer', 'Redondeo · Chaflán', 'Redondea o bisela aristas'], ['Polar pattern', 'Patrón polar', 'Repite una operación en círculo'],
+    ['Revolution', 'Revolución', 'Gira el croquis alrededor de un eje'], ['Thickness', 'Espesor (vaciado)', 'Ahueca el sólido dejando paredes de espesor fijo'], ['Fillet · Chamfer', 'Redondeo · Chaflán', 'Redondea o bisela aristas'], ['Polar pattern', 'Patrón polar', 'Repite una operación en círculo'],
     ['Additive helix', 'Hélice aditiva', 'Barre el croquis en espiral'], ['Involute gear', 'Engranaje de involuta', 'Asistente que dibuja el perfil del engrane'], ['Placement', 'Ubicación', 'Posición y giro de un objeto'],
     ['Assembly', 'Ensamble', 'Banco para unir piezas'], ['Insert Component', 'Insertar componente', 'Trae piezas al ensamble'], ['Toggle Grounded', 'Fijar', 'Deja una pieza fija'],
     ['Revolute · Slider · Fixed joint', 'Unión giratoria · deslizante · fija', 'Cómo se mueve una pieza respecto a otra'], ['Create Exploded View', 'Crear vista explosionada', 'Separa las piezas para ver cómo se arman'], ['Create Bill of Materials', 'Crear lista de materiales', 'Tabla de piezas y cantidades'],
@@ -464,13 +504,13 @@
   ];
   // nombre en español de cada herramienta que aparece en los pasos
   const ES = E.FC_ES = { Body: 'Cuerpo', Sketch: 'Croquis', Rectangle: 'Rectángulo', Circle: 'Círculo', Arc: 'Arco', Polyline: 'Polilínea', Slot: 'Ranura', 'Trim edge': 'Recortar arista',
-    Coincident: 'Coincidente', Dimension: 'Cota', Pad: 'Pastilla', Pocket: 'Cajera', Fillet: 'Redondeo', 'Polar pattern': 'Patrón polar', Revolution: 'Revolución', 'Additive helix': 'Hélice aditiva',
+    Coincident: 'Coincidente', Dimension: 'Cota', Pad: 'Pastilla', Pocket: 'Cajera', Fillet: 'Redondeo', Chamfer: 'Chaflán', Thickness: 'Espesor', 'Polar pattern': 'Patrón polar', Revolution: 'Revolución', 'Additive helix': 'Hélice aditiva',
     'Involute gear': 'Engranaje de involuta', Placement: 'Ubicación', 'Create Assembly': 'Crear ensamble', 'Insert Component': 'Insertar componente', 'Toggle Grounded': 'Fijar',
     'Revolute joint': 'Unión giratoria', 'Slider joint': 'Unión deslizante', 'Fixed joint': 'Unión fija', 'Create Exploded View': 'Vista explosionada', 'Create Bill of Materials': 'Lista de materiales',
     'Insert Default Page': 'Hoja predeterminada', 'Insert Projection Group': 'Grupo de proyección', Balloon: 'Globo', 'Export Page as PDF': 'Exportar como PDF', 'Ctrl+S': 'Guardar', 'Guardar como': 'Guardar como' };
   const chipTool = t => !t ? '' : '<span class="fc-tool">' + esc(t) + (ES[t] && ES[t] !== t ? ' <small>' + esc(ES[t]) + '</small>' : '') + '</span>';
   const NIV = { 1: 'Básico', 2: 'Intermedio', 3: 'Avanzado' };
-  const smTxt = sm => sm.map(s => s === 'II-2' ? '2º parcial' : '3er parcial').join(' y ');
+  const smTxt = sm => sm.map(s => ({ 'II-1': '1er parcial', 'II-2': '2º parcial', 'II-3': '3er parcial' })[s] || s).join(', ').replace(/, ([^,]*)$/, ' y $1');
 
   const F = E.fc = {
     get: id => PR.find(p => p.id === id),
@@ -499,7 +539,7 @@
       const out = {}; if (!g) return out; const man = S.get('fcp:' + g.id) || {}, hoy = u.today();
       try {
         D.parciales().forEach(pa => {
-          if (!E.CLASES[E.clases.smKey(g, pa.id)]) return;
+          if (!E.clases.tiene(g, pa.id)) return;
           E.clases.plan(g, pa.id).bloques.forEach(b => { if (b.perdida || b.fecha >= hoy) return; b.parts.forEach(pt => F.de(pt.it.id).forEach(p => { if (!out[p.id]) out[p.id] = { f: b.fecha, auto: true }; })); });
         });
       } catch (e) { }
@@ -543,7 +583,7 @@
     const est = F.estado(g), rv = {};
     if (g) S.keys('fcal:' + g.id + ':').forEach(k => { const d = S.get(k) || {}; Object.keys(d.marcas || {}).forEach(aid => Object.keys(d.marcas[aid] || {}).forEach(id => { rv[id] = (rv[id] || 0) + 1; })); });
     let h = card('<h3>💻 Prácticas de FreeCAD</h3><p class="muted small">' + PR.length + ' prácticas para el centro de cómputo, cada una con su plano acotado, pasos con el nombre de la herramienta, qué revisar, errores comunes y un reto para quien termina antes. Proyéctalas, imprímelas o márcalas cuando el grupo las termine. Pensadas para FreeCAD 1.0 o más nuevo.</p>' +
-      '<div class="row gap wrap">' + btn('🖨 Imprimir cuadernillo (todas)', 'fc-print-all', '', '') + btn('🖨 Solo 2º parcial', 'fc-print-all', 'data-sm="II-2"', 'ghost') + btn('🖨 Solo 3er parcial', 'fc-print-all', 'data-sm="II-3"', 'ghost') + '</div>');
+      '<div class="row gap wrap">' + btn('🖨 Imprimir cuadernillo (todas)', 'fc-print-all', '', '') + btn('🖨 Solo 1er parcial', 'fc-print-all', 'data-sm="II-1"', 'ghost') + btn('🖨 Solo 2º parcial', 'fc-print-all', 'data-sm="II-2"', 'ghost') + btn('🖨 Solo 3er parcial', 'fc-print-all', 'data-sm="II-3"', 'ghost') + '</div>');
     [1, 2, 3].forEach(n => {
       h += '<h4 class="cl-sem">Nivel ' + n + ' · ' + NIV[n] + '</h4><div class="fc-grid">' + PR.filter(p => p.nivel === n).map(p => {
         const e = est[p.id];
@@ -570,7 +610,7 @@
       card('<h3>Errores comunes</h3><ul>' + p.errores.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>') + '</div>';
     h += card('<h3>¿Terminaste? Reto</h3><p>' + esc(p.reto) + '</p>', 'accent');
     if (p.en.length && g) {
-      const its = []; D.parciales().forEach(pa => { const L = E.CLASES[E.clases.smKey(g, pa.id)]; if (L) L.forEach(it => { if (p.en.indexOf(it.id) >= 0) its.push(it); }); });
+      const its = []; D.parciales().forEach(pa => { if (!E.clases.tiene(g, pa.id)) return; E.clases.seq(g, pa.id).forEach(it => { if (p.en.indexOf(it.id) >= 0) its.push(it); }); });
       if (its.length) h += card('<h3>En tus clases</h3><p class="small">Es la práctica central de: ' + its.map(it => '<b>' + esc(it.t) + '</b>').join(', ') + '. Aparece en el guion del día con su botón para proyectar.</p>');
     }
     h += '<p class="muted small">Herramientas con su nombre de FreeCAD 1.0 en inglés; en el glosario de la lista de prácticas está su nombre en español. Fuente: documentación oficial de FreeCAD.</p>';

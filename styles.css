@@ -1175,3 +1175,74 @@ body.con-cam #toasts { top: calc(64px + env(safe-area-inset-top)); bottom: auto 
 .g-n { display: flex; flex-direction: column; min-width: 0 }
 .g-n small { color: var(--muted); font-size: .78rem }
 .g-list li > div:first-child .chip { align-self: flex-start }
+
+/* v1.18 · hoja de práctica de las clases (todos los módulos) */
+.cl-guia .fc-tabla td { height: 1.7em }
+.cl-guia .tbl-wrap { overflow-x: auto; margin: 8px 0 }
+.hoja-pr table.grid th, .hoja-pr table.grid td { border: 1px solid #555; padding: 3px 5px; font-size: 11px }
+.hoja-pr ol li, .hoja-pr ul li { margin: 3px 0 }
+
+/* v1.23 · consejo técnico */
+.cte-gr { margin: 0 0 10px }
+.cte-fecha { max-width: 230px; margin: 0 }
+.cte-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px }
+@media (min-width: 640px) { .cte-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+@media (min-width: 1180px) { .cte-kpis { grid-template-columns: repeat(6, minmax(0, 1fr)) } }
+.cte-k { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); border-top: 5px solid var(--muted); background: var(--surface); min-width: 0 }
+.cte-k.ok { border-top-color: var(--ok) } .cte-k.warn { border-top-color: var(--warn) } .cte-k.bad { border-top-color: var(--bad) }
+.cte-k span { font-size: .76rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em }
+.cte-k b { font-size: 1.55rem; line-height: 1.15 }
+.cte-k small { font-size: .78rem; color: var(--muted); overflow-wrap: anywhere }
+.cte-sec + .cte-sec { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px }
+.cte-sec h4 { margin: 0 0 4px }
+.cte-t td, .cte-t th { font-size: .85rem }
+.cte-sem { display: flex; gap: 6px; align-items: flex-end; height: 124px; margin: 8px 0 4px; padding-bottom: 32px; box-sizing: border-box }
+.cte-sem > div { flex: 1; max-width: 64px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative }
+.cte-sem span { display: block; background: var(--brand); border-radius: 6px 6px 0 0; min-height: 3px }
+.cte-sem small { position: absolute; top: 100%; left: -4px; right: -4px; text-align: center; font-size: .68rem; color: var(--muted); line-height: 1.15; margin-top: 3px }
+/* hoja impresa */
+.cte-pr .cte-pt { font-weight: bold; font-size: 9.8pt; margin: 9px 0 3px; padding: 2px 6px; background: #e6e6e6; border-left: 4px solid #000; break-after: avoid; page-break-after: avoid }
+.cte-pr .cte-ul { margin: 2px 0 4px; padding-left: 16px }
+.cte-pr .cte-ul li { margin: 1px 0 }
+.cte-pr .grid td { height: auto; vertical-align: top }
+.cte-pr .cte-kp td { text-align: center; font-size: 8.4pt }
+.cte-pr .cte-rt th, .cte-pr .cte-rt td { font-size: 7.3pt }
+.cte-pr .cte-campo { margin: 4px 0 7px; font-size: 9pt; break-inside: avoid; page-break-inside: avoid }
+.cte-pr .cte-lin { display: block; border-bottom: 1px solid #000; height: 19px }
+.cte-salto { break-after: page; page-break-after: always; height: 0 }
+/* proyector */
+.cte-kpis.pj { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.4vw; margin: 0 }
+.cte-kpis.pj .cte-k { background: var(--pj-soft); border: 0; border-top: max(5px, .55vw) solid var(--pj-muted); color: inherit; padding: 1.3vw 1.6vw; border-radius: 1.1vw }
+.cte-kpis.pj .cte-k.ok { border-top-color: #1c9b55 } .cte-kpis.pj .cte-k.warn { border-top-color: #e09a00 } .cte-kpis.pj .cte-k.bad { border-top-color: #d6453b }
+.cte-kpis.pj .cte-k span { font-size: clamp(.85rem, 1.55vw, 1.4rem); color: var(--pj-muted) }
+.cte-kpis.pj .cte-k b { font-size: clamp(1.7rem, 4.3vw, 3.8rem) }
+.cte-kpis.pj .cte-k small { font-size: clamp(.8rem, 1.35vw, 1.2rem); color: var(--pj-muted) }
+.cte-pav { margin: 0 0 2.2vh }
+.cte-pav-t { display: flex; justify-content: space-between; gap: 1em; font-size: clamp(1.1rem, 2.5vw, 2.2rem) }
+.cte-pav-t span { color: var(--pj-muted); font-weight: 700; white-space: nowrap }
+.cte-pbar { height: clamp(12px, 1.9vw, 26px); background: rgba(127, 127, 127, .22); border-radius: 99px; overflow: hidden; margin: .35em 0 .5em }
+.cte-pbar span { display: block; height: 100%; background: var(--pj-accent); border-radius: 99px; min-width: 6px }
+.cte-pav p { margin: 0; font-size: clamp(.95rem, 1.85vw, 1.6rem); line-height: 1.3 }
+.cte-pm { color: var(--pj-muted); font-size: clamp(.95rem, 1.8vw, 1.5rem); margin: .5em 0 0 }
+table.cte-pt { border-collapse: collapse; width: 100%; font-size: clamp(1rem, 2.2vw, 1.9rem) }
+table.cte-pt th, table.cte-pt td { padding: .32em .5em; border-bottom: 2px solid rgba(127, 127, 127, .25); text-align: left; vertical-align: top }
+table.cte-pt th { color: var(--pj-accent); font-size: .78em }
+table.cte-pt.sm { font-size: clamp(.82rem, 1.5vw, 1.35rem) }
+.cte-semf { display: flex; gap: 6px; margin: 1em 0 .4em; height: clamp(40px, 7vh, 80px); font-size: clamp(1rem, 2.4vw, 2rem); font-weight: 800 }
+.cte-semf span { display: flex; align-items: center; justify-content: center; border-radius: 12px; min-width: 3.4em; white-space: nowrap }
+.cte-semf .r { background: rgba(214, 69, 59, .22) } .cte-semf .y { background: rgba(224, 154, 0, .24) } .cte-semf .v { background: rgba(28, 155, 85, .22) }
+.cte-pcols { display: grid; grid-template-columns: 1fr 1fr; gap: 4vw; align-items: start }
+.cte-pcols p { font-size: clamp(1rem, 2.1vw, 1.9rem); margin: .2em 0 }
+.cte-pcols p.cte-pm { font-size: clamp(.9rem, 1.7vw, 1.45rem) }
+.cte-big { font-size: clamp(2.6rem, 8vw, 7rem); font-weight: 800; color: var(--pj-accent); line-height: 1 }
+.cte-sem.pj { height: clamp(100px, 24vh, 250px); padding-bottom: 2.2em; margin-top: 1em }
+.cte-sem.pj > div { max-width: 7vw }
+.cte-sem.pj span { background: var(--pj-accent) }
+.cte-sem.pj small { color: var(--pj-muted); font-size: clamp(.72rem, 1.25vw, 1.1rem) }
+@media (max-width: 640px) { .cte-kpis.pj { grid-template-columns: repeat(2, minmax(0, 1fr)) } .cte-pcols { grid-template-columns: 1fr } }
+#proj .cte-pl li, .cte-pl li { font-size: clamp(1rem, 2.35vw, 2rem); font-weight: 600 }
+#proj .cte-pl li b { color: var(--pj-accent) }
+.cte-rk td { white-space: normal; vertical-align: top }
+.cte-rk td:nth-child(2) { text-align: left; min-width: 170px }
+.cte-rk td:nth-child(9) { min-width: 120px }
+.cte-rk td:last-child { text-align: left; min-width: 230px }

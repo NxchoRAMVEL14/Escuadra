@@ -113,8 +113,8 @@
   /* ---------- agregar un grupo ---------- */
   const estado = () => {
     if (E.ui.gn) return E.ui.gn;
-    const g = D.grupoActual() || {}, ps = D.parciales(), sub = {}; ps.forEach(p => { sub[p.id] = ''; });
-    return (E.ui.gn = { grupo: '', semestre: '', carrera: g.carrera || 'TÉCNICO EN MECATRÓNICA', nombre: '', modulo: g.modulo || 'II', sub: sub, inicio: u.today(), horario: [] });
+    const g = D.grupoActual() || {}, ps = D.parciales(), mod = g.modulo || 'II', sub = E.mods ? E.mods.subSugeridos(mod, ps) : {}; ps.forEach(p => { if (sub[p.id] == null) sub[p.id] = ''; });
+    return (E.ui.gn = { grupo: '', semestre: '', carrera: g.carrera || 'TÉCNICO EN MECATRÓNICA', nombre: '', modulo: mod, sub: sub, inicio: u.today(), horario: [] });
   };
   const abrevia = c => { const t = u.norm(c).replace(/TECNICO EN |TECNICO /, '').split(' ').filter(w => w.length > 2 && !/^\d+$/.test(w))[0] || 'GRUPO'; return t.slice(0, 3); };
   // palabra principal de la carrera tal como está escrita (con acentos): «TÉCNICO EN MECATRÓNICA 2025» → «Mecatrónica»
@@ -135,7 +135,7 @@
       '<div class="row gap wrap mt">' + btn('✓ Crear grupo', 'gn-crear', '', 'primary') + '</div><p class="muted small">Después importas su lista de alumnos (Excel de la escuela o pegando los nombres). Puedes cambiar el horario cuando quieras en Ajustes → Grupo y horario.</p>';
   }
   const repinta = () => { const el = document.querySelector('#view .g-nuevo'); if (el) el.innerHTML = nuevoHTML(); else E.render(); };
-  CH.gn = el => { const s = estado(), k = el.dataset.f; s[k] = el.value; if (k === 'modulo') { Object.keys(s.sub).forEach(p => { s.sub[p] = ''; }); repinta(); } else if (k === 'grupo' || k === 'carrera') { const n = document.querySelector('#view .g-nuevo [data-f="nombre"]'); if (n) n.placeholder = sugerido(s) || 'Ej. 5°B Mecatrónica'; } };
+  CH.gn = el => { const s = estado(), k = el.dataset.f; s[k] = el.value; if (k === 'modulo') { const sug = E.mods ? E.mods.subSugeridos(s.modulo, D.parciales()) : {}; Object.keys(s.sub).forEach(p => { s.sub[p] = sug[p] || ''; }); const sem = (E.PROGRAMA.modulos[s.modulo] || {}).semestre; if (sem && !s.semestre) s.semestre = String(sem); repinta(); } else if (k === 'grupo' || k === 'carrera') { const n = document.querySelector('#view .g-nuevo [data-f="nombre"]'); if (n) n.placeholder = sugerido(s) || 'Ej. 5°B Mecatrónica'; } };
   CH['gn-sub'] = el => { estado().sub[el.dataset.pid] = el.value; };
   CH['gn-hor'] = el => {
     const s = estado(), b = s.horario[Number(el.dataset.i)]; if (!b) return; const f = el.dataset.f;
@@ -150,7 +150,8 @@
     const malos = s.horario.filter(b => !b.inicio || !b.fin || aMin(b.fin) <= aMin(b.inicio)); if (malos.length) { u.toast('Revisa el horario: cada bloque necesita hora de inicio y una de fin posterior', 'err', 4000); return; }
     let id = (gr + abrevia(s.carrera)).replace(/[^A-Z0-9]/g, '') || 'G'; const base = id; let k = 2; while (S.docs['grupo:' + id]) id = base + (k++);
     const nombre = String(s.nombre || '').trim() || sugerido(s) || gr, sub = {}; Object.keys(s.sub).forEach(p => { if (s.sub[p]) sub[p] = s.sub[p]; });
-    S.put('grupo:' + id, { id: id, nombre: nombre, carrera: String(s.carrera || '').trim(), semestre: String(s.semestre || '').trim(), grupo: gr, modulo: s.modulo, submodulos: sub, inicioDocente: s.inicio || u.today(), horario: s.horario.map(b => ({ dia: Number(b.dia), inicio: b.inicio, fin: b.fin, horas: Number(b.horas) || 1, lugar: b.lugar || 'aula' })), alumnos: [] });
+    S.put('grupo:' + id, Object.assign({ id: id, nombre: nombre, carrera: String(s.carrera || '').trim(), semestre: String(s.semestre || '').trim(), grupo: gr, modulo: s.modulo, submodulos: sub, inicioDocente: s.inicio || u.today(), horario: s.horario.map(b => ({ dia: Number(b.dia), inicio: b.inicio, fin: b.fin, horas: Number(b.horas) || 1, lugar: b.lugar || 'aula' })), alumnos: [] }, E.mods && E.mods.flujoDef(s.modulo) ? { flujo: true } : {}));
+    if (E.mods) E.mods.cargar(s.modulo);
     E.ui.gn = null; D.setGrupo(id);
     const ch = G.choques(); u.toast('Grupo ' + nombre + ' creado: ahora importa su lista' + (ch.length ? '. Ojo: choca su horario con otro grupo' : ''), ch.length ? 'err' : 'ok', 4500);
     location.hash = '#/alumnos';

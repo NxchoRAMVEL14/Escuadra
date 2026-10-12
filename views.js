@@ -42,6 +42,7 @@
     pause: '<path d="M9 5v14M15 5v14" stroke-width="3"/>',
     play: '<path d="M8 5l11 7-11 7z" fill="currentColor"/>',
     stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor"/>',
+    chart: '<path d="M3.5 20.5h17"/><path d="M7 17v-5M12 17V6.5M17 17v-8"/><circle cx="12" cy="4" r="0.6"/>',
     board: '<rect x="3" y="3.5" width="18" height="12.5" rx="1.5"/><path d="M8 20.5l2-4.5M16 20.5l-2-4.5M7 8h10M7 11.5h6"/>',
     factory: '<path d="M3 21V10l5 3.5V10l5 3.5V5l8-2v18z"/><path d="M7 17h2M12 17h2M17 17h2"/>',
     cube: '<path d="M12 2.5 3.5 7v10l8.5 4.5 8.5-4.5V7z"/><path d="M3.5 7 12 11.5 20.5 7M12 11.5v10"/>',
@@ -62,6 +63,8 @@
   const CAT_LBL = { examen: 'Examen', trabajos: 'Libreta/Proyecto/Bitácora', diagnostico: 'Diagnóstico' };
   const TEMAS_EVAL = ['Dibujo técnico y FreeCAD (Submódulo 1)', 'Mecanismos y pares cinemáticos', 'Grados de libertad y cuatro barras', 'Transmisiones: engranes, poleas y tornillo', 'Modelado y ensamble en FreeCAD', 'Construcción del mecanismo', 'Neumática e hidráulica: principios', 'Simbología y circuitos ISO 1219', 'Electroneumática y motores DC'];
   E.CAT_LBL = CAT_LBL; E.TEMAS_EVAL = TEMAS_EVAL;
+  // temas para el perfil: los del módulo del grupo (el Módulo II conserva su lista)
+  const temasEval = g => (!g || g.modulo === 'II' || !g.modulo) ? TEMAS_EVAL : E.TEMAS.filter(t => String(t.sm).split('-')[0] === g.modulo).map(t => t.titulo);
   /* ---------- piezas ---------- */
   const card = (h, cls, attrs) => '<section class="card ' + (cls || '') + '" ' + (attrs || '') + '>' + h + '</section>';
   const btn = (label, act, attrs, cls) => '<button type="button" class="btn ' + (cls || '') + '" data-act="' + act + '" ' + (attrs || '') + '>' + label + '</button>';
@@ -95,6 +98,7 @@
     }
     const av = C.avisos(hoy);
     if (av.length) h += card('<h3>' + icon('alert') + ' Avisos</h3><ul class="vlist">' + av.map(a => '<li class="' + a.nivel + '">' + esc(a.txt) + '</li>').join('') + '</ul>');
+    if (g && E.consejo) h += E.consejo.inicioHTML(hoy);
     if (g && E.cierre) h += E.cierre.inicioHTML(g, hoy);
     if (g && E.pend) h += E.pend.inicioHTML(g, hoy);
     h += avisoRespaldo(hoy);
@@ -354,7 +358,7 @@
   A['act-sugeridas'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, sm = D.submodulo(g, pid), p = C.parcial(pid);
     const list = [{ categoria: 'examen', nombre: 'Examen del ' + p.nombre, instrumento: 'Exa' }];
-    (sm ? sm.ac : []).forEach(ac => { if (ac.producto) list.push({ categoria: 'trabajos', nombre: ac.producto, instrumento: ac.instr || 'LC' }); });
+    (sm ? sm.ac : []).forEach(ac => { if (ac.producto) list.push({ categoria: 'trabajos', nombre: ac.producto, instrumento: ac.instr || 'LC' }); if (ac.desempeno) list.push({ categoria: 'trabajos', nombre: ac.desempeno, instrumento: ac.instrD || 'GO' }); });
     list.push({ categoria: 'trabajos', nombre: 'Libreta y bitácora técnica', instrumento: 'B' });
     list.forEach(x => { const id = u.uid('act'); S.put('act:' + g.id + ':' + id, Object.assign({ id: id, parcial: pid, peso: 1, fecha: '', cuenta: true, notas: {} }, x), { silent: true }); });
     S.emit('acts'); u.toast(list.length + ' actividades agregadas', 'ok');
@@ -382,7 +386,7 @@
     h += card('<div class="fgrid">' + fieldIn('Nombre', 'data-ch="act-field" data-path="nombre" id="af-nombre"', a.nombre) +
       '<label class="fld"><span>Rubro</span><select data-ch="act-field" data-path="categoria" id="af-cat"><option value="examen" ' + (a.categoria === 'examen' ? 'selected' : '') + '>Examen</option><option value="trabajos" ' + (a.categoria === 'trabajos' ? 'selected' : '') + '>Libreta / Proyecto / Bitácora</option><option value="diagnostico" ' + (a.categoria === 'diagnostico' ? 'selected' : '') + '>Diagnóstico (no cuenta, alimenta el perfil)</option></select></label>' +
       fieldIn('Puntos máximos', 'data-ch="act-field" data-path="max" id="af-max" inputmode="decimal" min="1" step="1"', mx, 'number') +
-      '<label class="fld"><span>Tema que evalúa (para el perfil)</span><input list="temas-dl" data-ch="act-field" data-path="tema" id="af-tema" value="' + esc(a.tema || '') + '" placeholder="Ej. Dibujo técnico y FreeCAD"><datalist id="temas-dl">' + TEMAS_EVAL.map(x => '<option value="' + esc(x) + '">').join('') + '</datalist></label>' +
+      '<label class="fld"><span>Tema que evalúa (para el perfil)</span><input list="temas-dl" data-ch="act-field" data-path="tema" id="af-tema" value="' + esc(a.tema || '') + '" placeholder="Ej. ' + esc(temasEval(g)[0] || 'Ley de Ohm') + '"><datalist id="temas-dl">' + temasEval(g).map(x => '<option value="' + esc(x) + '">').join('') + '</datalist></label>' +
       fieldIn('Fecha', 'data-ch="act-field" data-path="fecha" id="af-fecha"', a.fecha, 'date') +
       '<label class="fld"><span>Instrumento</span><select data-ch="act-field" data-path="instrumento" id="af-ins">' + Object.keys(E.INSTR).map(x => '<option value="' + x + '" ' + (a.instrumento === x ? 'selected' : '') + '>' + E.INSTR[x] + '</option>').join('') + '</select></label>' +
       fieldIn('Peso dentro del rubro', 'data-ch="act-field" data-path="peso" id="af-peso" inputmode="decimal" min="0" step="0.5"', a.peso, 'number') +
@@ -559,23 +563,32 @@
   A['acta-copy'] = () => E.print.actaCopy(D.grupoActual());
 
   /* =================== IDEAS =================== */
-  const FILTROS = [['todas', 'Todas'], ['fav', '★ Favoritas'], ['Proyector', '📽 Con proyector'], ['II-2', 'Mecanismos (SM2)'], ['II-3', 'Neumática e hidráulica (SM3)'], ['FreeCAD', 'FreeCAD'], ['Docencia', 'Manejo de grupo'], ['Evaluación', 'Evaluación']];
+  // pestañas: las del módulo de tu grupo (más «todos los módulos»)
+  const modDe = () => { const g = D.grupoActual(); return (g && g.modulo) || 'II'; };
+  const esSM = f => /^[IV]+-\d$/.test(f);
+  const filtrosIdeas = () => {
+    const mod = modDe(), sms = E.mods ? E.mods.smKeys(mod).filter(k => E.IDEAS.some(i => i.sm.indexOf(k) >= 0)) : [];
+    return [['todas', 'Todas'], ['fav', '★ Favoritas'], ['Proyector', '📽 Con proyector']].concat(sms.map(k => [k, E.mods.smCorto(k) + ' (SM' + k.split('-')[1] + ')']))
+      .concat(mod === 'II' ? [['FreeCAD', 'FreeCAD']] : []).concat([['Docencia', 'Manejo de grupo'], ['Evaluación', 'Evaluación'], ['mods', 'Todos los módulos']]);
+  };
+  const ideaDelModulo = (i, mod) => i.sm.some(s => s === 'gen' || s.split('-')[0] === mod);
   V.ideas = openId => {
-    const q = u.norm(E.ui.ideasQ), fl = E.ui.ideasF, favs = D.favs();
+    const q = u.norm(E.ui.ideasQ), fl = E.ui.ideasF, favs = D.favs(), mod = modDe(), FILTROS = filtrosIdeas();
     const list = E.IDEAS.filter(i => {
       if (fl === 'fav' && favs.indexOf(i.id) < 0) return false;
-      if (fl.indexOf('II-') === 0 && i.sm.indexOf(fl) < 0) return false;
+      if (fl !== 'mods' && fl !== 'fav' && !ideaDelModulo(i, mod)) return false;
+      if (esSM(fl) && i.sm.indexOf(fl) < 0) return false;
       if (['FreeCAD', 'Docencia', 'Evaluación', 'Proyector'].indexOf(fl) >= 0 && i.tipo !== fl) return false;
       if (q && u.norm(i.titulo + ' ' + i.obj + ' ' + i.pasos.join(' ')).indexOf(q) < 0) return false;
       return true;
     });
     let h = '<label class="fld"><span>Buscar</span><input type="search" id="ideas-q" value="' + esc(E.ui.ideasQ) + '" data-in="ideas-q" placeholder="engranes, Pascal, equipos…"></label>';
     h += '<div class="filters">' + FILTROS.map(f => '<button type="button" class="tab ' + (fl === f[0] ? 'on' : '') + '" data-act="ideas-f" data-f="' + f[0] + '">' + f[1] + '</button>').join('') + '</div>';
-    h += '<p class="muted small">' + list.length + ' ideas · para tu aula con proyector, computadoras con FreeCAD y materiales de bajo costo. La teoría lista para proyectar está en ' + '<a href="#/temas">Temas</a>.</p>';
+    h += '<p class="muted small">' + list.length + ' ideas · para tu aula con proyector, centro de cómputo y materiales de bajo costo' + (fl === 'mods' ? '' : ' (Módulo ' + esc(mod) + ' y para cualquier módulo)') + '. La teoría lista para proyectar está en ' + '<a href="#/temas">Temas</a>.</p>';
     h += list.map(i => {
       const fav = favs.indexOf(i.id) >= 0;
       return '<details class="sec idea" ' + (openId === i.id ? 'open' : '') + ' id="idea-' + i.id + '"><summary><span>' + esc(i.titulo) + '</span></summary><div class="in">' +
-        '<div class="meta"><span class="chip brand">' + esc(i.tipo) + '</span><span class="chip">' + esc(i.dur) + '</span><span class="chip">' + esc(i.costo) + '</span>' + i.sm.map(s => '<span class="chip info">' + (s === 'gen' ? 'Cualquier submódulo' : 'Submódulo ' + s.split('-')[1]) + '</span>').join('') + '</div>' +
+        '<div class="meta"><span class="chip brand">' + esc(i.tipo) + '</span><span class="chip">' + esc(i.dur) + '</span><span class="chip">' + esc(i.costo) + '</span>' + i.sm.map(s => '<span class="chip info">' + (s === 'gen' ? 'Cualquier módulo' : 'Módulo ' + s.split('-')[0] + ' · SM' + s.split('-')[1]) + '</span>').join('') + '</div>' +
         '<p><b>Para qué:</b> ' + esc(i.obj) + '</p><p><b>Materiales:</b> ' + esc(i.mat.join(' · ')) + '</p><ol>' + i.pasos.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>' +
         '<p><b>Evidencia:</b> ' + esc(i.evid) + '</p>' + (i.link ? '<p><a class="btn small" href="' + esc(i.link) + '" target="_blank" rel="noopener">↗ Abrir ' + esc(i.link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]) + '</a></p>' : '') + '<p class="note info">💡 ' + esc(i.tip) + '</p>' +
         '<div class="row gap wrap">' + btn(icon('star') + (fav ? ' Quitar de favoritas' : ' Favorita'), 'idea-fav', 'data-id="' + i.id + '"', fav ? 'accent' : '') + btn(icon('copy') + ' Copiar', 'idea-copy', 'data-id="' + i.id + '"') + '</div></div></details>';
@@ -592,20 +605,31 @@
   };
 
   /* =================== TEMAS =================== */
-  const SM_LBL = { 'II-1': 'Nivelación · Submódulo 1', 'II-2': 'Submódulo 2 · Mecanismos', 'II-3': 'Submódulo 3 · Neumática e hidráulica', gen: 'Formación integral' };
-  const TFILT = [['todos', 'Todos'], ['II-1', 'Nivelación (SM1)'], ['II-2', 'Mecanismos (SM2)'], ['II-3', 'Neumática e hidráulica (SM3)'], ['gen', 'Formación integral']];
-  function smActual() { const g = D.grupoActual(), p = C.parcialActual(), k = g && p ? D.smKey(g, p.id) : null; return k && /^II-/.test(k) ? k : 'todos'; }
+  const SM_LBL = new Proxy({}, { get: (o, k) => typeof k === 'string' ? (E.mods ? E.mods.smLbl(k) : k) : undefined });
+  const NUM_MOD = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
+  // un tema de otro módulo que todavía no se carga: «m3-…» es del Módulo III
+  const modDeTema = id => { const m = /^m(\d)-/.exec(String(id || '')); return m ? NUM_MOD[m[1]] : null; };
+  function smActual() { const g = D.grupoActual(), p = C.parcialActual(), k = g && p ? D.smKey(g, p.id) : null; return k && E.TEMAS.some(t => t.sm === k) ? k : 'todos'; }
   V.temas = f => {
-    f = f || E.ui.temasF || smActual(); E.ui.temasF = f;
-    const list = E.TEMAS.filter(t => f === 'todos' || t.sm === f);
-    let h = card('<h3>' + icon('doc') + ' Temas para explicar y proyectar</h3><p class="muted small">Cada tema trae la explicación para ti, lo esencial para proyectar, un ejemplo resuelto, preguntas con respuesta y su conexión con la vida. Toca <b>Proyectar</b> y conecta la laptop al proyector.</p>');
-    h += '<div class="filters">' + TFILT.map(x => '<a class="tab ' + (f === x[0] ? 'on' : '') + '" href="#/temas/' + x[0] + '">' + x[1] + '</a>').join('') + '</div>';
+    if (f && !/^mod:[IV]+$|^todos$|^gen$/.test(f) && !esSM(f)) f = null;
+    f = f || E.ui.temasF || smActual(); const mod = /^mod:/.test(f) ? f.slice(4) : esSM(f) ? f.split('-')[0] : modDe();
+    if (/^mod:/.test(f) && E.mods && !E.mods.listo(mod)) { E.mods.cargar(mod).then(() => E.render()); return { t: 'Temas', h: card('<p>Cargando los temas del Módulo ' + esc(mod) + '…</p>') }; }
+    E.ui.temasF = f;
+    const delMod = t => t.sm === 'gen' || String(t.sm).split('-')[0] === mod;
+    const list = E.TEMAS.filter(t => (f === 'todos' || /^mod:/.test(f)) ? delMod(t) : t.sm === f);
+    const TFILT = [['todos', 'Todos (Módulo ' + modDe() + ')']].concat((E.mods ? E.mods.smKeys(mod) : []).filter(k => E.TEMAS.some(t => t.sm === k)).map(k => [k, E.mods.smCorto(k) + ' (SM' + k.split('-')[1] + ')'])).concat([['gen', 'Formación integral']]);
+    let h = card('<h3>' + icon('doc') + ' Temas para explicar y proyectar</h3><p class="muted small">Cada tema trae la explicación para ti, lo esencial para proyectar, un ejemplo resuelto, preguntas con respuesta y su conexión con la vida. Toca <b>Proyectar</b> y conecta la laptop al proyector.</p>' +
+      '<label class="fld" style="max-width:320px"><span>Módulo</span><select data-ch="temas-mod">' + Object.keys(E.PROGRAMA.modulos).map(k => '<option value="' + k + '"' + (k === mod ? ' selected' : '') + '>Módulo ' + k + ' · ' + esc(E.PROGRAMA.modulos[k].nombre) + '</option>').join('') + '</select></label>');
+    h += '<div class="filters">' + TFILT.map(x => '<a class="tab ' + (f === x[0] || (x[0] === 'todos' && f === 'mod:' + mod) ? 'on' : '') + '" href="#/temas/' + (x[0] === 'todos' && mod !== modDe() ? 'mod:' + mod : x[0]) + '">' + x[1] + '</a>').join('') + '</div>';
+    if (!list.length) h += card('<p class="muted">Todavía no hay temas para este módulo.</p>');
     h += list.map(t => card('<div class="row between gap"><div><h3 style="margin-bottom:2px">' + esc(t.titulo) + '</h3><p class="muted small" style="margin:0">' + esc(SM_LBL[t.sm] || '') + ' · ' + esc(t.dur) + '</p></div>' +
       btn('📽 Proyectar', 'proj-open', 'data-id="' + t.id + '"', 'small primary') + '</div><p class="small">' + esc(t.objetivo) + '</p>' + (t.ac ? '<p class="muted small">Actividad clave: ' + esc(t.ac) + '</p>' : '') + link('Ver tema', 'tema/' + t.id, 'small'))).join('');
     return { t: 'Temas', h: h };
   };
   V.tema = id => {
-    const t = E.TEMAS.find(x => x.id === id); if (!t) return { t: 'Tema', h: card('<p>No encontré este tema.</p>' + link('Volver', 'temas', 'primary')) };
+    const t = E.TEMAS.find(x => x.id === id);
+    if (!t && modDeTema(id) && E.mods && !E.mods.listo(modDeTema(id))) { E.mods.cargar(modDeTema(id)).then(() => E.render()); return { t: 'Tema', h: card('<p>Cargando el tema…</p>') }; }
+    if (!t) return { t: 'Tema', h: card('<p>No encontré este tema.</p>' + link('Volver', 'temas', 'primary')) };
     const L = arr => '<ul>' + (arr || []).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
     let h = '<p><a href="#/temas">‹ Temas</a></p>';
     h += card('<span class="chip brand">' + esc(SM_LBL[t.sm] || '') + '</span><h3 class="mt">' + esc(t.titulo) + '</h3><p class="small"><b>Objetivo:</b> ' + esc(t.objetivo) + '</p>' + (t.ac ? '<p class="muted small">Actividad clave del programa: ' + esc(t.ac) + '</p>' : '') + '<p class="muted small">Duración sugerida: ' + esc(t.dur) + '</p>' +
@@ -624,6 +648,7 @@
     h += '<p class="muted small">Fuente: ' + esc(t.fuente) + '</p>';
     return { t: 'Tema', h: h };
   };
+  CH['temas-mod'] = el => { const m = el.value; E.ui.temasF = 'mod:' + m; location.hash = '#/temas/mod:' + m; };
   A['tema-copy'] = async el => {
     const t = E.TEMAS.find(x => x.id === el.dataset.id); if (!t) return;
     const txt = t.titulo + '\n' + t.preguntas.map((q, i) => (i + 1) + '. ' + q[0] + '\n   R: ' + q[1]).join('\n');
@@ -876,7 +901,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['grupos', 'team', 'Mis grupos', 'Agregar grupos y horarios, cambiar o archivar'], ['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', '15 prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['grupos', 'team', 'Mis grupos', 'Agregar grupos y horarios, cambiar o archivar'], ['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['consejo', 'chart', 'Consejo técnico', 'Reporte de cada grupo: imprimir o proyectar'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', (E.PRACTICAS ? E.PRACTICAS.length : 17) + ' prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -915,8 +940,9 @@
     if (g) {
       const gf = (path, label, val, type) => fieldIn(label, 'data-ch="grupo" data-path="' + path + '" id="gf-' + path + '"', val, type);
       h += sec('grupo', '👥 Grupo y horario' + (D.grupos().length > 1 ? ' · ' + esc(g.nombre) : ''), '<p class="small">Estás editando <b>' + esc(g.nombre) + '</b>. ' + link(icon('team') + ' Mis grupos: agregar otro o cambiar', 'grupos', 'small') + '</p><div class="fgrid">' + gf('nombre', 'Nombre corto', g.nombre) + gf('grupo', 'Grupo', g.grupo) + gf('semestre', 'Semestre', g.semestre) + gf('inicioDocente', 'Inicio con el grupo', g.inicioDocente, 'date') + '</div>' + gf('carrera', 'Carrera (como en la lista oficial)', g.carrera) +
-        '<div class="fgrid c4"><label class="fld"><span>Módulo</span><select data-ch="grupo" data-path="modulo">' + Object.keys(E.PROGRAMA.modulos).map(k => '<option ' + (g.modulo === k ? 'selected' : '') + '>' + k + '</option>').join('') + '</select></label>' +
-        ps.map(p => '<label class="fld"><span>Submódulo ' + esc(p.nombre) + '</span><select data-ch="grupo" data-path="submodulos.' + p.id + '"><option value="">—</option>' + Object.keys((E.PROGRAMA.modulos[g.modulo] || { sub: {} }).sub).map(k => '<option ' + ((g.submodulos || {})[p.id] === k ? 'selected' : '') + '>' + k + '</option>').join('') + '</select></label>').join('') + '</div>' +
+        '<div class="fgrid c4"><label class="fld"><span>Módulo</span><select data-ch="grupo" data-path="modulo">' + Object.keys(E.PROGRAMA.modulos).map(k => '<option value="' + k + '" ' + (g.modulo === k ? 'selected' : '') + '>' + k + ' · ' + esc(E.PROGRAMA.modulos[k].nombre) + '</option>').join('') + '</select></label>' +
+        ps.map(p => '<label class="fld"><span>Submódulo ' + esc(p.nombre) + '</span><select data-ch="grupo" data-path="submodulos.' + p.id + '"><option value="">—</option>' + Object.keys((E.PROGRAMA.modulos[g.modulo] || { sub: {} }).sub).map(k => '<option value="' + k + '" ' + ((g.submodulos || {})[p.id] === k ? 'selected' : '') + '>' + k + (E.mods ? ' · ' + esc(E.mods.smCorto(g.modulo + '-' + k)) : '') + '</option>').join('') + '</select></label>').join('') + '</div>' +
+        '<label class="switch"><input type="checkbox" data-ch="grupo-flujo"' + (g.flujo ? ' checked' : '') + '><span>Los submódulos siguen <b>de corrido</b> entre parciales (lo que no alcance en un parcial sigue en el siguiente y al terminar un submódulo empieza el otro). Úsalo cuando un submódulo dura más de un parcial, como en los módulos IV y V.</span></label>' +
         '<h4>Horario (' + (g.horario || []).reduce((a, b) => a + Number(b.horas || 0), 0) + ' h/semana)</h4>' + (g.horario || []).map((b, i) => '<div class="hrow"><select data-ch="hor" data-i="' + i + '" data-f="dia" aria-label="Día">' + [1, 2, 3, 4, 5, 6].map(d => '<option value="' + d + '" ' + (Number(b.dia) === d ? 'selected' : '') + '>' + u.DIAS3[d] + '</option>').join('') + '</select><input type="time" value="' + esc(b.inicio) + '" data-ch="hor" data-i="' + i + '" data-f="inicio" aria-label="Inicio"><input type="time" value="' + esc(b.fin) + '" data-ch="hor" data-i="' + i + '" data-f="fin" aria-label="Fin"><input type="number" value="' + esc(b.horas) + '" data-ch="hor" data-i="' + i + '" data-f="horas" inputmode="numeric" aria-label="Horas"><button type="button" class="iconbtn" data-act="hor-del" data-i="' + i + '" aria-label="Quitar">' + icon('x') + '</button><select class="hlugar" data-ch="hor" data-i="' + i + '" data-f="lugar" aria-label="Lugar">' + [['aula', '🏫 Aula'], ['computo', '💻 Centro de cómputo'], ['taller', '🛠️ Taller']].map(o => '<option value="' + o[0] + '" ' + ((b.lugar || 'aula') === o[0] ? 'selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>').join('') + '<p class="muted small">El lugar de cada bloque se usa en Clases para acomodar lo de computadora y las prácticas. Actualízalo cada semestre; si un día cambia, ajústalo solo en ese día desde Clases.</p>' +
         btn(icon('plus') + ' Agregar bloque', 'hor-add', '', 'small'));
     }
@@ -941,8 +967,10 @@
   };
   CH.grupo = el => {
     const g = D.grupoActual(), path = el.dataset.path;
-    S.update('grupo:' + g.id, gr => { u.set(gr, path, el.value); if (path === 'modulo') gr.submodulos = {}; });
+    S.update('grupo:' + g.id, gr => { u.set(gr, path, el.value); if (path === 'modulo') { gr.submodulos = E.mods ? E.mods.subSugeridos(el.value, D.parciales()) : {}; gr.flujo = E.mods ? E.mods.flujoDef(el.value) : false; } });
+    if (path === 'modulo' && E.mods) E.mods.cargar(el.value).then(() => E.render());
   };
+  CH['grupo-flujo'] = el => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { if (el.checked) gr.flujo = true; else delete gr.flujo; }); };
   CH.hor = el => {
     const g = D.grupoActual(), i = Number(el.dataset.i), f = el.dataset.f;
     S.update('grupo:' + g.id, gr => { const b = gr.horario[i]; b[f] = (f === 'dia' || f === 'horas') ? Number(el.value) : el.value; });

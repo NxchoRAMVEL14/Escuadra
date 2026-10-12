@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.17.0)
+# Escuadra · Control docente (v1.23.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,105 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.23 · Reporte para el consejo técnico** (Más → Consejo técnico):
+- **Uno por grupo**, con lo que pasó desde la sesión anterior: indicadores (asistencia, promedio, aprobando, avance, entregas
+  y alumnos que requieren atención), **avance del programa** (horas dadas, actividades clave, temas y clases perdidas),
+  **aprovechamiento** (por parcial, semáforo y temas débiles de los exámenes), **asistencia por semana**, entregas (trabajos,
+  libreta, FreeCAD y proyecto), **alumnos que requieren atención** con las señales de alerta temprana de *Yo no abandono*
+  (A asistencia · B rendimiento · C conducta) y lo que propones para cada uno, **logros**, **estrategias que aplicaste**,
+  **propuestas** que salen solas de tus datos, espacio para **acuerdos, compromisos y apoyos** que solicitas, y **próximas fechas**.
+- **Imprimir** (un grupo o todos, uno por hoja, con encabezado de la escuela y firma) o **proyectar** (con opción de mostrar
+  solo el número de lista).
+- La sesión es el **último viernes de cada mes**; si tu plantel la cambia, cambias la fecha ahí mismo. La semana del consejo
+  aparece un aviso en Inicio.
+- Solo datos escolares: no lleva las notas de tutoría ni datos personales.
+
+**Nuevo en v1.22 · Submódulo 1 del Módulo II («Dibuja planos de elementos mecánicos», 3er semestre, 1er parcial):**
+- 55 h de clases con dos caminos a la vez: **dibujo técnico a mano** en el aula (formato y cuadro de datos, unidades y pulgadas,
+  alfabeto de líneas, trazos geométricos, escalas, isométrico, vistas en primer y tercer diedro, acotación y cortes) y **FreeCAD**
+  los días de centro de cómputo (croquis con restricciones, Pad, Pocket, Revolution, Thickness y plano en TechDraw).
+- 13 temas nuevos para proyectar con figuras animadas (más los 2 que ya había), 78 preguntas de examen con problemas que cambian
+  (conversiones, escalas, formato, cotas en cadena y en paralelo, masa de una pieza), 7 láminas con su hoja para imprimir,
+  12 tareas para casa y 12 ideas.
+- Proyecto **«Del objeto al plano»**: croquis acotado de una pieza real, plano a mano (actividad clave), modelo y plano en
+  FreeCAD (actividad clave) y expediente; PAEC: catálogo de planos de piezas de repuesto para el mantenimiento del plantel.
+- **Prácticas de FreeCAD**: dos nuevas (bloque escalonado del isométrico al modelo, y caja con paredes de 2 mm con Thickness);
+  la placa, el eslabón, la escuadra, la polea y el plano en TechDraw ya aparecen en las clases del 1er parcial. Ahora son 17.
+- El examen del 1er parcial queda entero en un bloque de 2 h, con retroalimentación y cierre después.
+- Si empezaste con un grupo después de un parcial (como el 3°A, en octubre), Clases muestra ese parcial como referencia, sin
+  avisos de horas que faltan.
+- Con esto ya está el contenido de los 5 módulos de la carrera.
+
+**Nuevo en v1.21 · Módulo IV completo (5º semestre, «Opera sistemas flexibles de manufactura de piezas mecánicas», de corrido):**
+- Clases hora por hora de los 2 submódulos (80 h de máquinas-herramienta y CNC y 76 h de robótica) con tareas, evidencias,
+  **hojas de práctica para imprimir**, temas para proyectar con figuras animadas, banco de examen (144 preguntas, con problemas que
+  cambian en cada versión: rpm y avance, tiempo de corte, coordenadas absolutas e incrementales, kerf, tolerancias, cinemática,
+  paletizado, fuerza de agarre, par del servo y piezas por hora) e ideas.
+- **Dos proyectos que se encadenan**:
+  1. *Piezas por CNC*: plano y hoja de proceso, programa G escrito a mano, simulación en NC Viewer y CAMotics, diseño en FreeCAD
+     y corte de prueba en tu cortadora láser (es una máquina CNC de 2 ejes), inspección con vernier y expediente de manufactura.
+     Las piezas que salen son las del brazo robótico.
+  2. *Brazo robótico*: brazo de 4 servos con Arduino que toma, deja y paletiza: cinemática, movimiento suave, programa por
+     enseñanza con potenciómetros, robots industriales en simulador (Webots o CoppeliaSim Edu), celda con sensor e interbloqueo,
+     validación con bitácora y feria.
+- **Sin máquinas CNC ni robot industrial**: se programa a mano, se simula y se comprueba con lo que tienes (cortadora láser,
+  Arduino, servos y el centro de cómputo).
+- **Seguridad**: la cortadora láser la operas solo tú (nunca PVC ni vinil); el brazo trabaja a 5 V con paro de emergencia y el lado
+  de 127 V de la fuente lo conectas tú.
+- **Tareas para casa**: 17 en el Módulo IV y 14 nuevas en el Módulo V (ejercicios, croquis, programas a mano, entrevistas y
+  observación de aparatos de casa); salen en Más → Tareas y libreta.
+- Submódulo 1 del Módulo II: listo en v1.22.
+
+**Nuevo en v1.20 · Módulo V completo (6º semestre, «Opera sistemas mecatrónicos», de corrido):**
+- Clases hora por hora de los 2 submódulos (80 h de automatización y 76 h de mantenimiento) con tareas, evidencias, **hojas de
+  práctica para imprimir**, temas para proyectar con figuras animadas, banco de examen (144 preguntas, con problemas que cambian en
+  cada versión) e ideas.
+- **Dos proyectos que se encadenan**:
+  1. *Automatiza*: estación automatizada de clasificación de tapas (banda de MDF cortada en tu cortadora láser, sensores IR,
+     inductivo y de color, servos, motor a pasos, empujador hidráulico de jeringas, modos manual y automático, alarmas, paro de
+     emergencia y documentación «como quedó»).
+  2. *Mantiene*: programa de mantenimiento del taller con su estación como primer equipo: bloqueo y etiquetado, 5S, lubricación,
+     rodamientos y bandas, órdenes de trabajo, preventivo, correctivo (causa raíz y actualización del programa de la tarjeta) y
+     predictivo con el celular (phyphox), termómetro infrarrojo y un monitor con Arduino; MTBF, MTTR, disponibilidad y OEE.
+- **Examen automático en los módulos de corrido**: Clases aparta el último bloque de 2 h (fuera del centro de cómputo) de cada
+  parcial para el examen, aunque el submódulo siga en el siguiente parcial.
+- **De corrido, sin pérdidas**: lo que no alcanza en un parcial sigue completo en el siguiente, aunque sea de un submódulo anterior.
+  Clases muestra solo las horas y submódulos que caen en ese parcial, y las prácticas que necesitan algo del centro de cómputo
+  (no se arma sin las piezas diseñadas, no se pone en marcha sin el programa) esperan a que se dé, con un aviso.
+- **Seguridad**: todo a 12 V; el lado de 127 V lo conectas y pruebas solo tú. Nada de trabajos en altura ni en espacios confinados:
+  esas NOM se estudian para el trabajo real.
+- Módulo IV: listo en v1.21.
+
+**Nuevo en v1.19 · Módulo III completo (4º semestre, «Programa dispositivos de control»):**
+- Clases hora por hora de los 3 submódulos con tareas, evidencias, **hojas de práctica para imprimir**, temas para proyectar con
+  figuras animadas, banco de examen (214 preguntas, con problemas que cambian en cada versión) e ideas.
+- **Tres proyectos que se encadenan sobre el mismo tablero de 12 V**:
+  1. *Potencia y control*: tablero didáctico con relevadores de 12 V, botones de 22 mm y panel cortado en tu cortadora láser:
+     arranque-paro, inversión de giro con enclavamiento, finales de carrera, sensor de 3 hilos y localización de fallas.
+  2. *PLC*: el mismo tablero lo controla un Arduino Uno que funciona como PLC con OpenPLC (escalera, temporizadores, contadores,
+     GRAFCET y señal analógica): estación de conteo con apagado automático para ahorrar energía.
+  3. *Sistemas embebidos*: riego automático programado en C++ (sensor de humedad, MOSFET, máquina de estados, nivel del depósito,
+     consumo de agua y energía; nexo agua-energía-alimento) y feria de automatización del semestre.
+- **Seguridad**: todo se arma a 12 V de CD; el lado de 127 V de la fuente lo conectas solo tú. Bloqueo y etiquetado desde la
+  primera clase.
+- **Simuladores gratuitos**: CADe_SIMU (Windows, para tableros de 127/220 V sin riesgo), OpenPLC Editor, Wokwi, Tinkercad e Inkscape.
+- Módulo V: listo en v1.20.
+
+**Nuevo en v1.18 · Contenido por módulo (el grupo que te toque jala su contenido):**
+- **Programa SEP 2024 completo de los 5 módulos** (tomado de tu PDF, pp. 13-118): actividades clave con su página, desarrollo de la
+  competencia, producto o desempeño con su instrumento, criterios para listas de cotejo y rúbricas, y los elementos transversales que el
+  programa marca con X. Con eso, cualquier grupo tiene **actividades sugeridas** (Calificaciones), **listas de cotejo y rúbricas** para
+  imprimir y una **planeación** que se llena sola: transversales del programa, recursos, PAEC y apertura/desarrollo/cierre con sus clases.
+- **Módulo I completo (2º semestre)**: clases hora por hora de los 3 submódulos (mediciones y diagramas; circuitos analógicos y PCB;
+  circuitos digitales) con tareas, evidencias y **hojas de práctica para imprimir** (Tinkercad Circuits, Falstad, KiCad y CircuitVerse,
+  gratuitos), temas para proyectar con figuras animadas, banco de examen con problemas que cambian en cada versión, ideas y 3 proyectos:
+  expediente técnico de un aparato, luz intermitente con 555 en su propia placa y contador de piezas 0-9 con display.
+- **De corrido** (Ajustes → Grupo y horario): en los módulos de 2 submódulos (IV y V) lo que no alcance en un parcial sigue en el
+  siguiente y al terminar un submódulo empieza el otro. Se marca solo al elegir esos módulos.
+- **Temas e Ideas** muestran los del módulo de tu grupo (con un selector para ver otro módulo).
+- El contenido de cada módulo solo se carga si tienes un grupo de ese módulo: la app abre igual de rápido.
+- Módulo III: listo en v1.19.
 
 **Nuevo en v1.17 · Mis grupos (Más → Mis grupos, o Ajustes → Grupo y horario → «Mis grupos»):**
 - **Agregar grupo**: grupo (ej. 5B), semestre, carrera, nombre corto, módulo, submódulo de cada parcial y su **horario** (día, hora
@@ -23,8 +122,7 @@ con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nueva
   de **Pendientes** suma todos tus grupos y su pantalla te muestra los de tus otros grupos.
 - **Fin de semestre → Archivar**: el grupo deja de salir para cambiar y en pendientes, y guarda sus fechas de parciales para que su
   historial no cambie cuando pongas las del semestre nuevo. Lo puedes ver, reactivar o **borrar con todo** (escribiendo su grupo).
-- Clases, Temas, Banco de preguntas y Examen recomendado traen contenido del **Módulo II** (submódulos 2 y 3). Para otro módulo,
-  Clases te avisa; pídele a Claude la secuencia con el programa SEP y tu horario. Lo demás funciona igual con cualquier módulo.
+- Clases, Temas, Banco de preguntas y Examen recomendado traen el contenido del módulo de cada grupo (ver v1.18).
 
 **Nuevo en v1.16.1 · entregas tarde «sobre 75»:** cuando un alumno te entregue tarde, márcalo con **⏰** (en la actividad, en
 cada tarea de la libreta con el botón «⏰ Tarde» o la tecla T, en las prácticas de FreeCAD, al escanear su QR con «Son entregas
@@ -272,7 +370,7 @@ al abrirla con internet. Tus datos no se tocan.
 |---|---|
 | `index.html` | Página principal |
 | `styles.css` | Diseño (claro/oscuro, celular y PC, impresión) |
-| `data.js` | Programa de estudios 2024 (Módulo II completo), tus fechas de parciales, horario y borradores de planeación |
+| `data.js` | Programa de estudios 2024 (los 5 módulos completos), tus fechas de parciales, horario y borradores de planeación |
 | `ideas.js` | Banco de 52 ideas: prácticas, FreeCAD, manejo de grupo, evaluación y 24 para clase con proyector |
 | `temas.js` | 26 temas con explicación, ejemplo resuelto, preguntas y contenido para el modo Proyector |
 | `core.js` | Guardado, sincronización y cálculos |
@@ -286,7 +384,7 @@ al abrirla con internet. Tus datos no se tocan.
 | `libreta.js` | Tareas del parcial y revisión de libreta |
 | `banco.js` | Banco de preguntas y problemas con datos variables |
 | `examen.js` | Examen recomendado, versiones, captura y análisis |
-| `practicas.js` | 15 prácticas de FreeCAD con plano acotado, ejercicios del banco para proyectar |
+| `practicas.js` | 17 prácticas de FreeCAD con plano acotado, ejercicios del banco para proyectar |
 | `repaso.js` | Calentamiento, boleto de salida y temas a reforzar |
 | `proyecto.js` | Avance del proyecto por equipo |
 | `industria.js` | Ejemplos de la industria del Bajío y planeador de visitas y charlas |
@@ -304,6 +402,13 @@ al abrirla con internet. Tus datos no se tocan.
 | `evidencias.js` | Fotos de evidencias de trabajos (nunca caras), respaldo privado en Supabase |
 | `formularios.js` | QR de tus formularios e importación de respuestas (cuestionario, autoevaluación y coevaluación) |
 | `grupos.js` | Mis grupos: agregar con horario, cambiar de grupo, quién tiene clase ahora, archivar y borrar |
+| `consejo.js` | Reporte para el consejo técnico: uno por grupo, para imprimir o proyectar, con acuerdos y próximas fechas |
+| `mods.js` | Contenido por módulo: carga solo el de los módulos de tus grupos y lo integra a Clases, Temas, Banco e Ideas |
+| `m1s1.js`, `m1s2.js`, `m1s3.js` | Módulo I: clases, temas, banco de examen, ideas, figuras y proyecto de cada submódulo |
+| `m2s1.js` | Módulo II, Submódulo 1 (dibujo y FreeCAD): clases, temas, banco de examen, ideas, figuras y proyecto |
+| `m3s1.js`, `m3s2.js`, `m3s3.js` | Módulo III: clases, temas, banco de examen, ideas, figuras y proyecto de cada submódulo |
+| `m4s1.js`, `m4s2.js` | Módulo IV: clases, temas, banco de examen, ideas, figuras y proyecto de cada submódulo |
+| `m5s1.js`, `m5s2.js` | Módulo V: clases, temas, banco de examen, ideas, figuras y proyecto de cada submódulo |
 | `lib-qrcode.js`, `lib-jsqr.js`, `lib-aruco.js` | Bibliotecas libres para dibujar y leer QR y leer las tarjetas (ver `LICENCIAS.txt`) |
 | `presentador.js` | Modo Presentador: proyector y control separados |
 | `clases.js` | Secuencia de clases de cada submódulo y pantalla Clases |
@@ -320,6 +425,39 @@ al abrirla con internet. Tus datos no se tocan.
 ## Fuentes de los datos cargados
 
 - Programa de estudios *Técnico en Mecatrónica*, SEP/SEMS/COSFAC, clave 3071300008-23, 2ª ed., julio 2024.
+- Módulos I a V (v1.18): tablas «Proceso para la formación en competencias» y «Estrategia de evaluación» de ese mismo programa
+  (pp. 13-118), leídas del PDF que compartiste; la estrategia didáctica sugerida del Módulo I (pp. 128-145) y la lista de recursos
+  (pp. 119-122). Contenido del Módulo I: bibliografía del programa (Boylestad y Nashelsky; Hayt, Kemmerly y Durbin; Hermosa; Pérez
+  Montiel; Tocci; Botero; Lajara y Pelegrí), hojas de datos de los fabricantes (1N4007, LM7805, 2N2222, BC547, NE555, LM358, serie
+  74LS/74HC, CD4511) y la documentación de KiCad, Tinkercad Circuits, Falstad y CircuitVerse. Los problemas del banco se verificaron
+  con un recálculo independiente en 14,500 casos.
+- Módulo III (v1.19): programa SEP 2024, pp. 54-66, anexo de Conceptos Centrales de la Educación para el Desarrollo Sostenible (p. 150)
+  y recursos de la carrera (pp. 118-122); bibliografía del programa (Kosow; Ruiz Vázquez; Tello; Alcalde, García y Salmerón;
+  Antonsen; Perdigones; Baker; Thorpe; documentación de Arduino UNO R3); NOM-001-SEDE-2012 (tabla 310-15(b)(16) y artículos
+  200-6, 240-4, 250-119 y 430-22), NOM-029-STPS-2011, NOM-017-STPS-2008; IEC 60617, 60947, 60204-1, 61131-3 y 60848; hojas de datos
+  (ULN2003A, IRLZ44N, 1N4007, LM35, DHT11, HC-SR04); documentación de OpenPLC (autonomylogic.com), Arduino (docs.arduino.cc),
+  Wokwi y Tinkercad; FAO-AQUASTAT y CONAGUA para el nexo agua-energía-alimento. Los problemas del banco se verificaron con un
+  recálculo independiente (22,500 casos de los Módulos I y III).
+- Módulo V (v1.20): programa SEP 2024, pp. 97-110, y recursos de la carrera (pp. 118-122); bibliografía del programa (Bolton;
+  García, Escaño y Nuevo; Reyes, Cid y Vargas; Mora; González; Emd; Mantenimiento industrial práctico); NOM-004-STPS-1999,
+  NOM-029-STPS-2011, NOM-009-STPS-2011, NOM-033-STPS-2015, NOM-017-STPS-2008 y NOM-052-SEMARNAT-2005; IEC 60204-1, ISO 12100,
+  ISO 1219, IEC 60848, ISO 3448, ISO 15 e ISO 20816; Moubray (curva P-F) y Nakajima (OEE); criterios de termografía de NETA;
+  hojas de datos (HC-SR04, TCS34725, TCS3200, SG90, 28BYJ-48, A4988, L298N, DS18B20, ACS712, MPU6050); documentación de Arduino,
+  Wokwi y phyphox (RWTH Aachen). Los problemas del banco se verificaron con un recálculo independiente (29,000 casos de los
+  Módulos I, III y V).
+- Módulo IV (v1.21): programa SEP 2024, pp. 76-87, y recursos de la carrera (pp. 118-122); bibliografía del programa (Krar, Gill y
+  Smid, *Tecnología de las máquinas herramienta*; Smid, *CNC Programming Handbook* y *CNC Control Setup for Milling and Turning*; Groover, *Automation,
+  Production Systems, and Computer-Integrated Manufacturing*; Cruz, *Control numérico y programación*; Chang, Wysk y Wang, *Computer-Aided Manufacturing*); ISO 841 (ejes y sentidos), ISO 6983
+  (código G), ISO 8373 (vocabulario de robots), ISO 10218-1/-2 e ISO/TS 15066 (seguridad de robots), NOM-004-STPS-1999;
+  documentación de GRBL y LaserGRBL, CAMotics (GPL-2.0), NC Viewer, FreeCAD 1.0 (CAM), Webots (Apache 2.0), CoppeliaSim Edu,
+  RoboDK, Arduino (librería Servo) y Wokwi; diseño abierto MeArm (CC BY-SA). Los problemas del banco se verificaron con un recálculo
+  independiente (34,500 casos de los Módulos I, III, IV y V).
+- Módulo II, Submódulo 1 (v1.22): programa SEP 2024, pp. 32-35, y su bibliografía (Estrada y Llamas, *Dibujo Técnico I*);
+  NOM-Z-68-1986 (formatos de las láminas), NOM-008-SCFI-2002 (unidades); ISO 216 (formatos A), ISO 5457 (márgenes y marco),
+  ISO 7200 (cuadro de datos), ISO 128 (líneas, vistas y cortes), ISO 129-1 (acotación), ISO 3098 (rotulación), ISO 5455 (escalas)
+  e ISO 5456 (primer y tercer diedro); documentación oficial de FreeCAD 1.0 y 1.1 (Part Design, Sketcher, TechDraw); densidades
+  de tablas de materiales y The Aluminum Association (energía del aluminio reciclado). Los problemas del banco se verificaron con
+  un recálculo independiente (37,000 casos de los Módulos I a V).
 - Fechas de parciales, asuetos y capturas: tu cuaderno (foto del 5 oct 2026).
 - Horario: hoja "3 MEC" (bloques azules de MÓDULO, 16 h/semana).
 - Planeaciones: tus archivos "2do parcial 3ro.docx" y "3er parcial 3ro.docx".
@@ -328,6 +466,7 @@ al abrirla con internet. Tus datos no se tocan.
 - Simuladores sugeridos: PhET (Universidad de Colorado, gratuitos) y PMKS+ (Worcester Polytechnic Institute, gratuito y sin registro).
 - Videos: canales de YouTube indicados en cada video (verificados el 7 oct 2026 con el servicio oEmbed de YouTube). Las animaciones son originales de la app.
 - Estrategias: Education Endowment Foundation, *Teaching and Learning Toolkit* (retroalimentación, metacognición, tutoría entre pares, aprendizaje para el dominio); Dunlosky y col. (2013); Roediger y Karpicke (2006); Rosenshine (2012); Mueller y Dweck (1998); Ryan y Deci (2000). Los enlaces están en Más → Estrategias → Fuentes.
+- Consejo técnico (v1.23): SEP-SEMS (2014), *Yo no abandono*: manual de alerta temprana (señales de asistencia, rendimiento y conducta); SEP, orientaciones de las sesiones de Consejo Técnico Escolar 2025-2026 (sesiones ordinarias el último viernes de cada mes, revisión del avance y acuerdos del colectivo).
 - Tutoría: SEP-SNB, Acuerdo 9/CD/2009 (acción tutorial); SEMS (2014), *Yo no abandono*: manual de alerta temprana; Ley General de Educación, art. 7, fr. IV (aportaciones voluntarias); SEP-DGB (2023) Currículum ampliado y (2025) Orientaciones para la formación socioemocional; IES-WWC (2017) *Preventing Drop-out in Secondary Schools*; EEF (familias, socioemocional, mentoría, tutoría entre pares). Enlaces en Tutoría → Ideas → Fuentes.
 - Examen: preguntas escritas a partir del contenido de Temas (programa SEP 2024 y su bibliografía) y revisadas una por una; los problemas calculan su respuesta con las fórmulas del curso. Reparto por horas = tabla de especificaciones. Repaso de temas bajos: práctica de recuperación y espaciada (Dunlosky y col., 2013).
 - Dinámicas: Construye T (SEP-SEMS y PNUD); SEP-DGB (2025) Orientaciones para la formación socioemocional; EEF (aprendizaje socioemocional, aprendizaje colaborativo, retroalimentación); Cook y col. (2018) saludo en la puerta; Yeager y col. (2014) retroalimentación sabia; Roorda y col. (2011) relación docente-alumno; Aronson (rompecabezas); Wujec (2010) reto del malvavisco; Bandura (1977) autoeficacia. Enlaces en Dinámicas → Fuentes.

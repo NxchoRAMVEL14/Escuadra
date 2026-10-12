@@ -26,7 +26,7 @@
   R.vistos = (g, hasta) => {
     const out = {};
     D.parciales().forEach(p => {
-      if (!E.CLASES[E.clases.smKey(g, p.id)]) return; let pl; try { pl = E.clases.plan(g, p.id); } catch (e) { return; }
+      if (!E.clases.tiene(g, p.id)) return; let pl; try { pl = E.clases.plan(g, p.id); } catch (e) { return; }
       pl.bloques.forEach(b => { if (b.perdida || b.fecha >= hasta) return; b.parts.forEach(pt => { const t = pt.it.tema; if (!t || !conBanco(t)) return; const o = out[t] = out[t] || { ini: b.fecha, fin: b.fecha }; if (b.fecha < o.ini) o.ini = b.fecha; if (b.fecha > o.fin) o.fin = b.fecha; }); });
     });
     return out;

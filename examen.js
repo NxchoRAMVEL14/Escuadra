@@ -147,7 +147,7 @@
   };
 
   function listaV(g) {
-    const ps = D.parciales().filter(p => E.CLASES && E.clases && E.CLASES[E.clases.smKey(g, p.id)]), act = C.parcialActual();
+    const ps = D.parciales().filter(p => E.clases && E.clases.tiene(g, p.id)), act = C.parcialActual();
     const pid = (E.ui.exPid && ps.some(p => p.id === E.ui.exPid)) ? E.ui.exPid : (ps.find(p => p.id === act.id) || ps[0] || act).id;
     const fx = X.fechaExamen(g, pid), fecha = E.ui.exFecha && E.ui.exPid === pid ? E.ui.exFecha : fx.f, horas = X.temasVistos(g, pid, fecha), deb = X.debilidad(g);
     const tot = Object.keys(horas).reduce((s, t) => s + horas[t], 0);

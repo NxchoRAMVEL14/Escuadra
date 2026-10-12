@@ -23,6 +23,7 @@
       '<div class="p-title">' + esc(titulo) + '</div>';
   }
   const firma = () => '<div class="sig"><div>' + esc(D.cfg().docente) + '<br>Nombre y firma del docente</div></div>';
+  P.head = head; P.firma = firma;   // los usan otros reportes (consejo técnico)
   const smTxt = (g, p) => { const sm = D.submodulo(g, p.id); return sm ? 'MÓDULO ' + g.modulo + ' · SUBMÓDULO ' + sm.num + ': ' + sm.nombre.toUpperCase() : ''; };
 
   P.asistencia = (g, p, o) => {
@@ -63,7 +64,7 @@
     const th = cr.map((_, k) => '<th style="width:9mm">C' + (k + 1) + '</th>').join('');
     const rows = fs.map(a => '<tr' + (eq ? ' class="tall"' : '') + '><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + cr.map(() => '<td></td>').join('') + '<td></td><td></td><td></td></tr>').join('');
     P.run('<div class="pr">' + head(g, 'LISTA DE COTEJO · ' + p.nombre.toUpperCase(), 'FECHA: ____________________') +
-      '<table class="grid"><tr><td><b>Actividad clave:</b> ' + esc(ac.titulo) + '<br><b>Producto:</b> ' + esc(ac.producto || '') + '<br><span class="tiny">' + esc(smTxt(g, p)) + ' · Programa 2024, p. ' + esc(ac.pag || '') + '</span></td></tr></table>' +
+      '<table class="grid"><tr><td><b>Actividad clave:</b> ' + esc(ac.titulo) + '<br><b>' + (ac.ev === 'D' ? 'Desempeño' : 'Producto') + ':</b> ' + esc(ac.producto || '') + '<br><span class="tiny">' + esc(smTxt(g, p)) + ' · Programa 2024, p. ' + esc(ac.pag || '') + '</span></td></tr></table>' +
       '<p class="tiny"><b>Instrucciones:</b> marca ✓ si cumple y ✗ si no. Calificación = criterios cumplidos ÷ ' + cr.length + ' × 100.</p>' + leg +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">' + (eq ? 'EQUIPO E INTEGRANTES' : 'NOMBRE') + '</th>' + th + '<th style="width:12mm">Cumple</th><th style="width:12mm">Calif.</th><th style="width:40mm">Observaciones</th></tr></thead><tbody>' + rows + '</tbody></table>' + firma() + '</div>',
       { landscape: true, title: 'Cotejo ' + g.grupo });
@@ -74,7 +75,7 @@
     const cr = ac.criterios || [], max = cr.length * 4;
     const rows = cr.map(x => '<tr><td><b>' + esc(x) + '</b></td>' + NIV.map(n => '<td class="tiny">' + esc(n[2]) + '</td>').join('') + '<td></td></tr>').join('');
     P.run('<div class="pr">' + head(g, 'RÚBRICA · ' + p.nombre.toUpperCase(), '') +
-      '<table class="grid"><tr><td><b>Nombre / equipo:</b> ______________________________________________ <b>Fecha:</b> ____________</td></tr><tr><td><b>Actividad clave:</b> ' + esc(ac.titulo) + '<br><b>Producto:</b> ' + esc(ac.producto || '') + '<br><span class="tiny">' + esc(smTxt(g, p)) + ' · Programa 2024, p. ' + esc(ac.pag || '') + '</span></td></tr></table><br>' +
+      '<table class="grid"><tr><td><b>Nombre / equipo:</b> ______________________________________________ <b>Fecha:</b> ____________</td></tr><tr><td><b>Actividad clave:</b> ' + esc(ac.titulo) + '<br><b>' + (ac.ev === 'D' ? 'Desempeño' : 'Producto') + ':</b> ' + esc(ac.producto || '') + '<br><span class="tiny">' + esc(smTxt(g, p)) + ' · Programa 2024, p. ' + esc(ac.pag || '') + '</span></td></tr></table><br>' +
       '<table class="grid"><thead><tr><th class="l" style="width:30%">Criterio</th>' + NIV.map(n => '<th>' + n[0] + ' (' + n[1] + ')</th>').join('') + '<th style="width:14mm">Puntos</th></tr></thead><tbody>' + rows +
       '<tr><td colspan="5" style="text-align:right"><b>Total (máximo ' + max + ')</b></td><td></td></tr><tr><td colspan="5" style="text-align:right"><b>Calificación = total ÷ ' + max + ' × 100</b></td><td></td></tr></tbody></table>' +
       '<p class="tiny"><b>Retroalimentación:</b></p><div class="box"></div>' + firma() + '</div>', { landscape: false, title: 'Rúbrica ' + g.grupo });

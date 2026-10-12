@@ -405,27 +405,51 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
 
   /* ---------------- planeaciones ---------------- */
   const ORD = { P1: '1er', P2: '2do', P3: '3er' };
+  // elementos transversales que el programa marca con X en los renglones del submódulo (los más frecuentes de cada grupo)
+  const transvDe = sm => {
+    const cols = E.TX_COLS || [], cnt = cols.map(() => 0); let n = 0;
+    (sm.ac || []).forEach(a => (a.tx || []).forEach(r => { n++; r.forEach(i => { cnt[i]++; }); }));
+    if (!n) return { fund: ['Pensamiento Matemático'], amp: [], hvyt: ['Colaboración y trabajo en equipo', 'Resolución de problemas'], cocends: [] };
+    const elige = (a, b, min, max) => { const ids = []; for (let i = a; i <= b; i++) if (cnt[i]) ids.push(i); ids.sort((x, y) => cnt[y] - cnt[x]); const fuertes = ids.filter(i => cnt[i] >= n * 0.4); return (fuertes.length >= min ? fuertes : ids.slice(0, min)).slice(0, max).map(i => cols[i]); };
+    return { fund: elige(0, 7, 2, 4), amp: elige(8, 10, 0, 2), hvyt: elige(11, 22, 2, 4), cocends: elige(23, 26, 0, 2) };
+  };
+  const TEC = { Encuadre: 'Encuadre y evaluación diagnóstica', 'Teoría': 'Exposición dialogada con proyector', 'Práctica': 'Práctica guiada y supervisada', 'Cómputo': 'Práctica en simulador (centro de cómputo)', Taller: 'Práctica en taller', Proyecto: 'Aprendizaje basado en proyectos', 'Evaluación': 'Evaluación y retroalimentación', 'Formación': 'Formación socioemocional (HVyT)' };
+  // apertura, desarrollo y cierre a partir de las clases que caen en el parcial
+  const secDe = (g, pid, h) => {
+    let pl = null; try { pl = E.clases && E.clases.tiene(g, pid) ? E.clases.plan(g, pid) : null; } catch (e) { pl = null; }
+    if (!pl) return null;
+    const out = { a: { h: 0, f: [], it: [] }, d: { h: 0, f: [], it: [] }, c: { h: 0, f: [], it: [] } };
+    pl.bloques.forEach(b => { if (b.perdida) return; b.parts.forEach(pt => { const x = out[pt.it.m]; x.h += pt.h; x.f.push(b.fecha); if (x.it.indexOf(pt.it) < 0 && !x.it.some(y => y.id === pt.it.id)) x.it.push(pt.it); }); });
+    const tot = out.a.h + out.d.h + out.c.h; if (!tot) return null;
+    const ap = Math.max(1, Math.round(out.a.h / tot * h)), ci = Math.max(1, Math.round(out.c.h / tot * h));
+    const per = x => { const fs = x.f.slice().sort(); return fs.length ? u.fFecha(fs[0]) + (fs[fs.length - 1] !== fs[0] ? ' al ' + u.fFecha(fs[fs.length - 1]) : '') : ''; };
+    const m = (x, horas) => ({ periodo: per(x), horas: horas, desc: x.it.map(i => i.t).join('; ') + '.', tecnicas: Array.from(new Set(x.it.map(i => TEC[i.tipo]).filter(Boolean))), evidencias: Array.from(new Set(x.it.map(i => i.ev).filter(Boolean))).slice(0, 6) });
+    return { a: m(out.a, ap), d: m(out.d, Math.max(0, h - ap - ci)), c: m(out.c, ci) };
+  };
   E.planes = {
     nueva(g, pid) {
       const p = C.parcial(pid); const sm = D.submodulo(g, pid); const m = E.PROGRAMA.modulos[g.modulo]; const c = D.cfg();
       if (!sm) throw new Error('Configura el submódulo de este parcial en Ajustes → Grupo.');
       const h = C.horas(g, p).disp; const ap = Math.max(1, Math.round(h * 0.1)), ci = Math.max(1, Math.round(h * 0.17)), de = Math.max(0, h - ap - ci);
-      const ei = Math.round(h * 0.25);
+      const ei = Math.round(h * 0.25), pk = (E.mods && E.mods.pack(g.modulo + '-' + sm.num)) || {}, pp = pk.plan || {}, sq = secDe(g, pid, h);
+      const pags = sm.ac.map(a => a.pag).filter(Boolean), pgs = pags.length ? ', pp. ' + Math.min.apply(null, pags) + '-' + (Math.max.apply(null, pags) + 1) : '';
+      const mom = (k, def, x) => Object.assign({ periodo: '', horas: def, ei: '', desc: '', tecnicas: [], evidencias: [] }, x || {}, { ei: '' });
+      const rec = pk.recursos || (g.modulo === 'II' ? { material: ['FreeCAD 1.x'], equipo: ['Computadoras del plantel con FreeCAD'] } : { material: [], equipo: [] });
       return {
-        id: u.uid('plan'), grupoId: g.id, parcial: pid, modulo: g.modulo, sm: sm.num, estado: 'Borrador', origen: 'Generada desde el programa 2024',
+        id: u.uid('plan'), grupoId: g.id, parcial: pid, modulo: g.modulo, sm: sm.num, estado: 'Borrador', origen: 'Generada desde el programa 2024' + (sq ? ' y la secuencia de Clases' : ''),
         ident: { parcialTxt: ORD[pid] || pid, elaboracion: 'Individual', docente: c.docente, fechas: u.fFecha(p.inicio) + ' al ' + u.fFecha(p.fin), grupoTxt: g.grupo, horasMD: h, horasEI: ei, horasTot: h + ei },
         resModulo: m.resultados.slice(), resSM: (m.resultados[Number(sm.num)] || sm.nombre) + '.',
         proceso: sm.ac.map(a => a.titulo), desarrollo: [].concat.apply([], sm.ac.map(a => a.desarrollo || [])),
-        transv: { fund: ['Pensamiento Matemático'], amp: [], hvyt: ['Colaboración y trabajo en equipo', 'Resolución de problemas'], cocends: [] },
-        paec: '', paecEvid: '', uac: [{}, {}, {}],
-        estrategia: { diag: 'Cuestionario diagnóstico', form: 'Supervisión y retroalimentación durante las prácticas', sum: 'Evaluación práctica del producto final y defensa' },
-        practicas: ['Demostrativa: ', 'Guiada: ', 'Supervisada: ', 'Autónoma: '],
+        transv: transvDe(sm),
+        paec: pp.paec || '', paecEvid: pp.paecEvid || '', uac: [{}, {}, {}],
+        estrategia: { diag: pp.diag || 'Cuestionario diagnóstico', form: pp.form || 'Supervisión y retroalimentación durante las prácticas', sum: pp.sum || 'Evaluación práctica del producto final y defensa' },
+        practicas: pp.practicas ? pp.practicas.slice() : ['Demostrativa: ', 'Guiada: ', 'Supervisada: ', 'Autónoma: '],
         secuencia: {
-          apertura: { periodo: '', horas: ap, ei: '', desc: '', tecnicas: [], evidencias: [], eval: { H: true }, instr: { Exa: true }, otro: '', pond: 10 },
-          desarrollo: { periodo: '', horas: de, ei: '', desc: '', tecnicas: [], evidencias: [], eval: { C: true, H: true }, instr: { LC: true }, otro: '', pond: 40 },
-          cierre: { periodo: '', horas: ci, ei: '', desc: '', tecnicas: [], evidencias: [], eval: { A: true, H: true }, instr: { R: true }, otro: '', pond: 50 }
+          apertura: Object.assign(mom('a', ap, sq && sq.a), { eval: { H: true }, instr: { GO: true, Exa: true }, otro: '', pond: 10 }),
+          desarrollo: Object.assign(mom('d', de, sq && sq.d), { eval: { C: true, H: true }, instr: { LC: true }, otro: '', pond: 40 }),
+          cierre: Object.assign(mom('c', ci, sq && sq.c), { eval: { A: true, H: true }, instr: { R: true, Exa: true }, otro: '', pond: 50 })
         },
-        recursos: { material: ['FreeCAD 1.x'], equipo: ['Computadoras del plantel con FreeCAD'], fuentes: [E.FUENTE_PROGRAMA].concat(m.fuentes || []) },
+        recursos: { material: (rec.material || []).slice(), equipo: (rec.equipo || []).slice(), fuentes: [E.FUENTE_PROGRAMA + ', Módulo ' + g.modulo + pgs + '.'].concat(m.fuentes || []) },
         valida: { elaboro: c.docente, reviso: '', avalo: '' }, notas: ''
       };
     },
