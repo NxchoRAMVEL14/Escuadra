@@ -54,6 +54,7 @@
     undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
     clip: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>',
     note: '<path d="M5 3h10l4 4v14H5z"/><path d="M14 3v5h5M8.5 13l2 2 4.5-4.5"/>',
+    help: '<circle cx="12" cy="12" r="9.2"/><path d="M9.4 9.3a2.7 2.7 0 0 1 5.2 1c0 1.8-2.6 2.3-2.6 4"/><circle cx="12" cy="17.4" r=".6" fill="currentColor"/>',
     cam: '<path d="M4 7.5h3.2L9 5h6l1.8 2.5H20a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
@@ -89,6 +90,8 @@
     const multi = D.gruposActivos().length > 1;
     let h = '<div class="hello"><div><h1>Hola, ' + esc(c.docenteCorto || 'profe') + '</h1><p class="muted">' + u.cap(u.fLargaA(hoy)) + '</p></div>' + (g ? (multi || g.archivado ? '<button type="button" class="chip brand chipbtn" data-act="g-menu" aria-label="Cambiar de grupo">' + esc(g.nombre) + ' ▾</button>' : '<span class="chip brand">' + esc(g.nombre) + '</span>') : '') + '</div>';
     if (E.grupos) h += E.grupos.hoyHTML(hoy);
+    // v1.24: Inicio compacto: arriba solo 3 cosas (tu clase, lo más urgente y a quién atender); lo demás, plegado
+    const compacto = E.hoy3 && c.inicioCompleto !== true && g && D.alumnos(g).length, corte = h.length;
     if (g && g.archivado) h += card('<p class="small">🗄 Estás viendo <b>' + esc(g.nombre) + '</b>, un grupo archivado (con sus fechas de parciales de entonces). ' + link('Mis grupos', 'grupos', 'small') + '</p>', 'accent');
     if (g && !D.alumnos(g).length) h += card('<h3>' + icon('upload') + ' Primer paso: importa la lista de ' + esc(g.nombre) + '</h3><p>Sube el Excel de listas de la escuela (eliges la hoja de tu grupo, por ejemplo "LISTA DE ASISTENCIA ' + esc(g.grupo || '') + ' MEC") o pega los nombres. Tus alumnos se guardan solo en tu cuenta, nunca en el código.</p>' + link('Importar lista', 'alumnos', 'primary'), 'accent');
     const cap = ps.filter(x => x.captura >= hoy).sort((a, b) => a.captura.localeCompare(b.captura))[0];
@@ -100,7 +103,9 @@
     if (av.length) h += card('<h3>' + icon('alert') + ' Avisos</h3><ul class="vlist">' + av.map(a => '<li class="' + a.nivel + '">' + esc(a.txt) + '</li>').join('') + '</ul>');
     if (g && E.consejo) h += E.consejo.inicioHTML(hoy);
     if (g && E.cierre) h += E.cierre.inicioHTML(g, hoy);
+    if (g && E.precierre) h += E.precierre.inicioHTML(g, hoy);
     if (g && E.pend) h += E.pend.inicioHTML(g, hoy);
+    if (g && E.entregas) h += E.entregas.inicioHTML(g, hoy);
     h += avisoRespaldo(hoy);
     if (g && E.fc && E.fc.preparaHTML) h += E.fc.preparaHTML(g, hoy);
     if (g && E.proyecto) h += E.proyecto.inicioHTML(g, hoy);
@@ -140,6 +145,7 @@
       '<a href="#/ideas">' + icon('bulb') + 'Ideas de clase</a>' +
       '<a href="#/perfiles">' + icon('profile') + 'Perfiles del grupo</a>' +
       '<a href="#/alumnos/paquete">' + icon('download') + 'Pegar datos de Claude</a></div>';
+    if (compacto) h = h.slice(0, corte) + E.hoy3.html(g, hoy) + '<details class="ini-mas" data-sec="ini-mas"><summary>' + E.hoy3.resumen(g, hoy) + '</summary>' + h.slice(corte) + '</details>';
     return { t: 'Inicio', h: h };
   };
   // respaldo: cada semana si los datos solo viven en este dispositivo, cada mes si ya se sincronizan con Supabase
@@ -331,7 +337,7 @@
       if (cat === 'diagnostico' && !list.length) return '';
       const extra = cat === 'trabajos' ? '<p class="small">' + link('📒 Tareas y revisión de libreta', 'libreta/' + p.id, 'small') + '</p>' : cat === 'examen' ? '<p class="small">' + link('📝 Examen recomendado', 'examen', 'small') + '</p>' : '';
       return '<div class="cat"><div class="cat-h"><h4>' + label + (c.pond[cat] != null ? ' <span class="chip brand">' + c.pond[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + '</div>' + extra +
-        (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (C.maxPts(a) !== 100 ? ' · de ' + C.maxPts(a) + ' pts' : '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (a.cuenta === false && cat !== 'diagnostico' ? ' · no cuenta' : '') + (st.prom != null ? ' · prom. ' + Math.round(st.prom) : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') + '</div>';
+        (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (C.maxPts(a) !== 100 ? ' · de ' + C.maxPts(a) + ' pts' : '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (a.cuenta === false && cat !== 'diagnostico' ? ' · no cuenta' : '') + (C.sinCal(a) ? ' · del guion, aún no cuenta' : '') + (st.prom != null ? ' · prom. ' + Math.round(st.prom) : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') + '</div>';
     };
     h += card('<h3>' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + catBlock('examen', 'Examen') + catBlock('trabajos', 'Libreta / Proyecto / Bitácora') + catBlock('diagnostico', 'Diagnóstico') +
       '<div class="cat"><h4>Asistencia <span class="chip brand">' + c.pond.asistencia + '%</span></h4><p class="muted small">Se calcula sola con tu pase de lista.</p></div>' +
@@ -901,7 +907,7 @@
 
   /* =================== MÁS =================== */
   V.mas = () => {
-    const it = [['grupos', 'team', 'Mis grupos', 'Agregar grupos y horarios, cambiar o archivar'], ['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['consejo', 'chart', 'Consejo técnico', 'Reporte de cada grupo: imprimir o proyectar'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', (E.PRACTICAS ? E.PRACTICAS.length : 17) + ' prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización']];
+    const it = [['grupos', 'team', 'Mis grupos', 'Agregar grupos y horarios, cambiar o archivar'], ['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['entregas', 'clip', 'Entregas', 'Qué pedir y quién debe qué'], ['precierre', 'check', 'Pre-cierre', 'Lo que falta para el acta'], ['cerrarsemana', 'note', 'Cerrar semana', 'Varios días sin cerrar, de un jalón'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['consejo', 'chart', 'Consejo técnico', 'Reporte de cada grupo: imprimir o proyectar'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', (E.PRACTICAS ? E.PRACTICAS.length : 17) + ' prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización'], ['ayuda', 'help', 'Ayuda y manual', 'Cómo usar cada pantalla · PDF']];
     return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
   };
 
@@ -1015,6 +1021,7 @@
   };
   A.wipe = () => {
     if (!confirm('Esto borra los datos guardados en ESTE dispositivo. Si tienes Supabase conectado, se vuelven a bajar al iniciar sesión. ¿Continuar?')) return;
-    localStorage.removeItem('escuadra.docs.v1'); localStorage.removeItem('escuadra.meta.v1'); location.reload();
+    localStorage.removeItem('escuadra.docs.v1'); localStorage.removeItem('escuadra.meta.v1');
+    const fin = () => location.reload(); if (E.idb) E.idb.borrar().then(fin, fin); else fin();
   };
 })();

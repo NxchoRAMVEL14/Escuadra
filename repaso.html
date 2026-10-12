@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0e5e5a">
+<title>Repaso para casa · Escuadra</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root { --bg:#f2f5f4; --s:#fff; --s2:#eaf0ee; --ink:#12221f; --mut:#5a6c68; --line:#d9e3e0; --brand:#0e5e5a; --bink:#fff; --ok:#1c7c45; --oks:#dcf2e5; --bad:#bf342b; --bads:#fbe2df; color-scheme: light }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1312; --s:#13201e; --s2:#1a2b28; --ink:#e4eeec; --mut:#94a8a4; --line:#25403b; --brand:#3cb4a8; --bink:#04201d; --ok:#52c585; --oks:#143022; --bad:#ff7b71; --bads:#3d1c1a; color-scheme: dark } }
+* { box-sizing: border-box } body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif }
+main { max-width:560px; margin:0 auto; padding:16px 16px 40px }
+.top { display:flex; align-items:center; gap:10px; margin:4px 0 14px } .top svg { width:34px; height:34px } .top b { display:block } .top small { color:var(--mut) }
+.card { background:var(--s); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 12px }
+h1 { font-size:1.25rem; margin:0 0 6px } p { margin:.3em 0 .6em } .mut { color:var(--mut) } .sm { font-size:.86rem }
+.bar { height:6px; background:var(--s2); border-radius:9px; overflow:hidden; margin:6px 0 12px } .bar i { display:block; height:100%; background:var(--brand) }
+.op { display:block; width:100%; text-align:left; padding:11px 13px; margin:7px 0; border:1.5px solid var(--line); border-radius:11px; background:var(--s); color:var(--ink); font:inherit; cursor:pointer }
+.op.ok { border-color:var(--ok); background:var(--oks) } .op.no { border-color:var(--bad); background:var(--bads) } .op:disabled { cursor:default }
+.btn { display:inline-block; padding:11px 18px; border-radius:11px; border:0; background:var(--brand); color:var(--bink); font:inherit; font-weight:700; cursor:pointer; margin-top:8px }
+.exp { padding:10px 12px; border-radius:10px; background:var(--s2); font-size:.92rem }
+.score { font-size:2.6rem; font-weight:800; color:var(--brand) }
+.foot { font-size:.78rem; color:var(--mut); text-align:center; margin-top:18px }
+</style>
+</head>
+<body>
+<main id="m"><p>Cargando…</p></main>
+<script>
+(async function () {
+  'use strict';
+  const m = document.getElementById('m');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const logo = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
+  async function lee() {
+    const h = location.hash.slice(1); if (!h) throw new Error('vacío');
+    const b = atob(h.slice(1).replace(/-/g, '+').replace(/_/g, '/')), bytes = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) bytes[i] = b.charCodeAt(i);
+    let txt;
+    if (h[0] === 'z') { if (!window.DecompressionStream) throw new Error('nav'); const ds = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw')); txt = await new Response(ds).text(); }
+    else txt = new TextDecoder().decode(bytes);
+    return JSON.parse(txt);
+  }
+  let d; try { d = await lee(); } catch (e) { m.innerHTML = '<div class="card"><h1>No se pudo abrir el repaso</h1><p>' + (e.message === 'nav' ? 'Tu navegador es muy antiguo: ábrelo en Chrome o Safari actualizados.' : 'El enlace está incompleto. Escanea otra vez el QR.') + '</p></div>'; return; }
+  const Q = d.q || [], res = [];
+  let i = 0;
+  const head = '<div class="top">' + logo + '<div><b>Repaso para casa</b><small>' + esc(d.g) + (d.n ? ' · No. ' + esc(d.n) : '') + '</small></div></div>';
+  function pinta() {
+    if (i >= Q.length) {
+      const ok = res.filter(Boolean).length;
+      m.innerHTML = head + '<div class="card" style="text-align:center"><p class="mut">Tuviste bien</p><div class="score">' + ok + ' de ' + Q.length + '</div><p>' + (ok === Q.length ? '¡Excelente! Ya dominas estos temas.' : ok >= Q.length / 2 ? 'Vas bien. Repasa en tu libreta las que fallaste y vuelve a intentarlo mañana.' : 'Estos temas todavía te cuestan: repasa tus apuntes y pregunta en clase. Equivocarse ahora es la mejor forma de aprender.') + '</p><button class="btn" id="otra">Volver a empezar</button></div>' +
+        '<div class="card"><p class="sm"><b>Temas:</b> ' + esc(Array.from(new Set(Q.map(q => q[4]))).join(', ')) + '</p><p class="sm mut">Elegidos según ' + esc(d.fu || 'tus temas débiles') + '.</p></div><p class="foot">Tus respuestas no se mandan a ningún lado: quedan solo en este celular.</p>';
+      document.getElementById('otra').onclick = () => { i = 0; res.length = 0; pinta(); };
+      return;
+    }
+    const q = Q[i];
+    m.innerHTML = head + '<div class="bar"><i style="width:' + (i / Q.length * 100) + '%"></i></div><div class="card"><p class="sm mut">Pregunta ' + (i + 1) + ' de ' + Q.length + ' · ' + esc(q[4]) + '</p><h1>' + esc(q[0]) + '</h1>' +
+      q[1].map((o, j) => '<button class="op" data-j="' + j + '">' + 'ABCDE'[j] + ') ' + esc(o) + '</button>').join('') + '<div id="fb"></div></div>' +
+      '<p class="foot">Contesta sin ver tus apuntes: recordar con esfuerzo es lo que más ayuda a que se te quede.</p>';
+    m.querySelectorAll('.op').forEach(b => b.onclick = () => {
+      const j = Number(b.dataset.j), bien = j === q[2]; res[i] = bien;
+      m.querySelectorAll('.op').forEach(x => { x.disabled = true; const k = Number(x.dataset.j); if (k === q[2]) x.classList.add('ok'); else if (k === j) x.classList.add('no'); });
+      document.getElementById('fb').innerHTML = '<p><b>' + (bien ? '✓ ¡Correcto!' : '✗ No es esa. La correcta es la ' + 'ABCDE'[q[2]] + '.') + '</b></p>' + (q[3] ? '<p class="exp">' + esc(q[3]) + '</p>' : '') + '<button class="btn" id="sig">' + (i + 1 < Q.length ? 'Siguiente' : 'Ver resultado') + '</button>';
+      document.getElementById('sig').onclick = () => { i++; pinta(); window.scrollTo(0, 0); };
+    });
+  }
+  pinta();
+})();
+</script>
+</body>
+</html>

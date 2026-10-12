@@ -76,10 +76,52 @@
   };
 
   /* ---------------- almacenamiento por documentos ---------------- */
+  // v1.24: los datos viven en IndexedDB (cientos de MB, se escribe sin trabar la pantalla). La primera vez se pasan
+  // solos desde localStorage (límite ~5 MB); si el navegador no tiene IndexedDB, se sigue usando localStorage.
+  const IDB_NAME = 'escuadra', IDB_STORE = 'kv', IDB_KEY = 'docs';
+  const idb = {
+    db: null,
+    open() {
+      return new Promise((res, rej) => {
+        if (!('indexedDB' in window)) { rej(new Error('Sin IndexedDB')); return; }
+        let r; try { r = indexedDB.open(IDB_NAME, 1); } catch (e) { rej(e); return; }
+        r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains(IDB_STORE)) r.result.createObjectStore(IDB_STORE); };
+        r.onsuccess = () => { this.db = r.result; this.db.onversionchange = () => { try { this.db.close(); } catch (e) { } this.db = null; }; res(this.db); };
+        r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error('IndexedDB bloqueada'));
+      });
+    },
+    get(k) { return new Promise((res, rej) => { const t = this.db.transaction(IDB_STORE, 'readonly'), q = t.objectStore(IDB_STORE).get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); },
+    set(k, v) { return new Promise((res, rej) => { const t = this.db.transaction(IDB_STORE, 'readwrite'); t.objectStore(IDB_STORE).put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error || new Error('Escritura cancelada')); }); },
+    borrar() { return new Promise(res => { try { if (this.db) this.db.close(); const r = indexedDB.deleteDatabase(IDB_NAME); r.onsuccess = r.onerror = r.onblocked = () => res(); } catch (e) { res(); } }); }
+  };
+  E.idb = idb;
+  const lsDocs = () => { try { return JSON.parse(localStorage.getItem(LS_DOCS) || 'null'); } catch (e) { return null; } };
+  // junta dos copias: gana la versión más reciente de cada documento
+  const junta = (a, b) => { const o = Object.assign({}, a || {}); Object.keys(b || {}).forEach(k => { const x = o[k], y = b[k]; if (!x || Date.parse(y.ts) > Date.parse(x.ts)) o[k] = y; }); return o; };
+  let wBusy = false, wAgain = false;
   const S = E.store = {
-    docs: {}, listeners: [],
-    load() { try { this.docs = JSON.parse(localStorage.getItem(LS_DOCS) || '{}') || {}; } catch (e) { this.docs = {}; } },
-    persist() { try { localStorage.setItem(LS_DOCS, JSON.stringify(this.docs)); } catch (e) { u.toast('No se pudo guardar en este dispositivo: ' + e.message, 'err', 6000); } },
+    docs: {}, listeners: [], modo: 'local',
+    // carga los datos (async): IndexedDB si existe; migra lo que hubiera en localStorage y lo borra de ahí al confirmar
+    async load() {
+      const ls = lsDocs();
+      try {
+        await idb.open(); const enIdb = await idb.get(IDB_KEY);
+        this.docs = enIdb && ls ? junta(enIdb, ls) : (enIdb || ls || {}); this.modo = 'idb';
+        if (ls) { await idb.set(IDB_KEY, this.docs); const ver = await idb.get(IDB_KEY); if (ver && Object.keys(ver).length >= Object.keys(this.docs).length) { try { localStorage.removeItem(LS_DOCS); } catch (e) { } } }
+        try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { }); } catch (e) { }
+      } catch (e) { console.warn('IndexedDB no disponible, uso localStorage', e); idb.db = null; this.modo = 'local'; this.docs = ls || {}; }
+    },
+    persist() {
+      if (this.modo === 'idb' && idb.db) {
+        if (wBusy) { wAgain = true; return; }
+        wBusy = true;
+        idb.set(IDB_KEY, this.docs).catch(e => { console.error(e); u.toast('No se pudo guardar en este dispositivo: ' + e.message, 'err', 6000); })
+          .finally(() => { wBusy = false; if (wAgain) { wAgain = false; this.persist(); } });
+        return;
+      }
+      try { localStorage.setItem(LS_DOCS, JSON.stringify(this.docs)); } catch (e) { u.toast('No se pudo guardar en este dispositivo: ' + e.message, 'err', 6000); }
+    },
+    async espacio() { try { const s = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null; return { modo: this.modo, usado: s ? s.usage : null, cuota: s ? s.quota : null, docs: Object.keys(this.docs).length }; } catch (e) { return { modo: this.modo, docs: Object.keys(this.docs).length }; } },
     get(key) { const d = this.docs[key]; return d && !d.deleted ? d.data : undefined; },
     put(key, data, opt) {
       this.docs[key] = { data: data, ts: u.now(), dirty: true, deleted: false };
@@ -326,6 +368,8 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
     },
     // puntos máximos de una actividad (ej. examen de 94 puntos); 100 si no se indica
     maxPts(a) { const m = Number(a && a.max); return m > 0 ? m : 100; },
+    // v1.24: una actividad creada sola desde el guion no cuenta mientras no tenga ninguna calificación
+    sinCal(a) { return !!(a && a.auto) && !Object.keys(a.notas || {}).some(k => a.notas[k] !== '' && a.notas[k] != null); },
     // calificación de una actividad convertida a base 100 (null si no tiene)
     // (opciones en Ajustes: E.TARDE_OPC) lo entregado tarde vale «sobre 75» (o lo que elijas): la calificación se multiplica por el valor que tenía lo tardío al marcarlo
     tardeVale() { const v = Number(D.cfg().tardeValor); return v > 0 && v <= 1 ? v : 0.75; },
@@ -336,7 +380,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       return { capturadas: cap, faltan: al.length - cap, prom: cap ? s / cap : null };
     },
     promCat(g, pid, cat, aid) {
-      const c = D.cfg(); const as = C.acts(g, pid).filter(a => a.categoria === cat && a.cuenta !== false);
+      const c = D.cfg(); const as = C.acts(g, pid).filter(a => a.categoria === cat && a.cuenta !== false && !C.sinCal(a));
       if (!as.length) return null; let sw = 0, s = 0;
       const hoy = u.today();
       as.forEach(a => {

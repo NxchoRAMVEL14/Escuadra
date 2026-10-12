@@ -21,7 +21,7 @@
     let ne = 0;
     const cat = k => {
       let s = 0, w = 0;
-      acts.filter(a => a.categoria === k && a.cuenta !== false).forEach(a => {
+      acts.filter(a => a.categoria === k && a.cuenta !== false && !C.sinCal(a)).forEach(a => {
         let v = C.nota(a, aid);
         if (v == null) { if (!c.vaciasCero || !a.fecha || a.fecha >= f) return; v = 0; ne++; }
         const p = Number(a.peso || 1); s += v * p; w += p;

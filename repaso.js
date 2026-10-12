@@ -53,15 +53,23 @@
   };
 
   /* ---------- calentamiento: 3 preguntas espaciadas ---------- */
+  // v1.24: lo que salió bajo (menos de 60 %) en el boleto de salida de la clase anterior abre el calentamiento de hoy
+  R.boletoBajo = (g, f) => {
+    const ant = E.calc.claseAnterior(g, f); if (!ant) return [];
+    const x = ((S.get(KR(g, ant)) || {}).bol) || {}; if (!(x.n > 0)) return [];
+    const out = []; (x.items || []).forEach(it => { if (it.ok == null || it.ok === '') return; const p = Math.min(1, Number(it.ok) / (Number(it.n) || x.n)); if (p < 0.6 && conBanco(it.tema) && !out.some(o => o.tema === it.tema)) out.push({ tema: it.tema, p: p, f: ant }); });
+    return out.sort((a, b) => a.p - b.p);
+  };
   R.calentamiento = (g, f) => {
     const doc = S.get(KR(g, f)); if (doc && doc.cal && (doc.cal.items || []).length) return doc.cal;
     const vis = R.vistos(g, f), ts = Object.keys(vis); if (!ts.length) return null;
     const deb = R.debil(g), rnd = rng(hash(g.id + '|cal|' + f)), dd = t => u.diffDays(vis[t].fin, f);
     const sc = t => { const d = dd(t), p = deb[t] == null ? 0.7 : deb[t]; return (1 - p) * 2 + (d >= 7 && d <= 21 ? 1.5 : d > 21 ? 0.8 : d >= 2 ? 0.3 : -2) + rnd() * 0.2; };
-    const orden = ts.slice().sort((a, b) => sc(b) - sc(a)).filter(t => dd(t) >= 1);
+    const bajo = R.boletoBajo(g, f).filter(x => vis[x.tema]).slice(0, 2), bt = bajo.map(x => x.tema);
+    const orden = bt.concat(ts.slice().sort((a, b) => sc(b) - sc(a)).filter(t => dd(t) >= 1 && bt.indexOf(t) < 0));
     if (!orden.length) return null;
     const evitar = recientes(g, f, 10), out = [];
-    let i = 0; while (out.length < 3 && i < 9) { const t = orden[i % orden.length]; const b = elige(t, 1, rnd, new Set([...evitar, ...out.map(x => x.id)]))[0]; if (b && !out.some(x => x.id === b.id)) out.push({ id: b.id, tema: t, dias: dd(t) }); i++; }
+    let i = 0; while (out.length < 3 && i < 9) { const t = orden[i % orden.length]; const b = elige(t, 1, rnd, new Set([...evitar, ...out.map(x => x.id)]))[0]; if (b && !out.some(x => x.id === b.id)) { const bj = bajo.find(x => x.tema === t); out.push(Object.assign({ id: b.id, tema: t, dias: dd(t) }, bj && !out.some(x => x.tema === t) ? { bol: Math.round(bj.p * 100) } : {})); } i++; }
     return out.length ? { items: out } : null;
   };
   /* ---------- boleto de salida: lo de hoy ---------- */
@@ -95,7 +103,7 @@
     return h;
   };
   // con 🃏 se contesta con las tarjetas de respuesta y la cámara cuenta los aciertos
-  const lista = (g, f, tipo, set) => '<ol class="rp-q">' + preguntas(g, f, tipo, set).map(x => '<li><span>' + esc(corto(x.q, 140)) + '</span><small class="muted">' + esc(tTit(x.it.tema)) + (x.it.dias != null ? ' · visto hace ' + x.it.dias + (x.it.dias === 1 ? ' día' : ' días') : '') + (x.opts ? ' · R: ' + 'ABCDE'[x.ok] + ') ' + esc(corto(x.opts[x.ok], 60)) : '') + '</small>' +
+  const lista = (g, f, tipo, set) => '<ol class="rp-q">' + preguntas(g, f, tipo, set).map(x => '<li><span>' + (x.it.bol != null ? '<span class="chip warn">🎟 boleto ' + x.it.bol + ' %</span> ' : '') + esc(corto(x.q, 140)) + '</span><small class="muted">' + esc(tTit(x.it.tema)) + (x.it.bol != null ? ' · salió bajo en el boleto de la clase pasada' : x.it.dias != null ? ' · visto hace ' + x.it.dias + (x.it.dias === 1 ? ' día' : ' días') : '') + (x.opts ? ' · R: ' + 'ABCDE'[x.ok] + ') ' + esc(corto(x.opts[x.ok], 60)) : '') + '</small>' +
     (E.cam && x.opts && x.opts.length <= 4 ? btn('🃏 Con tarjetas', 'tj2-rep', 'data-f="' + f + '" data-t="' + tipo + '" data-i="' + set.items.indexOf(x.it) + '" title="Todos contestan con su tarjeta y la cámara cuenta los aciertos"', 'small ghost rp-tj') : '') + '</li>').join('') + '</ol>';
   R.calHTML = (g, f, d) => {
     if (!d || !d.bloques.some(b => !b.perdida)) return '';
@@ -124,7 +132,7 @@
     const set = setDe(g, f, t); if (!set || !set.items[i]) return;
     const ids = Object.keys(res), n = ids.length, tj = {}; ids.forEach(id => { tj[res[id]] = (tj[res[id]] || 0) + 1; });
     S.update(KR(g, f), doc => {
-      if (!doc[t] || !(doc[t].items || []).length) doc[t] = { items: set.items.map(it => ({ id: it.id, tema: it.tema, dias: it.dias })) };
+      if (!doc[t] || !(doc[t].items || []).length) doc[t] = { items: set.items.map(it => ({ id: it.id, tema: it.tema, dias: it.dias, bol: it.bol })) };
       const x = doc[t], it = x.items[i]; if (!it) return;
       it.ok = okL ? (tj[okL] || 0) : null; it.n = n; it.tj = tj; x.n = Math.max(Number(x.n) || presentes(g, f), n);
     }, {});
@@ -136,7 +144,7 @@
     if (t === '321') { E.proj.abrir({ id: 'bol321-' + f, titulo: 'Boleto 3-2-1' }, deck321()); return; }
     const d = E.clases.dia(g, f), set = t === 'cal' ? R.calentamiento(g, f) : R.boleto(g, f, d); if (!set) return;
     // se guarda la selección para que no cambie aunque muevas clases después
-    S.update(KR(g, f), doc => { if (!doc[t] || !(doc[t].items || []).length) doc[t] = { items: set.items.map(it => ({ id: it.id, tema: it.tema, dias: it.dias })) }; }, {});
+    S.update(KR(g, f), doc => { if (!doc[t] || !(doc[t].items || []).length) doc[t] = { items: set.items.map(it => ({ id: it.id, tema: it.tema, dias: it.dias, bol: it.bol })) }; }, {});
     E.proj.abrir({ id: t + '-' + f, titulo: t === 'cal' ? 'Calentamiento' : 'Boleto de salida' }, deck(g, f, t, set));
   };
   A['rp-reg'] = el => {
@@ -144,7 +152,7 @@
     const set = t === 'cal' ? R.calentamiento(g, f) : R.boleto(g, f, d); if (!set) return;
     const n = Math.max(1, Number((document.getElementById(pre + 'n') || {}).value) || presentes(g, f));
     const prev = ((S.get(KR(g, f)) || {})[t] || {}).items || [];
-    const items = set.items.map((it, i) => { const v = (document.getElementById(pre + i) || {}).value, o = { id: it.id, tema: it.tema, dias: it.dias, ok: v === '' || v == null ? null : Math.max(0, Math.min(n, Math.round(Number(v)))) }, p = prev[i];
+    const items = set.items.map((it, i) => { const v = (document.getElementById(pre + i) || {}).value, o = { id: it.id, tema: it.tema, dias: it.dias, bol: it.bol, ok: v === '' || v == null ? null : Math.max(0, Math.min(n, Math.round(Number(v)))) }, p = prev[i];
       if (p && p.id === it.id && p.tj && Number(p.ok) === o.ok) { o.n = p.n; o.tj = p.tj; } return o; });
     if (items.every(it => it.ok == null)) { u.toast('Escribe cuántos acertaron al menos una pregunta', 'err'); return; }
     S.update(KR(g, f), doc => { doc[t] = { items: items, n: n }; }, {});

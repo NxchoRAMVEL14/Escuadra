@@ -19,7 +19,7 @@
 
   /* ---------- cálculo con valores supuestos (misma fórmula que Calificaciones) ---------- */
   const promCat = (g, pid, cat, aid, ov) => {
-    const c = D.cfg(), as = C.acts(g, pid).filter(a => a.categoria === cat && a.cuenta !== false); if (!as.length) return null;
+    const c = D.cfg(), as = C.acts(g, pid).filter(a => a.categoria === cat && a.cuenta !== false && !C.sinCal(a)); if (!as.length) return null;
     let sw = 0, s = 0; const hoy = u.today();
     as.forEach(a => { const w = Number(a.peso || 1); let v = ov && ov[a.id] != null ? ov[a.id] : C.nota(a, aid); if (v == null) { if (!c.vaciasCero || !a.fecha || a.fecha >= hoy) return; v = 0; } s += v * w; sw += w; });
     return sw ? s / sw : null;
@@ -37,7 +37,7 @@
     const base = AP.final(fill(cp0)), gan = ov => { const v = AP.final(fill(AP.comps(g, pid, aid, ov))); return v == null || base == null ? null : v - base; };
     const lib = E.libreta ? E.libreta.doc(g, pid) : {}, fcd = E.fc && E.fc.rev ? E.fc.rev(g, pid) : {};
     // actividades vencidas sin calificación o con cero
-    C.acts(g, pid).filter(a => (a.categoria === 'examen' || a.categoria === 'trabajos') && a.cuenta !== false && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
+    C.acts(g, pid).filter(a => (a.categoria === 'examen' || a.categoria === 'trabajos') && a.cuenta !== false && !C.sinCal(a) && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
       const v = C.nota(a, aid), venc = a.fecha && a.fecha < hoy; if (!((v == null && venc) || v === 0)) return;
       const nv = 100 * f; todo[a.id] = nv;
       out.push({ k: 'act', id: a.id, tipo: a.categoria === 'examen' ? 'Examen' : 'Trabajo', t: a.nombre + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : ''), det: v === 0 ? 'Calificado con 0: entrégalo o preséntalo de nuevo.' : 'No está entregado.', gain: gan({ [a.id]: nv }) });

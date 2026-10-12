@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.23.0)
+# Escuadra · Control docente (v1.24.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,29 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.24 · menos tiempo en la app, clases que rinden más y resultados que llegan antes a casa:**
+- **Ayuda y manual** (botón **?** arriba): abre el manual en la sección de la pantalla donde estás, con buscador y capturas; también
+  en PDF (`ayuda/manual-escuadra.pdf`). Sube la carpeta `ayuda` junto con los demás archivos.
+- **Inicio compacto «Hoy»:** arriba solo tu clase (con Pasar lista, Guion o Cierre según la hora), lo más urgente y a quién atender hoy
+  (rota cada día entre los que van mal); lo demás queda plegado en «Ver todo lo demás». Se cambia en Ajustes → Novedades.
+- **Cerrar semana** (Inicio, Cierre del día o Más): cierra de un jalón los días sin cerrar; por omisión, como se planeó y, si no pasaste
+  lista, todos presentes (desmarcas los días en que alguien faltó).
+- **Actividades del guion solas:** las evidencias que marca el guion se crean como actividades de Libreta/Proyecto/Bitácora con su
+  rúbrica sugerida y siguen la fecha de la clase si la mueves. No cuentan (ni bajan a nadie) hasta que les pones la primera calificación.
+  Se apaga en Ajustes → Novedades; Calificaciones tiene «Crear actividades del guion».
+- **Datos en IndexedDB:** sin el límite de ~5 MB de localStorage y sin trabar la pantalla al guardar. La primera vez se pasan solos;
+  si el navegador no tiene IndexedDB, sigue con localStorage. Ajustes → Novedades dice cuánto espacio usas.
+- **Del boleto al calentamiento:** si una pregunta del boleto de salida sale abajo de 60 %, su tema abre el calentamiento siguiente.
+- **Monitores rotativos** en el guion de cómputo: cada monitor apoya a 1 o 2 compañeros que van mal o aún no completan una práctica;
+  rotan (primero quienes menos veces han sido monitores, sin repetir pareja). «Usar estas parejas» guarda el registro en la ficha.
+- **Tablero de entregas** (Más → Entregas): qué pedir hoy y la próxima clase (con mensaje para el grupo), resumen, tablero por
+  entregable (próximas · por revisar · les falta · completas) y matriz de quién entregó qué; tiras «lo que me debes» y lista sin nombres.
+- **Comunicar a casa** (ficha del alumno, Para aprobar e Imprimir): **consulta con QR** (`consulta.html`, sin nombre: número de lista e
+  iniciales; los datos viajan en el enlace después del #, no se guardan en ningún servidor), **WhatsApp a casa** con lo que debe, cuánto
+  sube, la fecha límite y el enlace (teléfono opcional en la ficha) y **repaso para casa** (`repaso.html`, 5 preguntas de sus temas débiles).
+- **Pre-cierre de captura** (Inicio desde 7 días antes, Calificaciones y Más): días sin lista, actividades vacías, examen, libreta,
+  FreeCAD, participación y alumnos sin calificación, con su enlace; luego copias o descargas el acta.
 
 **Nuevo en v1.23 · Reporte para el consejo técnico** (Más → Consejo técnico):
 - **Uno por grupo**, con lo que pasó desde la sesión anterior: indicadores (asistencia, promedio, aprobando, avance, entregas
@@ -344,7 +367,7 @@ propia carpeta. Sin este paso, las fotos se quedan solo en el aparato donde las 
 ## 2. GitHub Pages
 
 1. GitHub → **New repository** → nombre `escuadra` → *Public* → Create.
-2. **Add file → Upload files** → arrastra **todos** los archivos de este zip (sin carpeta) → **Commit changes**.
+2. **Add file → Upload files** → arrastra **todos** los archivos de este zip, incluida la carpeta `ayuda` → **Commit changes**.
 3. **Settings → Pages** → *Source: Deploy from a branch* → *Branch: main / (root)* → **Save**.
 4. En 1–2 minutos queda en `https://TU-USUARIO.github.io/escuadra/`
 
@@ -403,6 +426,12 @@ al abrirla con internet. Tus datos no se tocan.
 | `formularios.js` | QR de tus formularios e importación de respuestas (cuestionario, autoevaluación y coevaluación) |
 | `grupos.js` | Mis grupos: agregar con horario, cambiar de grupo, quién tiene clase ahora, archivar y borrar |
 | `consejo.js` | Reporte para el consejo técnico: uno por grupo, para imprimir o proyectar, con acuerdos y próximas fechas |
+| `entregas.js` | Tablero de entregas: qué pedir, tablero por entregable, matriz y tiras; actividades del guion creadas solas |
+| `hoy.js` | Inicio compacto «Hoy», cerrar semana y pre-cierre de captura |
+| `monitores.js` | Monitores rotativos en el centro de cómputo y su registro |
+| `casa.js` | Consulta con QR, WhatsApp a casa y repaso para casa |
+| `consulta.html`, `repaso.html` | Páginas que abren alumnos y padres desde el QR (sin datos en servidor) |
+| `ayuda.js`, `ayuda-data.js`, `ayuda/` | Ayuda dentro de la app (botón ?), capturas y manual en PDF |
 | `mods.js` | Contenido por módulo: carga solo el de los módulos de tus grupos y lo integra a Clases, Temas, Banco e Ideas |
 | `m1s1.js`, `m1s2.js`, `m1s3.js` | Módulo I: clases, temas, banco de examen, ideas, figuras y proyecto de cada submódulo |
 | `m2s1.js` | Módulo II, Submódulo 1 (dibujo y FreeCAD): clases, temas, banco de examen, ideas, figuras y proyecto |
@@ -484,4 +513,5 @@ al abrirla con internet. Tus datos no se tocan.
   Hoja de respuestas: diseño y lectura propios de la app (4 marcas de esquina, homografía y comparación de cada burbuja con el papel
   de alrededor), probados con fotos simuladas: giradas, con perspectiva, sombra, desenfoque y JPEG. Espacio de fotos y reglas de
   acceso según la guía de Supabase *Storage Access Control* (supabase.com/docs/guides/storage/security/access-control).
+- v1.24: monitores y tutoría entre pares (EEF, *Teaching and Learning Toolkit*: Peer tutoring; Rosenshine, 2012); recuperación del boleto en el calentamiento (Dunlosky y col., 2013); IndexedDB y `navigator.storage.persist()` según MDN; compresión de los enlaces con `CompressionStream('deflate-raw')` (MDN); enlaces de WhatsApp `wa.me` según el Centro de ayuda de WhatsApp («Cómo usar el enlace para chatear»).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.

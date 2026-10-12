@@ -63,7 +63,7 @@
     r.dims.conoc = wavg(ex);
     r.ev.conoc = ex.length ? ex.length + (ex.length === 1 ? ' examen' : ' exámenes') : 'aún sin exámenes';
     const tr = []; let ne = 0;
-    acts.filter(x => x.categoria === 'trabajos').forEach(x => {
+    acts.filter(x => x.categoria === 'trabajos' && !C.sinCal(x)).forEach(x => {
       let v = C.nota(x, aid);
       if (v == null && x.fecha && x.fecha < hoy) { ne++; if (c.vaciasCero) v = 0; }
       if (v != null) tr.push({ x: x, v: v });

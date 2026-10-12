@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.23.0';
+  E.VERSION = '1.24.0';
   E.CHANGELOG = [
+    { v: '1.24.0', f: '2026-10-12', t: 'Menos tiempo en la app, clases que rinden más y resultados que llegan antes a casa. Inicio compacto «Hoy» (tu clase, lo más urgente y a quién atender hoy; lo demás plegado). Cerrar varios días de un jalón. Las evidencias del guion se crean solas como actividades con su rúbrica (no cuentan hasta que las calificas). Tus datos ahora viven en IndexedDB (sin el límite de 5 MB; se pasan solos). El tema que sale bajo en el boleto de salida abre el calentamiento siguiente. Monitores rotativos en el centro de cómputo con registro. Nuevo tablero de Entregas: qué pedir en las próximas clases (con mensaje para el grupo), tablero por entregable y matriz de quién entregó qué, con tiras «lo que me debes». Comunicar a casa: consulta con QR sin nombre, mensaje de WhatsApp para padres con lo que debe y fecha límite, y repaso de 5 preguntas de sus temas débiles. Pre-cierre de captura: lo que falta para el acta desde 7 días antes. Botón ? con el manual de uso en la app y en PDF.' },
     { v: '1.23.0', f: '2026-10-12', t: 'Nuevo reporte para el consejo técnico (Más → Consejo técnico): uno por grupo con lo del mes desde la sesión anterior, avance del programa (horas, actividades clave, temas y clases perdidas), aprovechamiento (promedio, aprobando, semáforo y temas débiles de los exámenes), asistencia por semana, entregas de trabajos, libreta, FreeCAD y proyecto, alumnos que requieren atención con las señales de alerta temprana (asistencia, rendimiento y conducta) y qué propones para cada uno, logros del grupo, estrategias que aplicaste, propuestas que salen de tus datos, espacio para acuerdos y compromisos, y próximas fechas. Se imprime (uno o todos tus grupos, uno por hoja) o se proyecta, con opción de mostrar solo números de lista. La fecha es el último viernes de cada mes y puedes cambiarla; la semana del consejo aparece un aviso en Inicio.' },
     { v: '1.22.0', f: '2026-10-12', t: 'Submódulo 1 del Módulo II completo («Dibuja planos de elementos mecánicos», 3er semestre): 55 h de clases para el 1er parcial con dos caminos a la vez, dibujo técnico a mano en el aula (formato y cuadro de datos, unidades y pulgadas, alfabeto de líneas, trazos geométricos, escalas, isométrico, vistas en primer y tercer diedro, acotación y cortes) y FreeCAD los días de centro de cómputo (croquis con restricciones, Pad, Pocket, Revolution, Thickness y plano en TechDraw). 13 temas nuevos con figuras animadas, 78 preguntas de examen con problemas que cambian, 7 láminas con su hoja para imprimir, 12 tareas, 12 ideas y el proyecto «Del objeto al plano» (croquis de una pieza real, plano a mano, modelo y plano en FreeCAD) con un catálogo de piezas de repuesto para el plantel. Dos prácticas nuevas de FreeCAD (bloque escalonado y caja con Thickness) y las de siempre ya aparecen en las clases del 1er parcial. Si empezaste con un grupo después de un parcial, Clases lo muestra como referencia, sin avisos de horas que faltan.' },
     { v: '1.21.0', f: '2026-10-12', t: 'Módulo IV completo (5º semestre, «Opera sistemas flexibles de manufactura de piezas mecánicas»), con sus 2 submódulos de corrido: clases hora por hora con tareas, evidencias, hojas de práctica para imprimir, temas para proyectar con figuras animadas, banco de examen con problemas que cambian en cada versión, ideas y 2 proyectos que se encadenan: las piezas de un brazo robótico fabricadas por CNC (cálculo de rpm y avance, programa G a mano, simulación en NC Viewer y CAMotics, diseño en FreeCAD y corte de prueba en tu cortadora láser, que es una CNC de 2 ejes) y el brazo de 4 servos con Arduino que toma, deja y paletiza (cinemática, programa por enseñanza, robots industriales en simulador y celda con sensor e interbloqueo). Sin máquinas CNC ni robot industrial: todo se simula y se comprueba con lo que tienes. La cortadora la operas solo tú. Además: 17 tareas para casa en el Módulo IV y 14 más en el Módulo V.' },
@@ -32,8 +33,8 @@
     { v: '1.0.0', f: '2026-10-05', t: 'Primera versión: inicio con avisos, pase de lista y participación, calificaciones 50/40/5/5 con acta, impresión de listas, cotejo y rúbrica, planeaciones con revisión automática y exportación a Word, banco de ideas, herramientas de clase, bitácora, mejoras y sincronización con Supabase.' }
   ];
 
-  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['aula', 'Modo clase', 'grid'], ['cierre', 'Cierre del día', 'note'], ['pendientes', 'Pendientes', 'inbox'], ['camara', 'Cámara', 'cam'], ['clases', 'Clases', 'board'], ['calificaciones', 'Calificaciones', 'grade'], ['examen', 'Examen', 'doc'], ['libreta', 'Libreta', 'book'], ['aprobar', 'Para aprobar', 'grade'], ['banco', 'Banco de preguntas', 'doc'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['semaforo', 'Semáforo', 'grade'], ['estrategias', 'Estrategias', 'star'], ['consejo', 'Consejo técnico', 'chart'], ['tutoria', 'Tutoría', 'team'], ['dinamicas', 'Dinámicas', 'sparkle'], ['freecad', 'FreeCAD', 'cube'], ['proyecto', 'Proyecto', 'team'], ['industria', 'Industria', 'factory'], ['perfiles', 'Perfiles', 'profile'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['grupos', 'Mis grupos', 'team'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear']];
-  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas', clase: 'clases', presentador: 'temas', dinamica: 'dinamicas', mapa: 'aula', formularios: 'camara', evidencias: 'camara' };
+  const SIDE = [['inicio', 'Inicio', 'home'], ['lista', 'Pase de lista', 'check'], ['aula', 'Modo clase', 'grid'], ['cierre', 'Cierre del día', 'note'], ['pendientes', 'Pendientes', 'inbox'], ['camara', 'Cámara', 'cam'], ['clases', 'Clases', 'board'], ['calificaciones', 'Calificaciones', 'grade'], ['examen', 'Examen', 'doc'], ['libreta', 'Libreta', 'book'], ['entregas', 'Entregas', 'clip'], ['precierre', 'Pre-cierre', 'check'], ['aprobar', 'Para aprobar', 'grade'], ['banco', 'Banco de preguntas', 'doc'], ['planeacion', 'Planeaciones', 'doc'], ['temas', 'Temas', 'screen'], ['semaforo', 'Semáforo', 'grade'], ['estrategias', 'Estrategias', 'star'], ['consejo', 'Consejo técnico', 'chart'], ['tutoria', 'Tutoría', 'team'], ['dinamicas', 'Dinámicas', 'sparkle'], ['freecad', 'FreeCAD', 'cube'], ['proyecto', 'Proyecto', 'team'], ['industria', 'Industria', 'factory'], ['perfiles', 'Perfiles', 'profile'], ['ideas', 'Ideas', 'bulb'], ['imprimir', 'Imprimir', 'print'], ['herramientas', 'Herramientas', 'tool'], ['alumnos', 'Alumnos', 'users'], ['grupos', 'Mis grupos', 'team'], ['calendario', 'Calendario', 'cal'], ['bitacora', 'Bitácora', 'book'], ['mejoras', 'Mejoras', 'sparkle'], ['ajustes', 'Ajustes', 'gear'], ['ayuda', 'Ayuda y manual', 'help']];
+  const ACTIVO = { actividad: 'calificaciones', plan: 'planeacion', alumno: 'alumnos', tema: 'temas', clase: 'clases', presentador: 'temas', dinamica: 'dinamicas', mapa: 'aula', formularios: 'camara', evidencias: 'camara', cerrarsemana: 'cierre' };
   // barra de abajo: 4 botones que eliges en Ajustes → Captura rápida, más «Más»
   const navKeys = () => E.rap ? E.rap.navKeys() : ['inicio', 'clases', 'lista', 'calificaciones'];
   const navInfo = k => (E.rap && E.rap.NAV[k]) || [k, 'more'];
@@ -48,6 +49,7 @@
       '<div class="main"><header class="top"><div class="top-l"><span class="brand-m">' + E.logo() + '</span><div class="ttl"><h2 id="vt">Inicio</h2><button type="button" class="gtop" id="g-top" data-act="g-menu" hidden aria-label="Cambiar de grupo"></button></div></div><div class="top-r">' +
       '<button type="button" class="undob" id="undo-top" data-act="undo" hidden></button>' + '<a class="pendb" id="pend-top" href="#/pendientes" hidden aria-label="Pendientes de captura">' + E.icon('inbox') + '<b></b></a>' +
       '<button type="button" class="iconbtn topbtn" data-act="buscar" aria-label="Buscar alumno (tecla /)">' + E.icon('search') + '</button>' +
+      '<button type="button" class="iconbtn topbtn" data-act="ayuda" aria-label="Ayuda de esta pantalla" title="Ayuda">' + E.icon('help') + '</button>' +
       '<a class="syncdot" id="sync-top" href="#/ajustes/sync" aria-label="Sincronización"></a></div></header><main id="view" class="view" tabindex="-1"></main></div>' +
       '<nav class="bnav">' + bnavHTML() + '</nav></div>';
     navHecha = navKeys().join(',');
@@ -122,9 +124,10 @@
   }
 
   /* ---------- arranque ---------- */
-  function boot() {
-    if (E.modoPantalla) { S.load(); E.seed(); E.pres.pantalla(); registerSW(); return; }
-    S.load(); E.seed(); E.reparar(); E.applyTheme(); shell();
+  async function boot() {
+    await S.load();
+    if (E.modoPantalla) { E.seed(); E.pres.pantalla(); registerSW(); return; }
+    E.seed(); E.reparar(); E.applyTheme(); shell();
     S.on(key => { if (key === '__sync') { renderSync(); return; } if (key === '__pull') E.reparar(); E.render(); });
     window.addEventListener('hashchange', E.render);
     const sigue = () => {
@@ -133,6 +136,7 @@
       if (!dest && !location.hash) history.replaceState(null, '', '#/inicio');
       E.render(); E.sync.init(); registerSW();
       setTimeout(() => E.notify.check(), 1500);
+      if (E.entregas) setTimeout(() => { try { E.entregas.autoTodos(); } catch (e) { console.error(e); } }, 1200);
     };
     // primero el contenido de los módulos de tus grupos (clases, temas, banco); si tarda, arranca de todos modos
     const nec = E.mods ? E.mods.necesarios().filter(m => !E.mods.listo(m)) : [];
