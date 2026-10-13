@@ -224,17 +224,17 @@ window.E = window.E || {};
       id: 'sm2-seguridad', sm: 'II-2', ac: 'Arma mecanismos de sistemas mecatrónicos', titulo: 'Seguridad en el taller y equipo de protección', dur: '30 min',
       objetivo: 'Identificar riesgos del taller y usar el equipo de protección adecuado.',
       explica: [
-        'La NOM-017-STPS-2008 establece que el patrón debe identificar los riesgos de cada puesto y dar el equipo de protección personal (EPP) adecuado, y el trabajador debe usarlo.',
+        'La NOM-017-STPS-2024 establece que el patrón debe identificar los riesgos de cada puesto y dar el equipo de protección personal (EPP) adecuado, y el trabajador debe usarlo.',
         'Riesgos del taller escolar: cortes con cúter y segueta, proyección de partículas al perforar o cortar, quemaduras con silicón caliente, polvo de MDF y, en el 3er parcial, fluidos a presión y cortocircuitos.',
         'La prevención va primero (orden, herramienta adecuada, técnica correcta) y el EPP es la última barrera, no la única.'
       ],
-      pantalla: ['NOM-017-STPS-2008: EPP según el riesgo', 'Cúter: corta hacia afuera, regla metálica, ciérralo al caminar', 'Lentes al cortar, perforar o trabajar con presión', 'Silicón caliente: base y cuidado con los dedos', 'Orden y limpieza = menos accidentes'],
+      pantalla: ['NOM-017-STPS-2024: EPP según el riesgo', 'Cúter: corta hacia afuera, regla metálica, ciérralo al caminar', 'Lentes al cortar, perforar o trabajar con presión', 'Silicón caliente: base y cuidado con los dedos', 'Orden y limpieza = menos accidentes'],
       clave: [['EPP', 'Equipo de protección personal'], ['Riesgo', 'Posibilidad de que un peligro cause daño'], ['Casi accidente', 'Evento que pudo lastimar a alguien: se reporta y se aprende']],
       ejemplo: { titulo: 'Análisis de un puesto: corte de plantillas', pasos: ['Peligro: hoja del cúter.', 'Riesgo: cortes en mano y dedos.', 'Control: técnica (cortar alejándose del cuerpo), regla metálica y base de corte.', 'EPP: guante en la mano que sujeta (si el taller lo tiene).'], resultado: 'Ese mismo análisis se hace en cualquier planta antes de arrancar un trabajo.' },
-      preguntas: [['¿Qué NOM regula el equipo de protección personal?', 'La NOM-017-STPS-2008.'], ['¿Qué haces si casi te cortas?', 'Lo reportas y se registra en la bitácora para prevenir.']],
+      preguntas: [['¿Qué NOM regula el equipo de protección personal?', 'La NOM-017-STPS-2024.'], ['¿Qué haces si casi te cortas?', 'Lo reportas y se registra en la bitácora para prevenir.']],
       errores: ['Pensar que el EPP sustituye a la técnica.', 'Dejar herramientas abiertas en la mesa.'],
       vida: 'En las plantas, la seguridad es requisito para conservar el trabajo. Quien la vive desde la escuela llega con ventaja… y con sus diez dedos.',
-      ideas: ['seguridad-cuter'], fuente: 'NOM-017-STPS-2008 (citada en el programa SEP 2024, Módulo I, p. 30).'
+      ideas: ['seguridad-cuter'], fuente: 'NOM-017-STPS-2024 (el programa SEP 2024, Módulo I, p. 30, cita la NOM-017-STPS-2008, sustituida por la 2024 desde septiembre de 2025).'
     },
 
     /* ===================== SUBMÓDULO 3: NEUMÁTICA E HIDRÁULICA ===================== */
@@ -252,7 +252,7 @@ window.E = window.E || {};
       preguntas: [['¿Cuántos psi son 7 bar?', 'Unos 101.5 psi.'], ['Si duplico el área con la misma fuerza, ¿qué pasa con la presión?', 'Se reduce a la mitad.'], ['¿Qué controla la velocidad de un cilindro, la presión o el caudal?', 'Principalmente el caudal.']],
       errores: ['Mezclar mm² con m² en P = F/A.', 'Confundir presión manométrica con absoluta.'],
       vida: 'Cada máquina neumática de una planta tiene un manómetro. Leerlo y saber si está bien es tarea diaria del técnico.',
-      ideas: ['caudal-cronometro', 'pr-phet-presion'], fuente: 'Programa SEP 2024, Submódulo 3 (p. 40); NOM-008-SCFI-2002 (unidades).'
+      ideas: ['caudal-cronometro', 'pr-phet-presion'], fuente: 'Programa SEP 2024, Submódulo 3 (p. 40); NOM-008-SE-2021 (unidades) (el programa SEP cita la NOM-008-SCFI-2002, sustituida por la NOM-008-SE-2021 desde junio de 2024).'
     },
     {
       id: 'sm3-pascal', sm: 'II-3', ac: 'Diseña elementos neumáticos, electroneumáticos, hidráulicos y electrohidráulicos', titulo: 'Principio de Pascal y la prensa hidráulica', dur: '50 min',

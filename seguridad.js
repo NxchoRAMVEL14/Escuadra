@@ -4,7 +4,7 @@
    - Antes de cada práctica con riesgo (taller, corte, herramienta, corriente, cortadora láser): lista de verificación de
      equipo de protección y orden, de un toque, que queda registrada con fecha.
    - Bitácora de incidentes y casi-accidentes con lo que se hizo y la medida para que no se repita; imprimible.
-   Base: NOM-017-STPS-2008 (equipo de protección personal), NOM-004-STPS-1999 (maquinaria y herramienta), NOM-029-STPS-2011
+   Base: NOM-017-STPS-2024 (equipo de protección personal), NOM-004-STPS-1999 (maquinaria y herramienta), NOM-029-STPS-2011
    (mantenimiento eléctrico) y las reglas de seguridad que ya traen las clases de la app (12 V; el lado de 127 V lo conecta el
    docente; la cortadora láser la opera solo el docente). */
 (function () {
@@ -72,7 +72,7 @@
       (nF < al.length ? btn('✓ Marcar a todos como firmados hoy', 'sg-todos', '', 'small ghost') : ''));
     h += card('<h3>⚠️ Incidentes y casi-accidentes</h3><p class="muted small">Registra también lo que estuvo a punto de pasar: es lo que más enseña a prevenir. Solo lo necesario.</p>' + (inc.length ? '<ul class="pc-l">' + inc.slice().reverse().map(x => '<li class="' + (x.tipo === 'lesion' ? 'bad' : 'warn') + '"><span class="pc-i">' + (x.tipo === 'lesion' ? '!' : x.tipo === 'equipo' ? '🔧' : '≈') + '</span><div><b><a href="#/seguridad/incidente/' + x.id + '">' + esc(TIPO[x.tipo] || x.tipo) + ' · ' + u.fCorta(x.f) + '</a></b><small class="muted">' + esc((x.desc || '').slice(0, 120)) + (x.medida ? ' · Medida: ' + esc(x.medida.slice(0, 80)) : '') + '</small></div></li>').join('') + '</ul>' : '<p class="small">Sin registros. 👏</p>') + link('＋ Registrar', 'seguridad/incidente', 'small'));
     h += card('<details data-sec="sg-cfg"><summary><b>✏️ Tu reglamento y tu lista de revisión</b></summary><p class="muted small">Un renglón por regla. Si tu escuela tiene su propio reglamento de taller, pégalo aquí.</p><label class="fld"><span>Reglamento</span><textarea class="inp" id="sg-reglas" rows="10">' + esc(cf.reglas.join('\n')) + '</textarea></label><label class="fld"><span>Revisión antes de la práctica</span><textarea class="inp" id="sg-epp-t" rows="6">' + esc(cf.epp.join('\n')) + '</textarea></label>' + btn('Guardar', 'sg-cfg', '', 'primary small') + btn('Volver al de base', 'sg-cfg-base', '', 'small ghost') + '</details>');
-    h += '<p class="muted small">Base: NOM-017-STPS-2008 (equipo de protección personal), NOM-004-STPS-1999 (maquinaria y herramienta) y NOM-029-STPS-2011 (trabajos eléctricos), más las reglas de las prácticas de la app (12 V; 127 V y cortadora láser solo el docente).</p>';
+    h += '<p class="muted small">Base: NOM-017-STPS-2024 (equipo de protección personal), NOM-004-STPS-1999 (maquinaria y herramienta) y NOM-029-STPS-2011 (trabajos eléctricos), más las reglas de las prácticas de la app (12 V; 127 V y cortadora láser solo el docente).</p>';
     return { t: 'Seguridad', h: h };
   };
   const TIPO = { lesion: 'Incidente con lesión', casi: 'Casi-accidente', equipo: 'Daño a equipo o material' };

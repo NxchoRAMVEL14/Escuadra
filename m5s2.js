@@ -35,7 +35,7 @@
       explica: [
         'Muchos accidentes de mantenimiento pasan porque alguien energiza una máquina mientras otra persona trabaja en ella, o porque quedó energía guardada. Por eso, antes de meter las manos, se aplica el bloqueo y etiquetado (en inglés LOTO, lockout-tagout).',
         'Pasos: 1) avisar a los afectados y preparar; 2) apagar la máquina con su mando normal; 3) aislar todas las fuentes de energía (eléctrica, neumática, hidráulica, mecánica); 4) colocar el candado y la tarjeta de cada trabajador en cada punto de aislamiento; 5) liberar o controlar la energía almacenada (capacitores, resortes, aire, piezas elevadas); 6) verificar energía cero: intentar arrancar y medir. Al terminar, se retiran herramientas, se reinstalan guardas, se avisa y cada quien quita su propio candado.',
-        'Normas que pide el programa: NOM-004-STPS-1999 (protecciones y dispositivos de seguridad en la maquinaria), NOM-029-STPS-2011 (mantenimiento de instalaciones eléctricas), NOM-009-STPS-2011 (trabajos en altura: a más de 1.80 m) y NOM-033-STPS-2015 (espacios confinados). El equipo de protección personal se elige según los riesgos (NOM-017-STPS-2008).',
+        'Normas que pide el programa: NOM-004-STPS-1999 (protecciones y dispositivos de seguridad en la maquinaria), NOM-029-STPS-2011 (mantenimiento de instalaciones eléctricas), NOM-009-STPS-2011 (trabajos en altura: a más de 1.80 m) y NOM-033-STPS-2015 (espacios confinados). El equipo de protección personal se elige según los riesgos (NOM-017-STPS-2024).',
         'En el taller de la escuela: todo el mantenimiento se hace sin energía o a 12 V; las fuentes y equipos de 127 V los desconecta, energiza y prueba solo el docente. Nadie trabaja en alturas ni en espacios confinados: esas NOM se estudian para el trabajo real.'
       ],
       pantalla: ['Bloqueo y etiquetado antes de meter las manos', '1 avisar · 2 apagar · 3 aislar', '4 candado y tarjeta de cada quien', '5 liberar energía almacenada · 6 verificar energía cero', 'NOM-004, 029, 009 (> 1.80 m) y 033', 'En la escuela: 12 V o sin energía; 127 V solo el docente'],
@@ -44,7 +44,7 @@
       preguntas: [['¿Por qué cada trabajador pone su propio candado?', 'Para que nadie pueda energizar mientras alguno siga trabajando.'], ['¿Qué es verificar energía cero?', 'Intentar arrancar y medir para comprobar que no hay energía.'], ['¿A partir de qué altura es trabajo en altura según la NOM-009-STPS-2011?', 'A más de 1.80 m sobre el piso o nivel de referencia.'], ['Da dos ejemplos de energía almacenada.', 'Capacitores cargados, resortes, aire comprimido o piezas elevadas.']],
       errores: ['Confiar en que «alguien ya lo apagó».', 'Usar un solo candado para todo el equipo de trabajo.', 'Olvidar la energía almacenada.', 'Quitar el candado de otra persona.'],
       vida: 'En las plantas, el procedimiento de bloqueo está escrito para cada máquina y se audita; romper un candado ajeno es motivo de despido.',
-      ideas: ['m5-loto-simulacro', 'pregunta-reto'], fuente: FU + ' (pp. 102, 105 y 108); NOM-004-STPS-1999, NOM-029-STPS-2011, NOM-009-STPS-2011, NOM-033-STPS-2015 y NOM-017-STPS-2008.'
+      ideas: ['m5-loto-simulacro', 'pregunta-reto'], fuente: FU + ' (pp. 102, 105 y 108); NOM-004-STPS-1999, NOM-029-STPS-2011, NOM-009-STPS-2011, NOM-033-STPS-2015 y NOM-017-STPS-2024 (el programa SEP cita la NOM-017-STPS-2008, sustituida por la 2024 desde septiembre de 2025).'
     },
     {
       id: 'm5-herramientas-mant', sm: 'V-2', ac: AC[0], titulo: 'Herramientas e instrumentos de mantenimiento', dur: '50 min',

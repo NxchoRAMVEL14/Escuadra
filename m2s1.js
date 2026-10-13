@@ -4,7 +4,7 @@
    centro de cómputo (croquis con restricciones, sólidos y plano en TechDraw). Las prácticas de FreeCAD son las de Escuadra
    (practicas.js), con su plano acotado. Los temas «Leer un plano» y «Restricciones» ya venían en temas.js.
    Programa SEP 2024 (Técnico en Mecatrónica), pp. 32-35; bibliografía del módulo (Estrada y Llamas, Dibujo Técnico I);
-   NOM-Z-68-1986, NOM-008-SCFI-2002; ISO 128, 129-1, 216, 3098, 5455, 5456, 5457 y 7200; documentación de FreeCAD. */
+   NOM-Z-68-1986, NOM-008-SE-2021; ISO 128, 129-1, 216, 3098, 5455, 5456, 5457 y 7200; documentación de FreeCAD. */
 (function () {
   'use strict';
   const E = window.E, H = E.mods.h, f = H.f, pick = H.pick, ops = H.ops;
@@ -34,18 +34,18 @@
       id: 'm2-unidades', sm: 'II-1', ac: AC[0], titulo: 'Sistemas de unidades, medición y conversiones', dur: '50 min',
       objetivo: 'Que midan piezas, conviertan entre milímetros y pulgadas y expresen medidas en el sistema que pide el plano.',
       explica: [
-        'En México el sistema oficial es el Sistema Internacional (NOM-008-SCFI-2002). En dibujo mecánico la unidad es el milímetro: los planos escriben solo el número (80, no 80 mm) y lo aclaran una vez en el cuadro de datos: «Medidas en mm».',
+        'En México el sistema oficial es el Sistema Internacional (NOM-008-SE-2021). En dibujo mecánico la unidad es el milímetro: los planos escriben solo el número (80, no 80 mm) y lo aclaran una vez en el cuadro de datos: «Medidas en mm».',
         'Aun así convive el sistema inglés: tubería, tornillería, llaves, brocas y muchas máquinas de origen estadounidense usan pulgadas. La conversión es exacta: 1 in = 25.4 mm. Las pulgadas fraccionarias se convierten así: 3/8 in = 3 ÷ 8 × 25.4 = 9.525 mm.',
         'Para medir se usa el instrumento adecuado: flexómetro para lo grande, regla para lo que cabe en ella y vernier (calibrador) para piezas pequeñas, diámetros y profundidades. El vernier común lee 0.05 mm o 0.02 mm en su escala métrica y 1/128 in o 0.001 in en la inglesa.',
         'Prefijos útiles: 1 m = 1000 mm, 1 cm = 10 mm. Antes de dibujar, todas las medidas se pasan a una sola unidad; mezclar centímetros y milímetros es el error más común.'
       ],
       pantalla: ['En el plano: milímetros, sin escribir «mm» en cada cota', '1 in = 25.4 mm (exacto)', '3/8 in = 3 ÷ 8 × 25.4 = 9.525 mm', '1 m = 1000 mm · 1 cm = 10 mm', 'Vernier: piezas chicas, diámetros y profundidades', 'Todo a una sola unidad antes de dibujar'],
-      clave: [['SI', 'Sistema Internacional de Unidades; el oficial en México (NOM-008-SCFI-2002)'], ['Milímetro', 'Unidad de los planos mecánicos'], ['Pulgada (in)', 'Unidad inglesa: 25.4 mm exactos'], ['Pulgada fraccionaria', 'Medida en fracciones como 1/4, 3/8 o 1/2 in'], ['Vernier', 'Calibrador que mide exteriores, interiores y profundidades con precisión de 0.05 o 0.02 mm']],
+      clave: [['SI', 'Sistema Internacional de Unidades; el oficial en México (NOM-008-SE-2021)'], ['Milímetro', 'Unidad de los planos mecánicos'], ['Pulgada (in)', 'Unidad inglesa: 25.4 mm exactos'], ['Pulgada fraccionaria', 'Medida en fracciones como 1/4, 3/8 o 1/2 in'], ['Vernier', 'Calibrador que mide exteriores, interiores y profundidades con precisión de 0.05 o 0.02 mm']],
       ejemplo: { titulo: 'Un tornillo de 1/4 in en un plano métrico', pasos: ['1/4 in = 1 ÷ 4 × 25.4 = 6.35 mm.', 'El barreno de paso para ese tornillo suele ser un poco mayor: 6.5 o 7 mm.', 'En el plano se escribe Ø7 y en el cuadro de datos «Medidas en mm».'], resultado: 'Conviertes una vez, dibujas en milímetros y nadie se confunde.' },
       preguntas: [['¿Cuántos mm tiene una pulgada?', '25.4 mm exactos.'], ['¿Cuánto mide en mm una broca de 1/2 in?', '12.7 mm.'], ['¿Por qué no se escribe «mm» en cada cota?', 'Porque el cuadro de datos aclara una vez que las medidas están en mm.'], ['¿Qué instrumento usas para medir el diámetro de un barreno de 8 mm?', 'El vernier, con sus puntas de interiores.']],
       errores: ['Multiplicar por 2.54 en vez de 25.4: eso da centímetros.', 'Mezclar cm y mm en el mismo dibujo.', 'Leer el vernier sin cerrar antes para ver que marque cero.', 'Redondear 9.525 a 10 en una pieza que debe ajustar.'],
       vida: 'En mantenimiento llegan máquinas de Estados Unidos, Japón y Alemania: saber convertir y medir bien es la diferencia entre pedir la refacción correcta o esperar otra semana.',
-      ideas: ['m2-carrera-conversiones', 'pr-plickers'], fuente: FU + ' (p. 33); NOM-008-SCFI-2002, Sistema general de unidades de medida.'
+      ideas: ['m2-carrera-conversiones', 'pr-plickers'], fuente: FU + ' (p. 33); NOM-008-SE-2021, Sistema general de unidades de medida (el programa SEP cita la NOM-008-SCFI-2002, sustituida por la NOM-008-SE-2021 desde junio de 2024).'
     },
     {
       id: 'm2-lineas', sm: 'II-1', ac: AC[0], titulo: 'Alfabeto de líneas y rotulación', dur: '50 min',
@@ -400,7 +400,7 @@
     // unidades
     { id: 'm2ab1', tema: 'm2-unidades', tipo: 'om', niv: 1, q: '¿Cuántos milímetros tiene una pulgada?', op: ['25.4', '2.54', '10', '12'] },
     { id: 'm2ab2', tema: 'm2-unidades', tipo: 'calc', niv: 2, gen: 'm2conv' },
-    { id: 'm2ab3', tema: 'm2-unidades', tipo: 'om', niv: 2, q: '¿Qué norma establece el sistema de unidades oficial en México?', op: ['NOM-008-SCFI-2002', 'NOM-017-STPS-2008', 'NOM-001-SEDE-2012', 'NOM-Z-68-1986'] },
+    { id: 'm2ab3', tema: 'm2-unidades', tipo: 'om', niv: 2, q: '¿Qué norma establece el sistema de unidades oficial en México?', op: ['NOM-008-SE-2021', 'NOM-017-STPS-2024', 'NOM-001-SEDE-2012', 'NOM-Z-68-1986'] },
     { id: 'm2ab4', tema: 'm2-unidades', tipo: 'vf', niv: 2, q: 'En un plano mecánico se escribe «mm» junto a cada cota.', v: false, exp: 'Se aclara una vez en el cuadro de datos: «Medidas en mm».' },
     { id: 'm2ab5', tema: 'm2-unidades', tipo: 'om', niv: 2, q: '¿Con qué instrumento mides el diámetro interior de un barreno de 10 mm?', op: ['Vernier, con sus puntas de interiores', 'Flexómetro', 'Transportador', 'Escuadra de 45°'] },
     { id: 'm2ab6', tema: 'm2-unidades', tipo: 'ab', niv: 2, q: 'Explica cómo conviertes 5/8 in a milímetros.', r: '5 ÷ 8 = 0.625 in; 0.625 × 25.4 = 15.875 mm.' },

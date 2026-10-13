@@ -16,8 +16,8 @@
       explica: [
         'La corriente que pasa por el cuerpo es lo que lastima. Con unos cuantos miliamperes ya se siente un choque y con decenas puede perderse el control de los músculos; por eso en el taller trabajamos con fuentes de 5 a 12 V de corriente directa y nunca conectamos nada directo al contacto de 127 V.',
         'Los aparatos desarmados guardan peligros: capacitores grandes cargados (fuentes, flash de cámaras, hornos de microondas), tubos de televisión y baterías de litio que se inflan o se perforan. Por eso no se desarman microondas, televisiones de tubo ni fuentes de alto voltaje, y las baterías se retiran antes.',
-        'El cautín trabaja a más de 300 °C: siempre en su soporte, cable lejos de la punta y nunca se sopla ni se sacude la soldadura. La descarga electrostática (la "chispa" al tocar algo) daña circuitos integrados: antes de manipularlos, toca una superficie metálica y no los toques por las patitas (NOM-022-STPS-2008).',
-        'El equipo de protección personal (NOM-017-STPS-2008) en electrónica es sencillo: lentes de seguridad al cortar terminales o soldar, cabello recogido, nada de anillos o pulseras metálicas y área despejada.'
+        'El cautín trabaja a más de 300 °C: siempre en su soporte, cable lejos de la punta y nunca se sopla ni se sacude la soldadura. La descarga electrostática (la "chispa" al tocar algo) daña circuitos integrados: antes de manipularlos, toca una superficie metálica y no los toques por las patitas (NOM-022-STPS-2015).',
+        'El equipo de protección personal (NOM-017-STPS-2024) en electrónica es sencillo: lentes de seguridad al cortar terminales o soldar, cabello recogido, nada de anillos o pulseras metálicas y área despejada.'
       ],
       pantalla: ['Lo que lastima es la corriente que pasa por el cuerpo', 'En el taller: 5 a 12 V de CD, nunca 127 V', 'No se desarman: microondas, TV de tubo, fuentes de alto voltaje', 'Cautín: >300 °C, siempre en su soporte', 'Toca metal antes de tocar un circuito integrado', 'Lentes al cortar terminales y al soldar'],
       clave: [['Corriente directa (CD)', 'Fluye siempre en un sentido: pilas, cargadores, fuentes'], ['Corriente alterna (CA)', 'Cambia de sentido 60 veces por segundo: el contacto de la casa (127 V)'], ['Descarga electrostática', 'Chispa de electricidad estática que daña los circuitos integrados'], ['EPP', 'Equipo de protección personal: lentes, ropa adecuada'], ['Capacitor cargado', 'Guarda energía aunque el aparato esté desconectado']],
@@ -25,7 +25,7 @@
       preguntas: [['¿Qué es lo que realmente lastima en un choque eléctrico?', 'La corriente que circula por el cuerpo.'], ['¿Por qué no se desarma un horno de microondas en el taller?', 'Tiene un capacitor y un transformador de alto voltaje que pueden ser mortales aunque esté desconectado.'], ['¿Dónde debe estar el cautín cuando no lo usas?', 'En su soporte, con la punta lejos de cables y personas.'], ['¿Qué haces antes de tomar un circuito integrado?', 'Tocar una superficie metálica para descargar la estática y tomarlo por el cuerpo, no por las patitas.']],
       errores: ['Dejar el cautín acostado sobre la mesa.', 'Desarmar aparatos conectados.', 'Probar "a ver si da toques" con el contacto de la pared.', 'Cortar terminales sin lentes: las puntas salen volando.'],
       vida: 'En cualquier planta del Bajío, la primera capacitación de un técnico es seguridad: bloqueo de energía, EPP y riesgos eléctricos. Quien la respeta trabaja años sin accidentes.',
-      ideas: ['m1-ewaste-seguro', 'pregunta-reto'], fuente: FU + ' (p. 14); NOM-017-STPS-2008; NOM-022-STPS-2008.'
+      ideas: ['m1-ewaste-seguro', 'pregunta-reto'], fuente: FU + ' (p. 14); NOM-017-STPS-2024; NOM-022-STPS-2015 (el programa SEP cita la NOM-017-STPS-2008 y la NOM-022-STPS-2008, sustituidas por la 2024 y la 2015).'
     },
     {
       id: 'm1-magnitudes', sm: 'I-1', ac: 'Verifica las variables eléctricas del circuito electrónico', titulo: 'Voltaje, corriente, resistencia y potencia', dur: '50 min',
@@ -41,7 +41,7 @@
       preguntas: [['¿Cuántos ohms son 2.2 kΩ?', '2200 Ω.'], ['¿Cuántos amperes son 350 mA?', '0.35 A.'], ['En la analogía del agua, ¿qué representa la corriente?', 'La cantidad de agua que pasa por segundo.'], ['¿Qué tipo de corriente da una pila?', 'Corriente directa (CD).']],
       errores: ['Calcular con kΩ y mA mezclados sin convertir.', 'Confundir m (mili) con M (mega).', 'Decir "voltios de corriente": el voltaje y la corriente son cosas distintas.'],
       vida: 'Cualquier técnico revisa placas de datos: "24 V, 2.5 A, 60 W". Leerlas bien evita quemar equipos caros en la planta.',
-      ideas: ['m1-agua', 'pr-plickers'], fuente: FU + ' (p. 15); Pérez Montiel (2015), unidad 12; NOM-008-SCFI-2002.'
+      ideas: ['m1-agua', 'pr-plickers'], fuente: FU + ' (p. 15); Pérez Montiel (2015), unidad 12; NOM-008-SE-2021 (el programa SEP cita la NOM-008-SCFI-2002, sustituida por la NOM-008-SE-2021 desde junio de 2024).'
     },
     {
       id: 'm1-componentes', sm: 'I-1', ac: 'Interpreta planos y diagramas electrónicos', titulo: 'Componentes electrónicos y su función', dur: '50 min',

@@ -447,6 +447,11 @@ al abrirla con internet. Tus datos no se tocan.
 | `inventario.js` | Inventario, préstamos y compras del taller |
 | `cotutora.js`, `tutora.html` | Vista cifrada para la co-tutora |
 | `encuesta.js`, `encuesta.html`, `schema-encuesta.sql` | Encuesta anónima del mes y «Ustedes dijeron → Yo hice» |
+| `normas.js`, `normas-mapa.js` | Normas oficiales: fichas de 19 NOM con versión vigente, cita del programa SEP, dónde aparecen en el contenido y repaso para el docente (`normas-mapa.js` se genera del contenido) |
+| `tiempo.js` | Días sin clase y qué recortar, calendario .ics, expediente docente, salud de los datos, compartir con la academia y modo demostración |
+| `aulaplus.js`, `ver.html` | Kit «te lo perdiste» con QR, actividad en 3 niveles, ruleta equitativa, rúbrica con QR, simulacros y revisión mensual, ficha y directorio de emergencia (`ver.html` muestra el kit y la rúbrica; los datos viajan en el enlace) |
+| `resultados.js` | Temas que cuestan, junta de padres, indicadores para la dirección, autoevaluación contra tu calificación y bitácora del proyecto |
+| `solidez.js` | Aviso de privacidad, semáforo con íconos, prueba de restauración del respaldo, modo solo lectura y registro de cambios de calificaciones |
 | `entregas.js` | Tablero de entregas: qué pedir, tablero por entregable, matriz y tiras; actividades del guion creadas solas |
 | `hoy.js` | Inicio compacto «Hoy», cerrar semana y pre-cierre de captura |
 | `monitores.js` | Monitores rotativos en el centro de cómputo y su registro |
@@ -537,3 +542,4 @@ al abrirla con internet. Tus datos no se tocan.
 - v1.25: NOM-017-STPS-2008, NOM-004-STPS-1999 y NOM-029-STPS-2011 (seguridad en el taller); Web Crypto (AES-GCM y PBKDF2) según MDN para la vista de la co-tutora; Roorda y col. (2011) sobre la relación docente-alumno para «Ustedes dijeron → Yo hice»; políticas RLS de Supabase (*Row Level Security*) para la encuesta.
 - v1.24: monitores y tutoría entre pares (EEF, *Teaching and Learning Toolkit*: Peer tutoring; Rosenshine, 2012); recuperación del boleto en el calentamiento (Dunlosky y col., 2013); IndexedDB y `navigator.storage.persist()` según MDN; compresión de los enlaces con `CompressionStream('deflate-raw')` (MDN); enlaces de WhatsApp `wa.me` según el Centro de ayuda de WhatsApp («Cómo usar el enlace para chatear»).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.
+- v1.26: vigencia de las NOM revisada el 12/10/2026 en el Catálogo Mexicano de Normas (PLATIICA, Secretaría de Economía) y el DOF: NOM-017-STPS-2024 (DOF 28/03/2025, en vigor 28/09/2025, sustituye a la 2008; resumen de obligaciones según Holland & Knight e IDC), NOM-008-SE-2021 (DOF 29/12/2023, en vigor 28/06/2024, cancela la NOM-008-SCFI-2002; Hogan Lovells), NOM-018-STPS-2015, NOM-022-STPS-2015, NOM-004-STPS-1999 (el PROY-NOM-004-STPS-2020 no se publicó como definitivo), NOM-001-SEDE-2012, NOM-002-STPS-2010 (simulacros, revisión de extintores, 1.50 m y distancias de la Tabla 1 tomados del PDF oficial), NOM-026-STPS-2008, NOM-003-SEGOB-2011, NOM-052-SEMARNAT-2005 y las demás de la ficha. Las citas del contenido usan la versión vigente y anotan la que cita el programa SEP.

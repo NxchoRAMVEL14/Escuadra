@@ -1364,3 +1364,35 @@ details.ini-mas[open] > summary::before { content: '▾ ' }
 .ek-yh { list-style: none; padding: 0; margin: 0 0 8px } .ek-yh li { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; padding: 6px 0; border-top: 1px solid var(--line) } @media (max-width: 560px) { .ek-yh li { grid-template-columns: 1fr } }
 .ek-esc { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
 .pr.ek-paps { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm } .pr .ek-pap { border: 1px dashed #000; padding: 4mm; font-size: 10pt; height: 125mm } .pr .ek-pap p { margin: 2mm 0 } .pr .ek-lin { height: 40mm; background: repeating-linear-gradient(transparent 0 7mm, #999 7mm 7.3mm) }
+
+/* v1.26 · normas, tu tiempo, clases, resultados y solidez */
+.pr .pbreak { break-after: page; page-break-after: always; height: 0 }
+.pr .firmas { display: flex; justify-content: space-around; gap: 20mm; margin-top: 18mm } .pr .firmas div { border-top: 1px solid #000; padding-top: 3px; min-width: 60mm; text-align: center; font-size: 8.5pt }
+.pr .tira { border: 1px dashed #000; padding: 3mm 4mm; margin: 0 0 4mm; break-inside: avoid; page-break-inside: avoid } .pr .tira p { margin: 1.5mm 0 }
+.pr .nr-pf { break-inside: avoid; page-break-inside: avoid; border-bottom: 1px solid #999; padding: 2mm 0 } .pr .nr-pf h4 { margin: 0 0 1mm; font-size: 10pt } .pr .nr-pf p, .pr .nr-pf ul { margin: 1mm 0 } .pr .nr-pf ul { padding-left: 5mm }
+.pr .n3-q { margin: 0 0 5mm }
+.en-kpis .bad { background: var(--bad-soft); color: var(--bad) } .en-kpis .bad span { color: var(--bad) } .en-kpis .info { background: var(--info-soft); color: var(--info) } .en-kpis .info span { color: var(--info) }
+.nr-l, .ex-l, .em-l, .cmb-l, .pjb-l { list-style: none; padding: 0; margin: 0 }
+.nr-l li a { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink) } .nr-l li:first-child a { border-top: 0 }
+.nr-l li a b { color: var(--brand) } .nr-l li a span { font-size: .9rem }
+.nr-ops { display: grid; gap: 8px; margin: 10px 0 } .nr-op { text-align: left; justify-content: flex-start; white-space: normal; padding: 12px 14px; font-weight: 600 }
+.nr-op.ok.on { background: var(--ok-soft); color: var(--ok); border-color: var(--ok) } .nr-op.bad.on { background: var(--bad-soft); color: var(--bad); border-color: var(--bad) }
+.nr-dia { margin-top: 10px; padding: 8px 10px; border-radius: 10px; background: var(--info-soft) } .nr-dia ul { margin: 4px 0 0; padding-left: 18px }
+.ex-l li { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line) } .ex-l li:first-child { border-top: 0 }
+.ex-l li > span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--warn-soft); color: var(--warn) } .ex-l li.ok > span { background: var(--ok-soft); color: var(--ok) }
+.ex-l small { display: block; color: var(--muted) }
+.em-l li, .cmb-l li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); flex-wrap: wrap } .em-l li:first-child, .cmb-l li:first-child { border-top: 0 }
+.em-l small { display: block } .cmb-l li { font-size: .88rem }
+.pjb-l li { padding: 8px 0; border-top: 1px solid var(--line); font-size: .9rem } .pjb-l small { color: var(--muted) }
+.rul { text-align: center; padding: 18px 0 8px } .rul-n { font-size: clamp(2rem, 9vw, 4.2rem); font-weight: 800; line-height: 1.1; margin: 6px 0 } .row.center { justify-content: center } .btn.big { font-size: 1.05rem; padding: 12px 18px }
+.n3-al { border: 0; cursor: pointer; margin: 2px 0 } .au-in { max-width: 80px; padding: 6px 8px }
+.chk-in { display: inline-flex; gap: 6px; align-items: center; margin: 2px 10px 2px 0 }
+.mg-e { font-size: 1.5rem; line-height: 1 }
+.demo-band, .ro-band { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(70px + env(safe-area-inset-bottom)); z-index: 60; border: 0; border-radius: 999px; padding: 8px 14px; font: inherit; font-size: .82rem; font-weight: 700; box-shadow: var(--sh); cursor: pointer; max-width: calc(100vw - 32px) }
+.demo-band { background: #6b3fa0; color: #fff } .ro-band { background: var(--warn); color: #fff; bottom: calc(112px + env(safe-area-inset-bottom)) }
+@media (min-width: 900px) { .demo-band { bottom: 18px } .ro-band { bottom: 60px } }
+@media print { .demo-band, .ro-band { display: none !important } }
+/* semáforo accesible: íconos además del color */
+html.sem-ico .g.ok::before, html.sem-ico .chip.ok::before { content: "✓ " } html.sem-ico .g.warn::before, html.sem-ico .chip.warn::before { content: "! " } html.sem-ico .g.bad::before, html.sem-ico .chip.bad::before { content: "✕ " }
+html.sem-ico .sf-dot.sf-mal { border-radius: 2px } html.sem-ico .sf-dot.sf-reg { transform: rotate(45deg); border-radius: 1px }
+.btn.nw { white-space: nowrap }

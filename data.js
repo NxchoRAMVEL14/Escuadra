@@ -27,11 +27,11 @@ window.E = window.E || {};
           'Pérez Montiel, H. (2015). Física general, unidad 12: Electricidad. Grupo Editorial Patria.',
           'Tocci, R. (2007). Sistemas digitales: principios y aplicaciones (10ª ed.). Pearson.',
           'NMX-J-136-ANCE-2019. Abreviaturas y símbolos para diagramas, planos y equipos eléctricos.',
-          'NOM-008-SCFI-2002. Sistema general de unidades de medida.',
-          'NOM-017-STPS-2008. Equipo de protección personal.',
-          'NOM-018-STPS-2000. Identificación y comunicación de peligros por sustancias químicas.',
-          'PROY-NOM-005-STPS-2017. Manejo de sustancias químicas peligrosas.',
-          'NOM-022-STPS-2008. Electricidad estática.'
+          'NOM-008-SCFI-2002. Sistema general de unidades de medida. (Hoy rige la NOM-008-SE-2021, DOF 29/12/2023.)',
+          'NOM-017-STPS-2008. Equipo de protección personal. (Hoy rige la NOM-017-STPS-2024, DOF 28/03/2025.)',
+          'NOM-018-STPS-2000. Identificación y comunicación de peligros por sustancias químicas. (Hoy rige la NOM-018-STPS-2015.)',
+          'PROY-NOM-005-STPS-2017. Manejo de sustancias químicas peligrosas. (Quedó en proyecto; hoy rige la NOM-005-STPS-1998.)',
+          'NOM-022-STPS-2008. Electricidad estática. (Hoy rige la NOM-022-STPS-2015.)'
         ],
         sub: {
           '1': {
@@ -134,8 +134,8 @@ window.E = window.E || {};
           'Serrano, A. (2009). Neumática práctica. Paraninfo.',
           'Ruiz, R. G. (2015). Manual de Neumática. CNAD.',
           'NMX-J-136-ANCE-2019. Abreviaturas y símbolos para diagramas, planos y equipos eléctricos.',
-          'NOM-008-SCFI-2002. Sistema general de unidades de medida.',
-          'NOM-017-STPS-2008. Equipo de protección personal.',
+          'NOM-008-SCFI-2002. Sistema general de unidades de medida. (Hoy rige la NOM-008-SE-2021, DOF 29/12/2023.)',
+          'NOM-017-STPS-2008. Equipo de protección personal. (Hoy rige la NOM-017-STPS-2024, DOF 28/03/2025.)',
           'NOM-Z-68-1986. Dibujo técnico: dimensiones y formatos de las láminas de dibujo.'
         ],
         sub: {
@@ -745,7 +745,7 @@ window.E = window.E || {};
         recursos: {
           material: ['Jeringas de plástico nuevas sin aguja (10 ml y 20 ml)', 'Manguera transparente flexible (de acuario o silicón)', 'Agua con colorante vegetal', 'Motores DC de 3 a 5 V, portapilas AA y pilas', 'Interruptores de botón o palanca; cable calibre 22 o 24', 'Cinchos, cinta de aislar e hilo resistente (polea del motor)', 'Mecanismo de cartón/madera del 2º parcial'],
           equipo: ['Pinzas de corte y de punta', 'Pistolas de silicón caliente', 'Pelacables o cúter industrial', 'Computadoras del plantel con FreeCAD (dibujo de la estructura)'],
-          fuentes: [E.FUENTE_PROGRAMA + ', Módulo II, pp. 40-53.', 'Guillén, A. S. (1999). Introducción a la Neumática. Alfaomega Marcombo.', 'Ruiz, R. G. (2015). Manual de Neumática. CNAD.', 'Bolton, W. (2013). Mecatrónica (5ª ed.). Alfaomega.', 'NOM-017-STPS-2008. Equipo de protección personal.']
+          fuentes: [E.FUENTE_PROGRAMA + ', Módulo II, pp. 40-53.', 'Guillén, A. S. (1999). Introducción a la Neumática. Alfaomega Marcombo.', 'Ruiz, R. G. (2015). Manual de Neumática. CNAD.', 'Bolton, W. (2013). Mecatrónica (5ª ed.). Alfaomega.', 'NOM-017-STPS-2008. Equipo de protección personal. (Hoy rige la NOM-017-STPS-2024, DOF 28/03/2025.)']
         },
         valida: { elaboro: E.DEFAULTS.config.docente, reviso: '', avalo: '' },
         notas: 'Correcciones respecto a tu .docx: nombre del módulo y resultado del módulo según el programa 2024, las 4 actividades clave del Submódulo 3, desarrollo de la competencia con el texto del programa y horas ajustadas a 92 (10 + 39 + 48 sumaban 97). Ojo: el programa incluye neumática y simulación; considera la idea "Jeringa de aire vs. agua" del banco de ideas para cubrir neumática sin compresor.'

@@ -1,7 +1,7 @@
 /* Escuadra · Módulo III «Programa dispositivos de control» · Submódulo 1: Instala elementos de potencia y control (96 h).
    Temas, clases hora por hora, tareas, banco de examen, ideas, figuras y proyecto del 1er parcial de 4º semestre.
    Programa SEP 2024 (Técnico en Mecatrónica), pp. 54-58, y recursos didácticos de la carrera (pp. 118-122); bibliografía del
-   módulo (Kosow, Ruiz Vázquez, Tello, Alcalde) y NOM-001-SEDE-2012, NOM-029-STPS-2011, NOM-017-STPS-2008.
+   módulo (Kosow, Ruiz Vázquez, Tello, Alcalde) y NOM-001-SEDE-2012, NOM-029-STPS-2011, NOM-017-STPS-2024.
    Seguridad: todo se arma a 12 V de CD. El lado de 127 V de la fuente lo conecta solo el docente. Simulación con CADe_SIMU
    (gratuito, Windows) o Tinkercad Circuits (navegador). */
 (function () {
@@ -19,7 +19,7 @@
         'Lo que lastima es la corriente que pasa por el cuerpo. Alrededor de 1 mA ya se siente; cerca de 10 mA los músculos se contraen y ya no puedes soltar el cable, y de unos 30 mA en adelante se dificulta respirar y el corazón puede perder su ritmo. Por eso los interruptores diferenciales que protegen a las personas se disparan con 30 mA.',
         'En la industria los tableros trabajan con 127, 220 o 440 V. En el taller hacemos exactamente lo mismo con 12 V de corriente directa: los diagramas, los aparatos y las herramientas son iguales, pero un error no lastima. El lado de 127 V de la fuente (un eliminador de pared o una fuente conmutada cerrada) lo conecta solo el docente.',
         'Antes de meter las manos a un tablero, el técnico sigue las cinco reglas de oro: 1) desconecta, 2) bloquea con candado y etiqueta para que nadie lo reconecte, 3) verifica con el multímetro que no hay voltaje, 4) pone a tierra (en instalaciones de alta tensión) y 5) señaliza el área. La NOM-029-STPS-2011 pide procedimientos como estos para dar mantenimiento a instalaciones eléctricas.',
-        'Reglas del taller: se cablea siempre sin energía; se energiza solo después de que el docente revisó el cableado, y nadie toca el tablero de otro equipo. El equipo de protección (NOM-017-STPS-2008) en el taller son lentes y ropa sin partes metálicas colgando; en la industria se agregan guantes dieléctricos y calzado de seguridad.'
+        'Reglas del taller: se cablea siempre sin energía; se energiza solo después de que el docente revisó el cableado, y nadie toca el tablero de otro equipo. El equipo de protección (NOM-017-STPS-2024) en el taller son lentes y ropa sin partes metálicas colgando; en la industria se agregan guantes dieléctricos y calzado de seguridad.'
       ],
       pantalla: ['Lastima la corriente: ~10 mA ya no sueltas, ~30 mA es peligroso', 'En el taller: 12 V de CD; el lado de 127 V solo lo toca el docente', 'Cinco reglas de oro: desconecta, bloquea, verifica, aterriza, señaliza', 'Se cablea sin energía; se energiza con revisión', 'Tu candado, tu llave: solo quien pone la etiqueta la quita'],
       clave: [['Bloqueo y etiquetado', 'Candado y etiqueta en el interruptor o el enchufe para que nadie reconecte mientras trabajas'], ['Verificación de ausencia de voltaje', 'Medir que de verdad no hay voltaje antes de tocar, con un multímetro probado antes en una fuente conocida'], ['Muy baja tensión de seguridad', 'Voltajes bajos (como 12 o 24 V) con los que un contacto accidental no es peligroso en condiciones secas'], ['Interruptor diferencial', 'Desconecta si detecta una fuga de corriente a tierra (30 mA para proteger personas)'], ['Categoría del multímetro (CAT)', 'Indica dónde se puede usar con seguridad: CAT III para tableros']],
@@ -27,7 +27,7 @@
       preguntas: [['¿Por qué los interruptores diferenciales para personas se disparan con 30 mA?', 'Porque a partir de unos 30 mA la corriente por el cuerpo puede dificultar la respiración y alterar el ritmo del corazón.'], ['¿Cuáles son las cinco reglas de oro?', 'Desconectar, bloquear y etiquetar, verificar ausencia de voltaje, poner a tierra y señalizar el área.'], ['¿Por qué se prueba el multímetro en una fuente conocida antes de verificar ausencia de voltaje?', 'Para asegurar que funciona: si estuviera dañado marcaría 0 V aunque hubiera voltaje.'], ['¿Quién conecta el lado de 127 V de la fuente del tablero?', 'Solo el docente; los alumnos trabajan del lado de 12 V.']],
       errores: ['Confiar en que «ya está apagado» sin medir.', 'Cablear con la fuente conectada «para ir probando».', 'Quitar la etiqueta de otro equipo.', 'Usar un multímetro con puntas peladas o de categoría baja en un tablero industrial.'],
       vida: 'En las plantas automotrices y de autopartes del Bajío cada técnico de mantenimiento tiene su propio candado y su llave; saltarse el bloqueo y etiquetado se considera una falta grave.',
-      ideas: ['m3-candado-loto', 'pregunta-reto'], fuente: FU + ' (p. 57); NOM-029-STPS-2011; NOM-017-STPS-2008; IEC 60479-1 (efectos de la corriente en el cuerpo).'
+      ideas: ['m3-candado-loto', 'pregunta-reto'], fuente: FU + ' (p. 57); NOM-029-STPS-2011; NOM-017-STPS-2024; IEC 60479-1 (efectos de la corriente en el cuerpo) (el programa SEP cita la NOM-017-STPS-2008, sustituida por la 2024 desde septiembre de 2025).'
     },
     {
       id: 'm3-tablero', sm: 'III-1', ac: AC[0], titulo: '¿Qué hay dentro de un tablero de control?', dur: '50 min',

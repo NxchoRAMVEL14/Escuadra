@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0e5e5a">
+<title>Escuadra</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root { --bg:#f2f5f4; --s:#fff; --s2:#eaf0ee; --ink:#12221f; --mut:#5a6c68; --line:#d9e3e0; --brand:#0e5e5a; color-scheme: light }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1312; --s:#13201e; --s2:#1a2b28; --ink:#e4eeec; --mut:#94a8a4; --line:#25403b; --brand:#3cb4a8; color-scheme: dark } }
+* { box-sizing: border-box } body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif }
+main { max-width:640px; margin:0 auto; padding:16px 16px 40px }
+.top { display:flex; align-items:center; gap:10px; margin:4px 0 14px } .top svg { width:34px; height:34px; flex:none } .top b { display:block } .top small { color:var(--mut) }
+.card { background:var(--s); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 12px }
+h1 { font-size:1.25rem; margin:0 0 4px } h2 { font-size:1rem; margin:0 0 8px } p { margin:.3em 0 .6em } .mut { color:var(--mut) } .sm { font-size:.86rem }
+ul { margin:0; padding-left:1.1em } li { margin:.25em 0 }
+.tw { overflow-x:auto } table { width:100%; border-collapse:collapse; font-size:.9rem } th, td { border:1px solid var(--line); padding:6px; text-align:left; vertical-align:top } th { background:var(--s2); font-size:.78rem } td.c { text-align:center }
+.foot { font-size:.78rem; color:var(--mut); text-align:center; margin-top:16px }
+</style>
+</head>
+<body>
+<main id="m"><p>Cargando…</p></main>
+<script>
+(async function () {
+  'use strict';
+  const m = document.getElementById('m');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const logo = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
+  async function lee() {
+    const h = location.hash.slice(1); if (!h) throw new Error('vacío');
+    const b = atob(h.slice(1).replace(/-/g, '+').replace(/_/g, '/')), by = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) by[i] = b.charCodeAt(i);
+    const txt = h[0] === 'z' ? await new Response(new Blob([by]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text() : new TextDecoder().decode(by);
+    return JSON.parse(txt);
+  }
+  let d; try { d = await lee(); } catch (e) { m.innerHTML = '<div class="card"><h1>No se pudo abrir</h1><p>El enlace está incompleto. Escanea otra vez el QR o pide a tu docente que te lo reenvíe.</p></div>'; return; }
+  let h = '<div class="top">' + logo + '<div><b>' + esc(d.g) + '</b><small>' + esc(d.pl || '') + '</small></div></div>';
+  h += '<div class="card"><h1>' + esc(d.t) + '</h1>' + (d.sub ? '<p class="mut sm">' + esc(d.sub) + '</p>' : '') + '</div>';
+  if (d.tabla) h += '<div class="card tw"><table><thead><tr>' + d.tabla.cab.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' + d.tabla.filas.map(r => '<tr>' + r.map((c, i) => i ? '<td class="c">' + esc(c) + '</td>' : '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+  (d.sec || []).forEach(s => { h += '<div class="card"><h2>' + esc(s.h) + '</h2>' + (s.p ? '<p>' + esc(s.p) + '</p>' : '') + ((s.l || []).length ? '<ul>' + s.l.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') + ((s.extra || []).length ? '<ul class="sm">' + s.extra.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '') + '</div>'; });
+  h += '<p class="foot">' + esc(d.pie || '') + '<br>Estos datos viajan dentro del enlace; no se guardan en ningún servidor.</p>';
+  m.innerHTML = h; document.title = d.t + ' · ' + d.g;
+})();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
    2º parcial de 2º semestre: diodos, fuente de alimentación, regulador, transistor, sensores, 555, amplificador operacional,
    soldadura y circuito impreso. Proyecto: luz intermitente con 555 montada en su propia placa (PCB).
    Programa SEP 2024 (clave 3071300008-23), pp. 17-19 y 26-27; Boylestad y Nashelsky (2009), Lajara y Pelegrí (2013),
-   hojas de datos (1N4007, LM7805, 2N2222, NE555, LM358) y NOM-018-STPS-2000 para el manejo de químicos. */
+   hojas de datos (1N4007, LM7805, 2N2222, NE555, LM358) y NOM-018-STPS-2015 para el manejo de químicos. */
 (function () {
   'use strict';
   const E = window.E, H = E.mods.h, f = H.f, pick = H.pick, ops = H.ops;
@@ -137,7 +137,7 @@
       preguntas: [['¿Dónde se aplica el estaño: en la punta o en la unión?', 'En la unión (pad y terminal calientes).'], ['¿Cómo se ve una soldadura fría?', 'Opaca y granulada.'], ['¿Qué es un puente de soldadura?', 'Estaño que une dos pads que no deben estar unidos.'], ['¿Por qué hay que ventilar al soldar?', 'Porque el humo del fundente irrita las vías respiratorias.']],
       errores: ['Llevar el estaño en la punta y "untarlo".', 'Mover la pieza antes de que solidifique.', 'Calentar demasiado y levantar la pista.'],
       vida: 'Reparar tarjetas, armar arneses y prototipos exige soldar bien: es una habilidad que se pide en electrónica automotriz y mantenimiento.',
-      ideas: ['m1-reto-soldadura'], fuente: FU + ' (p. 19); NOM-017-STPS-2008.'
+      ideas: ['m1-reto-soldadura'], fuente: FU + ' (p. 19); NOM-017-STPS-2024 (el programa SEP cita la NOM-017-STPS-2008, sustituida por la 2024 desde septiembre de 2025).'
     },
     {
       id: 'm1-pcb-diseno', sm: 'I-2', ac: 'Monta circuitos electrónicos en placas de circuito impreso', titulo: 'Del esquemático al circuito impreso (PCB)', dur: '50 min',
@@ -160,7 +160,7 @@
       objetivo: 'Que fabriquen una placa de una cara siguiendo el procedimiento y las medidas de seguridad con químicos.',
       explica: [
         'Método de transferencia de tóner: imprimes las pistas con impresora láser en papel couché, planchas el papel sobre la placa de cobre limpia (el tóner se pasa al cobre), remojas para retirar el papel y retocas con plumón indeleble.',
-        'Atacado: en un recipiente de plástico con cloruro férrico, el cobre que no está cubierto se disuelve. Es corrosivo y mancha: guantes de nitrilo, lentes, ventilación y nunca se tira al drenaje; se guarda para reusar o se entrega para su disposición (NOM-018-STPS-2000 pide identificar el peligro de cada sustancia). Luego se quita el tóner con acetona o fibra.',
+        'Atacado: en un recipiente de plástico con cloruro férrico, el cobre que no está cubierto se disuelve. Es corrosivo y mancha: guantes de nitrilo, lentes, ventilación y nunca se tira al drenaje; se guarda para reusar o se entrega para su disposición (NOM-018-STPS-2015 pide identificar el peligro de cada sustancia). Luego se quita el tóner con acetona o fibra.',
         'Perforado con broca de 0.8 a 1 mm, con la placa sujeta y lentes. Alternativas: armar sobre placa perforada (sin químicos), mandar fabricar la placa a un servicio o maquinarla con fresadora CNC si el plantel tiene una.'
       ],
       pantalla: ['Imprime 1:1 en láser → plancha → remoja', 'Retoca con plumón indeleble', 'Atacado: cloruro férrico en recipiente de plástico', 'Guantes, lentes, ventilación · nunca al drenaje', 'Perfora con 0.8–1 mm', 'Alternativas: placa perforada, servicio o CNC'],
@@ -169,7 +169,7 @@
       preguntas: [['¿Qué impresora sirve para la transferencia?', 'Una láser (el tóner se transfiere con calor).'], ['¿Por qué no se tira el cloruro férrico al drenaje?', 'Es corrosivo y contamina; se guarda o se entrega para su disposición.'], ['¿Qué EPP se usa en el atacado?', 'Guantes de nitrilo, lentes y ventilación.'], ['¿Qué alternativa hay si no se puede atacar?', 'Armar en placa perforada o mandar fabricar la placa.']],
       errores: ['Cobre sucio: el tóner no se pega.', 'Recipiente metálico (el cloruro lo ataca).', 'Perforar sin sujetar la placa.'],
       vida: 'Los talleres de prototipos y mantenimiento hacen placas rápidas así; en la industria se fabrican igual pero en máquinas.',
-      ideas: ['m1-placa-perforada'], fuente: FU + ' (p. 18); NOM-018-STPS-2000; hoja de seguridad del cloruro férrico.'
+      ideas: ['m1-placa-perforada'], fuente: FU + ' (p. 18); NOM-018-STPS-2015; hoja de seguridad del cloruro férrico (el programa SEP cita la NOM-018-STPS-2000, sustituida por la 2015).'
     },
     {
       id: 'm1-fallas', sm: 'I-2', ac: 'Monta circuitos electrónicos en placas de circuito impreso', titulo: 'Localizar fallas en un circuito', dur: '50 min',
