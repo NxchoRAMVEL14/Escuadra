@@ -72,7 +72,7 @@
       const g = D.grupo(x.gid), gr = String(x.grupo || '').trim().toUpperCase() || g.grupo + '+';
       const suf = String(g.id).indexOf(String(g.grupo)) === 0 ? String(g.id).slice(String(g.grupo).length) : String(g.id).replace(/^[0-9]+[A-Z]?/, ''); let id = (gr + suf).replace(/[^A-Z0-9]/g, '') || 'G'; const base = id; let k = 2; while (S.docs['grupo:' + id]) id = base + (k++);
       const sub = E.mods ? E.mods.subSugeridos(x.modulo, s.ps) : {};
-      const al = D.alumnos(g).map(a => ({ id: a.id, num: a.num, nombre: a.nombre, activo: true, notas: a.notas || '', tel: a.tel || '' }));
+      const al = D.alumnos(g).map(a => ({ id: a.id, num: a.num, nombre: a.nombre, activo: true, notas: a.notas || '', tel: a.tel || '', emNom: a.emNom || '', emTel: a.emTel || '', nss: a.nss || '', emNota: a.emNota || '' }));
       S.put('grupo:' + id, Object.assign({ id: id, nombre: String(x.nombre || '').trim() || sugNombre(g, x), carrera: g.carrera || '', semestre: String(x.semestre || ''), grupo: gr, modulo: x.modulo, submodulos: sub, inicioDocente: s.ps[0].inicio,
         horario: s.copiaHorario ? u.clone(g.horario || []) : [], alumnos: al, prev: g.id }, E.mods && E.mods.flujoDef && E.mods.flujoDef(x.modulo) ? { flujo: true } : {}));
       if (E.mods && E.mods.cargar) E.mods.cargar(x.modulo);

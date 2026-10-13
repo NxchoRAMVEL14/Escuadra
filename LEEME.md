@@ -452,6 +452,11 @@ al abrirla con internet. Tus datos no se tocan.
 | `aulaplus.js`, `ver.html` | Kit «te lo perdiste» con QR, actividad en 3 niveles, ruleta equitativa, rúbrica con QR, simulacros y revisión mensual, ficha y directorio de emergencia (`ver.html` muestra el kit y la rúbrica; los datos viajan en el enlace) |
 | `resultados.js` | Temas que cuestan, junta de padres, indicadores para la dirección, autoevaluación contra tu calificación y bitácora del proyecto |
 | `solidez.js` | Aviso de privacidad, semáforo con íconos, prueba de restauración del respaldo, modo solo lectura y registro de cambios de calificaciones |
+| `secreto.js` | Datos delicados cifrados con tu PIN (AES-GCM, llave PBKDF2): teléfono de casa, emergencia, seguro facultativo |
+| `menu.js` | Menú a tu medida: lo que más usas arriba y secciones escondidas |
+| `crecer.js` | Repaso espaciado semanal, evidencias de tu práctica docente y «Pídeselo a Claude» |
+| `vinculacion.js` | Vinculación (opcional): empresas, prácticas y estadías, evaluación del tutor y egresados |
+| `escuadra.min.js` | **Generado**: todos los archivos de la app juntos y comprimidos; es lo que carga `index.html`. Los archivos sueltos se quedan como fuente |
 | `entregas.js` | Tablero de entregas: qué pedir, tablero por entregable, matriz y tiras; actividades del guion creadas solas |
 | `hoy.js` | Inicio compacto «Hoy», cerrar semana y pre-cierre de captura |
 | `monitores.js` | Monitores rotativos en el centro de cómputo y su registro |
@@ -543,3 +548,4 @@ al abrirla con internet. Tus datos no se tocan.
 - v1.24: monitores y tutoría entre pares (EEF, *Teaching and Learning Toolkit*: Peer tutoring; Rosenshine, 2012); recuperación del boleto en el calentamiento (Dunlosky y col., 2013); IndexedDB y `navigator.storage.persist()` según MDN; compresión de los enlaces con `CompressionStream('deflate-raw')` (MDN); enlaces de WhatsApp `wa.me` según el Centro de ayuda de WhatsApp («Cómo usar el enlace para chatear»).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.
 - v1.26: vigencia de las NOM revisada el 12/10/2026 en el Catálogo Mexicano de Normas (PLATIICA, Secretaría de Economía) y el DOF: NOM-017-STPS-2024 (DOF 28/03/2025, en vigor 28/09/2025, sustituye a la 2008; resumen de obligaciones según Holland & Knight e IDC), NOM-008-SE-2021 (DOF 29/12/2023, en vigor 28/06/2024, cancela la NOM-008-SCFI-2002; Hogan Lovells), NOM-018-STPS-2015, NOM-022-STPS-2015, NOM-004-STPS-1999 (el PROY-NOM-004-STPS-2020 no se publicó como definitivo), NOM-001-SEDE-2012, NOM-002-STPS-2010 (simulacros, revisión de extintores, 1.50 m y distancias de la Tabla 1 tomados del PDF oficial), NOM-026-STPS-2008, NOM-003-SEGOB-2011, NOM-052-SEMARNAT-2005 y las demás de la ficha. Las citas del contenido usan la versión vigente y anotan la que cita el programa SEP.
+- v1.27: Web Crypto (AES-GCM y PBKDF2-SHA-256, 600 000 iteraciones, lo que recomienda OWASP para PBKDF2-HMAC-SHA256) según MDN para los datos delicados; repaso espaciado basado en Roediger y Karpicke (2006, efecto de la práctica de recuperación) y Cepeda y col. (2006, distribución de la práctica).

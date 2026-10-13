@@ -1396,3 +1396,9 @@ details.ini-mas[open] > summary::before { content: '▾ ' }
 html.sem-ico .g.ok::before, html.sem-ico .chip.ok::before { content: "✓ " } html.sem-ico .g.warn::before, html.sem-ico .chip.warn::before { content: "! " } html.sem-ico .g.bad::before, html.sem-ico .chip.bad::before { content: "✕ " }
 html.sem-ico .sf-dot.sf-mal { border-radius: 2px } html.sem-ico .sf-dot.sf-reg { transform: rotate(45deg); border-radius: 1px }
 .btn.nw { white-space: nowrap }
+/* v1.27 · menú a tu medida */
+.mn-h { margin: 6px 2px 8px; font-size: .9rem; color: var(--muted) } .mn-bar { margin: 4px 2px 10px }
+.mas-grid a.mn-ed { position: relative; outline: 2px dashed var(--line) } .mas-grid a.mn-ed.off { opacity: .45 } .mn-eye { font-size: .75rem; color: var(--brand) }
+.esp-reg { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 10px }
+.vi-eg { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end } .vi-eg .inp { max-width: 220px }
+.pr.carta { font-size: 11pt; line-height: 1.5 } .pr.carta p { margin: 0 0 4mm }

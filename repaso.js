@@ -37,7 +37,7 @@
     const agg = {};
     S.keys('rep:' + g.id + ':').forEach(k => {
       const f = k.slice(('rep:' + g.id + ':').length); if (desde && f < desde) return; const d = S.get(k) || {};
-      ['cal', 'bol'].forEach(t => { const x = d[t]; if (!x || !(x.n > 0)) return; (x.items || []).forEach(it => { if (it.ok == null || it.ok === '') return; const a = agg[it.tema] = agg[it.tema] || { s: 0, n: 0 }; a.s += Math.min(1, Number(it.ok) / (Number(it.n) || x.n)); a.n++; }); });
+      ['cal', 'bol', 'esp'].forEach(t => { const x = d[t]; if (!x || !(x.n > 0)) return; (x.items || []).forEach(it => { if (it.ok == null || it.ok === '') return; const a = agg[it.tema] = agg[it.tema] || { s: 0, n: 0 }; a.s += Math.min(1, Number(it.ok) / (Number(it.n) || x.n)); a.n++; }); });
     });
     const out = {}; Object.keys(agg).forEach(t => { out[t] = { p: agg[t].s / agg[t].n, n: agg[t].n }; }); return out;
   };

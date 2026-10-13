@@ -43,7 +43,7 @@ h1 { font-size:1.25rem; margin:0 0 6px } p { margin:.3em 0 .6em } .mut { color:v
   let d; try { d = await lee(); } catch (e) { m.innerHTML = '<div class="card"><h1>No se pudo abrir el repaso</h1><p>' + (e.message === 'nav' ? 'Tu navegador es muy antiguo: ábrelo en Chrome o Safari actualizados.' : 'El enlace está incompleto. Escanea otra vez el QR.') + '</p></div>'; return; }
   const Q = d.q || [], res = [];
   let i = 0;
-  const head = '<div class="top">' + logo + '<div><b>Repaso para casa</b><small>' + esc(d.g) + (d.n ? ' · No. ' + esc(d.n) : '') + '</small></div></div>';
+  const head = '<div class="top">' + logo + '<div><b>' + esc(d.t || 'Repaso para casa') + '</b><small>' + esc(d.g) + (d.n ? ' · No. ' + esc(d.n) : '') + '</small></div></div>';
   function pinta() {
     if (i >= Q.length) {
       const ok = res.filter(Boolean).length;

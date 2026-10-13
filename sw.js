@@ -1,9 +1,10 @@
 /* Escuadra · service worker: funciona sin internet y se actualiza solo. Cambia VERSION en cada entrega. */
-const VERSION = 'escuadra-v1.26.0';
-const SHELL = ['./', 'index.html', 'styles.css', 'config.js', 'data.js', 'ideas.js', 'temas.js', 'core.js', 'mods.js', 'views.js', 'perfil.js', 'paquete.js', 'clases.js', 'presentador.js', 'semaforo.js', 'figuras.js', 'videos.js', 'estrategias.js', 'tutoria.js', 'dinamicas.js', 'libreta.js', 'banco.js', 'examen.js', 'practicas.js', 'repaso.js', 'proyecto.js', 'industria.js', 'reconoce.js', 'aprobar.js', 'retro.js', 'mibanco.js', 'cierre.js', 'rapido.js', 'aula.js', 'captura.js', 'pendientes.js', 'camara.js', 'omr.js', 'evidencias.js', 'formularios.js', 'grupos.js', 'consejo.js', 'entregas.js', 'hoy.js', 'monitores.js', 'casa.js', 'semestre.js', 'aprende.js', 'seguridad.js', 'portafolio.js', 'inventario.js', 'cotutora.js', 'encuesta.js', 'normas-mapa.js', 'normas.js', 'tiempo.js', 'aulaplus.js', 'resultados.js', 'solidez.js', 'tutora.html', 'encuesta.html', 'ver.html', 'ayuda-data.js', 'ayuda.js', 'consulta.html', 'repaso.html', 'm1s1.js', 'm1s2.js', 'm1s3.js', 'm2s1.js', 'm3s1.js', 'm3s2.js', 'm3s3.js', 'm4s1.js', 'm4s2.js', 'm5s1.js', 'm5s2.js', 'cam-worker.js', 'lib-qrcode.js', 'lib-jsqr.js', 'lib-aruco.js', 'print.js', 'app.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'sc-lista.png', 'sc-clase.png', 'sc-cierre.png'];
+const VERSION = 'escuadra-v1.27.0';
+const SHELL = ['./', 'index.html', 'styles.css', 'config.js', 'escuadra.min.js', 'tutora.html', 'encuesta.html', 'ver.html', 'consulta.html', 'repaso.html', 'm1s1.js', 'm1s2.js', 'm1s3.js', 'm2s1.js', 'm3s1.js', 'm3s2.js', 'm3s3.js', 'm4s1.js', 'm4s2.js', 'm5s1.js', 'm5s2.js', 'cam-worker.js', 'lib-qrcode.js', 'lib-jsqr.js', 'lib-aruco.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'sc-lista.png', 'sc-clase.png', 'sc-cierre.png'];
 
+const SHELL_SET = new Set(SHELL.map(x => x === './' ? 'index.html' : x));
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(x => new Request(x, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim()));
@@ -14,9 +15,15 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.hostname.endsWith('supabase.co') || url.hostname.endsWith('supabase.in')) return; // datos: siempre en línea
   if (url.origin === self.location.origin) {
-    // primero la red, preguntando siempre al servidor si hay versión nueva (no-cache); sin internet usa la copia guardada
-    e.respondWith(fetch(new Request(url.href, { cache: 'no-cache', credentials: 'same-origin' })).then(r => { if (r.ok) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(req, cp)); } return r; })
-      .catch(() => caches.match(req, { ignoreSearch: true }).then(hit => hit || caches.match('index.html'))));
+    // v1.27: lo de la app abre directo de la copia guardada (rápido aunque haya mala señal). La versión nueva llega
+    // cuando cambia este archivo (sw.js): se descarga completa en segundo plano y se usa al volver a abrir.
+    const p = url.pathname.replace(/^.*\//, '') || 'index.html';
+    if (p === 'config.js' || !SHELL_SET.has(p)) {
+      e.respondWith(fetch(new Request(url.href, { cache: 'no-cache', credentials: 'same-origin' })).then(r => { if (r.ok) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(req, cp)); } return r; })
+        .catch(() => caches.match(req, { ignoreSearch: true }).then(hit => hit || caches.match('index.html'))));
+      return;
+    }
+    e.respondWith(caches.match(req, { ignoreSearch: true }).then(hit => hit || fetch(req).then(r => { if (r.ok) { const cp = r.clone(); caches.open(VERSION).then(c => c.put(req, cp)); } return r; })).catch(() => caches.match('index.html')));
     return;
   }
   if (/cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com/.test(url.hostname)) {
