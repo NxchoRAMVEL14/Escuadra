@@ -117,6 +117,7 @@
     return { ico: '📅', k: nx ? 'Próxima clase: ' + u.fLarga(nx) : 'Sin clases próximas', t: rn ? rn.map(r => r.b.inicio + ' ' + r.txt).join(' · ') : '', b: nx ? link(icon('board') + ' Preparar', 'clase/' + nx, 'small') : '' };
   };
   H3.urgente = (g, hoy) => {
+    if (E.seguridad && C.esClase(g, hoy)) { const r = E.seguridad.riesgoDia(g, hoy); if (r.length) { const sin = E.seguridad.sinFirma(g, hoy), ok = (S.get('segEpp:' + g.id + ':' + hoy) || {}).ok; if (sin.length || !ok) return { ico: '🦺', k: 'Hoy hay práctica con herramienta o corriente', t: (sin.length ? sin.length + (sin.length === 1 ? ' alumno sin' : ' alumnos sin') + ' reglamento firmado · ' : '') + (ok ? 'revisión hecha' : 'falta la revisión de seguridad'), b: link('Revisar', 'clase/' + hoy, 'small primary') }; } }
     const p = D.parciales().filter(x => x.inicio <= hoy && x.captura >= hoy && u.diffDays(hoy, x.captura) <= 3)[0];
     if (p) { const st = PC.estado(g, p); if (st.faltan) return { ico: '⏰', k: 'Captura del ' + p.nombre + ' en ' + u.diffDays(hoy, p.captura) + ' días', t: 'Faltan ' + st.faltan + ' cosas para el acta', b: link('Pre-cierre', 'precierre/' + p.id, 'small primary') }; }
     const cp = E.cierre ? E.cierre.pendientes(g, hoy).filter(f => f !== hoy) : [];

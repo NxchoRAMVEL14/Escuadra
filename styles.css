@@ -1339,3 +1339,28 @@ details.ini-mas[open] > summary::before { content: '▾ ' }
 .en-col > summary h4::after { content: '▾'; margin-left: auto; color: var(--muted); font-size: .8rem } .en-col:not([open]) > summary h4::after { content: '▸' }
 .en-col:not([open]) > summary .tiny { margin-bottom: 0 }
 @media (max-width: 759px) { .en-col-rev { order: 1 } .en-col-falta { order: 2 } .en-col-prox { order: 3 } .en-col-ok { order: 4 } }
+
+/* v1.25 · seguridad, inventario, portafolio, constancias, encuesta */
+.sg-chk { list-style: none; padding: 0; margin: 6px 0 10px }
+.sg-chk li { padding: 4px 0 } .sg-chk label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer } .sg-chk input { width: 20px; height: 20px; accent-color: var(--brand); flex: none; margin-top: 1px }
+.sg-sin { display: inline-flex; align-items: center; gap: 4px; margin: 2px 6px 2px 0 }
+.sg-l, .iv-l, .po-l { list-style: none; padding: 0; margin: 0 }
+.sg-l li, .iv-l li, .po-l li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line) }
+.sg-l li:first-child, .iv-l li:first-child, .po-l li:first-child { border-top: 0 }
+.iv-l small { display: block } .iv-n { min-width: 26px; text-align: center } .iv-l select { padding: 5px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink) }
+.sg-al { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px }
+.pr .sg-reglas li { margin: 4px 0; font-size: 10.5pt }
+.pr.cn-pr { page-break-after: always; height: 190mm; display: flex; align-items: center; justify-content: center; padding: 10mm }
+.pr .cn-in { width: 100%; height: 100%; border: 3px double #0e5e5a; border-radius: 6mm; padding: 10mm 16mm; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3mm }
+.pr .cn-in svg { width: 18mm; height: 18mm } .pr .cn-in h1 { font-size: 28pt; color: #0e5e5a; margin: 0; letter-spacing: .02em } .pr .cn-in h2 { font-size: 24pt; margin: 0 } .pr .cn-in h3 { font-size: 15pt; margin: 0; color: #0e5e5a }
+.pr .cn-in p { margin: 0; font-size: 11pt } .pr .cn-k { font-size: 9pt !important; color: #444; text-transform: uppercase; letter-spacing: .08em } .pr .cn-det { color: #444 } .pr .cn-folio { font-size: 7pt !important; color: #666; margin-top: 2mm !important }
+.pr .cn-firma { margin-top: 10mm; display: flex; justify-content: center } .pr .cn-firma span { border-top: 1px solid #000; padding-top: 2mm; min-width: 70mm; font-size: 10pt; text-align: center }
+.pr.po-pr { font-size: 10.5pt; line-height: 1.4 } .pr .po-head { display: flex; gap: 6mm; align-items: center; border-bottom: 2px solid #0e5e5a; padding-bottom: 4mm; margin-bottom: 4mm } .pr .po-head svg { width: 16mm; height: 16mm; flex: none }
+.pr.po-pr h1 { font-size: 20pt; margin: 0 } .pr.po-pr h2 { font-size: 13pt; color: #0e5e5a; margin: 5mm 0 2mm } .pr.po-pr h3 { font-size: 11pt; margin: 3mm 0 1mm } .pr.po-pr ul { margin: 1mm 0; padding-left: 6mm } .pr.po-pr p { margin: 1mm 0 }
+.pr .po-fotos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm } .pr .po-fotos figure { margin: 0; page-break-inside: avoid } .pr .po-fotos img { width: 100%; height: 45mm; object-fit: cover; border-radius: 2mm } .pr .po-fotos figcaption { font-size: 8pt; color: #444 }
+.pr .po-pie { margin-top: 8mm }
+.ek-bars { display: flex; gap: 10px; align-items: flex-end; margin: 6px 0 12px } .ek-bars div { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1 } .ek-bars i { display: block; width: 100%; max-width: 48px; background: var(--brand); border-radius: 6px 6px 0 0; min-height: 3px } .ek-bars span { font-size: 1.3rem }
+.ek-txt { display: flex; flex-wrap: wrap; gap: 6px } .ek-txt .rt-chip { text-align: left; white-space: normal }
+.ek-yh { list-style: none; padding: 0; margin: 0 0 8px } .ek-yh li { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; padding: 6px 0; border-top: 1px solid var(--line) } @media (max-width: 560px) { .ek-yh li { grid-template-columns: 1fr } }
+.ek-esc { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px }
+.pr.ek-paps { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm } .pr .ek-pap { border: 1px dashed #000; padding: 4mm; font-size: 10pt; height: 125mm } .pr .ek-pap p { margin: 2mm 0 } .pr .ek-lin { height: 40mm; background: repeating-linear-gradient(transparent 0 7mm, #999 7mm 7.3mm) }

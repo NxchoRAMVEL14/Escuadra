@@ -1,4 +1,4 @@
-# Escuadra · Control docente (v1.24.0)
+# Escuadra · Control docente (v1.25.0)
 
 App web instalable (PWA) para tus clases de Mecatrónica en el CETAC 19: pase de lista y participación,
 calificaciones con tu esquema (Examen 50 · Libreta/Proyecto/Bitácora 40 · Asistencia 5 · Participación 5),
@@ -9,6 +9,20 @@ herramientas de clase (alumno al azar, equipos, temporizador), bitácora y lista
 **Nuevo en v1.1:** sección **Temas** con 26 explicaciones del Módulo II (nivelación del Submódulo 1, mecanismos,
 neumática e hidráulica y formación integral) y **modo Proyector**: diapositivas a pantalla completa generadas solas,
 con preguntas que revelan la respuesta y alumno al azar. Además, 24 ideas nuevas para clase con proyector.
+
+**Nuevo en v1.25 · cambio de semestre, seguridad y lo que tus alumnos se llevan:**
+- **Cambio de semestre** (Mis grupos → Pasar al siguiente semestre): archiva cada grupo con sus fechas y crea el nuevo con los mismos
+  alumnos y números de lista, el módulo que sigue, sus submódulos y el horario; pones las fechas de los parciales nuevos.
+- **El guion aprende** (Clases → aviso, o Más): compara lo planeado con lo que pasó y guarda ajustes de horas por actividad que se
+  aplican a los grupos que empiecen después (nunca al grupo en curso).
+- **Seguridad en el taller** (Más → Seguridad): reglamento editable con hoja de firmas (alumno y casa), revisión antes de cada práctica
+  con herramienta o corriente (en el guion y en «Hoy»), aviso de quién no ha firmado y bitácora de incidentes con reporte.
+- **Portafolio y constancias** (ficha del alumno, Imprimir y Más → Constancias): portafolio para prácticas o empleo con lo que sabe hacer,
+  FreeCAD, proyectos, logros y fotos de trabajos; constancias de logro con folio (reconocimiento del docente).
+- **Inventario** (Más → Inventario): artículos, préstamos, lo que piden tus guiones en 3 semanas y lista de compras.
+- **Vista para la co-tutora** (Tutoría): enlace cifrado con PIN (`tutora.html`, AES-GCM), solo lectura, sin servidor.
+- **Encuesta anónima del mes** (Más → Encuesta): por QR (`encuesta.html`; corre una vez `schema-encuesta.sql` en Supabase) o en papel,
+  con «Ustedes dijeron → Yo hice» para proyectar.
 
 **Nuevo en v1.24 · menos tiempo en la app, clases que rinden más y resultados que llegan antes a casa:**
 - **Ayuda y manual** (botón **?** arriba): abre el manual en la sección de la pantalla donde estás, con buscador y capturas; también
@@ -426,6 +440,13 @@ al abrirla con internet. Tus datos no se tocan.
 | `formularios.js` | QR de tus formularios e importación de respuestas (cuestionario, autoevaluación y coevaluación) |
 | `grupos.js` | Mis grupos: agregar con horario, cambiar de grupo, quién tiene clase ahora, archivar y borrar |
 | `consejo.js` | Reporte para el consejo técnico: uno por grupo, para imprimir o proyectar, con acuerdos y próximas fechas |
+| `semestre.js` | Cambio de semestre: archivar y crear los grupos nuevos con sus alumnos |
+| `aprende.js` | El guion aprende: horas reales contra planeadas y ajustes para los próximos grupos |
+| `seguridad.js` | Reglamento y firmas, revisión antes de la práctica e incidentes |
+| `portafolio.js` | Portafolio del alumno y constancias de logro |
+| `inventario.js` | Inventario, préstamos y compras del taller |
+| `cotutora.js`, `tutora.html` | Vista cifrada para la co-tutora |
+| `encuesta.js`, `encuesta.html`, `schema-encuesta.sql` | Encuesta anónima del mes y «Ustedes dijeron → Yo hice» |
 | `entregas.js` | Tablero de entregas: qué pedir, tablero por entregable, matriz y tiras; actividades del guion creadas solas |
 | `hoy.js` | Inicio compacto «Hoy», cerrar semana y pre-cierre de captura |
 | `monitores.js` | Monitores rotativos en el centro de cómputo y su registro |
@@ -513,5 +534,6 @@ al abrirla con internet. Tus datos no se tocan.
   Hoja de respuestas: diseño y lectura propios de la app (4 marcas de esquina, homografía y comparación de cada burbuja con el papel
   de alrededor), probados con fotos simuladas: giradas, con perspectiva, sombra, desenfoque y JPEG. Espacio de fotos y reglas de
   acceso según la guía de Supabase *Storage Access Control* (supabase.com/docs/guides/storage/security/access-control).
+- v1.25: NOM-017-STPS-2008, NOM-004-STPS-1999 y NOM-029-STPS-2011 (seguridad en el taller); Web Crypto (AES-GCM y PBKDF2) según MDN para la vista de la co-tutora; Roorda y col. (2011) sobre la relación docente-alumno para «Ustedes dijeron → Yo hice»; políticas RLS de Supabase (*Row Level Security*) para la encuesta.
 - v1.24: monitores y tutoría entre pares (EEF, *Teaching and Learning Toolkit*: Peer tutoring; Rosenshine, 2012); recuperación del boleto en el calentamiento (Dunlosky y col., 2013); IndexedDB y `navigator.storage.persist()` según MDN; compresión de los enlaces con `CompressionStream('deflate-raw')` (MDN); enlaces de WhatsApp `wa.me` según el Centro de ayuda de WhatsApp («Cómo usar el enlace para chatear»).
 - Perfil: criterios propios de la app (cada dato muestra de dónde sale). El lenguaje de "todavía" sigue a Dweck (2006), *Mindset*; el cuidado con etiquetas, a Jussim y Harber (2005) sobre expectativas del docente.
