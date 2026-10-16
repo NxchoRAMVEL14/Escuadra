@@ -329,17 +329,49 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       let disp = 0, imp = 0, di = 0; cl.forEach(c => { disp += c.horas; if (c.fecha <= hoy) { imp += c.horas; di++; } });
       return { disp: disp, imp: imp, dias: cl.length, diasImp: di, programa: sm ? sm.horas : null };
     },
+    // la unidad de asistencia es la clase de 50 min: cada hora del bloque es una clase
+    minHM(hm, m) { const [h, mi] = String(hm).split(':').map(Number), t = h * 60 + mi + m; return u.pad(Math.floor(t / 60) % 24) + ':' + u.pad(t % 60); },
+    // receso fijo del CETAC 19: 10:00–10:30. Una clase de 50 min nunca lo cruza: si le tocaría, empieza a las 10:30
+    RECESO: [600, 630],
+    hmAMin(hm) { const p = String(hm || '0:0').split(':'); return Number(p[0]) * 60 + Number(p[1] || 0); },
+    minAHM(t) { return u.pad(Math.floor(t / 60) % 24) + ':' + u.pad(t % 60); },
+    // horas de inicio y fin de n clases de 50 min desde inicio, saltando el receso
+    horasClases(inicio, n) {
+      const [rA, rB] = C.RECESO, out = []; let t = C.hmAMin(inicio);
+      for (let i = 0; i < n; i++) {
+        if (t < rB && t + 50 > rA) t = Math.max(t, rB);
+        out.push({ ini: C.minAHM(t), fin: C.minAHM(t + 50) }); t += 50;
+      }
+      return out;
+    },
+    // minutos de un bloque que caen fuera del receso (para calcular las horas de un bloque)
+    minutosSinReceso(ini, fin) { const [rA, rB] = C.RECESO, a = C.hmAMin(ini), b = C.hmAMin(fin), solape = Math.max(0, Math.min(b, rB) - Math.max(a, rA)); return Math.max(0, b - a - solape); },
+    clasesDia(g, f) { const out = []; C.bloquesDia(g, f).forEach(b => { const n = Math.max(1, Math.ceil(Number(b.horas) || 1)); C.horasClases(b.inicio, n).forEach((h, s) => out.push({ k: b.inicio + '#' + s, ini: h.ini, fin: h.fin, lugar: b.lugar || 'aula' })); }); return out; },
+    clasesCuenta(g, f) { const cl = C.clasesDia(g, f); return cl.length ? cl.map(x => x.k) : [null]; },
+    // la marca del día aplica a todas sus clases; una excepción (aid|clase) cambia solo esa clase
+    marca(doc, aid, k) { doc = doc || {}; if (k && doc[aid + '|' + k] != null) return doc[aid + '|' + k]; return doc[aid] || 'A'; },
+    ambito(f) { return ((E.ui && E.ui.listaCls) || {})[f] || null; },
+    setMarca(g, f, aid, st, k) {
+      S.update('asis:' + g.id + ':' + f, doc => {
+        if (!Object.keys(doc).length) D.alumnos(g).forEach(a => { doc[a.id] = 'A'; });
+        if (k) doc[aid + '|' + k] = st;
+        else { Object.keys(doc).forEach(x => { if (x.indexOf(aid + '|') === 0) delete doc[x]; }); doc[aid] = st; }
+      }, {});
+    },
     fechasRegistradas(g, p) { const pre = 'asis:' + g.id + ':'; return S.keys(pre).map(k => k.slice(pre.length)).filter(f => f >= p.inicio && f <= p.fin).sort(); },
     fechasLista(g, p) { const set = {}; C.clases(g, p).forEach(c => { set[c.fecha] = 1; }); C.fechasRegistradas(g, p).forEach(f => { set[f] = 1; }); return Object.keys(set).sort(); },
     cuenta(st) { const c = D.cfg(); return st === 'A' || (st === 'R' && c.retardoCuenta) || (st === 'J' && c.justCuenta); },
     asis(g, p, aid) {
-      const c = D.cfg(); const r = { ses: 0, a: 0, f: 0, ret: 0, j: 0, hs: 0, ha: 0, hf: 0, racha: 0, pct: null, fechasF: [] };
+      const r = { ses: 0, a: 0, f: 0, ret: 0, j: 0, hs: 0, ha: 0, hf: 0, racha: 0, pct: null, fechasF: [] };
       C.fechasRegistradas(g, p).forEach(f => {
-        const doc = S.get('asis:' + g.id + ':' + f) || {}; const st = doc[aid] || 'A'; const h = C.horasDia(g, f) || 1;
-        r.ses++; r.hs += h; if (st === 'R') r.ret++; if (st === 'J') r.j++;
-        if (C.cuenta(st)) { r.a++; r.ha += h; r.racha = 0; } else { r.f++; r.hf += h; r.racha++; r.fechasF.push(f); }
+        const doc = S.get('asis:' + g.id + ':' + f) || {}; let falto = false;
+        C.clasesCuenta(g, f).forEach(k => {
+          const st = C.marca(doc, aid, k); r.ses++; r.hs++; if (st === 'R') r.ret++; if (st === 'J') r.j++;
+          if (C.cuenta(st)) { r.a++; r.ha++; r.racha = 0; } else { r.f++; r.hf++; r.racha++; falto = true; }
+        });
+        if (falto) r.fechasF.push(f);
       });
-      if (r.ses) r.pct = c.conteoActa === 'horas' ? r.ha / r.hs * 100 : r.a / r.ses * 100;
+      if (r.ses) r.pct = r.a / r.ses * 100;
       return r;
     },
     partRegistrada(g, p) { const pre = 'part:' + g.id + ':'; return S.keys(pre).some(k => { const f = k.slice(pre.length); return f >= p.inicio && f <= p.fin; }) || C.acts(g, p.id).some(a => a.extra && Object.keys(a.extra).length); },
@@ -415,7 +447,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       D.parciales().forEach(p => {
         const k = C.cal(g, p.id, aid); let as = '', fa = '';
         if (k.manual) { as = k.asis == null ? '' : k.asis; fa = k.fal == null ? '' : k.fal; }
-        else { const a = C.asis(g, p, aid); if (a.ses) { as = c.conteoActa === 'horas' ? a.ha : a.a; fa = c.conteoActa === 'horas' ? a.hf : a.f; } }
+        else { const a = C.asis(g, p, aid); if (a.ses) { as = a.a; fa = a.f; } }
         row.push(k.final == null ? '' : C.escala(k.final), as, fa);
       });
       const fs = C.finalSem(g, aid); row.push(fs.final == null ? '' : C.escala(fs.final));

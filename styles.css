@@ -392,6 +392,8 @@ ol.steps li { margin: 6px 0 }
 .cl-act { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px }
 .cl-act:first-of-type { border-top: 0; margin-top: 4px; padding-top: 0 }
 .cl-act h4 { margin: 8px 0 4px; font-size: 1.08rem }
+.cl-ses { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 10px }
+.cl-ses-h { margin-bottom: 2px }
 .cl-pasos { margin: 6px 0; padding-left: 0; list-style: none; counter-reset: p }
 .cl-pasos li { position: relative; padding: 6px 0 6px 64px; border-bottom: 1px dashed var(--line); font-size: .92rem }
 .cl-pasos li:last-child { border-bottom: 0 }

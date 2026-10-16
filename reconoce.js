@@ -14,7 +14,7 @@
   const enRango = (f, a, b) => f >= a && f < b;
 
   // asistencia: sesiones registradas y presentes en [a, b)
-  const asis = (g, aid, a, b) => { const pre = 'asis:' + g.id + ':'; let s = 0, p = 0; S.keys(pre).forEach(k => { const f = k.slice(pre.length); if (!enRango(f, a, b)) return; s++; if (C.cuenta((S.get(k) || {})[aid] || 'A')) p++; }); return { s: s, p: p, pct: s ? p / s : null }; };
+  const asis = (g, aid, a, b) => { const pre = 'asis:' + g.id + ':'; let s = 0, p = 0; S.keys(pre).forEach(k => { const f = k.slice(pre.length); if (!enRango(f, a, b)) return; const doc = S.get(k) || {}; C.clasesCuenta(g, f).forEach(kl => { s++; if (C.cuenta(C.marca(doc, aid, kl))) p++; }); }); return { s: s, p: p, pct: s ? p / s : null }; };
   const part = (g, aid, a, b) => { const pre = 'part:' + g.id + ':'; let n = 0; S.keys(pre).forEach(k => { const f = k.slice(pre.length); if (enRango(f, a, b)) n += Number((S.get(k) || {})[aid] || 0); }); return n; };
   // tareas de libreta con fecha en [a, b): completas cuentan 1, incompletas 0.5
   const tareas = (g, aid, a, b) => {

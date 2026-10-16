@@ -57,7 +57,7 @@
     const as = {}, sem = {}; al.forEach(a => { as[a.id] = { ses: 0, a: 0, f: 0, r: 0, j: 0 }; });
     fechas.forEach(x => {
       const doc = S.get(pre + x) || {}, lun = u.addDays(x, -((u.dow(x) + 6) % 7)), w = sem[lun] = sem[lun] || { a: 0, s: 0 };
-      al.forEach(a => { const st = doc[a.id] || 'A', r = as[a.id]; r.ses++; w.s++; if (st === 'R') r.r++; if (st === 'J') r.j++; if (C.cuenta(st)) { r.a++; w.a++; } else r.f++; });
+      const cls = C.clasesCuenta(g, x); al.forEach(a => cls.forEach(kl => { const st = C.marca(doc, a.id, kl), r = as[a.id]; r.ses++; w.s++; if (st === 'R') r.r++; if (st === 'J') r.j++; if (C.cuenta(st)) { r.a++; w.a++; } else r.f++; }));
     });
     const tA = al.reduce((s, a) => s + as[a.id].a, 0), tS = al.reduce((s, a) => s + as[a.id].ses, 0);
     R.asis = { dias: fechas.length, pct: pct(tA, tS), por: as, semanas: Object.keys(sem).sort().map(k => ({ lun: k, pct: pct(sem[k].a, sem[k].s) })),

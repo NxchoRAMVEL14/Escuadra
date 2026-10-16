@@ -641,7 +641,7 @@ window.E = window.E || {};
       vaciasCero: true,
       retardoCuenta: true,
       justCuenta: true,
-      conteoActa: 'dias',
+      conteoActa: 'horas',
       escalaActa: 100,
       minAsis: 80,
       minAprob: 60, umbralBien: 80,

@@ -88,7 +88,7 @@
     const rows = al.map(a => { const r = C.actaFila(g, a.id); return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + r.slice(0, 9).map(v => '<td class="c">' + esc(v) + '</td>').join('') + '<td class="c"><b>' + esc(r[9]) + '</b></td></tr>'; }).join('');
     P.run('<div class="pr">' + head(g, 'ACTA PARA ENVÍO DE CALIFICACIONES', 'DOCENTE: ' + D.cfg().docente) +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">NOMBRE</th><th>1 PAR</th><th>ASIS</th><th>FAL</th><th>2 PAR</th><th>ASIS</th><th>FAL</th><th>3 PAR</th><th>ASIS</th><th>FAL</th><th>CALIF. FINAL</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<p class="tiny">Escala: ' + (Number(D.cfg().escalaActa) === 10 ? '10' : '100') + ' · ASIS/FAL por ' + (D.cfg().conteoActa === 'horas' ? 'hora' : 'día de clase') + '. Generado con Escuadra el ' + u.fFecha(u.today()) + '.</p>' + firma() + '</div>', { landscape: true, title: 'Acta ' + g.grupo });
+      '<p class="tiny">Escala: ' + (Number(D.cfg().escalaActa) === 10 ? '10' : '100') + ' · ASIS/FAL por ' + 'clase de 50 min' + '. Generado con Escuadra el ' + u.fFecha(u.today()) + '.</p>' + firma() + '</div>', { landscape: true, title: 'Acta ' + g.grupo });
   };
   P.actaCopy = async g => {
     const t = D.alumnos(g).map(a => C.actaFila(g, a.id).slice(0, 9).join('\t')).join('\n');

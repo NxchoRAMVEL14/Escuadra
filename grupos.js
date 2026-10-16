@@ -140,7 +140,7 @@
   CH['gn-hor'] = el => {
     const s = estado(), b = s.horario[Number(el.dataset.i)]; if (!b) return; const f = el.dataset.f;
     b[f] = f === 'dia' || f === 'horas' ? Number(el.value) : el.value;
-    if ((f === 'inicio' || f === 'fin') && b.inicio && b.fin) { const mins = aMin(b.fin) - aMin(b.inicio); if (mins > 0) b.horas = Math.max(1, Math.round(mins / 50)); repinta(); }
+    if ((f === 'inicio' || f === 'fin') && b.inicio && b.fin) { const mins = C.minutosSinReceso(b.inicio, b.fin); if (mins > 0) b.horas = Math.max(1, Math.round(mins / 50)); repinta(); }
   };
   A['gn-hor-add'] = () => { const s = estado(), ult = s.horario[s.horario.length - 1]; s.horario.push(ult ? { dia: Math.min(6, Number(ult.dia) + 1), inicio: ult.inicio, fin: ult.fin, horas: ult.horas, lugar: ult.lugar || 'aula' } : { dia: 1, inicio: '07:30', fin: '08:20', horas: 1, lugar: 'aula' }); repinta(); };
   A['gn-hor-del'] = el => { estado().horario.splice(Number(el.dataset.i), 1); repinta(); };

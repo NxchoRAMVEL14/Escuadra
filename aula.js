@@ -18,12 +18,12 @@
   try { E.ui.aula.girar = localStorage.getItem('escuadra.girar') === '1'; } catch (e) { }
 
   /* =================== asistencia =================== */
-  AU.setAsis = (g, f, aid, st) => S.update('asis:' + g.id + ':' + f, doc => { if (!Object.keys(doc).length) D.alumnos(g).forEach(a => { doc[a.id] = 'A'; }); doc[aid] = st; }, {});
-  AU.ciclo = (g, f, aid) => { const d = S.get('asis:' + g.id + ':' + f) || {}; AU.setAsis(g, f, aid, ORDEN[(ORDEN.indexOf(d[aid] || 'A') + 1) % ORDEN.length]); };
+  AU.setAsis = (g, f, aid, st) => C.setMarca(g, f, aid, st, C.ambito(f));
+  AU.ciclo = (g, f, aid) => { const d = S.get('asis:' + g.id + ':' + f) || {}; AU.setAsis(g, f, aid, ORDEN[(ORDEN.indexOf(C.marca(d, aid, C.ambito(f))) + 1) % ORDEN.length]); };
   // pase de lista: mantener presionado la letra → elegir asistió, falta, retardo o justificada
   LP['asis-menu'] = el => {
     const g = D.grupoActual(), a = g && D.alumno(g, el.dataset.aid); if (!a) return;
-    const f = el.dataset.fecha, cur = ((S.get('asis:' + g.id + ':' + f) || {})[a.id]) || 'A';
+    const f = el.dataset.fecha, cur = C.marca(S.get('asis:' + g.id + ':' + f) || {}, a.id, C.ambito(f));
     E.modal.open(u.corto(a.nombre) + ' · ' + u.fCorta(f), '<div class="as-menu">' + ORDEN.map(s => '<button type="button" class="as-op st-' + s + (s === cur ? ' on' : '') + '" data-act="asis-set" data-aid="' + a.id + '" data-fecha="' + f + '" data-st="' + s + '"><b>' + s + '</b><span>' + ST[s][1] + '</span></button>').join('') + '</div>' +
       '<p class="muted small mt">¿Trajo justificante de varios días? ' + btn('📄 Justificar por fechas', 'jus-open', 'data-aid="' + a.id + '"', 'small ghost') + '</p>');
   };

@@ -105,7 +105,7 @@
   // Yo no abandono: A asistencia (2 o más faltas en el mes), B bajo desempeño, C conducta; 2 o más señales = atención urgente.
   T.alertas = g => {
     const hoy = u.today(), desde = u.addDays(hoy, -30), al = D.alumnos(g), fal = {}, neg = {}, mal = {};
-    S.keys('asis:' + g.id + ':').forEach(k => { const f = k.split(':').pop(); if (f < desde || f > hoy) return; const doc = S.get(k) || {}; al.forEach(a => { if (!C.cuenta(doc[a.id] || 'A')) fal[a.id] = (fal[a.id] || 0) + 1; }); });
+    S.keys('asis:' + g.id + ':').forEach(k => { const f = k.split(':').pop(); if (f < desde || f > hoy) return; const doc = S.get(k) || {}; al.forEach(a => C.clasesCuenta(g, f).forEach(kl => { if (!C.cuenta(C.marca(doc, a.id, kl))) fal[a.id] = (fal[a.id] || 0) + 1; })); });
     const negIds = (E.OBS || []).filter(o => o.pos < 0).map(o => o.id);
     S.keys('obs:' + g.id + ':').forEach(k => { const f = k.split(':').pop(); if (f < desde || f > hoy) return; const doc = S.get(k) || {}; Object.keys(doc).forEach(aid => { const n = (doc[aid] || []).filter(x => negIds.indexOf(x) >= 0).length; if (n) neg[aid] = (neg[aid] || 0) + n; }); });
     if (E.semaforo) { const p = C.parcialActual(hoy), per = E.semaforo.periodos(g).find(x => x.id === p.id); if (per) E.semaforo.datos(g, per.id).filas.forEach(r => { if (r.n === 'mal') mal[r.a.id] = r; }); }
