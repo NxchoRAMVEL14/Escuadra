@@ -176,7 +176,7 @@
     fecha = fecha || C.fechaListaDefault(g, u.today());
     const doc = S.get('asis:' + g.id + ':' + fecha), pd = S.get('part:' + g.id + ':' + fecha) || {};
     const prev = C.claseAnterior(g, fecha), next = C.siguienteClase(g, fecha), horas = C.horasDia(g, fecha), asu = C.esAsueto(fecha);
-    const cnt = { A: 0, F: 0, R: 0, J: 0 }; al.forEach(a => { cnt[(doc && doc[a.id]) || 'A']++; });
+    const ks = C.clasesCuenta(g, fecha), amb = C.ambito(fecha), cd = C.clasesDia(g, fecha), cnt = { A: 0, F: 0, R: 0, J: 0 }; al.forEach(a => ks.forEach(k => { cnt[C.marca(doc, a.id, k)]++; }));
     let h = '<div class="datebar"><button type="button" class="iconbtn" data-act="go" data-to="lista/' + (prev || fecha) + '" ' + (prev ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button>' +
       '<div class="datebox"><b>' + u.cap(u.fLarga(fecha)) + '</b><input type="date" class="dateinp" value="' + fecha + '" data-ch="lista-fecha" aria-label="Elegir fecha"></div>' +
       '<button type="button" class="iconbtn" data-act="go" data-to="lista/' + (next || fecha) + '" ' + (next ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
@@ -184,30 +184,30 @@
     else if (!horas) h += '<p class="note">No tienes clase este día en tu horario. Si diste clase extra, puedes pasar lista igual.</p>';
     else h += '<p class="muted small">' + C.bloquesDia(g, fecha).map(b => b.inicio + '–' + b.fin).join(' · ') + ' · ' + horas + ' h</p>';
     const pl = (n, s, p) => n + ' ' + (n === 1 ? s : p);
-    h += doc ? '<p class="note ok">Lista registrada · ' + pl(cnt.A, 'asistencia', 'asistencias') + ' · ' + pl(cnt.F, 'falta', 'faltas') + (cnt.R ? ' · ' + pl(cnt.R, 'retardo', 'retardos') : '') + (cnt.J ? ' · ' + pl(cnt.J, 'justificada', 'justificadas') : '') + '</p>'
+    h += doc ? '<p class="note ok">Lista registrada · ' + pl(cnt.A, 'asistencia', 'asistencias') + ' · ' + pl(cnt.F, 'falta', 'faltas') + (cnt.R ? ' · ' + pl(cnt.R, 'retardo', 'retardos') : '') + (cnt.J ? ' · ' + pl(cnt.J, 'justificada', 'justificadas') : '') + (ks.length > 1 ? ' · en ' + ks.length + ' clases de 50 min' : '') + '</p>'
       : '<p class="note">Aún no registras esta lista. Toca la letra de quien falte: los demás quedan como presentes.</p>';
     h += '<div class="row wrap gap">' + (doc ? '' : btn('✓ Todos presentes', 'asis-todos', 'data-fecha="' + fecha + '"', 'primary')) + (E.aula ? link(icon('grid') + ' Modo clase', 'aula/' + fecha) : '') +
       btn(icon('dice') + ' Al azar', 'azar', 'data-fecha="' + fecha + '"') + btn(icon('team') + ' Equipos', 'equipos', 'data-fecha="' + fecha + '"') +
       link(icon('timer') + ' Temporizador', 'herramientas') + (doc ? btn(icon('trash') + ' Borrar registro', 'asis-borrar', 'data-fecha="' + fecha + '"', 'ghost danger') : '') + '</div>';
+    if (cd.length > 1) h += '<div class="filters ambito">' + [{ k: '', t: 'Todo el día' }].concat(cd.map(c => ({ k: c.k, t: c.ini + '–' + c.fin }))).map(o => '<button type="button" class="tab' + (o.k === (amb || '') ? ' on' : '') + '" data-act="lista-cls" data-fecha="' + fecha + '" data-cls="' + o.k + '">' + esc(o.t) + '</button>').join('') + '</div><p class="muted small">' + (amb ? 'Marcas solo la clase elegida; lo que no toques sigue la marca de todo el día.' : 'Marcas a todo el grupo el día entero. Para una sola clase, elígela arriba.') + '</p>';
     h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · <b>toca</b> la letra: falta o asistió; <b>mantenla presionada</b> para retardo o justificada; <b>+</b> suma participación; toca el <b>nombre</b> para anotar una observación (🤝 ❓ 💡 ⭐ 👎…).</p>';
     if (E.rap) h += E.rap.filtroHTML('lista');
     h += '<ul class="slist" data-kb="lista" data-f="' + fecha + '">' + al.map(a => {
-      const st = (doc && doc[a.id]) || 'A', n = Number(pd[a.id] || 0);
-      return '<li class="srow ' + (doc ? '' : 'pending') + '"' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><button type="button" class="st st-' + st + '" data-act="asis" data-lp="asis-menu" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Estado de ' + esc(a.nombre) + ': ' + st + '. Toca para falta o asistió; mantén presionado para retardo o justificada">' + st + '</button>' +
-        '<button type="button" class="sname obsbtn" data-act="obs-open" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Anotar observación de ' + esc(a.nombre) + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button>' +
+      const st = C.marca(doc, a.id, amb), n = Number(pd[a.id] || 0), exc = doc ? Object.keys(doc).filter(x => x.indexOf(a.id + '|') === 0).length : 0;
+      return '<li class="srow ' + (doc ? '' : 'pending') + '"' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><button type="button" class="st st-' + st + '" data-act="asis" data-lp="asis-menu" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-cls="' + (amb || '') + '" aria-label="Estado de ' + esc(a.nombre) + ': ' + st + '. Toca para falta o asistió; mantén presionado para retardo o justificada">' + st + '</button>' +
+        '<button type="button" class="sname obsbtn" data-act="obs-open" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Anotar observación de ' + esc(a.nombre) + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (exc && !amb ? ' <small class="muted" title="Clases con marca distinta al día">⚑' + exc + '</small>' : '') + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button>' +
         '<div class="partc"><button type="button" class="mini" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="-1" aria-label="Quitar participación">−</button><b>' + n + '</b><button type="button" class="mini plus" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="1" aria-label="Sumar participación">+</button></div></li>';
     }).join('') + '</ul>';
     return { t: 'Pase de lista', h: h };
   };
   // toque: asistió ↔ falta (retardo y justificada: mantener presionado, ver aula.js)
   A.asis = el => {
-    const g = D.grupoActual(), f = el.dataset.fecha, aid = el.dataset.aid;
-    S.update('asis:' + g.id + ':' + f, doc => {
-      if (!Object.keys(doc).length) D.alumnos(g).forEach(a => { doc[a.id] = 'A'; });
-      doc[aid] = (doc[aid] || 'A') === 'A' ? 'F' : 'A';
-    }, {});
+    const g = D.grupoActual(), f = el.dataset.fecha, aid = el.dataset.aid, k = el.dataset.cls || null;
+    const doc = S.get('asis:' + g.id + ':' + f) || {};
+    C.setMarca(g, f, aid, C.marca(doc, aid, k) === 'A' ? 'F' : 'A', k);
     if (navigator.vibrate) navigator.vibrate(12);
   };
+  A['lista-cls'] = el => { E.ui.listaCls = E.ui.listaCls || {}; const f = el.dataset.fecha, c = el.dataset.cls; if (c) E.ui.listaCls[f] = c; else delete E.ui.listaCls[f]; E.render(); };
   A['asis-todos'] = el => { const g = D.grupoActual(), d = {}; D.alumnos(g).forEach(a => { d[a.id] = 'A'; }); S.put('asis:' + g.id + ':' + el.dataset.fecha, d); u.toast('Lista registrada: todos presentes', 'ok'); };
   A['asis-borrar'] = el => { if (!confirm('¿Borrar el registro de asistencia de este día?')) return; S.del('asis:' + D.grupoActual().id + ':' + el.dataset.fecha); };
   A.part = el => {
@@ -314,7 +314,7 @@
     const p = fin ? null : (ps.find(x => x.id === pid) || C.parcialActual());
     let h = '<div class="tabs">' + ps.map(x => '<a class="tab ' + (p && x.id === p.id ? 'on' : '') + '" href="#/calificaciones/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '<a class="tab ' + (fin ? 'on' : '') + '" href="#/calificaciones/final">Final y acta</a></div>';
     if (fin) {
-      h += card('<h3>Calificación final</h3><p class="muted small">Promedio de los 3 parciales' + (Number(c.escalaActa) === 10 ? ' (escala 10)' : ' (base 100)') + '. En el acta, ASIS y FAL se cuentan por ' + (c.conteoActa === 'horas' ? 'horas' : 'días de clase') + ' (cámbialo en Ajustes).</p>' +
+      h += card('<h3>Calificación final</h3><p class="muted small">Promedio de los 3 parciales' + (Number(c.escalaActa) === 10 ? ' (escala 10)' : ' (base 100)') + '. En el acta, ASIS y FAL se cuentan por ' + 'clases de 50 min' + ' (cámbialo en Ajustes).</p>' +
         '<div class="row gap wrap">' + btn(icon('copy') + ' Copiar para el acta', 'acta-copy', '', 'primary') + btn(icon('download') + ' Descargar acta (.xlsx)', 'acta-xlsx') + btn(icon('print') + ' Imprimir acta', 'pr-acta') + '</div>');
       h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th>' + ps.map(x => '<th>' + esc(x.nombre.replace(' parcial', '')) + '</th>').join('') + '<th>Final</th></tr></thead><tbody>' +
         al.map(a => { const fs = C.finalSem(g, a.id); return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td>' + fs.parciales.map(v => '<td><span class="g ' + gclass(v) + '">' + gfmt(v) + '</span></td>').join('') + '<td><span class="g ' + gclass(fs.final) + '">' + gfmt(fs.final) + (fs.completo ? '' : '*') + '</span></td></tr>'; }).join('') +
@@ -942,7 +942,7 @@
     h += sec('docente', '👤 Docente y escuela', '<div class="fgrid">' + cf('docente', 'Nombre completo', c.docente) + cf('docenteCorto', 'Cómo te saludo', c.docenteCorto) + cf('plantel', 'Plantel', c.plantel) + cf('cct', 'C.C.T.', c.cct) + cf('entidad', 'Entidad', c.entidad) + cf('turno', 'Turno', c.turno) + cf('ciclo', 'Ciclo escolar', c.ciclo) + cf('periodo', 'Periodo', c.periodo) + '</div>' + cf('semestreTexto', 'Semestre (encabezado de planeaciones)', c.semestreTexto));
     h += sec('cal', '📊 Calificación', '<p class="small">Ponderación del parcial (debe sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.trabajos', 'Libreta/Proyecto/Bitácora %', c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
       '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
-      sel('escalaActa', 'Escala del acta', [[100, 'Base 100'], [10, 'Base 10']], c.escalaActa) + sel('conteoActa', 'Asistencias y faltas del acta', [['dias', 'Por día de clase'], ['horas', 'Por hora']], c.conteoActa) + '</div>' +
+      sel('escalaActa', 'Escala del acta', [[100, 'Base 100'], [10, 'Base 10']], c.escalaActa) + '' + '</div>' +
       '<div class="fgrid">' + sel('tardeValor', 'Lo entregado tarde vale (al marcar ⏰)', E.TARDE_OPC.map(x => [x, Math.round(x * 100) + ' %' + (x === 1 ? ' (sin descuento)' : '')]), C.tardeVale()) + '</div><p class="muted small">Cuando un alumno te entrega tarde, márcalo con ⏰ en la actividad, la libreta o la práctica (o «📥 Recibir tarde» en su ficha): su calificación se multiplica por este porcentaje. Con 75 %, un trabajo perfecto entregado tarde queda en 75 y uno de 80 queda en 60. Si después cambias el porcentaje, lo que ya marcaste conserva el que tenía.</p>' +
       tog('vaciasCero', 'Actividad sin calificación cuenta como 0 (no entregó) después de su fecha de entrega', c.vaciasCero) + tog('retardoCuenta', 'Retardo cuenta como asistencia', c.retardoCuenta) + tog('justCuenta', 'Falta justificada cuenta como asistencia', c.justCuenta));
     if (g) {
