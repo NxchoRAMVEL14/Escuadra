@@ -336,17 +336,19 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
     hmAMin(hm) { const p = String(hm || '0:0').split(':'); return Number(p[0]) * 60 + Number(p[1] || 0); },
     minAHM(t) { return u.pad(Math.floor(t / 60) % 24) + ':' + u.pad(t % 60); },
     // horas de inicio y fin de n clases de 50 min desde inicio, saltando el receso
-    horasClases(inicio, n) {
-      const [rA, rB] = C.RECESO, out = []; let t = C.hmAMin(inicio);
+    // si el bloque termina antes de completar la clase (por ejemplo, 10:30 a 11:00), la última clase termina a su hora real
+    horasClases(inicio, n, finBloque) {
+      const [rA, rB] = C.RECESO, out = [], tope = finBloque ? C.hmAMin(finBloque) : Infinity; let t = C.hmAMin(inicio);
       for (let i = 0; i < n; i++) {
         if (t < rB && t + 50 > rA) t = Math.max(t, rB);
-        out.push({ ini: C.minAHM(t), fin: C.minAHM(t + 50) }); t += 50;
+        if (t >= tope) break;
+        out.push({ ini: C.minAHM(t), fin: C.minAHM(Math.min(t + 50, tope)) }); t += 50;
       }
       return out;
     },
     // minutos de un bloque que caen fuera del receso (para calcular las horas de un bloque)
     minutosSinReceso(ini, fin) { const [rA, rB] = C.RECESO, a = C.hmAMin(ini), b = C.hmAMin(fin), solape = Math.max(0, Math.min(b, rB) - Math.max(a, rA)); return Math.max(0, b - a - solape); },
-    clasesDia(g, f) { const out = []; C.bloquesDia(g, f).forEach(b => { const n = Math.max(1, Math.ceil(Number(b.horas) || 1)); C.horasClases(b.inicio, n).forEach((h, s) => out.push({ k: b.inicio + '#' + s, ini: h.ini, fin: h.fin, lugar: b.lugar || 'aula' })); }); return out; },
+    clasesDia(g, f) { const out = []; C.bloquesDia(g, f).forEach(b => { const n = Math.max(1, Math.ceil(Number(b.horas) || 1)); C.horasClases(b.inicio, n, b.fin).forEach((h, s) => out.push({ k: b.inicio + '#' + s, ini: h.ini, fin: h.fin, lugar: b.lugar || 'aula' })); }); return out; },
     clasesCuenta(g, f) { const cl = C.clasesDia(g, f); return cl.length ? cl.map(x => x.k) : [null]; },
     // la marca del día aplica a todas sus clases; una excepción (aid|clase) cambia solo esa clase
     marca(doc, aid, k) { doc = doc || {}; if (k && doc[aid + '|' + k] != null) return doc[aid + '|' + k]; return doc[aid] || 'A'; },

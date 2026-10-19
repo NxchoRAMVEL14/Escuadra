@@ -2,8 +2,11 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.27.5';
+  E.VERSION = '1.27.8';
   E.CHANGELOG = [
+        { v: '1.27.8', f: '2026-10-17', t: '«✓ Ya la di» en cada actividad: la marcas como dada y ya no aparece en las clases que siguen ni en «Cambiar tema». Las clases pasadas no cambian.' },
+{ v: '1.27.7', f: '2026-10-17', t: '«Cambiar tema» muestra solo las actividades del parcial en el que estás (2º o 3º, aunque vaya de corrido) y solo las que todavía no das.' },
+    { v: '1.27.6', f: '2026-10-17', t: 'Cambiar tema de una clase: cada clase de 50 min tiene «⇄ Cambiar tema» para dar otra actividad del parcial en esos 50 minutos. Lo que estaba planeado se recorre a la siguiente clase, y «Volver al plan» lo quita.' },
     { v: '1.27.5', f: '2026-10-15', t: 'Receso fijo de 10:00 a 10:30: ninguna clase de 50 min lo cruza; las que tocaban el receso empiezan a las 10:30. Al armar un bloque, el receso no cuenta como hora.' },
     { v: '1.27.4', f: '2026-10-15', t: 'Asistencia por clase de 50 min en todo: el pase de lista tiene «Todo el día» o una clase concreta (una excepción solo cuenta esa clase); el acta, el Consejo, la Tutoría y los reconocimientos cuentan clases. La vista de Clases muestra el tema de cada clase de 50 min.' },
     { v: '1.27.3', f: '2026-10-15', t: 'Asistencia del acta por clase de 50 minutos (ahora es la opción por omisión): si el alumno faltó todo el día, cuenta una falta por clase; si no, una asistencia por clase. En taller, primero prácticas y proyecto; la teoría queda para aula.' },
