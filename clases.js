@@ -307,12 +307,8 @@
       for (let i = vivos.length - 1; i >= 0 && !exK; i--) if (vivos[i].lugar !== 'computo') exK = vivos[i].key;
       if (exK) { const bx = vivos.find(b => b.key === exK); exIt = K.examenFlujo(g, pid, Math.min(2, bx.horas)); }
     }
-    // lo que ya diste (✓ Ya la di): desde las clases de hoy en adelante ya no se planea; las pasadas no cambian
-    // ✓ Ya la di: guarda cuándo la marcaste; solo cambian las clases que empiezan después de ese momento
-    const dadasP = Object.entries(st.dadas || {}).map(([id, desde]) => [id, typeof desde === 'string' ? desde : '0000']);
     bl.forEach(b => {
       b.perdida = !!perd[b.key]; b.parts = []; b.libre = 0; if (b.perdida) return;
-      dadasP.forEach(([id, desde]) => { if (b.fecha + '@' + String(b.inicio).padStart(5, '0') < desde) return; const j = pos[id]; if (j != null && !done[j]) { done[j] = true; rem[j] = 0; } });
       b.recorte = Math.min(b.horas, Number(rec[b.key]) || 0);
       // te adelantaste: el bloque cubrió más horas del plan de las que dura (lo siguiente se jala aquí)
       b.adelanto = b.recorte ? 0 : Math.max(0, Number(ade[b.key]) || 0);
@@ -378,7 +374,7 @@
   function actHTML(g, pid, part, bloqueKey) {
     const it = part.it, min = it.pasos ? it.pasos.reduce((s, x) => s + x[0], 0) : 0;
     let h = '<div class="cl-act"><div class="row between gap wrap"><div>' + momChip(it.m) + ' <span class="chip">' + esc(it.tipo) + '</span>' + (part.h !== it.h ? ' <span class="chip">' + part.h + ' de ' + it.h + ' h</span>' : ' <span class="chip">' + it.h + ' h</span>') + '</div>' +
-      (it.auto ? '<span class="chip">Automático: fin del parcial</span>' : btn('⇄ Cambiar con la siguiente', 'cl-swap', 'data-pid="' + pid + '" data-pos="' + it.pos + '"', 'small ghost') + ' ' + btn(((K.estado(g).dadas || {})[it.id] ? '↺ Ya no la di' : '✓ Ya la di'), 'cl-dada', 'data-pid="' + pid + '" data-id="' + it.id + '"', 'small ' + ((K.estado(g).dadas || {})[it.id] ? 'ghost' : ''))) + '</div>' +
+      (it.auto ? '<span class="chip">Automático: fin del parcial</span>' : btn('⇄ Cambiar con la siguiente', 'cl-swap', 'data-pid="' + pid + '" data-pos="' + it.pos + '"', 'small ghost')) + '</div>' +
       '<h4>' + esc(it.t) + '</h4>' + (it.lugar === 'computo' ? '<p class="small muted">💻 Necesita centro de cómputo.</p>' : it.lugar === 'taller' ? '<p class="small muted">🛠️ Mejor en taller (también se puede en el aula).</p>' : '') + (part.antes ? '<p class="note">Continúa de la clase anterior (' + part.antes + ' h ya dadas).</p>' : '') + (part.sigue ? '<p class="note">Sigue en la próxima clase.</p>' : '') + (part.aviso ? '<p class="note warn">' + esc(part.aviso) + '</p>' : '') +
       '<p><b>Objetivo:</b> ' + esc(it.obj) + '</p>';
     const rp = E.run && E.run.r && E.run.r.key === bloqueKey ? E.run.r.pasos[E.run.r.i] : null;
@@ -574,27 +570,10 @@
   // ⇄ Cambiar tema: elige qué actividad del parcial se da en esa clase de 50 min (lo planeado se recorre)
   A['cl-tema'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, key = el.dataset.key + '#' + el.dataset.s;
-    const cur = (K.estado(g).cclase || {})[key];
-    // solo lo de este parcial (no lo del siguiente, aunque vaya de corrido) y solo lo que todavía no das
-    const pl = K.plan(g, pid), hoy = u.today(), ahora = new Date().toTimeString().slice(0, 5);
-    const enParcial = new Set(), dadas = new Set();
-    pl.bloques.forEach(b => b.parts.forEach(x => {
-      enParcial.add(x.it.id);
-      const ya = b.fecha < hoy || (b.fecha === hoy && b.fin <= ahora);
-      if (ya && !b.perdida) dadas.add(x.it.id);
-    }));
-    const marcadas = K.estado(g).dadas || {};
-    const lista = pl.seq.filter(x => enParcial.has(x.id) && !dadas.has(x.id) && !marcadas[x.id]).map(x => btn(x.t + ' · ' + x.tipo + ' · ' + (x.h0 != null ? x.h0 : x.h) + ' h', 'cl-tema-set', 'data-key="' + key + '" data-id="' + x.id + '"', 'small' + (cur === x.id ? ' primary' : ''))).join('');
-    E.modal.open('Tema de esta clase', '<p class="small">Solo las actividades de ' + esc(C.parcial(pid).nombre) + ' que todavía no das. Lo que estaba planeado en esta hora se recorre a la siguiente clase.</p><div class="row gap wrap">' + (lista || '<span class="muted small">No quedan actividades pendientes de este parcial.</span>') + '</div>' +
+    const cur = (K.estado(g).cclase || {})[key], seq = K.seq(g, pid);
+    const lista = seq.map(x => btn(x.t + ' · ' + x.tipo + ' · ' + (x.h0 != null ? x.h0 : x.h) + ' h', 'cl-tema-set', 'data-key="' + key + '" data-id="' + x.id + '"', 'small' + (cur === x.id ? ' primary' : ''))).join('');
+    E.modal.open('Tema de esta clase', '<p class="small">Elige lo que das en estos 50 minutos. Lo que estaba planeado se recorre a la siguiente clase.</p><div class="row gap wrap">' + (lista || '<span class="muted small">No hay actividades en este parcial.</span>') + '</div>' +
       (cur ? '<div class="mt">' + btn('↺ Volver al plan', 'cl-tema-set', 'data-key="' + key + '" data-id=""', 'ghost') + '</div>' : ''));
-  };
-  // ✓ Ya la di: la actividad sale de lo pendiente (las clases ya pasadas no cambian)
-  A['cl-dada'] = el => {
-    const g = D.grupoActual(), id = el.dataset.id;
-    const d = new Date(), p2 = n => String(n).padStart(2, '0');
-    const desde = u.ymd(d) + '@' + p2(d.getHours()) + ':' + p2(d.getMinutes());
-    S.update('clases:' + g.id, st => { st.dadas = st.dadas || {}; if (st.dadas[id]) delete st.dadas[id]; else st.dadas[id] = desde; }, {});
-    u.toast((K.estado(g).dadas || {})[id] ? 'Listo: marcada como dada; las clases que siguen ya no la incluyen' : 'Listo: vuelve a estar pendiente', 'ok', 4000);
   };
   A['cl-tema-set'] = el => {
     const g = D.grupoActual(), key = el.dataset.key, id = el.dataset.id;
