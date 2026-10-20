@@ -292,10 +292,16 @@
     const elegible = j => !done[j] && seq.every((x, k) => done[k] || !bloquea(k, j)) && deps(j).every(id => pos[id] == null || done[pos[id]] || blandas(j).indexOf(id) >= 0);
     const primero = L => seq.findIndex((x, k) => !done[k] && lane(x) === L);
     const cur = { c: -1, g: -1 };
+    // te adelantaste: lo que se ganó se descuenta del tema que se estaba dando (no ocupa lugar en la clase) y lo siguiente entra en el mismo bloque
+    let ahorro = 0; const ahorrado = seq.map(() => 0);
     const tomar = (j, b, cap) => {
-      const it = seq[j], take = Math.min(cap, rem[j]), bl = blandas(j);
-      b.parts.push({ it: it, h: take, antes: it.h - rem[j], sigue: take < rem[j], aviso: bl.length ? 'Todavía no se da «' + seq[pos[bl[0]]].t + '»' + (lane(seq[pos[bl[0]]]) === 'c' ? ' (centro de cómputo)' : '') + ': que trabajen con lo que tengan (croquis, boceto o medidas a mano).' : '' });
-      rem[j] -= take; const L = lane(it);
+      const it = seq[j], L = lane(it), bl = blandas(j); let take = 0;
+      if (ahorro > 0 && rem[j] > 0) { const s = Math.min(ahorro, rem[j]); rem[j] -= s; ahorro -= s; ahorrado[j] += s; b.ahorros.push({ id: it.id, tema: it.tema, h: s }); }
+      if (rem[j] > 0) {
+        take = Math.min(cap, rem[j]);
+        b.parts.push({ it: it, h: take, antes: it.h - rem[j], ya: ahorrado[j], sigue: take < rem[j], aviso: bl.length ? 'Todavía no se da «' + seq[pos[bl[0]]].t + '»' + (lane(seq[pos[bl[0]]]) === 'c' ? ' (centro de cómputo)' : '') + ': que trabajen con lo que tengan (croquis, boceto o medidas a mano).' : '' });
+        rem[j] -= take;
+      }
       if (rem[j] <= 0) { done[j] = true; if (cur[L] === j) cur[L] = -1; } else cur[L] = j;
       return take;
     };
@@ -311,14 +317,13 @@
     // ✓ Ya la di: guarda cuándo la marcaste; solo cambian las clases que empiezan después de ese momento
     const dadasP = Object.entries(st.dadas || {}).map(([id, desde]) => [id, typeof desde === 'string' ? desde : '0000']);
     bl.forEach(b => {
-      b.perdida = !!perd[b.key]; b.parts = []; b.libre = 0; if (b.perdida) return;
+      b.perdida = !!perd[b.key]; b.parts = []; b.libre = 0; b.ahorros = []; if (b.perdida) return;
       dadasP.forEach(([id, desde]) => { if (b.fecha + '@' + String(b.inicio).padStart(5, '0') < desde) return; const j = pos[id]; if (j != null && !done[j]) { done[j] = true; rem[j] = 0; } });
       b.recorte = Math.min(b.horas, Number(rec[b.key]) || 0);
-      // te adelantaste: lo siguiente se jala aquí, pero solo lo que cabe en la ventana del bloque (las clases de 50 min son fijas)
-      b.adelantoPedido = b.recorte ? 0 : Math.max(0, Number(ade[b.key]) || 0);
-      const sl = C.horasClases(b.inicio, 99, b.fin).length;
-      b.adelanto = Math.max(0, Math.min(b.adelantoPedido, sl - b.horas));
-      let cap = b.horas - b.recorte + b.adelanto;
+      // el bloque sigue teniendo sus clases de 50 min; el adelanto no suma horas: adelanta el temario (lo siguiente ocupa el lugar que se ganó)
+      b.adelanto = b.recorte ? 0 : Math.min(b.horas, Math.max(0, Number(ade[b.key]) || 0));
+      ahorro = b.adelanto;
+      let cap = b.horas - b.recorte;
       const exH = b.key === exK && exIt ? Math.min(exIt.h, Math.max(0, cap)) : 0; cap -= exH;
       while (cap > 0) {
         // tema cambiado para esta clase (⇄ Cambiar tema): esa hora se da con la actividad elegida
@@ -350,6 +355,7 @@
         const hasta = c => { for (let t = 1; t < c; t++) if ((st.cclase || {})[b.key + '#' + (sHora + t)]) return t; return c; };
         cap -= tomar(j, b, hasta(cap));
       }
+      ahorro = 0;
       if (exH) b.parts.push({ it: exIt, h: exH, antes: 0, sigue: false, aviso: '' });
       b.libre = cap;
       if (cap > 0) {
@@ -381,7 +387,7 @@
     const it = part.it, min = it.pasos ? it.pasos.reduce((s, x) => s + x[0], 0) : 0;
     let h = '<div class="cl-act"><div class="row between gap wrap"><div>' + momChip(it.m) + ' <span class="chip">' + esc(it.tipo) + '</span>' + (part.h !== it.h ? ' <span class="chip">' + part.h + ' de ' + it.h + ' h</span>' : ' <span class="chip">' + it.h + ' h</span>') + '</div>' +
       (it.auto ? '<span class="chip">Automático: fin del parcial</span>' : btn('⇄ Cambiar con la siguiente', 'cl-swap', 'data-pid="' + pid + '" data-pos="' + it.pos + '"', 'small ghost') + ' ' + btn(((K.estado(g).dadas || {})[it.id] ? '↺ Ya no la di' : '✓ Ya la di'), 'cl-dada', 'data-pid="' + pid + '" data-id="' + it.id + '"', 'small ' + ((K.estado(g).dadas || {})[it.id] ? 'ghost' : ''))) + '</div>' +
-      '<h4>' + esc(it.t) + '</h4>' + (it.lugar === 'computo' ? '<p class="small muted">💻 Necesita centro de cómputo.</p>' : it.lugar === 'taller' ? '<p class="small muted">🛠️ Mejor en taller (también se puede en el aula).</p>' : '') + (part.antes ? '<p class="note">Continúa de la clase anterior (' + part.antes + ' h ya dadas).</p>' : '') + (part.sigue ? '<p class="note">Sigue en la próxima clase.</p>' : '') + (part.aviso ? '<p class="note warn">' + esc(part.aviso) + '</p>' : '') +
+      '<h4>' + esc(it.t) + '</h4>' + (it.lugar === 'computo' ? '<p class="small muted">💻 Necesita centro de cómputo.</p>' : it.lugar === 'taller' ? '<p class="small muted">🛠️ Mejor en taller (también se puede en el aula).</p>' : '') + (part.antes - (part.ya || 0) > 0 ? '<p class="note">Continúa de la clase anterior (' + (part.antes - (part.ya || 0)) + ' h ya dadas).</p>' : '') + (part.ya ? '<p class="note ok">Te adelantaste: ' + part.ya + ' h de esto ya se dieron.</p>' : '') + (part.sigue ? '<p class="note">Sigue en la próxima clase.</p>' : '') + (part.aviso ? '<p class="note warn">' + esc(part.aviso) + '</p>' : '') +
       '<p><b>Objetivo:</b> ' + esc(it.obj) + '</p>';
     const rp = E.run && E.run.r && E.run.r.key === bloqueKey ? E.run.r.pasos[E.run.r.i] : null;
     const w0 = part.antes * 50, w1 = (part.antes + part.h) * 50; let acc = 0;
@@ -542,8 +548,7 @@
         (b.libre && b.parts.length ? '<p class="note">Te sobra ' + b.libre + ' h en este bloque.</p>' : '') +
         (!b.perdida && b.lugar === 'computo' && E.fc ? E.fc.bloqueHTML(g, d.p.id, b, d.bloques.filter(x => !x.perdida)) : '') +
         (b.recorte ? '<p class="note warn">' + (b.recorte === 1 ? 'Faltó 1 h' : 'Faltaron ' + b.recorte + ' h') + ': aquí queda solo lo que sí se dio y lo que no alcanzaste pasó a la siguiente clase' + (sig ? ' (' + u.fCorta(sig) + ')' : '') + '. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
-        (b.adelanto ? '<p class="note ok">Te adelantaste ' + b.adelanto + ' h: esta clase cubrió también lo que venía después y todo el parcial se recorrió hacia antes. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
-        (b.adelantoPedido && !b.adelanto ? '<p class="note warn">Te adelantaste, pero esta clase no tiene tiempo libre: lo siguiente no se puede jalar aquí. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
+        (b.adelanto ? (b.libre > 0 ? '<p class="note warn">Te adelantaste ' + b.adelanto + ' h, pero ya no hay temario que jalar a esta clase. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '<p class="note ok">Te adelantaste ' + b.adelanto + ' h: esta clase cubrió también lo que venía después y todo el parcial se recorrió hacia antes. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>') : '') +
         salioHTML(b), 'cl-bloque');
     });
     if (E.repaso) h += E.repaso.bolHTML(g, f, d);
@@ -644,7 +649,7 @@
     b.parts.forEach(x => {
       for (let s = P; s < P + x.h && s < n; s++) {
         const lo = Math.max(P, s), hi = Math.min(P + x.h, s + 1);
-        out[s].parts.push({ it: x.it, h: hi - lo, antes: x.antes + (lo - P), sigue: hi < P + x.h || !!x.sigue, aviso: lo === P ? x.aviso : '', cambio: !!x.cambio });
+        out[s].parts.push({ it: x.it, h: hi - lo, antes: x.antes + (lo - P), ya: x.ya || 0, sigue: hi < P + x.h || !!x.sigue, aviso: lo === P ? x.aviso : '', cambio: !!x.cambio });
       }
       P += x.h;
     });

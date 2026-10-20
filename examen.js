@@ -34,7 +34,16 @@
   X.temasVistos = (g, pid, hasta) => {
     const h = {}; let pl = null; try { pl = E.clases.plan(g, pid); } catch (e) { }
     const conBanco = t => (E.BANCO || []).some(b => b.tema === t);
-    if (pl) pl.bloques.forEach(b => { if (b.perdida || b.fecha >= hasta) return; b.parts.forEach(pt => { const t = pt.it.tema; if (t && conBanco(t)) h[t] = (h[t] || 0) + pt.h; }); });
+    // horas vistas por actividad: lo que cae en clases antes del examen, y lo que te adelantaste (ocupa tiempo o no, ya se dio)
+    const visto = {}, suma = (it, n) => { visto[it.id] = (visto[it.id] || 0) + n; if (it.tema && conBanco(it.tema)) h[it.tema] = (h[it.tema] || 0) + n; };
+    if (pl) pl.bloques.forEach(b => { if (b.perdida || b.fecha >= hasta) return; b.parts.forEach(pt => suma(pt.it, pt.h)); (b.ahorros || []).forEach(a => suma(a, a.h)); });
+    // ✓ Ya la di: lo marcado como dado cuenta aunque ya no salga en las clases de después (sus horas que faltaban, una sola vez)
+    const dadas = ((E.clases && E.clases.estado(g)) || {}).dadas || {};
+    if (pl) pl.seq.forEach(it => {
+      const d = dadas[it.id]; if (!d) return;
+      if ((typeof d === 'string' ? d.slice(0, 10) : '0000-00-00') > hasta) return;
+      const falta = (it.h0 != null ? it.h0 : it.h) - (visto[it.id] || 0); if (falta > 0) suma(it, falta);
+    });
     if (!Object.keys(h).length && pl) pl.seq.forEach(it => { if (it.tema && conBanco(it.tema)) h[it.tema] = (h[it.tema] || 0) + it.h; });
     return h;
   };
