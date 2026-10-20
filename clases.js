@@ -570,9 +570,17 @@
   // ⇄ Cambiar tema: elige qué actividad del parcial se da en esa clase de 50 min (lo planeado se recorre)
   A['cl-tema'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, key = el.dataset.key + '#' + el.dataset.s;
-    const cur = (K.estado(g).cclase || {})[key], seq = K.seq(g, pid);
-    const lista = seq.map(x => btn(x.t + ' · ' + x.tipo + ' · ' + (x.h0 != null ? x.h0 : x.h) + ' h', 'cl-tema-set', 'data-key="' + key + '" data-id="' + x.id + '"', 'small' + (cur === x.id ? ' primary' : ''))).join('');
-    E.modal.open('Tema de esta clase', '<p class="small">Elige lo que das en estos 50 minutos. Lo que estaba planeado se recorre a la siguiente clase.</p><div class="row gap wrap">' + (lista || '<span class="muted small">No hay actividades en este parcial.</span>') + '</div>' +
+    const cur = (K.estado(g).cclase || {})[key];
+    // solo lo de este parcial (no lo del siguiente, aunque vaya de corrido) y solo lo que todavía no das
+    const pl = K.plan(g, pid), hoy = u.today(), ahora = new Date().toTimeString().slice(0, 5);
+    const enParcial = new Set(), dadas = new Set();
+    pl.bloques.forEach(b => b.parts.forEach(x => {
+      enParcial.add(x.it.id);
+      const ya = b.fecha < hoy || (b.fecha === hoy && b.fin <= ahora);
+      if (ya && !b.perdida) dadas.add(x.it.id);
+    }));
+    const lista = pl.seq.filter(x => enParcial.has(x.id) && !dadas.has(x.id)).map(x => btn(x.t + ' · ' + x.tipo + ' · ' + (x.h0 != null ? x.h0 : x.h) + ' h', 'cl-tema-set', 'data-key="' + key + '" data-id="' + x.id + '"', 'small' + (cur === x.id ? ' primary' : ''))).join('');
+    E.modal.open('Tema de esta clase', '<p class="small">Solo las actividades de ' + esc(C.parcial(pid).nombre) + ' que todavía no das. Lo que estaba planeado en esta hora se recorre a la siguiente clase.</p><div class="row gap wrap">' + (lista || '<span class="muted small">No quedan actividades pendientes de este parcial.</span>') + '</div>' +
       (cur ? '<div class="mt">' + btn('↺ Volver al plan', 'cl-tema-set', 'data-key="' + key + '" data-id=""', 'ghost') + '</div>' : ''));
   };
   A['cl-tema-set'] = el => {
