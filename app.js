@@ -2,9 +2,10 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.27.8';
+  E.VERSION = '1.27.9';
   E.CHANGELOG = [
-        { v: '1.27.8', f: '2026-10-17', t: '«✓ Ya la di» en cada actividad: la marcas como dada y ya no aparece en las clases que siguen ni en «Cambiar tema». Las clases pasadas no cambian.' },
+            { v: '1.27.9', f: '2026-10-19', t: 'Corrige un error que dejaba en blanco Clases al marcar «Me adelanté». Una clase de 50 min no tiene tiempo libre: el adelanto jala lo siguiente solo si el bloque tiene minutos sobrantes; si no, aparece un aviso.' },
+{ v: '1.27.8', f: '2026-10-17', t: '«✓ Ya la di» en cada actividad: la marcas como dada y ya no aparece en las clases que siguen ni en «Cambiar tema». Las clases pasadas no cambian.' },
 { v: '1.27.7', f: '2026-10-17', t: '«Cambiar tema» muestra solo las actividades del parcial en el que estás (2º o 3º, aunque vaya de corrido) y solo las que todavía no das.' },
     { v: '1.27.6', f: '2026-10-17', t: 'Cambiar tema de una clase: cada clase de 50 min tiene «⇄ Cambiar tema» para dar otra actividad del parcial en esos 50 minutos. Lo que estaba planeado se recorre a la siguiente clase, y «Volver al plan» lo quita.' },
     { v: '1.27.5', f: '2026-10-15', t: 'Receso fijo de 10:00 a 10:30: ninguna clase de 50 min lo cruza; las que tocaban el receso empiezan a las 10:30. Al armar un bloque, el receso no cuenta como hora.' },

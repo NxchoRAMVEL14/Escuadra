@@ -314,8 +314,10 @@
       b.perdida = !!perd[b.key]; b.parts = []; b.libre = 0; if (b.perdida) return;
       dadasP.forEach(([id, desde]) => { if (b.fecha + '@' + String(b.inicio).padStart(5, '0') < desde) return; const j = pos[id]; if (j != null && !done[j]) { done[j] = true; rem[j] = 0; } });
       b.recorte = Math.min(b.horas, Number(rec[b.key]) || 0);
-      // te adelantaste: el bloque cubrió más horas del plan de las que dura (lo siguiente se jala aquí)
-      b.adelanto = b.recorte ? 0 : Math.max(0, Number(ade[b.key]) || 0);
+      // te adelantaste: lo siguiente se jala aquí, pero solo lo que cabe en la ventana del bloque (las clases de 50 min son fijas)
+      b.adelantoPedido = b.recorte ? 0 : Math.max(0, Number(ade[b.key]) || 0);
+      const sl = C.horasClases(b.inicio, 99, b.fin).length;
+      b.adelanto = Math.max(0, Math.min(b.adelantoPedido, sl - b.horas));
       let cap = b.horas - b.recorte + b.adelanto;
       const exH = b.key === exK && exIt ? Math.min(exIt.h, Math.max(0, cap)) : 0; cap -= exH;
       while (cap > 0) {
@@ -541,6 +543,7 @@
         (!b.perdida && b.lugar === 'computo' && E.fc ? E.fc.bloqueHTML(g, d.p.id, b, d.bloques.filter(x => !x.perdida)) : '') +
         (b.recorte ? '<p class="note warn">' + (b.recorte === 1 ? 'Faltó 1 h' : 'Faltaron ' + b.recorte + ' h') + ': aquí queda solo lo que sí se dio y lo que no alcanzaste pasó a la siguiente clase' + (sig ? ' (' + u.fCorta(sig) + ')' : '') + '. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
         (b.adelanto ? '<p class="note ok">Te adelantaste ' + b.adelanto + ' h: esta clase cubrió también lo que venía después y todo el parcial se recorrió hacia antes. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
+        (b.adelantoPedido && !b.adelanto ? '<p class="note warn">Te adelantaste, pero esta clase no tiene tiempo libre: lo siguiente no se puede jalar aquí. ' + btn('↺ Quitar', 'cl-recorte-x', 'data-key="' + b.key + '"', 'small ghost') + '</p>' : '') +
         salioHTML(b), 'cl-bloque');
     });
     if (E.repaso) h += E.repaso.bolHTML(g, f, d);
@@ -634,11 +637,12 @@
   // el bloque de 2 o 3 h se parte en clases de 50 min: cada hora del bloque es una clase con sus actividades
   const minHM = (hm, m) => { const [h, mi] = String(hm).split(':').map(Number), t = h * 60 + mi + m; return u.pad(Math.floor(t / 60) % 24) + ':' + u.pad(t % 60); };
   K.sesiones = b => {
-    const tot = b.parts.reduce((s, x) => s + x.h, 0), n = Math.max(1, Math.ceil(b.horas), Math.ceil(tot));
-    const hs = C.horasClases(b.inicio, n, b.fin), out = []; for (let s = 0; s < n; s++) out.push({ s: s, n: n, ini: hs[s].ini, fin: hs[s].fin, parts: [] });
+    const tot = b.parts.reduce((s, x) => s + x.h, 0), hs = C.horasClases(b.inicio, Math.max(1, Math.ceil(b.horas), Math.ceil(tot)), b.fin);
+    if (!hs.length) hs.push({ ini: b.inicio, fin: b.fin }); // nunca dejar la vista sin clases
+    const n = hs.length, out = []; for (let s = 0; s < n; s++) out.push({ s: s, n: n, ini: hs[s].ini, fin: hs[s].fin, parts: [] });
     let P = 0;
     b.parts.forEach(x => {
-      for (let s = P; s < P + x.h; s++) {
+      for (let s = P; s < P + x.h && s < n; s++) {
         const lo = Math.max(P, s), hi = Math.min(P + x.h, s + 1);
         out[s].parts.push({ it: x.it, h: hi - lo, antes: x.antes + (lo - P), sigue: hi < P + x.h || !!x.sigue, aviso: lo === P ? x.aviso : '', cambio: !!x.cambio });
       }
