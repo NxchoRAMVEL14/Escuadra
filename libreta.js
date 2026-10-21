@@ -13,6 +13,25 @@
   const esMaterial = t => /^(conseguir|traer|para el |guardar|comprar)/i.test(String(t).trim());
   const corto = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
 
+  /* ---------- tareas separadas y envío por WhatsApp ---------- */
+  // secciones de la lista: cada tipo aparte
+  const SECC = [['tar', '📝', 'Tareas para entregar'], ['mat', '🧰', 'Encargos de material'], ['lib', '📒', 'Trabajos de libreta'], ['bit', '📘', 'Bitácora del proyecto'], ['pro', '✏️', 'Agregadas por ti']];
+  const seccion = x => x.tipo === 'tarea' ? (x.material ? 'mat' : 'tar') : x.tipo === 'libreta' ? 'lib' : x.tipo === 'bitacora' ? 'bit' : 'pro';
+  const tipoTxt = x => x.tipo === 'tarea' ? (x.material ? 'Encargo de material' : 'Tarea') : x.tipo === 'libreta' ? 'En la libreta' : x.tipo === 'bitacora' ? 'Bitácora del proyecto' : 'Agregada por ti';
+  // la tarea se entrega en la clase siguiente a cuando se dejó (igual que en Entregas); lo demás, el día de la clase
+  const fechaDe = (g, x) => x.tipo === 'tarea' ? (C.siguienteClase(g, x.f) || x.f) : x.f;
+  // el texto que se manda: cada tarea en su bloque (fecha, indicación y de qué clase viene), con separador entre bloques
+  LB.texto = (g, pid, xs) => {
+    const sep = '\n\n──────────\n\n', bloque = x => {
+      const f = fechaDe(g, x), dia = f ? u.fLarga(f) : 'sin fecha', de = x.act ? '\nDe la clase: ' + x.act : '';
+      if (x.tipo === 'tarea') return x.material ? '🧰 *Traer para el ' + dia + '*:\n' + x.t + de : '📝 *Tarea para entregar el ' + dia + '*:\n' + x.t + de;
+      if (x.tipo === 'libreta') return '📒 *Trabajo de libreta · ' + dia + '*:\n' + x.t + de;
+      if (x.tipo === 'bitacora') return '📘 *Bitácora del proyecto · ' + dia + '*:\n' + x.t + de;
+      return '✏️ *' + x.t + '*' + (f ? ' · ' + u.fCorta(f) : '');
+    };
+    return '📌 *' + (g.nombre || '') + '* · ' + C.parcial(pid).nombre + '\n\n' + xs.map(bloque).join(sep);
+  };
+
   /* ---------- lista de tareas del parcial ---------- */
   // De cada actividad que ya se dio: la tarea que se dejó y lo que se trabajó en la libreta; más las que agregues tú.
   LB.tareas = (g, pid) => {
@@ -63,9 +82,16 @@
     ui[pid] = sel.id;
     const num = {}; ts.forEach((t, i) => { num[t.key] = 'T' + (i + 1); });
     let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/libreta/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '</div>';
-    // 1) tareas
-    h += card('<h3>📒 Tareas y trabajos de libreta · ' + esc(p.nombre) + '</h3><p class="muted small">Salen de las clases que ya diste (tareas y lo que trabajaron en la libreta) y de las que agregues. Desmarca lo que no vas a revisar; los encargos de material y la bitácora del proyecto no cuentan a menos que los marques.</p>' +
-      (T.todas.length ? '<ul class="lb-list">' + T.todas.map(t => '<li class="' + (t.cuenta ? '' : 'off') + '"><label class="lb-chk"><input type="checkbox" data-ch="lb-cuenta" data-pid="' + pid + '" data-key="' + t.key + '" ' + (t.cuenta ? 'checked' : '') + ' aria-label="Cuenta para la libreta"></label><div class="lb-t"><b>' + (t.cuenta ? num[t.key] + ' · ' : '') + esc(t.t) + '</b><small class="muted">' + (t.f ? u.fCorta(t.f) + ' · ' : '') + (t.tipo === 'tarea' ? 'Tarea' : t.tipo === 'libreta' ? 'En la libreta' : t.tipo === 'bitacora' ? 'Bitácora del proyecto' : 'Agregada por ti') + (t.act ? ' · ' + esc(corto(t.act, 50)) : '') + (t.material && t.tipo === 'tarea' ? ' · encargo de material' : '') + '</small></div>' + (t.propia ? btn(icon('trash'), 'lb-del', 'data-pid="' + pid + '" data-key="' + t.key + '" aria-label="Borrar"', 'small ghost') : '') + '</li>').join('') + '</ul>' : '<p class="muted small">Todavía no hay tareas de clases ya dadas en este parcial.</p>') +
+    // 1) tareas, separadas por tipo: cada sección con su envío por WhatsApp y cada tarea con su 📲
+    const secs = SECC.map(([k, ico, nom]) => {
+      const xs = T.todas.filter(x => seccion(x) === k); if (!xs.length) return '';
+      return '<div class="lb-sec" data-sec="' + k + '"><div class="row between gap wrap lb-sech"><h4>' + ico + ' ' + nom + ' <span class="chip">' + xs.length + '</span></h4><div class="row gap wrap">' +
+        btn('📲 Enviar', 'lb-envia', 'data-pid="' + pid + '" data-sec="' + k + '"', 'small') + btn(icon('copy') + ' Copiar', 'lb-copia', 'data-pid="' + pid + '" data-sec="' + k + '"', 'small ghost') + '</div></div>' +
+        '<ul class="lb-list">' + xs.map(t => '<li class="' + (t.cuenta ? '' : 'off') + '"><label class="lb-chk"><input type="checkbox" data-ch="lb-cuenta" data-pid="' + pid + '" data-key="' + esc(t.key) + '" ' + (t.cuenta ? 'checked' : '') + ' aria-label="Cuenta para la libreta"></label><div class="lb-t"><b>' + (t.cuenta ? num[t.key] + ' · ' : '') + esc(t.t) + '</b><small class="muted">' + (t.f ? u.fCorta(t.f) + ' · ' : '') + tipoTxt(t) + (t.act ? ' · ' + esc(corto(t.act, 50)) : '') + '</small></div><div class="lb-acc">' +
+          btn('📲', 'lb-envia', 'data-pid="' + pid + '" data-key="' + esc(t.key) + '" aria-label="Enviar esta tarea por WhatsApp" title="Enviar por WhatsApp"', 'small ghost') + (t.propia ? btn(icon('trash'), 'lb-del', 'data-pid="' + pid + '" data-key="' + esc(t.key) + '" aria-label="Borrar"', 'small ghost') : '') + '</div></li>').join('') + '</ul></div>';
+    }).join('');
+    h += card('<h3>📒 Tareas y trabajos de libreta · ' + esc(p.nombre) + '</h3><p class="muted small">Salen de las clases que ya diste y de las que agregues, separadas por tipo. Desmarca lo que no vas a revisar; los encargos de material y la bitácora del proyecto no cuentan a menos que los marques. 📲 manda una tarea a WhatsApp con su fecha y sus indicaciones; «Enviar» de cada sección las manda todas, cada una en su bloque.</p>' +
+      (T.todas.length ? secs : '<p class="muted small">Todavía no hay tareas de clases ya dadas en este parcial.</p>') +
       '<div class="row gap wrap"><label class="fld grow"><span>Agregar tarea</span><input id="lb-t" placeholder="Ej. Resumen de pares cinemáticos con dibujos"></label><label class="fld"><span>Fecha</span><input id="lb-f" type="date" value="' + u.today() + '"></label></div>' + btn('Agregar', 'lb-add', 'data-pid="' + pid + '"', 'primary') +
       (T.prox.length ? '<details class="sub" id="lb-prox"><summary>Próximas (aún no se dan): ' + T.prox.length + '</summary><ul class="small">' + T.prox.map(t => '<li>' + u.fCorta(t.f) + ' · ' + esc(corto(t.t, 110)) + '</li>').join('') + '</ul></details>' : ''));
     if (!ts.length) return { t: 'Libreta', h: h };
@@ -77,7 +103,7 @@
       '<select data-ch="lb-al" data-pid="' + pid + '" aria-label="Alumno">' + al.map(a => '<option value="' + a.id + '" ' + (a.id === sel.id ? 'selected' : '') + '>' + a.num + '. ' + esc(a.nombre) + (LB.calif(g, pid, a.id, ts).v != null ? ' ✓' : '') + '</option>').join('') + '</select>' +
       btn('›', 'go', 'data-to="libreta/' + pid + '/' + (next || sel).id + '" aria-label="Siguiente"' + (next ? '' : ' disabled'), '') + '</div>' +
       '<div class="lb-res"><span>Libreta de <b>' + esc(sel.nombre) + '</b></span><span class="g ' + (r.v == null ? 'na' : H.gclass(r.v)) + '">' + (r.v == null ? '—' : r.v) + '</span></div>' +
-      '<ul class="lb-rev" data-kb="lb"' + (prev ? ' data-ant="libreta/' + pid + '/' + prev.id + '"' : '') + (next ? ' data-sig="libreta/' + pid + '/' + next.id + '"' : '') + '>' + ts.map(t => { const f = LB.factor(doc, sel.id, t.key); return '<li data-kbr="' + esc(t.key) + '"><div class="lb-t"><b>' + num[t.key] + '</b> ' + esc(corto(t.t, 90)) + (f < 1 ? ' <span class="chip warn">⏰ tarde · vale ' + Math.round(f * 100) + ' %</span>' : '') + '</div><div class="cl-seg">' + [2, 1, 0].map(v => btn(MARCA[v][0] + ' ' + MARCA[v][1], 'lb-marca', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-v="' + v + '" data-k="' + (3 - v) + '"', 'small' + (m[t.key] != null && Number(m[t.key]) === v ? ' on ' + MARCA[v][2] : ''))).join('') +
+      '<ul class="lb-rev" data-kb="lb"' + (prev ? ' data-ant="libreta/' + pid + '/' + prev.id + '"' : '') + (next ? ' data-sig="libreta/' + pid + '/' + next.id + '"' : '') + '>' + ts.map(t => { const f = LB.factor(doc, sel.id, t.key); return '<li class="lb-card" data-kbr="' + esc(t.key) + '"><div class="lb-cab"><span class="chip">' + num[t.key] + '</span><small class="muted">' + (t.f ? u.fCorta(t.f) + ' · ' : '') + tipoTxt(t) + '</small>' + (f < 1 ? ' <span class="chip warn">⏰ tarde · vale ' + Math.round(f * 100) + ' %</span>' : '') + '</div><div class="lb-tit">' + esc(corto(t.t, 140)) + '</div><div class="cl-seg">' + [2, 1, 0].map(v => btn(MARCA[v][0] + ' ' + MARCA[v][1], 'lb-marca', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-v="' + v + '" data-k="' + (3 - v) + '"', 'small' + (m[t.key] != null && Number(m[t.key]) === v ? ' on ' + MARCA[v][2] : ''))).join('') +
         btn('⏰ Tarde', 'lb-tarde', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-k="t" aria-pressed="' + (f < 1) + '" title="La entregó tarde: vale ' + Math.round((f < 1 ? f : C.tardeVale()) * 100) + ' %"', 'small' + (f < 1 ? ' on warn' : '')) + '</div></li>'; }).join('') + '</ul>' +
       '<div class="row gap wrap">' + btn('✓ Todas completas', 'lb-todas', 'data-pid="' + pid + '" data-aid="' + sel.id + '"', 'small') + (E.cap ? btn('🃏 Por tarjetas (una tarea, todo el grupo)', 'tj-lib', 'data-pid="' + pid + '"', 'small') : '') + (E.retro ? btn('💬 Retroalimentación', 'rt-open', 'data-aid="' + sel.id + '" data-ctx="libreta"', 'small') : '') + (next ? btn('Siguiente alumno ›', 'go', 'data-to="libreta/' + pid + '/' + next.id + '"', 'small primary') : '') + '</div>' +
       '<p class="muted small">Completa = 2 · incompleta = 1 · no la hizo = 0 · ⏰ entregada tarde: vale ' + Math.round(C.tardeVale() * 100) + ' % de lo que marques. Lo que no marques cuenta como no entregado; un alumno sin ninguna marca queda sin calificación. En la compu: ↑ ↓ eliges la tarea, 1 ✓ · 2 ½ · 3 ✗ · T tarde y ← → cambias de alumno.</p>');
@@ -88,6 +114,18 @@
       al.map(x => { const mm = ((doc.marcas || {})[x.id]) || {}, rr = LB.calif(g, pid, x.id, ts); return '<tr><td>' + x.num + '</td><td class="l"><a href="#/libreta/' + pid + '/' + x.id + '">' + esc(x.nombre) + '</a></td>' + ts.map(t => { const v = mm[t.key], tf = LB.factor(doc, x.id, t.key) < 1; return '<td class="' + (v == null ? 'muted' : MARCA[v][2] + 'c') + '"' + (tf ? ' title="Entregada tarde"' : '') + '>' + (v == null ? (tf ? '⏰' : '·') : MARCA[v][0] + (tf ? '⏰' : '')) + '</td>'; }).join('') + '<td><b>' + (rr.v == null ? '—' : rr.v) + '</b></td></tr>'; }).join('') + '</tbody></table></div></details>' +
       '<div class="row gap wrap mt">' + btn(icon('print') + ' Imprimir lista de cotejo', 'lb-print', 'data-pid="' + pid + '"', 'small') + '</div>');
     return { t: 'Libreta', h: h };
+  };
+
+  /* ---------- enviar por WhatsApp ---------- */
+  // una tarea (su 📲) o todas las de una sección (su «Enviar» o «Copiar»)
+  const elegidas = (g, pid, el) => { const T = LB.tareas(g, pid); return el.dataset.key ? T.todas.filter(x => x.key === el.dataset.key) : T.todas.filter(x => seccion(x) === el.dataset.sec); };
+  A['lb-envia'] = el => {
+    const g = D.grupoActual(), xs = elegidas(g, el.dataset.pid, el); if (!xs.length) { u.toast('No hay nada que mandar', 'err'); return; }
+    window.open('https://wa.me/?text=' + encodeURIComponent(LB.texto(g, el.dataset.pid, xs)), '_blank', 'noopener');
+  };
+  A['lb-copia'] = async el => {
+    const g = D.grupoActual(), xs = elegidas(g, el.dataset.pid, el); if (!xs.length) { u.toast('No hay nada que copiar', 'err'); return; }
+    const ok = await u.copy(LB.texto(g, el.dataset.pid, xs)); u.toast(ok ? 'Copiado: pégalo en el grupo de WhatsApp' : 'No se pudo copiar', ok ? 'ok' : 'err', 3500);
   };
 
   /* ---------- acciones ---------- */

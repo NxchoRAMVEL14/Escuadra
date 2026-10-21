@@ -1,5 +1,5 @@
 /* Escuadra · service worker: funciona sin internet y se actualiza solo. Cambia VERSION en cada entrega. */
-const VERSION = 'escuadra-v1.27.10';
+const VERSION = 'escuadra-v1.27.11';
 const SHELL = ['./', 'index.html', 'styles.css', 'config.js', 'escuadra.min.js', 'tutora.html', 'encuesta.html', 'ver.html', 'consulta.html', 'repaso.html', 'm1s1.js', 'm1s2.js', 'm1s3.js', 'm2s1.js', 'm3s1.js', 'm3s2.js', 'm3s3.js', 'm4s1.js', 'm4s2.js', 'm5s1.js', 'm5s2.js', 'cam-worker.js', 'lib-qrcode.js', 'lib-jsqr.js', 'lib-aruco.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'sc-lista.png', 'sc-clase.png', 'sc-cierre.png'];
 
 const SHELL_SET = new Set(SHELL.map(x => x === './' ? 'index.html' : x));

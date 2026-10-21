@@ -674,6 +674,13 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .lb-res { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; background: var(--surface2); border-radius: 12px; margin: 6px 0 }
 .lb-res .g { font-size: 1.2rem }
 .lb-rev { list-style: none; padding: 0; margin: 6px 0 } .lb-rev li { padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px }
+.lb-sec { margin: 12px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface2) }
+.lb-sech { flex-wrap: wrap; margin-bottom: 2px } .lb-sech h4 { margin: 4px 0; font-size: .98rem }
+.lb-sec .lb-list { margin: 4px 0 0 }
+.lb-acc { display: flex; gap: 4px; align-items: center; flex-shrink: 0 }
+.lb-rev li.lb-card { padding: 12px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface) }
+.lb-cab { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: .85rem }
+.lb-tit { font-weight: 600; line-height: 1.35; font-size: .98rem }
 .cl-seg .btn.on.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok) } .cl-seg .btn.on.warn { background: var(--warn-soft); border-color: var(--warn); color: var(--warn) } .cl-seg .btn.on.bad { background: var(--bad-soft); border-color: var(--bad); color: var(--bad) }
 .lb-tbl td, .lb-tbl th { text-align: center; padding: 4px 6px } .lb-tbl td.l, .lb-tbl th.l { text-align: left }
 
