@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.27.11';
+  E.VERSION = '1.27.12';
   E.CHANGELOG = [
+            { v: '1.27.12', f: '2026-10-20', t: 'Informe para padres y consulta del alumno: la columna «Lleva» ahora muestra cuánto aporta cada rubro a la calificación, en %. Ej.: 60 de 100 con peso de 40 % = 24 %. Si todavía faltan rubros, se aclara que la calificación se saca sobre lo ya calificado. Los QR ya impresos se ven igual de claros.' },
             { v: '1.27.11', f: '2026-10-20', t: 'Libreta: las tareas y trabajos quedan separados por tipo (tareas para entregar, encargos de material, trabajos de libreta, bitácora del proyecto y las que agregas tú), cada sección con su contador. Se pueden mandar por WhatsApp: una tarea con su 📲 o toda una sección con «Enviar» (cada tarea en su bloque, con fecha de entrega y de qué clase viene); «Copiar» la deja en el portapapeles. En «Revisar libretas», cada tarea es una tarjeta con su número, fecha y tipo. Las marcas y las calificaciones no cambian.' },
             { v: '1.27.10', f: '2026-10-19', t: '«Me adelanté» ahora sí jala lo siguiente: la clase cubre también lo que venía después y todo el parcial se recorre hacia antes, aunque el bloque ya esté lleno. «✓ Ya la di» ya cuenta para el Examen recomendado: esas actividades se toman como vistas aunque ya no salgan en las clases de después.' },
             { v: '1.27.9', f: '2026-10-19', t: 'Corrige un error que dejaba en blanco Clases al marcar «Me adelanté». Una clase de 50 min no tiene tiempo libre: el adelanto jala lo siguiente solo si el bloque tiene minutos sobrantes; si no, aparece un aviso.' },

@@ -175,10 +175,14 @@
     if (nv && nv.hay) casa.push('FreeCAD es gratuito: si tiene computadora en casa, puede practicar las prácticas del nivel que sigue.');
     casa.push('Reconozcan su esfuerzo, no solo la calificación: pregúntenle qué aprendió y qué le costó.');
     const coms = E.retro ? E.retro.paraPadres(g, a.id, 2) : [];
+    // lo que lleva en % del total; si faltan rubros, la calificación se saca sobre lo ya calificado
+    const apT = KEYS.reduce((s, x) => s + (k.comp && k.comp[x] != null ? Math.round(k.comp[x] * Number(w[x] || 0) / 100) : 0), 0);
+    const baseT = KEYS.reduce((s, x) => s + (k.comp && k.comp[x] != null ? Number(w[x] || 0) : 0), 0), totT = KEYS.reduce((s, x) => s + Number(w[x] || 0), 0);
+    const nota = baseT > 0 && baseT < totT ? '<p class="tiny">Mientras falten rubros por calificar, la calificación se saca sobre lo ya calificado: lleva ' + apT + ' % de ' + baseT + ' %.</p>' : '';
     return '<div class="pr padres"><div class="p-title">INFORME PARA MADRE, PADRE O TUTOR(A)</div><p class="tiny c">' + esc(cf.plantel || '') + ' · ' + esc(g.carrera || '') + ' · Grupo ' + esc(g.nombre) + ' · ' + esc(p.nombre) + ' · Docente: ' + esc(cf.docente || '') + ' · ' + u.fFecha(u.today()) + '</p>' +
       '<h2>' + esc(a.nombre) + '</h2>' +
-      '<table class="grid pd-cal"><thead><tr><th class="l">Rubro</th><th>Vale</th><th>Lleva</th></tr></thead><tbody>' + KEYS.map(x => '<tr><td class="l">' + LBL[x] + '</td><td class="c">' + Number(w[x] || 0) + ' %</td><td class="c">' + (k.comp && k.comp[x] != null ? Math.round(k.comp[x]) : '—') + '</td></tr>').join('') +
-      '<tr><td class="l"><b>Calificación del parcial' + (k.enCurso ? ' (en curso)' : '') + '</b></td><td></td><td class="c"><b>' + (k.final == null ? '—' : k.final) + '</b></td></tr></tbody></table>' +
+      '<table class="grid pd-cal"><thead><tr><th class="l">Rubro</th><th>Vale</th><th>Lleva</th></tr></thead><tbody>' + KEYS.map(x => '<tr><td class="l">' + LBL[x] + '</td><td class="c">' + Number(w[x] || 0) + ' %</td><td class="c">' + (k.comp && k.comp[x] != null ? Math.round(k.comp[x] * Number(w[x] || 0) / 100) + ' %' : '—') + '</td></tr>').join('') +
+      '<tr><td class="l"><b>Calificación del parcial' + (k.enCurso ? ' (en curso)' : '') + '</b></td><td></td><td class="c"><b>' + (k.final == null ? '—' : k.final) + '</b></td></tr></tbody></table>' + nota +
       '<p><b>Asistencia:</b> ' + (as.ses ? as.a + ' de ' + as.ses + (as.ses === 1 ? ' clase' : ' clases') + (as.fechasF.length ? ' · faltó: ' + as.fechasF.map(f => u.fCorta(f)).join(', ') : ' · sin faltas') : 'sin registros todavía') + '.' + (nv && nv.hay ? ' <b>FreeCAD:</b> ' + (nv.n ? 'nivel ' + nv.n + ' de 3' : 'empezando') + ' (' + [1, 2, 3].reduce((s, n) => s + nv.cnt[n].ok, 0) + ' prácticas completas).' : '') + '</p>' +
       '<div class="pd-cols"><div><h3>Fortalezas</h3><ul>' + fort.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div><div><h3>Lo que le falta</h3>' + (r && r.pend.length ? '<ul>' + r.pend.slice(0, 5).map(x => '<li>' + esc(x.tipo + ': ' + x.t) + '</li>').join('') + '</ul>' : '<p>No tiene pendientes registrados.</p>') + (r && r.nec != null && r.nec > 0 && r.nec <= 100 ? '<p>Para aprobar necesita al menos ' + r.nec + ' en el examen.</p>' : '') + '</div></div>' +
       '<h3>Cómo pueden apoyar en casa</h3><ul>' + casa.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' +
