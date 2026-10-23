@@ -58,7 +58,7 @@
     cam: '<path d="M4 7.5h3.2L9 5h6l1.8 2.5H20a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/>'
   };
   E.icon = (n, c) => '<svg class="ic ' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[n] || '') + '</svg>';
-  E.logo = () => '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
+  E.logo = () => '<svg viewBox="0 0 64 64" aria-hidden="true"><image href="icon-192.png" x="0" y="0" width="64" height="64"/></svg>';
   const icon = E.icon;
 
   const CAT_LBL = { examen: 'Examen', trabajos: 'Libreta/Proyecto/Bitácora', diagnostico: 'Diagnóstico' };
