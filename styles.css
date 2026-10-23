@@ -324,6 +324,7 @@ details.sub > summary { cursor: pointer; font-weight: 600; font-size: .88rem; co
 .pr .sig div { border-top: 1px solid #000; padding-top: 3px; min-width: 240px; text-align: center; font-size: 8.5pt }
 .pr tr { page-break-inside: avoid }
 .pr thead { display: table-header-group }
+.pr.pr-compacto .grid td, .pr.pr-compacto .grid th { padding: 0 3px; height: 17px } .pr.pr-compacto .sig { margin-top: 12px }
 
 /* v1.2 · perfil, observaciones y puntos máximos */
 .conv { flex: none; font-size: .8rem; min-width: 44px }

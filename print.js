@@ -58,7 +58,7 @@
       }).join('');
       return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + tds + '<td class="c">' + (o.marcas ? na : '') + '</td><td class="c">' + (o.marcas ? nf : '') + '</td></tr>';
     }).join('');
-    P.run('<div class="pr">' + head(g, 'LISTA DE ASISTENCIA · ' + p.nombre.toUpperCase(), 'DOCENTE: ' + D.cfg().docente) + '<p class="tiny c">' + esc(smTxt(g, p)) + '</p>' +
+    P.run('<div class="pr pr-compacto">' + head(g, 'LISTA DE ASISTENCIA · ' + p.nombre.toUpperCase(), 'DOCENTE: ' + D.cfg().docente) + '<p class="tiny c">' + esc(smTxt(g, p)) + '</p>' +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">NOMBRE</th>' + th + '<th>A</th><th>F</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<p class="tiny">• Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos.</p>' + firma() + '</div>', { landscape: true, title: 'Lista ' + g.grupo + ' ' + p.nombre });
   };
@@ -70,7 +70,7 @@
       const tds = fechas.map(f => { if (!o.marcas) return '<td></td>'; const n = Number((S.get('part:' + g.id + ':' + f) || {})[a.id] || 0); tot += n; return '<td class="c">' + (n || '') + '</td>'; }).join('');
       return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + tds + '<td class="c">' + (o.marcas ? tot : '') + '</td></tr>';
     }).join('');
-    P.run('<div class="pr">' + head(g, 'REGISTRO DE PARTICIPACIÓN · ' + p.nombre.toUpperCase(), 'DOCENTE: ' + D.cfg().docente) + '<p class="tiny c">' + esc(smTxt(g, p)) + '</p>' +
+    P.run('<div class="pr pr-compacto">' + head(g, 'REGISTRO DE PARTICIPACIÓN · ' + p.nombre.toUpperCase(), 'DOCENTE: ' + D.cfg().docente) + '<p class="tiny c">' + esc(smTxt(g, p)) + '</p>' +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">NOMBRE</th>' + th + '<th>Total</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<p class="tiny">Anota una marca por participación. ' + (D.cfg().partModo === 'meta' ? 'Meta del parcial: ' + D.cfg().metaPart + ' participaciones = 100' : 'El alumno con más participaciones en el parcial = 100 y los demás en proporción') + ' (vale ' + D.cfg().pond.participacion + '% de la calificación).</p>' + firma() + '</div>', { landscape: true, title: 'Participación ' + g.grupo + ' ' + p.nombre });
   };
