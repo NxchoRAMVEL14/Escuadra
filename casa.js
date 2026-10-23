@@ -144,7 +144,7 @@
       out.push('<div class="ca-tira">' + E.cam.qrSVG(url, 'ca-tqr', 'L') + '<div><b>No. ' + a.num + '</b> · ' + esc(u.corto(a.nombre)) + '<br><span class="tiny">' + esc(g.nombre) + ' · ' + (tipo === 'rep' ? 'Repaso para casa: escanea y contesta 5 preguntas de tus temas débiles.' : esc(p.nombre) + ': escanea para ver tu calificación y lo que te falta (al ' + u.fCorta(u.today()) + ').') + '</span></div></div>');
     }
     if (!out.length) { u.toast('No hay preguntas en el banco para armar el repaso', 'err'); return; }
-    E.print.run('<div class="pr ca-tiras">' + out.join('') + '</div>', { title: (tipo === 'rep' ? 'Repaso para casa · ' : 'Consulta · ') + g.nombre, margin: '8mm' });
+    E.print.run('<div class="pr ca-tiras">' + out.join('') + '</div>', { title: (tipo === 'rep' ? 'Repaso para casa · ' : 'Consulta · ') + g.nombre, margin: '8mm', sinLogo: true });
   };
   if (V.imprimir) {
     const vi = V.imprimir;

@@ -49,7 +49,7 @@
   A['kit-ok'] = el => { const g = D.grupoActual(), fs = AP.faltas(g, el.dataset.aid, el.dataset.f); S.update(KK(g), d => { const x = d[el.dataset.aid] = d[el.dataset.aid] || {}; fs.forEach(f => { x[f] = u.today(); }); }, {}); };
   A['kit-print'] = el => {
     const g = D.grupoActual(), L = AP.regresaron(g, el.dataset.f);
-    E.print.run('<div class="pr">' + L.map(x => { const d = AP.kitDatos(g, x.a, x.f); return '<div class="tira"><b>' + esc(d.t) + ' · ' + esc(x.a.num + '. ' + u.corto(x.a.nombre)) + '</b>' + d.sec.map(s => '<p class="tiny"><b>' + esc(s.h) + ':</b> ' + esc(s.l.join(' · ')) + (s.extra.length ? '<br>' + esc(s.extra.join(' · ')) : '') + '</p>').join('') + '</div>'; }).join('') + '</div>', { title: 'Kits te lo perdiste', margin: '10mm' });
+    E.print.run('<div class="pr">' + L.map(x => { const d = AP.kitDatos(g, x.a, x.f); return '<div class="tira"><b>' + esc(d.t) + ' · ' + esc(x.a.num + '. ' + u.corto(x.a.nombre)) + '</b>' + d.sec.map(s => '<p class="tiny"><b>' + esc(s.h) + ':</b> ' + esc(s.l.join(' · ')) + (s.extra.length ? '<br>' + esc(s.extra.join(' · ')) : '') + '</p>').join('') + '</div>'; }).join('') + '</div>', { title: 'Kits te lo perdiste', margin: '10mm', sinLogo: true });
   };
   if (V.lista) { const vl = V.lista; V.lista = function (f) { const o = vl.apply(null, arguments), g = D.grupoActual(); if (o && g && !/Algo falló|Primero importa/.test(o.h)) { const fe = f || C.fechaListaDefault(g, u.today()); try { o.h += AP.kitHTML(g, fe); } catch (e) { console.error(e); } } return o; }; }
 

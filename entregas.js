@@ -153,7 +153,7 @@
     const L = D.alumnos(g).map(a => ({ a: a, d: EN.debe(g, its, a.id, hoy) })).filter(x => x.d.length);
     if (!L.length) { u.toast('Nadie debe nada 🎉', 'ok'); return; }
     E.print.run('<div class="pr en-tiras">' + L.map(x => '<div class="en-tira"><div class="row between"><b>' + esc(x.a.nombre) + '</b><span class="tiny">No. ' + x.a.num + ' · ' + esc(g.nombre) + ' · ' + esc(p.nombre) + ' · ' + u.fCorta(hoy) + '</span></div><p class="tiny">Lo que me debes (entrégalo lo antes posible; lo entregado tarde vale ' + Math.round(C.tardeVale() * 100) + ' %):</p><ul>' +
-      x.d.map(y => '<li>☐ <b>' + y.x.cod + '</b> ' + esc(corto(y.x.t, 110)) + ' <span class="tiny">(' + (y.s.v == null ? 'sin entregar' : y.s.v === 1 ? 'incompleta' : 'no entregada') + ' · era para el ' + u.fCorta(y.x.due) + ')</span></li>').join('') + '</ul><p class="tiny r">' + esc(cf.docente || '') + '</p></div>').join('') + '</div>', { title: 'Lo que me debes · ' + g.nombre, margin: '8mm' });
+      x.d.map(y => '<li>☐ <b>' + y.x.cod + '</b> ' + esc(corto(y.x.t, 110)) + ' <span class="tiny">(' + (y.s.v == null ? 'sin entregar' : y.s.v === 1 ? 'incompleta' : 'no entregada') + ' · era para el ' + u.fCorta(y.x.due) + ')</span></li>').join('') + '</ul><p class="tiny r">' + esc(cf.docente || '') + '</p></div>').join('') + '</div>', { title: 'Lo que me debes · ' + g.nombre, margin: '8mm', sinLogo: true });
   };
 
   /* =================== Inicio =================== */
