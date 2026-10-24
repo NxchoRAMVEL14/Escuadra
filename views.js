@@ -170,6 +170,14 @@
   }
 
   /* =================== PASE DE LISTA =================== */
+  // v1.27.18: barra de «elegidos» al seleccionar varios alumnos en el pase de lista
+  const LSEL_TXT = { A: '✓ Asistió', F: '✗ Faltó', R: '⏰ Retardo', J: '📄 Justificada' };
+  function barraSel(s, al) {
+    const n = Object.keys(s.ids).length;
+    return '<div class="lsel-bar" role="toolbar" aria-label="Alumnos elegidos"><div class="lsel-n"><b>' + n + '</b> ' + (n === 1 ? 'elegido' : 'elegidos') + (n ? '' : ' · toca a los alumnos que quieras marcar') + '</div>' +
+      '<div class="lsel-ops">' + ['F', 'A', 'R', 'J'].map(x => '<button type="button" class="lsel-op st-' + x + '" data-act="lsel-marca" data-st="' + x + '"' + (n ? '' : ' disabled') + '>' + LSEL_TXT[x] + '</button>').join('') + '</div>' +
+      '<div class="lsel-ops2">' + btn('📷 Foto de su trabajo', 'lsel-foto', n ? '' : 'disabled', 'small ghost') + btn(n === al.length ? 'Quitar todos' : 'Elegir todos', 'lsel-todos', '', 'small ghost') + btn('Cancelar', 'lsel-off', '', 'small ghost') + '</div></div>';
+  }
   V.lista = fecha => {
     const g = D.grupoActual(); if (!g) return noGroup();
     const al = D.alumnos(g); if (!al.length) return needAlumnos('Pase de lista');
@@ -177,7 +185,10 @@
     const doc = S.get('asis:' + g.id + ':' + fecha), pd = S.get('part:' + g.id + ':' + fecha) || {};
     const prev = C.claseAnterior(g, fecha), next = C.siguienteClase(g, fecha), horas = C.horasDia(g, fecha), asu = C.esAsueto(fecha);
     const ks = C.clasesCuenta(g, fecha), amb = C.ambito(fecha), cd = C.clasesDia(g, fecha), cnt = { A: 0, F: 0, R: 0, J: 0 }; al.forEach(a => ks.forEach(k => { cnt[C.marca(doc, a.id, k)]++; }));
-    let h = '<div class="datebar"><button type="button" class="iconbtn" data-act="go" data-to="lista/' + (prev || fecha) + '" ' + (prev ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button>' +
+    const sel = E.ui.lsel && E.ui.lsel.f === fecha ? E.ui.lsel : null;
+    // deslizar a la izquierda o derecha cambia de clase (rapido.js); no mientras eliges alumnos
+    const sw = sel ? '' : ' data-swipe data-prev="' + (prev ? 'lista/' + prev : '') + '" data-next="' + (next ? 'lista/' + next : '') + '"';
+    let h = '<div class="datebar"' + sw + '><button type="button" class="iconbtn" data-act="go" data-to="lista/' + (prev || fecha) + '" ' + (prev ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button>' +
       '<div class="datebox"><b>' + u.cap(u.fLarga(fecha)) + '</b><input type="date" class="dateinp" value="' + fecha + '" data-ch="lista-fecha" aria-label="Elegir fecha"></div>' +
       '<button type="button" class="iconbtn" data-act="go" data-to="lista/' + (next || fecha) + '" ' + (next ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
     if (asu) h += '<p class="note warn">Este día está marcado como asueto.</p>';
@@ -190,12 +201,15 @@
       btn(icon('dice') + ' Al azar', 'azar', 'data-fecha="' + fecha + '"') + btn(icon('team') + ' Equipos', 'equipos', 'data-fecha="' + fecha + '"') +
       link(icon('timer') + ' Temporizador', 'herramientas') + (doc ? btn(icon('trash') + ' Borrar registro', 'asis-borrar', 'data-fecha="' + fecha + '"', 'ghost danger') : '') + '</div>';
     if (cd.length > 1) h += '<div class="filters ambito">' + [{ k: '', t: 'Todo el día' }].concat(cd.map(c => ({ k: c.k, t: c.ini + '–' + c.fin }))).map(o => '<button type="button" class="tab' + (o.k === (amb || '') ? ' on' : '') + '" data-act="lista-cls" data-fecha="' + fecha + '" data-cls="' + o.k + '">' + esc(o.t) + '</button>').join('') + '</div><p class="muted small">' + (amb ? 'Marcas solo la clase elegida; lo que no toques sigue la marca de todo el día.' : 'Marcas a todo el grupo el día entero. Para una sola clase, elígela arriba.') + '</p>';
-    h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · <b>toca</b> la letra: falta o asistió; <b>mantenla presionada</b> para retardo o justificada; <b>+</b> suma participación; toca el <b>nombre</b> para anotar una observación (🤝 ❓ 💡 ⭐ 👎…).</p>';
-    if (E.rap) h += E.rap.filtroHTML('lista');
-    h += '<ul class="slist" data-kb="lista" data-f="' + fecha + '">' + al.map(a => {
-      const st = C.marca(doc, a.id, amb), n = Number(pd[a.id] || 0), exc = doc ? Object.keys(doc).filter(x => x.indexOf(a.id + '|') === 0).length : 0;
+    h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · <b>toca</b> la letra: falta o asistió; <b>mantenla presionada</b> para retardo o justificada; <b>+</b> suma participación; toca el <b>nombre</b> para anotar una observación (🤝 ❓ 💡 ⭐ 👎…) y <b>mantenlo presionado</b> para elegir a varios o tomar la foto de su trabajo.</p>';
+    if (sel) h += barraSel(sel, al);
+    else if (E.rap) h += E.rap.filtroHTML('lista');
+    h += '<ul class="slist' + (sel ? ' lsel-on' : '') + '" data-kb="lista" data-f="' + fecha + '">' + al.map(a => {
+      const st = C.marca(doc, a.id, amb), n = Number(pd[a.id] || 0), exc = doc ? Object.keys(doc).filter(x => x.indexOf(a.id + '|') === 0).length : 0, on = !!(sel && sel.ids[a.id]);
+      if (sel) return '<li class="srow lsel' + (on ? ' on' : '') + '"' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><button type="button" class="st st-' + st + '" data-act="lsel-tog" data-aid="' + a.id + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Quitar a ' : 'Elegir a ') + esc(a.nombre) + '">' + (on ? '✓' : st) + '</button>' +
+        '<button type="button" class="sname obsbtn" data-act="lsel-tog" data-aid="' + a.id + '" aria-pressed="' + on + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button></li>';
       return '<li class="srow ' + (doc ? '' : 'pending') + '"' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><button type="button" class="st st-' + st + '" data-act="asis" data-lp="asis-menu" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-cls="' + (amb || '') + '" aria-label="Estado de ' + esc(a.nombre) + ': ' + st + '. Toca para falta o asistió; mantén presionado para retardo o justificada">' + st + '</button>' +
-        '<button type="button" class="sname obsbtn" data-act="obs-open" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Anotar observación de ' + esc(a.nombre) + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (exc && !amb ? ' <small class="muted" title="Clases con marca distinta al día">⚑' + exc + '</small>' : '') + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button>' +
+        '<button type="button" class="sname obsbtn" data-act="obs-open" data-lp="lista-menu" data-aid="' + a.id + '" data-fecha="' + fecha + '" aria-label="Anotar observación de ' + esc(a.nombre) + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (exc && !amb ? ' <small class="muted" title="Clases con marca distinta al día">⚑' + exc + '</small>' : '') + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button>' +
         '<div class="partc"><button type="button" class="mini" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="-1" aria-label="Quitar participación">−</button><b>' + n + '</b><button type="button" class="mini plus" data-act="part" data-aid="' + a.id + '" data-fecha="' + fecha + '" data-d="1" aria-label="Sumar participación">+</button></div></li>';
     }).join('') + '</ul>';
     return { t: 'Pase de lista', h: h };
@@ -411,7 +425,7 @@
       return '<li class="srow' + (a.rub ? ' rub' : '') + (tar ? ' tarde' : '') + '" id="row-' + x.id + '"' + (E.rap ? E.rap.qAttr(x) : '') + '><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv || tar ? '<span class="conv g ' + gclass(n100) + '"' + (tar ? ' title="Cuenta ' + Math.round(C.tardeF(a, x.id) * 100) + ' % por entregarlo tarde"' : '') + '>' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-auto="1" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' enterkeyhint="next" aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + (a.rub && E.cap ? E.cap.rubRow(a, x) : '') + '</li>';
     }).join('') + '</ul>';
     if (E.evid) h += E.evid.tiraHTML(g, { act: id });
-    h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
+    h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + (D.gruposActivos().length > 1 ? btn(icon('copy') + ' Copiar a otro grupo', 'act-copiar', 'data-id="' + id + '"', 'small ghost') : '') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
     return { t: a.nombre || 'Actividad', h: h, key: k };
   };
   CH['act-field'] = el => {
@@ -438,6 +452,22 @@
   A['act-del'] = el => {
     const g = D.grupoActual(), k = 'act:' + g.id + ':' + el.dataset.id, a = S.get(k); if (!confirm('¿Eliminar "' + (a && a.nombre) + '" y sus calificaciones?')) return;
     S.del(k); location.hash = '#/calificaciones/' + (a ? a.parcial : '');
+  };
+  // v1.27.18: copia la configuración de la actividad a otro grupo (sin calificaciones: cada grupo captura las suyas)
+  A['act-copiar'] = el => {
+    const g = D.grupoActual(), a = S.get('act:' + g.id + ':' + el.dataset.id); if (!a) return;
+    const otros = D.gruposActivos().filter(x => x.id !== g.id);
+    if (!otros.length) { u.toast('No tienes otro grupo activo', 'err', 3000); return; }
+    E.modal.open('📋 Copiar «' + (a.nombre || 'actividad') + '»', '<p class="small">Se copian el nombre, el rubro, los puntos, el peso, la fecha, el instrumento y el tema. <b>Las calificaciones no se copian</b>: cada grupo captura las suyas.</p><div class="cp-grupos">' +
+      otros.map(x => btn('<b>' + esc(x.grupo) + '</b> ' + esc(x.nombre || ''), 'act-copiar-a', 'data-id="' + a.id + '" data-g="' + x.id + '"', 'ghost')).join('') + '</div>');
+  };
+  A['act-copiar-a'] = el => {
+    const src = S.get('act:' + D.grupoActual().id + ':' + el.dataset.id), dst = D.gruposActivos().find(x => x.id === el.dataset.g); if (!src || !dst) return;
+    const id = u.uid('act'), copia = u.clone(src);
+    ['notas', 'auto', 'freecad', 'libreta', 'sugerida'].forEach(k => { delete copia[k]; });
+    Object.assign(copia, { id: id, notas: {} });
+    S.put('act:' + dst.id + ':' + id, copia);
+    E.modal.close(); u.toast('Copiada a ' + dst.grupo + ': ya aparece en sus calificaciones del mismo parcial.', 'ok', 3800);
   };
 
   /* =================== PLANEACIONES =================== */
@@ -907,11 +937,6 @@
     const ok = await u.copy(t); u.toast(ok ? 'Copiado: pégalo en tu chat con Claude' : 'No se pudo copiar', ok ? 'ok' : 'err');
   };
 
-  /* =================== MÁS =================== */
-  V.mas = () => {
-    const it = [['grupos', 'team', 'Mis grupos', 'Agregar grupos y horarios, cambiar o archivar'], ['aula', 'grid', 'Modo clase', 'Nombres grandes: participación y asistencia'], ['pendientes', 'inbox', 'Pendientes', 'Todo lo que falta capturar'], ['camara', 'cam', 'Cámara', 'QR de libretas, tarjetas, hojas de respuestas y fotos'], ['evidencias', 'cam', 'Evidencias', 'Fotos de trabajos (nunca caras)'], ['formularios', 'clip', 'Formularios', 'QR de tu Google Forms e importar respuestas'], ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'], ['temas', 'screen', 'Temas', 'Teoría lista para proyectar'], ['examen', 'doc', 'Examen recomendado', 'Según lo visto y cómo va el grupo'], ['cierre', 'check', 'Cierre del día', 'Tarea, participación y destacados de hoy'], ['libreta', 'book', 'Tareas y libreta', 'Revisión y calificación de libreta'], ['entregas', 'clip', 'Entregas', 'Qué pedir y quién debe qué'], ['precierre', 'check', 'Pre-cierre', 'Lo que falta para el acta'], ['cerrarsemana', 'note', 'Cerrar semana', 'Varios días sin cerrar, de un jalón'], ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'], ['banco', 'doc', 'Banco de preguntas', 'Agrega las tuyas o pídeselas a Claude'], ['ideas', 'bulb', 'Ideas', 'Prácticas, proyector y grupo'], ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'], ['herramientas', 'tool', 'Herramientas', 'Al azar, equipos, temporizador'], ['semaforo', 'grade', 'Semáforo', 'Va mal, regular o bien y su avance'], ['estrategias', 'star', 'Estrategias', 'Cómo ayudar a subir a cada nivel'], ['consejo', 'chart', 'Consejo técnico', 'Reporte de cada grupo: imprimir o proyectar'], ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'], ['seguridad', 'alert', 'Seguridad', 'Reglamento firmado, revisión e incidentes'], ['normas', 'book', 'Normas oficiales', 'Estudia y repasa las NOM del taller'], ['emergencia', 'alert', 'Emergencias', 'Teléfonos y seguro facultativo'], ['inventario', 'tool', 'Inventario', 'Taller: préstamos y compras'], ['constancias', 'star', 'Constancias', 'Logros para reconocer'], ['encuesta', 'sparkle', 'Encuesta del mes', 'Anónima: ustedes dijeron, yo hice'], ['aprende', 'board', 'El guion aprende', 'Ajustes para el próximo grupo'], ['semestre', 'cal', 'Cambio de semestre', 'Archivar y crear el grupo nuevo'], ['mitiempo', 'timer', 'Tu tiempo', 'Días sin clase, calendario, expediente'], ['espaciado', 'book', 'Repaso espaciado', 'QR semanal: 1 semana, 1 mes, inicio'], ['claude', 'sparkle', 'Pídeselo a Claude', 'Mensajes listos, sin nombres'], ['mipractica', 'profile', 'Mi práctica docente', 'Evidencias y reflexión'], ['vinculacion', 'factory', 'Vinculación (opcional)', 'Empresas, prácticas y egresados'], ['resultadosmas', 'chart', 'Resultados', 'Indicadores, juntas y autoevaluación'], ['ruleta', 'dice', 'Ruleta equitativa', 'Participación pareja'], ['niveles', 'star', '3 niveles', 'Apoyo, estándar y reto'], ['dinamicas', 'sparkle', 'Dinámicas', 'Integrar, capacidades y convivencia'], ['freecad', 'cube', 'FreeCAD', (E.PRACTICAS ? E.PRACTICAS.length : 17) + ' prácticas con plano para proyectar'], ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'], ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'], ['perfiles', 'profile', 'Perfiles', 'Fortalezas y apoyo por alumno'], ['alumnos', 'users', 'Alumnos', 'Lista, fichas e importación'], ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'], ['calendario', 'cal', 'Calendario', 'Parciales, asuetos y horas'], ['bitacora', 'book', 'Bitácora', 'Notas de cada clase'], ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'], ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización'], ['ayuda', 'help', 'Ayuda y manual', 'Cómo usar cada pantalla · PDF']];
-    return { t: 'Más', h: '<div class="mas-grid">' + it.map(x => '<a href="#/' + x[0] + '">' + icon(x[1]) + '<span>' + x[2] + '</span><small>' + x[3] + '</small></a>').join('') + '</div>' };
-  };
 
   /* =================== AJUSTES =================== */
   V.ajustes = sub => {
