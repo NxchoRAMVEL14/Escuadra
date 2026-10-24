@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.27.16';
+  E.VERSION = '1.27.17';
   E.CHANGELOG = [
+            { v: '1.27.17', f: '2026-10-23', t: 'Impresos con varias hojas: cada hoja que empieza en página nueva, como la hoja de firmas del reglamento, lleva su logo arriba a la derecha. Ya no aparecen dos logos juntos en la primera hoja.' },
             { v: '1.27.16', f: '2026-10-22', t: 'Registro de participación y lista de asistencia: la firma ya cabe en la primera hoja, tanto en horizontal como en vertical. Las filas de estos dos formatos son un poco más bajas para que todo quepa; los demás formatos no cambian.' },
             { v: '1.27.15', f: '2026-10-22', t: 'Al abrir la app aparece una pantalla de carga con el icono nuevo. La pestaña del navegador usa una versión simple de la escuadra y el engrane, que se lee aunque sea pequeña. Los accesos directos del icono (Pasar lista, Modo clase, Cierre del día) ahora llevan el icono nuevo con el símbolo de cada uno.' },
             { v: '1.27.14', f: '2026-10-22', t: 'Nuevo icono de la app: el marco metálico con la escuadra, el engrane y el circuito. Aparece en la pantalla de inicio del celular, en la pestaña del navegador y en la barra lateral de la app. Los accesos directos del menú siguen con el icono anterior.' },

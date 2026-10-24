@@ -27,7 +27,7 @@
   P.run = (html, o) => {
     o = o || {};
     // cada hoja (<div class="pr">) lleva su logo arriba; en lotes, cada informe o plan sale con el suyo
-    const cuerpo = o.sinLogo ? html : html.replace(/<div class="pr(?=[\s"])/g, m => BANDA + m), n = hojas(cuerpo, o);
+    const cuerpo = o.sinLogo ? html : html.replace(/<div class="pr(?=[\s"])([^>]*)>/g, (m, resto) => /page-break-before:\s*always/.test(resto) ? m + BANDA : BANDA + m), n = hojas(cuerpo, o);
     const root = document.getElementById('print-root'); root.innerHTML = cuerpo;
     let st = document.getElementById('page-style'); if (!st) { st = document.createElement('style'); st.id = 'page-style'; document.head.appendChild(st); }
     st.textContent = '@page{size:letter ' + (o.landscape ? 'landscape' : 'portrait') + ';margin:' + (o.margin || '9mm') + (n > 2 ? ';@bottom-right{content:"Página " counter(page) " de " counter(pages);font:7.5pt Arial,Helvetica,sans-serif;color:#444}' : '') + '}';
