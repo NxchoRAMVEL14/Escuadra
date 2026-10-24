@@ -28,6 +28,25 @@
       '<p class="muted small mt">¿Trajo justificante de varios días? ' + btn('📄 Justificar por fechas', 'jus-open', 'data-aid="' + a.id + '"', 'small ghost') + '</p>');
   };
   A['asis-set'] = el => { const g = D.grupoActual(); AU.setAsis(g, el.dataset.fecha, el.dataset.aid, el.dataset.st); E.modal.close(); if (navigator.vibrate) navigator.vibrate(12); };
+  /* v1.27.18: mantener presionado el nombre en el pase de lista → elegir a varios o foto de su trabajo */
+  LP['lista-menu'] = el => {
+    const g = D.grupoActual(), a = g && D.alumno(g, el.dataset.aid); if (!a) return; const f = el.dataset.fecha;
+    E.modal.open(u.corto(a.nombre) + ' · ' + u.fCorta(f), '<div class="lm-menu">' + btn('☑ Elegir a varios (empieza con él)', 'lsel-start', 'data-aid="' + a.id + '" data-fecha="' + f + '"', 'primary') +
+      btn('📷 Foto de su trabajo', 'ev-abrir', 'data-aid="' + a.id + '"', '') + btn('👁 Anotar observación', 'obs-open', 'data-aid="' + a.id + '" data-fecha="' + f + '"', 'ghost') + '</div>' +
+      '<p class="muted small">La foto es solo del trabajo, nunca de caras; se guarda en Evidencias y va a su ficha.</p>');
+  };
+  // selección múltiple: se elige a varios y se marcan juntos («faltaron estos cuatro»)
+  A['lsel-start'] = el => { E.modal.close(); const s = E.ui.lsel = { f: el.dataset.fecha, ids: {} }; s.ids[el.dataset.aid] = 1; E.render(); };
+  A['lsel-tog'] = el => { const s = E.ui.lsel; if (!s) return; const k = el.dataset.aid; if (s.ids[k]) delete s.ids[k]; else s.ids[k] = 1; E.render(); };
+  A['lsel-todos'] = () => { const s = E.ui.lsel, g = D.grupoActual(); if (!s || !g) return; const al = D.alumnos(g); if (Object.keys(s.ids).length === al.length) s.ids = {}; else al.forEach(a => { s.ids[a.id] = 1; }); E.render(); };
+  A['lsel-off'] = () => { E.ui.lsel = null; E.render(); };
+  A['lsel-marca'] = el => {
+    const s = E.ui.lsel, g = D.grupoActual(); if (!s || !g) return; const ids = Object.keys(s.ids); if (!ids.length) return;
+    ids.forEach(aid => C.setMarca(g, s.f, aid, el.dataset.st, C.ambito(s.f)));
+    E.ui.lsel = null; u.toast(ids.length + (ids.length === 1 ? ' alumno marcado' : ' alumnos marcados') + ': ' + ({ A: 'asistió', F: 'faltó', R: 'retardo', J: 'justificada' })[el.dataset.st], 'ok', 2400);
+    if (navigator.vibrate) navigator.vibrate(12);
+  };
+  A['lsel-foto'] = () => { const s = E.ui.lsel; if (!s) return; const ids = Object.keys(s.ids); if (!ids.length) return; A['ev-abrir']({ dataset: { aids: ids.join(',') } }); };
   // teclado en el pase de lista: A F R J, + −, O
   E.rap.KB.lista = (k, row, L) => {
     if (!row) return false; const g = D.grupoActual(), f = L.dataset.f, aid = row.dataset.kbr, x = String(k).toLowerCase();
@@ -122,7 +141,7 @@
         (st !== 'A' ? '<span class="au-st">' + ST[st][0] + ' ' + ST[st][1] + '</span>' : '') + (ob ? '<span class="au-o">' + ob + '</span>' : '') + '</button>';
     };
     const seg = (act, v, cur, lbl) => '<button type="button" class="' + (v === cur ? 'on' : '') + '" data-act="' + act + '" data-v="' + v + '" aria-pressed="' + (v === cur) + '">' + lbl + '</button>';
-    let h = '<div class="datebar"><button type="button" class="iconbtn" data-act="go" data-to="aula/' + (prev || f) + '" ' + (prev ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button>' +
+    let h = '<div class="datebar" data-swipe data-prev="' + (prev ? 'aula/' + prev : '') + '" data-next="' + (next ? 'aula/' + next : '') + '"><button type="button" class="iconbtn" data-act="go" data-to="aula/' + (prev || f) + '" ' + (prev ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button>' +
       '<div class="datebox"><b>' + u.cap(u.fLarga(f)) + '</b><span class="small muted">' + LUG[lug][1] + ' ' + LUG[lug][0] + '</span></div>' +
       '<button type="button" class="iconbtn" data-act="go" data-to="aula/' + (next || f) + '" ' + (next ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
     h += '<div class="au-ctl"><div class="seg" role="group" aria-label="Qué hace un toque">' + seg('au-modo', 'part', ui.modo, '⭐ Participación') + seg('au-modo', 'asis', ui.modo, '✓ Asistencia') + '</div>' +

@@ -2,7 +2,7 @@
    salto automático al capturar calificaciones. Todo funciona sin internet y solo con lo que ya está en tu dispositivo. */
 (function () {
   'use strict';
-  const E = window.E, u = E.u, S = E.store, D = E.data, esc = u.esc;
+  const E = window.E, u = E.u, S = E.store, D = E.data, C = E.calc, esc = u.esc;
   const A = E.actions, CH = E.changes, IN = E.inputs, H = E.h;
   const btn = H.btn, link = H.link, icon = E.icon;
   const R = E.rap = { ver: 0, KB: {} };
@@ -82,13 +82,44 @@
   };
   R.qAttr = a => ' data-q="' + esc(a.num + ' ' + u.norm(a.nombre)) + '"';
   R.filtra = (al, q) => { const f = u.norm(q); if (!f) return []; return al.filter(a => coincide(a.num + ' ' + u.norm(a.nombre), f)); };
+  /* v1.27.18: el buscador también hace cosas: «cierre», «lista», «clases», «imprimir 3A lista»… se ejecutan directo.
+     Si lo escrito no es una orden, busca al alumno como antes. */
+  const CMDS = [
+    [/^(CIERRE|CERRAR)/, 'Cierre del día', 'Pasar al cierre de hoy', () => 'cierre/' + u.today()],
+    [/^(MODO CLASE|AULA|EN CLASE)/, 'Modo clase', 'Nombres grandes para el salón', () => 'aula/' + u.today()],
+    [/^(PASE|LISTA)/, 'Pase de lista', 'La lista de hoy', () => 'lista/' + u.today()],
+    [/^(CLASES|GUION)/, 'Clases', 'Qué das en cada bloque', () => 'clases'],
+    [/^(CALIF)/, 'Calificaciones', '', () => 'calificaciones'],
+    [/^(PENDIENTES)/, 'Pendientes', 'Lo que falta capturar', () => 'pendientes'],
+    [/^(PRECIERRE|PRE CIERRE|ACTA)/, 'Pre-cierre', 'Lo que falta para el acta', () => 'precierre'],
+    [/^(ENTREGAS)/, 'Entregas', '', () => 'entregas'],
+    [/^(SEMAFORO)/, 'Semáforo', '', () => 'semaforo'],
+    [/^(PARA APROBAR|APROBAR)/, 'Para aprobar', '', () => 'aprobar'],
+    [/^(LIBRETA|TAREAS)/, 'Tareas y libreta', '', () => 'libreta'],
+    [/^(EXAMEN)/, 'Examen recomendado', '', () => 'examen'],
+    [/^(IMPRIM|IMPRESION)/, 'Imprimir', 'Listas, cotejo, rúbrica y acta', () => 'imprimir']
+  ];
+  function comandos(q, g) {
+    const f = u.norm(q); if (!f || !g) return '';
+    const tok = ((f.match(/\b(\d\s?[A-Z])\b/) || [])[1] || '').replace(/\s/g, '');
+    const gr = (tok && D.gruposActivos().find(x => u.norm(x.grupo).replace(/\s/g, '') === tok)) || g;
+    const out = [];
+    if (/^IMPRIM/.test(f) && /LISTA|ASIST|PASE/.test(f) && D.alumnos(gr).length) out.push('<li><button type="button" class="bs-cmd" data-act="bs-print" data-gid="' + gr.id + '"><span class="bs-ico">🖨</span><span><b>Imprimir la lista de asistencia</b><small>' + esc(gr.grupo) + ' · ' + esc(C.parcialActual().nombre) + '</small></span></button></li>');
+    CMDS.forEach(c => { if (c[0].test(f)) { const to = c[3](); out.push('<li><a href="#/' + to + '" data-act="bs-go" data-to="' + to + '" class="bs-cmd"><span class="bs-ico">▶</span><span><b>' + esc(c[1]) + '</b>' + (c[2] ? '<small>' + esc(c[2]) + '</small>' : '') + '</span></a></li>'); } });
+    return out.length ? '<p class="muted small bs-h">Acciones · Enter las hace</p><ul class="bs-res bs-cmds">' + out.join('') + '</ul>' : '';
+  }
+  A['bs-print'] = el => {
+    const gr = D.gruposActivos().find(x => x.id === el.dataset.gid) || D.grupoActual(); if (!gr) return;
+    if (!D.grupoActual() || D.grupoActual().id !== gr.id) D.setGrupo(gr.id);
+    E.modal.close(); E.print.asistencia(gr, C.parcialActual(), { marcas: true });
+  };
   function buscaHTML(q) {
     const g = D.grupoActual(); if (!g) return '<p class="muted">No hay grupo.</p>';
-    if (!String(q || '').trim()) return '<p class="muted small">Escribe el número de lista o parte del nombre o apellido. Enter abre la ficha del primero.</p>';
-    const r = R.filtra(D.alumnos(g), q), hoy = u.today();
-    if (!r.length) return '<p class="muted small">Nadie coincide con «' + esc(q) + '».</p>';
-    return '<ul class="bs-res">' + r.slice(0, 12).map(a => '<li><a href="#/alumno/' + a.id + '" data-act="bs-go" data-to="alumno/' + a.id + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + '</a><span class="row gap">' +
-      btn('+1 ⭐', 'bs-part', 'data-aid="' + a.id + '" aria-label="Sumar participación hoy"', 'small') + btn('👁', 'obs-open', 'data-aid="' + a.id + '" data-fecha="' + hoy + '" aria-label="Anotar observación"', 'small ghost') + '</span></li>').join('') + '</ul>';
+    if (!String(q || '').trim()) return '<p class="muted small">Escribe el número de lista, parte del nombre o una orden: «cierre», «lista», «imprimir 3A lista». Enter hace la primera.</p>';
+    const cm = comandos(q, g), r = R.filtra(D.alumnos(g), q), hoy = u.today();
+    if (!r.length && !cm) return '<p class="muted small">Nadie coincide con «' + esc(q) + '».</p>';
+    return cm + (r.length ? '<p class="muted small bs-h">Alumnos</p><ul class="bs-res">' + r.slice(0, 12).map(a => '<li><a href="#/alumno/' + a.id + '" data-act="bs-go" data-to="alumno/' + a.id + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + '</a><span class="row gap">' +
+      btn('+1 ⭐', 'bs-part', 'data-aid="' + a.id + '" aria-label="Sumar participación hoy"', 'small') + btn('👁', 'obs-open', 'data-aid="' + a.id + '" data-fecha="' + hoy + '" aria-label="Anotar observación"', 'small ghost') + '</span></li>').join('') + '</ul>' : '');
   }
   A.buscar = () => {
     E.modal.open('Buscar alumno', '<input type="search" class="inp" id="bs-q" data-in="bs-q" placeholder="Número de lista o nombre" autocomplete="off" enterkeyhint="go" aria-label="Buscar alumno"><div id="bs-out" class="mt">' + buscaHTML('') + '</div>');
@@ -166,7 +197,7 @@
     if (k === 'Enter' && R.auto && t && t.id === R.auto.id) { const a = R.auto; R.auto = null; if (t.value === a.val && Date.now() - a.t < 2500) { e.preventDefault(); e.stopImmediatePropagation(); return; } }
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (k === 'z' || k === 'Z') && !ed) { e.preventDefault(); UD.undo(); return; }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (t && t.id === 'bs-q' && k === 'Enter') { e.preventDefault(); const a = document.querySelector('#bs-out [data-act="bs-go"]'); if (a) a.click(); return; }
+    if (t && t.id === 'bs-q' && k === 'Enter') { e.preventDefault(); const a = document.querySelector('#bs-out [data-act="bs-go"], #bs-out [data-act="bs-print"]'); if (a) a.click(); return; }
     if (t && t.matches && t.matches('input[data-in="filtro"]') && k === 'Enter') { e.preventDefault(); enterFiltro(t); return; }
     if (t && t.matches && t.matches('input.score') && (k === 'ArrowDown' || k === 'ArrowUp')) { e.preventDefault(); scoreMove(t, k === 'ArrowDown' ? 1 : -1); return; }
     if (modalAbierto()) { if (E.cap && E.cap.tecla && E.cap.tecla(e)) return; return; }
@@ -189,13 +220,76 @@
   R.KB.lb = (k, row, L) => { if (k === 'ArrowRight' && L.dataset.sig) { location.hash = '#/' + L.dataset.sig; return true; } if (k === 'ArrowLeft' && L.dataset.ant) { location.hash = '#/' + L.dataset.ant; return true; } return false; };
 
   /* =================== antes y después de cada pantalla =================== */
-  R.antes = nueva => { if (nueva) { E.ui.flt = {}; E.ui.kb = {}; } };
+  R.antes = nueva => { if (nueva) { E.ui.flt = {}; E.ui.kb = {}; E.ui.lsel = null; } };
   R.despues = () => {
     const view = document.getElementById('view'); if (!view) return;
+    // con deslizar activo, el gesto horizontal llega a la app (y el vertical sigue siendo de la página)
+    view.style.touchAction = view.querySelector('[data-swipe]') ? 'pan-y' : '';
+    UL.guarda();
     view.querySelectorAll('input[data-in="filtro"]').forEach(R.aplicaFiltro);
     const L = view.querySelector('[data-kb]');
     if (L) { const id = E.ui.kb[L.dataset.kb]; if (id) { const r = [...L.querySelectorAll('[data-kbr]')].find(x => x.dataset.kbr === id); if (r) r.classList.add('kbsel'); } }
     if (R.selId) { const el = document.getElementById(R.selId); if (el && document.activeElement === el) { try { el.select(); } catch (e) { } } }
+  };
+
+  /* =================== deslizar para cambiar de clase o de día (v1.27.18) =================== */
+  // Un deslizón horizontal en la pantalla (pase de lista, Clases, Modo clase) va a la clase anterior o siguiente.
+  // Lo marcan data-swipe, data-prev y data-next en la barra de fechas. Con el dedo sobre un control no hace nada.
+  let swp = null;
+  document.addEventListener('pointerdown', e => {
+    if (e.button > 0 || modalAbierto()) return;
+    const v = document.getElementById('view'); if (!v || !v.contains(e.target)) return;
+    if (e.target.closest && e.target.closest('input,textarea,select,[contenteditable],table,.filtro,.ev-tira,.mapa,.mp-grid,.au-grid,.tj-stage')) return;
+    const sw = v.querySelector('[data-swipe]'); if (!sw) return;
+    swp = { x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId, p: sw.dataset.prev, n: sw.dataset.next };
+  }, { passive: true });
+  document.addEventListener('pointerup', e => {
+    if (!swp || e.pointerId !== swp.id) return;
+    const d = swp; swp = null; const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (Date.now() - d.t > 700 || Math.abs(dx) < 70 || Math.abs(dy) > 60 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+    const to = dx < 0 ? d.n : d.p;
+    if (!to) { u.toast(dx < 0 ? 'No hay una clase siguiente' : 'No hay una clase anterior', 'err', 1800); return; }
+    if (navigator.vibrate) navigator.vibrate(8);
+    location.hash = '#/' + to;
+  }, { passive: true });
+  document.addEventListener('pointercancel', () => { swp = null; });
+
+  /* =================== retomar donde quedaste (v1.27.18) =================== */
+  // Guarda la última pantalla de este aparato; al abrir la app, si es el mismo día, vuelve a ella.
+  const UL = E.ultima = {};
+  const KUL = 'escuadra.ultima';
+  UL.guarda = () => { try { localStorage.setItem(KUL, JSON.stringify({ h: location.hash.replace(/^#\/?/, '') || 'inicio', d: u.today() })); } catch (e) { } };
+  UL.restaura = () => {
+    try {
+      if (D.cfg().retomar === false) return null;
+      const x = JSON.parse(localStorage.getItem(KUL) || 'null');
+      return x && x.h && x.d === u.today() && x.h !== 'inicio' ? x.h : null;
+    } catch (e) { return null; }
+  };
+  window.addEventListener('hashchange', UL.guarda);
+
+  /* =================== el punto de sincronización del encabezado (v1.27.18) =================== */
+  // Tocarlo dice qué falta subir a tu Supabase y cuándo fue la última vez que llegó todo.
+  const CATS_SYNC = [[/^asis:/, 'listas de asistencia'], [/^part:/, 'participación'], [/^act:/, 'actividades y calificaciones'], [/^libreta:/, 'libreta'], [/^cierre/, 'cierres del día'], [/^bit:/, 'bitácora'], [/^mapa:/, 'mapa del salón'], [/^config$/, 'ajustes']];
+  const catSync = k => { const c = CATS_SYNC.find(x => x[0].test(k)); return c ? c[1] : 'otros datos'; };
+  A['sync-info'] = () => {
+    const sy = E.sync, meta = sy.meta(), docs = S.docs, cnt = {}; let n = 0;
+    Object.keys(docs).forEach(k => { if (docs[k].dirty) { n++; const c = catSync(k); cnt[c] = (cnt[c] || 0) + 1; } });
+    const lista = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).map(c => '<li><b>' + cnt[c] + '</b> ' + esc(c) + '</li>').join('');
+    const ult = meta.lastSyncAt ? new Date(meta.lastSyncAt).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+    const conectado = !!(sy.client && sy.user);
+    const estado = { ok: 'Sincronizado', syncing: 'Sincronizando…', offline: 'Sin internet', auth: 'Falta iniciar sesión', error: 'Hubo un error', local: 'Solo en este aparato' }[sy.state] || sy.state;
+    const h = '<p><span class="dot" data-s="' + esc(sy.state) + '"></span> <b>' + esc(estado) + '</b><br><span class="small">' + esc(sy.msg) + '</span></p>' +
+      (ult ? '<p class="small muted">Última vez que todo llegó a tu Supabase: ' + esc(ult) + '.</p>' : '') +
+      (n ? '<p class="small"><b>Por subir: ' + n + (n === 1 ? ' cambio' : ' cambios') + '</b></p><ul class="sy-cats">' + lista + '</ul><p class="muted small">Lo que capturas ya quedó guardado en este aparato. «Por subir» es lo que todavía no llega a tu Supabase; se sube solo cuando hay internet.</p>' : '<p class="note ok small">Todo lo que capturaste ya está subido. 🎉</p>') +
+      (conectado ? '' : '<p class="note warn small">Conecta Supabase para respaldar tus datos en la nube.</p>') +
+      '<div class="row gap wrap mt">' + btn('🔄 Sincronizar ahora', 'sync-now', conectado ? '' : 'disabled', 'primary') + link('Ajustes → Sincronización', 'ajustes/sync', 'small ghost') + '</div>';
+    E.modal.open('☁️ Sincronización', h);
+  };
+  A['sync-now'] = async () => {
+    if (!E.sync.client || !E.sync.user) { u.toast('Primero inicia sesión en Ajustes → Sincronización', 'err'); return; }
+    E.modal.close(); await E.sync.now(); const sy = E.sync;
+    u.toast(sy.state === 'ok' ? 'Listo: todo subido' : sy.msg, sy.state === 'ok' ? 'ok' : 'err', 3000);
   };
 
   /* =================== barra de abajo y ajustes de captura rápida =================== */
@@ -211,6 +305,8 @@
     const nk = R.navKeys();
     return '<div class="aj-rap">' + tog('abrirDonde', 'Al abrir Escuadra desde su ícono, ir a lo que toca: pase de lista durante tu clase (o el guion si ya pasaste lista) y el cierre del día cuando terminas', c.abrirDonde !== false) +
       tog('autoSalto', 'Al capturar calificaciones, pasar solo al siguiente alumno (85 salta; 10 espera por si es 100)', c.autoSalto !== false) +
+      tog('retomar', 'Al abrir Escuadra, volver a la última pantalla que usaste (solo si es el mismo día)', c.retomar !== false) +
+      tog('vistaImpresion', 'Vista previa antes de imprimir: cuántas hojas salen y si algo se parte', c.vistaImpresion !== false) +
       '<h4>Barra de abajo (celular)</h4><div class="fgrid c4">' + nk.map((k, i) => '<label class="fld"><span>Botón ' + (i + 1) + '</span><select data-ch="nav-slot" data-i="' + i + '">' + Object.keys(R.NAV).map(x => '<option value="' + x + '"' + (x === k ? ' selected' : '') + '>' + esc(R.NAV[x][2]) + '</option>').join('') + '</select></label>').join('') + '</div><p class="muted small">«Más» siempre queda al final.</p>' +
       '<h4>Rúbricas de un toque</h4><p class="small">Plantillas para cartel, plano, exposición, prototipo, bitácora y reporte (Excelente 100 · Bien 85 · Suficiente 70 · Insuficiente 50).</p>' + btn('🧾 Editar plantillas', 'rub-edit', '', 'small') +
       '<h4>Mapa del salón</h4><p class="small">Dónde se sienta cada quien: Modo clase acomoda los nombres como en el salón.</p><div class="row gap wrap">' + link('🏫 Aula', 'mapa/aula', 'small') + link('💻 Centro de cómputo', 'mapa/computo', 'small') + link('🛠️ Taller', 'mapa/taller', 'small') + '</div>' +

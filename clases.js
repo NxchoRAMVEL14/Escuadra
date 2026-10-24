@@ -537,7 +537,7 @@
     const g = D.grupoActual(); if (!g) return H.noGroup();
     f = f || u.today(); const d = K.dia(g, f);
     const ant = C.claseAnterior(g, f), sig = C.siguienteClase(g, f);
-    let h = '<div class="datebar"><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (ant || f) + '" ' + (ant ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button><div class="datebox"><b>' + u.cap(u.fLarga(f)) + '</b><a class="small" href="#/clases' + (d ? '/' + d.p.id : '') + '">Ver todas las clases</a></div><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (sig || f) + '" ' + (sig ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
+    let h = '<div class="datebar" data-swipe data-prev="' + (ant ? 'clase/' + ant : '') + '" data-next="' + (sig ? 'clase/' + sig : '') + '"><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (ant || f) + '" ' + (ant ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button><div class="datebox"><b>' + u.cap(u.fLarga(f)) + '</b><a class="small" href="#/clases' + (d ? '/' + d.p.id : '') + '">Ver todas las clases</a></div><button type="button" class="iconbtn" data-act="go" data-to="clase/' + (sig || f) + '" ' + (sig ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
     medVistos = new Set();
     if (!d || !d.bloques.length) return { t: 'Clase', h: h + card('<p>No tienes clase con ' + esc(g.nombre) + ' este día.</p>' + (sig ? link('Ir a la próxima clase', 'clase/' + sig, 'primary') : '')) };
     if (E.repaso) h += E.repaso.calHTML(g, f, d);

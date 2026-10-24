@@ -134,8 +134,14 @@
     if (!L.length) L = C.riesgos(g, p).filter(r => r.kind === 'bad').map(r => ({ a: D.alumno(g, r.id), why: r.txt }));
     const at = E.cierre ? E.cierre.atencion(g, hoy) : []; at.forEach(x => { if (!L.some(y => y.a && y.a.id === x.a.id)) L.push({ a: x.a, why: '👎 ' + x.n + ' días muy mal' }); });
     L = L.filter(x => x.a); if (!L.length) return null;
+    // v1.27.18: a quien faltó (o tiene justificada) hoy no se le atiende aquí: la tarjeta elige solo entre los que sí están
+    const asisHoy = S.get('asis:' + g.id + ':' + hoy) || null, amb = C.ambito(hoy);
+    const ausente = a => !!asisHoy && ['F', 'J'].indexOf(C.marca(asisHoy, a.id, amb)) >= 0;
+    const faltan = L.filter(x => ausente(x.a)), L2 = L.filter(x => !ausente(x.a));
+    if (!L2.length) return { ico: '👤', k: 'Hoy no hay a quién atender aquí', t: 'Faltó hoy: ' + faltan.map(x => u.corto(x.a.nombre)).join(', ') + '. Atiéndelos en su próxima clase.', b: link('Ficha', 'alumno/' + faltan[0].a.id, 'small') };
+    L = L2;
     const x = L[((diaN(hoy) % L.length) + L.length) % L.length];
-    return { ico: '👤', k: 'Hoy atiende a ' + u.corto(x.a.nombre), t: (x.why || 'Va mal en el semáforo') + (L.length > 1 ? ' · rota cada día entre ' + L.length + ' alumnos' : ''), b: link('Ficha', 'alumno/' + x.a.id, 'small primary') + (E.aprobar ? link('Para aprobar', 'aprobar/' + p.id, 'small') : '') };
+    return { ico: '👤', k: 'Hoy atiende a ' + u.corto(x.a.nombre), t: (x.why || 'Va mal en el semáforo') + (L.length > 1 ? ' · rota cada día entre ' + L.length + ' alumnos' : '') + (faltan.length ? ' · ' + faltan.length + (faltan.length === 1 ? ' faltó' : ' faltaron') + ' hoy (no cuenta)' : ''), b: link('Ficha', 'alumno/' + x.a.id, 'small primary') + (E.aprobar ? link('Para aprobar', 'aprobar/' + p.id, 'small') : '') };
   };
   H3.html = (g, hoy) => {
     const rows = [H3.clase(g, hoy), H3.urgente(g, hoy), H3.alumno(g, hoy)].filter(Boolean);

@@ -1412,3 +1412,44 @@ html.sem-ico .sf-dot.sf-mal { border-radius: 2px } html.sem-ico .sf-dot.sf-reg {
 .esp-reg { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 10px }
 .vi-eg { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end } .vi-eg .inp { max-width: 220px }
 .pr.carta { font-size: 11pt; line-height: 1.5 } .pr.carta p { margin: 0 0 4mm }
+
+/* ===== v1.27.18 ===== */
+/* pase de lista: elegir a varios */
+.lsel-bar { position: sticky; top: 0; z-index: 5; background: var(--surface); border: 1px solid var(--brand); border-radius: 14px; padding: 10px 12px; margin: 8px 0; box-shadow: var(--sh) }
+.lsel-n { font-size: .92rem; margin-bottom: 8px }
+.lsel-ops, .lsel-ops2 { display: flex; flex-wrap: wrap; gap: 6px; align-items: center }
+.lsel-ops2 { margin-top: 6px }
+.lsel-op { border: 1px solid var(--line); background: var(--surface2); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: inherit; font-weight: 700; font-size: .85rem; cursor: pointer }
+.lsel-op.st-F { border-color: var(--bad) } .lsel-op.st-A { border-color: var(--ok) } .lsel-op.st-R { border-color: var(--warn) } .lsel-op.st-J { border-color: var(--info) }
+.lsel-op:disabled { opacity: .45; cursor: default }
+.srow.lsel { cursor: pointer }
+.srow.lsel .sname { cursor: pointer }
+.srow.lsel.on { background: var(--brand-soft) }
+.srow.lsel.on .st { background: var(--brand); color: #fff; border-color: var(--brand) }
+.lm-menu { display: grid; gap: 8px }
+.lm-menu .btn { width: 100%; justify-content: center }
+/* buscador con órdenes */
+.bs-h { margin: 10px 0 4px }
+.bs-cmds { list-style: none; padding: 0; margin: 0 0 6px; display: grid; gap: 6px }
+.bs-cmd { display: flex; gap: 10px; align-items: center; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none; font: inherit; text-align: left; cursor: pointer; box-sizing: border-box }
+.bs-cmd small { display: block; color: var(--muted); font-weight: 400; font-size: .8rem }
+.bs-ico { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--brand-soft); color: var(--brand); font-weight: 800; flex: none }
+/* punto de sincronización: se puede tocar */
+button.syncdot { padding: 0; cursor: pointer; font: inherit }
+.sy-cats { margin: 6px 0 8px; padding-left: 18px }
+/* vista previa de impresión */
+.pv-av div { margin: 2px 0 }
+/* Más: bloques, arrastrar y esconder */
+.mn-gd { margin: -4px 2px 8px }
+.mn-section, .mn-g { margin-top: 6px }
+.mn-t { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 14px 12px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh); min-width: 0 }
+.mn-t.off { opacity: .5 }
+.mn-t.drag { opacity: .9; pointer-events: none; box-shadow: 0 12px 28px rgba(0, 0, 0, .28); border-color: var(--brand) }
+.mn-drag { position: absolute; top: 6px; right: 8px; font-size: 20px; line-height: 1; color: var(--muted); touch-action: none; cursor: grab; padding: 4px; user-select: none; -webkit-user-select: none }
+.mn-tt { display: flex; flex-direction: column; gap: 6px; font-weight: 700; color: var(--ink); padding-right: 22px }
+.mn-tt .ic { color: var(--brand); width: 26px; height: 26px }
+.mn-tt small { font-weight: 400; color: var(--muted); font-size: .8rem }
+.mn-t .mn-eye { align-self: flex-start; border: 0; background: var(--surface2); color: var(--brand); font: inherit; font-size: .75rem; font-weight: 700; border-radius: 999px; padding: 4px 10px; cursor: pointer }
+.mn-t .mn-eye.fija { background: none; color: var(--muted); padding: 0; font-weight: 600 }
+.cp-grupos { display: grid; gap: 8px; margin-top: 10px }
+.cp-grupos .btn { justify-content: flex-start }

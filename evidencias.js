@@ -125,7 +125,7 @@
   A['ev-abrir'] = el => {
     const g = D.grupoActual(); if (!g || !D.alumnos(g).length) { u.toast('Primero importa tu lista', 'err'); return; }
     const d = (el && el.dataset) || {};
-    E.ui.ev = { ok: !!EV.okSesion, act: d.actId || '', aids: d.aid ? [d.aid] : [], nota: '' };
+    E.ui.ev = { ok: !!EV.okSesion, act: d.actId || '', aids: d.aids ? d.aids.split(',').filter(Boolean) : (d.aid ? [d.aid] : []), nota: '' };
     E.modal.open('📷 Foto de evidencia', nuevaHTML());
   };
   CH['ev-sincaras'] = el => { E.ui.ev.ok = EV.okSesion = el.checked; E.ui.ev.nota = (document.getElementById('ev-nota') || {}).value || E.ui.ev.nota; E.modal.body(nuevaHTML()); };

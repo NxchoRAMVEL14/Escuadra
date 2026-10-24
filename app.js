@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.27.17';
+  E.VERSION = '1.27.18';
   E.CHANGELOG = [
+            { v: '1.27.18', f: '2026-10-23', t: 'Inicio: «Hoy atiende a…» ya no elige a quien faltó hoy; si faltó o tiene justificada, se avisa. Pase de lista: mantén presionado un nombre para elegir a varios y marcarlos juntos (faltó, asistió, retardo o justificada) o para tomar la foto de su trabajo. Deslizar a la izquierda o a la derecha cambia de clase en Pase de lista, Clases y Modo clase. Al abrir la app vuelves a la última pantalla del mismo día. Más en cinco bloques (para la clase, para los alumnos, para padres y la cotutora, planeaciones y administración, y sistema), con ✏️ Acomodar menú para arrastrar y esconder. El buscador también hace órdenes: «cierre», «lista», «imprimir 3A lista». Antes de imprimir, una vista previa dice cuántas hojas salen y avisa si la firma se parte. Tocar el punto de sincronización muestra qué falta subir. Copiar una actividad a otro grupo (sin calificaciones).' },
             { v: '1.27.17', f: '2026-10-23', t: 'Impresos con varias hojas: cada hoja que empieza en página nueva, como la hoja de firmas del reglamento, lleva su logo arriba a la derecha. Ya no aparecen dos logos juntos en la primera hoja.' },
             { v: '1.27.16', f: '2026-10-22', t: 'Registro de participación y lista de asistencia: la firma ya cabe en la primera hoja, tanto en horizontal como en vertical. Las filas de estos dos formatos son un poco más bajas para que todo quepa; los demás formatos no cambian.' },
             { v: '1.27.15', f: '2026-10-22', t: 'Al abrir la app aparece una pantalla de carga con el icono nuevo. La pestaña del navegador usa una versión simple de la escuadra y el engrane, que se lee aunque sea pequeña. Los accesos directos del icono (Pasar lista, Modo clase, Cierre del día) ahora llevan el icono nuevo con el símbolo de cada uno.' },
@@ -72,7 +73,7 @@
       '<button type="button" class="undob" id="undo-top" data-act="undo" hidden></button>' + '<a class="pendb" id="pend-top" href="#/pendientes" hidden aria-label="Pendientes de captura">' + E.icon('inbox') + '<b></b></a>' +
       '<button type="button" class="iconbtn topbtn" data-act="buscar" aria-label="Buscar alumno (tecla /)">' + E.icon('search') + '</button>' +
       '<button type="button" class="iconbtn topbtn" data-act="ayuda" aria-label="Ayuda de esta pantalla" title="Ayuda">' + E.icon('help') + '</button>' +
-      '<a class="syncdot" id="sync-top" href="#/ajustes/sync" aria-label="Sincronización"></a></div></header><main id="view" class="view" tabindex="-1"></main></div>' +
+      '<button type="button" class="syncdot" id="sync-top" data-act="sync-info" aria-label="Sincronización: ver qué falta subir" title="Sincronización"></button></div></header><main id="view" class="view" tabindex="-1"></main></div>' +
       '<nav class="bnav">' + bnavHTML() + '</nav></div>';
     navHecha = navKeys().join(',');
   }
@@ -155,7 +156,10 @@
     const sigue = () => {
       // abierta desde el ícono: a lo que toca según tu horario (pase de lista, guion o cierre del día)
       const dest = E.aula && E.aula.alArrancar ? E.aula.alArrancar() : null;
-      if (!dest && !location.hash) history.replaceState(null, '', '#/inicio');
+      // sin pantalla concreta: vuelve a la última del mismo día (Ajustes → Captura rápida)
+      const ult = !dest && E.ultima && (!location.hash || location.hash === '#/inicio' || location.hash === '#/') ? E.ultima.restaura() : null;
+      if (ult) { history.replaceState(null, '', location.pathname + '#/' + ult); setTimeout(() => u.toast('Seguimos donde quedaste', 'ok', 1800), 900); }
+      if (!dest && !ult && !location.hash) history.replaceState(null, '', '#/inicio');
       E.render(); E.sync.init(); registerSW();
       setTimeout(() => E.notify.check(), 1500);
       if (E.entregas) setTimeout(() => { try { E.entregas.autoTodos(); } catch (e) { console.error(e); } }, 1200);
