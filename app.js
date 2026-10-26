@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.27.18';
+  E.VERSION = '1.27.19';
   E.CHANGELOG = [
+            { v: '1.27.19', f: '2026-10-25', t: 'Cinco atajos para ahorrar pasos. La barra de abajo muestra un número cuando falta algo: en Lista, las listas sin pasar; en Cierre, los días sin cerrar; en Pendientes, todo lo pendiente. Pase de lista: si hubo faltas, «Avisar a casa» abre un WhatsApp por alumno con el texto listo (lo revisas y lo mandas tú). Imprimir: «Imprimir las dos» junta la lista de asistencia y la hoja de participación del parcial en un solo archivo. Calificaciones: «Copiar al siguiente parcial» copia la actividad sin calificaciones, recorre sus fechas y deja la original igual. Observación: además de los chips, una nota corta con frases rápidas («Llegó tarde.», «No trajo material.»…), guardada aparte.' },
             { v: '1.27.18', f: '2026-10-23', t: 'Inicio: «Hoy atiende a…» ya no elige a quien faltó hoy; si faltó o tiene justificada, se avisa. Pase de lista: mantén presionado un nombre para elegir a varios y marcarlos juntos (faltó, asistió, retardo o justificada) o para tomar la foto de su trabajo. Deslizar a la izquierda o a la derecha cambia de clase en Pase de lista, Clases y Modo clase. Al abrir la app vuelves a la última pantalla del mismo día. Más en cinco bloques (para la clase, para los alumnos, para padres y la cotutora, planeaciones y administración, y sistema), con ✏️ Acomodar menú para arrastrar y esconder. El buscador también hace órdenes: «cierre», «lista», «imprimir 3A lista». Antes de imprimir, una vista previa dice cuántas hojas salen y avisa si la firma se parte. Tocar el punto de sincronización muestra qué falta subir. Copiar una actividad a otro grupo (sin calificaciones).' },
             { v: '1.27.17', f: '2026-10-23', t: 'Impresos con varias hojas: cada hoja que empieza en página nueva, como la hoja de firmas del reglamento, lleva su logo arriba a la derecha. Ya no aparecen dos logos juntos en la primera hoja.' },
             { v: '1.27.16', f: '2026-10-22', t: 'Registro de participación y lista de asistencia: la firma ya cabe en la primera hoja, tanto en horizontal como en vertical. Las filas de estos dos formatos son un poco más bajas para que todo quepa; los demás formatos no cambian.' },
@@ -60,8 +61,8 @@
   const navKeys = () => E.rap ? E.rap.navKeys() : ['inicio', 'clases', 'lista', 'calificaciones'];
   const navInfo = k => (E.rap && E.rap.NAV[k]) || [k, 'more'];
   let navHecha = '';
-  function bnavHTML() { return navKeys().map(k => '<a href="#/' + k + '" data-r="' + k + '">' + E.icon(navInfo(k)[1]) + '<span>' + navInfo(k)[0] + '</span></a>').join('') + '<a href="#/mas" data-r="mas">' + E.icon('more') + '<span>Más</span></a>'; }
-  function renderNav() { const k = navKeys().join(','); if (k === navHecha) return; const b = document.querySelector('.bnav'); if (b) { b.innerHTML = bnavHTML(); navHecha = k; } }
+  function bnavHTML() { return navKeys().map(k => '<a href="#/' + k + '" data-r="' + k + '">' + E.icon(navInfo(k)[1]) + '<span>' + navInfo(k)[0] + '</span><b class="bn-b" data-k="' + k + '" hidden></b></a>').join('') + '<a href="#/mas" data-r="mas">' + E.icon('more') + '<span>Más</span></a>'; }
+  function renderNav() { const k = navKeys().join(','); if (k === navHecha) return; const b = document.querySelector('.bnav'); if (b) { b.innerHTML = bnavHTML(); navHecha = k; if (E.pend) E.pend.badge(); } }
 
   function sideHTML() { return SIDE.filter(x => !(E.menu && E.menu.oculta(x[0]))).map(x => '<a href="#/' + x[0] + '" data-r="' + x[0] + '">' + E.icon(x[2]) + '<span>' + x[1] + '</span>' + (x[0] === 'pendientes' ? '<b class="navcnt" id="pend-side" hidden></b>' : '') + '</a>').join(''); }
   E.pintaSide = () => { const n = document.getElementById('side-nav'); if (n) n.innerHTML = sideHTML(); };

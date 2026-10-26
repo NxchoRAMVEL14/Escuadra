@@ -24,13 +24,21 @@
   const OBS_BY = {}; E.OBS.forEach(o => { OBS_BY[o.id] = o; });
   E.obsDia = (g, f, aid) => ((S.get('obs:' + g.id + ':' + f) || {})[aid]) || [];
   E.obsIcons = (g, f, aid) => E.obsDia(g, f, aid).map(id => OBS_BY[id] ? OBS_BY[id].ico : '').join('');
+  // v1.27.19: nota de texto con frases rápidas. Va en su propia clave (obsnota:), no dentro de obs:, para que los reportes no confundan la nota con un alumno.
+  const OBS_FRASES = ['Llegó tarde.', 'Trabajó bien en equipo.', 'Necesita apoyo con la práctica.', 'No trajo material.', 'Participó con ideas.', 'Pidió apoyo para el trabajo.'];
+  E.obsNota = (g, f, aid) => ((S.get('obsnota:' + g.id + ':' + f) || {})[aid]) || '';
+  const saveNota = (g, f, aid, txt) => S.update('obsnota:' + g.id + ':' + f, d => { if (txt) d[aid] = txt.slice(0, 300); else delete d[aid]; }, {});
+  function obsNota(g, o, a) {
+    return '<label class="fld obs-nota"><span>Nota de hoy (opcional)</span><textarea id="obs-txt" rows="2" maxlength="300" data-ch="obs-txt" placeholder="Escribe o toca una frase">' + esc(E.obsNota(g, o.fecha, a.id)) + '</textarea></label>' +
+      '<div class="row gap wrap obs-frases">' + OBS_FRASES.map(f => btn(esc(f), 'obs-frase', 'data-f="' + esc(f) + '"', 'small ghost')).join('') + '</div>';
+  }
 
   function obsHTML() {
     const o = E.ui.obs, g = D.grupoActual(), a = g && D.alumno(g, o.aid); if (!a) return '<p>No encontré al alumno.</p>';
     const sel = E.obsDia(g, o.fecha, a.id);
     return '<p><b>' + esc(a.nombre) + '</b><br><span class="muted small">' + u.cap(u.fLarga(o.fecha)) + ' · toca para marcar o quitar</span></p>' +
       '<div class="obs-grid">' + E.OBS.map(x => '<button type="button" class="obs-chip ' + (x.pos < 0 ? 'neg ' : '') + (sel.indexOf(x.id) >= 0 ? 'on' : '') + '" data-act="obs-tog" data-id="' + x.id + '" aria-pressed="' + (sel.indexOf(x.id) >= 0) + '"><span>' + x.ico + '</span>' + esc(x.txt) + '</button>').join('') + '</div>' +
-      '<div class="row gap wrap mt">' + btn('Listo', 'modal-close', '', 'primary') + '<a class="btn" href="#/alumno/' + a.id + '" data-act="modal-close-go" data-to="alumno/' + a.id + '">Ver su perfil</a></div>';
+      obsNota(g, o, a) + '<div class="row gap wrap mt">' + btn('Listo', 'modal-close', '', 'primary') + '<a class="btn" href="#/alumno/' + a.id + '" data-act="modal-close-go" data-to="alumno/' + a.id + '">Ver su perfil</a></div>';
   }
   A['obs-open'] = el => { E.ui.obs = { aid: el.dataset.aid, fecha: el.dataset.fecha || u.today() }; E.modal.open('Observación', obsHTML()); };
   A['obs-tog'] = el => {
@@ -38,6 +46,13 @@
     S.update('obs:' + g.id + ':' + o.fecha, d => { const l = d[o.aid] = d[o.aid] || []; const i = l.indexOf(id); if (i >= 0) l.splice(i, 1); else l.push(id); if (!l.length) delete d[o.aid]; }, {});
     if (navigator.vibrate) navigator.vibrate(10); E.modal.body(obsHTML());
   };
+  A['obs-frase'] = el => {
+    const g = D.grupoActual(), o = E.ui.obs, a = g && D.alumno(g, o.aid), ta = document.getElementById('obs-txt'); if (!a) return;
+    const base = ta ? ta.value.trim() : E.obsNota(g, o.fecha, a.id);
+    saveNota(g, o.fecha, a.id, (base ? base + ' ' : '') + el.dataset.f);
+    E.modal.body(obsHTML());
+  };
+  E.changes['obs-txt'] = el => { const g = D.grupoActual(), o = E.ui.obs; if (g && o) saveNota(g, o.fecha, o.aid, el.value.trim()); };
   A['modal-close-go'] = el => { E.modal.close(); location.hash = '#/' + el.dataset.to; };
 
   /* ---------- cálculo del perfil ---------- */

@@ -166,8 +166,10 @@
     clearTimeout(bt);
     bt = setTimeout(() => {
       // con varios grupos cuenta los de todos (los archivados no)
-      let n = 0; try { const gs = D.gruposActivos ? D.gruposActivos() : [D.grupoActual()]; gs.forEach(g => { if (g && D.alumnos(g).length) n += P.lista(g).length; }); } catch (e) { n = 0; }
+      let n = 0; const porT = {}; try { const gs = D.gruposActivos ? D.gruposActivos() : [D.grupoActual()]; gs.forEach(g => { if (g && D.alumnos(g).length) P.lista(g).forEach(x => { n++; porT[x.tipo] = (porT[x.tipo] || 0) + 1; }); }); } catch (e) { n = 0; }
       ['pend-top', 'pend-side'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.hidden = !n; const b = el.querySelector('b') || el; b.textContent = n > 99 ? '99+' : String(n); });
+      // v1.27.19: insignias de la barra de abajo: Lista = listas sin pasar, Cierre = días sin cerrar, Pendientes = todo
+      document.querySelectorAll('.bn-b').forEach(el => { const k = el.dataset.k, c = k === 'pendientes' ? n : k === 'lista' ? (porT.lista || 0) : k === 'cierre' ? (porT.cierre || 0) : 0; el.hidden = !c; el.textContent = c > 99 ? '99+' : String(c); });
     }, 250);
   };
 })();

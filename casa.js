@@ -135,6 +135,24 @@
   }
   CH['ca-lim'] = el => { E.ui.caLim = el.value; };
 
+  /* ---------- v1.27.19: avisar a casa desde el pase de lista (faltas del día) ---------- */
+  CA.faltasDia = (g, f) => {
+    const doc = S.get('asis:' + g.id + ':' + f); if (!doc) return [];
+    const amb = C.ambito(f);
+    return D.alumnos(g).filter(a => C.marca(doc, a.id, amb) === 'F');
+  };
+  const msgFalta = (g, a, f) => 'Buen día. Le escribe ' + (D.cfg().docente || 'su docente') + ', del grupo ' + g.nombre + '. Le informo que ' + u.corto(a.nombre) + ' no asistió a clase el ' + u.fLarga(f) + '. Si hay un motivo, le agradezco avisarme para registrarlo como justificada. Gracias.';
+  A['lista-avisar'] = el => {
+    const g = D.grupoActual(), f = el.dataset.f, fa = CA.faltasDia(g, f);
+    if (!fa.length) { u.toast('No hay faltas registradas en este día', 'ok', 2200); return; }
+    E.modal.open('💬 Avisar a casa · ' + u.cap(u.fLarga(f)), '<p class="muted small">Un mensaje de WhatsApp por alumno que faltó. Se abre WhatsApp con el texto listo; tú lo revisas y lo mandas.</p><ul class="ap-list">' +
+      fa.map(a => '<li><div><b>' + a.num + '. ' + esc(a.nombre) + '</b><br><small class="muted">' + (a.tel ? 'WhatsApp registrado' : 'sin teléfono (eliges el contacto)') + '</small></div>' + btn('💬 WhatsApp', 'lista-wa', 'data-aid="' + a.id + '" data-f="' + f + '"', 'small primary') + '</li>').join('') + '</ul>');
+  };
+  A['lista-wa'] = el => {
+    const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (!a) return;
+    window.open(CA.wa(a, msgFalta(g, a, el.dataset.f)), '_blank', 'noopener');
+  };
+
   /* ---------- en Imprimir: tiras con QR para todo el grupo ---------- */
   A['ca-tiras'] = async el => {
     const g = D.grupoActual(), pid = el.dataset.pid || C.parcialActual().id, p = C.parcial(pid), tipo = el.dataset.t; await listo(); u.toast('Preparando…', 'ok', 1500);

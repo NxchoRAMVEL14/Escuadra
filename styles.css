@@ -1453,3 +1453,8 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .mn-t .mn-eye.fija { background: none; color: var(--muted); padding: 0; font-weight: 600 }
 .cp-grupos { display: grid; gap: 8px; margin-top: 10px }
 .cp-grupos .btn { justify-content: flex-start }
+
+/* ===== v1.27.19 ===== */
+.bnav a { position: relative }
+.bn-b { position: absolute; top: 3px; left: calc(50% + 7px); min-width: 17px; padding: 0 5px; border-radius: 999px; background: var(--warn); color: #fff; font-size: .66rem; line-height: 17px; text-align: center; font-weight: 700 }
+.bn-b[hidden] { display: none }
