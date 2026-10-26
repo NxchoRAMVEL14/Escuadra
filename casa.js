@@ -146,12 +146,22 @@
     const g = D.grupoActual(), f = el.dataset.f, fa = CA.faltasDia(g, f);
     if (!fa.length) { u.toast('No hay faltas registradas en este día', 'ok', 2200); return; }
     E.modal.open('💬 Avisar a casa · ' + u.cap(u.fLarga(f)), '<p class="muted small">Un mensaje de WhatsApp por alumno que faltó. Se abre WhatsApp con el texto listo; tú lo revisas y lo mandas.</p><ul class="ap-list">' +
-      fa.map(a => '<li><div><b>' + a.num + '. ' + esc(a.nombre) + '</b><br><small class="muted">' + (a.tel ? 'WhatsApp registrado' : 'sin teléfono (eliges el contacto)') + '</small></div>' + btn('💬 WhatsApp', 'lista-wa', 'data-aid="' + a.id + '" data-f="' + f + '"', 'small primary') + '</li>').join('') + '</ul>');
+      fa.map(a => '<li><div><b>' + a.num + '. ' + esc(a.nombre) + '</b><br><small class="muted">' + ((S.get('avisos:' + g.id + ':' + f) || {})[a.id] ? '✅ Ya abriste WhatsApp · ' : '') + (a.tel ? 'WhatsApp registrado' : 'sin teléfono (eliges el contacto)') + '</small></div>' + btn('💬 WhatsApp', 'lista-wa', 'data-aid="' + a.id + '" data-f="' + f + '"', 'small primary') + '</li>').join('') + '</ul>');
   };
   A['lista-wa'] = el => {
     const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (!a) return;
     window.open(CA.wa(a, msgFalta(g, a, el.dataset.f)), '_blank', 'noopener');
+    S.update('avisos:' + g.id + ':' + el.dataset.f, d => { d[a.id] = true; }, {});
   };
+
+  /* ---------- v1.27.20: faltas sin avisar a casa (Pendientes y aviso en el cierre) ---------- */
+  CA.faltasSinAvisar = (g, f) => { const av = S.get('avisos:' + g.id + ':' + f) || {}; return CA.faltasDia(g, f).filter(a => !av[a.id]); };
+  if (V.cierre) { const vc = V.cierre; V.cierre = function (f) {
+    const o = vc.apply(null, arguments), g = D.grupoActual(), hoy = u.today();
+    const ff = f || (g && (E.cierre.pendientes(g, hoy)[0] || (C.esClase(g, hoy) ? hoy : C.claseAnterior(g, hoy) || hoy)));
+    const n = g && o && !/Algo falló/.test(o.h) ? CA.faltasSinAvisar(g, ff).length : 0;
+    if (n) o.h = card('<p class="note warn">📨 Faltas sin avisar a casa: ' + n + (n === 1 ? ' alumno' : ' alumnos') + ' · ' + link('Avisar ahora', 'lista/' + ff, 'small') + '</p>') + o.h;
+    return o; }; }
 
   /* ---------- en Imprimir: tiras con QR para todo el grupo ---------- */
   A['ca-tiras'] = async el => {

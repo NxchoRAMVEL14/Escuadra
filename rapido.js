@@ -216,6 +216,36 @@
     const fn = R.KB[L.dataset.kb]; if (!fn) return;
     const r = fn(k, row, L); if (r) { e.preventDefault(); if (r === 'next') avanza(L, rows, i); }
   });
+  /* =================== v1.27.20: deslizar un alumno en el pase de lista (opcional, apagado por defecto) =================== */
+  let fila = null, swipedAt = 0;
+  document.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'touch' || !D.cfg().deslizarFila || !e.target.closest) return;
+    const li = e.target.closest('.slist.swp li.srow'); if (!li || li.classList.contains('lsel') || e.target.closest('input,select,textarea')) return;
+    fila = { li: li, x: e.clientX, y: e.clientY, t: Date.now(), go: false };
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if (!fila || e.pointerType !== 'touch') return;
+    const dx = e.clientX - fila.x, dy = e.clientY - fila.y;
+    if (!fila.go) { if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { fila.li.style.transform = ''; fila = null; return; } if (Math.abs(dx) < 12) return; fila.go = true; }
+    fila.li.style.transition = 'none'; fila.li.style.transform = 'translateX(' + Math.max(-90, Math.min(90, dx)) + 'px)';
+  }, { passive: true });
+  document.addEventListener('pointerup', e => {
+    if (!fila || e.pointerType !== 'touch') return;
+    const x = fila; fila = null;
+    const dx = e.clientX - x.x, dy = e.clientY - x.y, dt = Date.now() - x.t;
+    x.li.style.transition = 'transform .18s'; x.li.style.transform = '';
+    if (!x.go || Math.abs(dx) < 80 || Math.abs(dy) > 40 || dt > 900) return;
+    const g = D.grupoActual(), ul = x.li.closest('.slist'), f = ul && ul.dataset.f, aid = x.li.dataset.kbr;
+    if (!g || !f || !aid) return;
+    const st = dx < 0 ? 'F' : 'A', a = D.alumno(g, aid);
+    swipedAt = Date.now();
+    E.undo.run('asis-set', () => C.setMarca(g, f, aid, st, C.ambito(f)));
+    u.toast((st === 'F' ? 'Faltó: ' : 'Asistió: ') + (a ? u.corto(a.nombre) : '') + ' · ↶ Deshacer', 'ok', 2600);
+    if (navigator.vibrate) navigator.vibrate(12);
+  });
+  document.addEventListener('pointercancel', () => { if (fila) { fila.li.style.transition = 'transform .18s'; fila.li.style.transform = ''; fila = null; } });
+  // tras un deslizar, el navegador puede disparar un clic sobre la letra: se ignora
+  document.addEventListener('click', e => { if (swipedAt && Date.now() - swipedAt < 400) { swipedAt = 0; e.stopPropagation(); e.preventDefault(); } }, true);
   // libreta: ← → cambia de alumno
   R.KB.lb = (k, row, L) => { if (k === 'ArrowRight' && L.dataset.sig) { location.hash = '#/' + L.dataset.sig; return true; } if (k === 'ArrowLeft' && L.dataset.ant) { location.hash = '#/' + L.dataset.ant; return true; } return false; };
 
@@ -239,7 +269,7 @@
   document.addEventListener('pointerdown', e => {
     if (e.button > 0 || modalAbierto()) return;
     const v = document.getElementById('view'); if (!v || !v.contains(e.target)) return;
-    if (e.target.closest && e.target.closest('input,textarea,select,[contenteditable],table,.filtro,.ev-tira,.mapa,.mp-grid,.au-grid,.tj-stage')) return;
+    if (e.target.closest && e.target.closest('input,textarea,select,[contenteditable],table,.filtro,.ev-tira,.mapa,.mp-grid,.au-grid,.tj-stage,.slist.swp')) return; // v1.27.20: con «deslizar fila» activo, la fila marca y no cambia de día
     const sw = v.querySelector('[data-swipe]'); if (!sw) return;
     swp = { x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId, p: sw.dataset.prev, n: sw.dataset.next };
   }, { passive: true });
@@ -270,7 +300,7 @@
 
   /* =================== el punto de sincronización del encabezado (v1.27.18) =================== */
   // Tocarlo dice qué falta subir a tu Supabase y cuándo fue la última vez que llegó todo.
-  const CATS_SYNC = [[/^asis:/, 'listas de asistencia'], [/^part:/, 'participación'], [/^act:/, 'actividades y calificaciones'], [/^libreta:/, 'libreta'], [/^cierre/, 'cierres del día'], [/^bit:/, 'bitácora'], [/^mapa:/, 'mapa del salón'], [/^config$/, 'ajustes']];
+  const CATS_SYNC = [[/^asis:/, 'listas de asistencia'], [/^part:/, 'participación'], [/^act:/, 'actividades y calificaciones'], [/^libreta:/, 'libreta'], [/^cierre/, 'cierres del día'], [/^bit:/, 'bitácora'], [/^mapa:/, 'mapa del salón'], [/^obs:/, 'observaciones'], [/^obsnota:/, 'notas de observación'], [/^avisos:/, 'avisos a casa'], [/^config$/, 'ajustes']];
   const catSync = k => { const c = CATS_SYNC.find(x => x[0].test(k)); return c ? c[1] : 'otros datos'; };
   A['sync-info'] = () => {
     const sy = E.sync, meta = sy.meta(), docs = S.docs, cnt = {}; let n = 0;
@@ -296,6 +326,7 @@
   R.NAV = { inicio: ['Inicio', 'home', 'Inicio'], aula: ['Clase', 'grid', 'Modo clase'], lista: ['Lista', 'check', 'Pase de lista'], cierre: ['Cierre', 'note', 'Cierre del día'], pendientes: ['Pendientes', 'inbox', 'Pendientes de captura'], clases: ['Clases', 'board', 'Clases (guion)'], calificaciones: ['Califs', 'grade', 'Calificaciones'], libreta: ['Libreta', 'book', 'Tareas y libreta'], freecad: ['FreeCAD', 'cube', 'FreeCAD'], examen: ['Examen', 'doc', 'Examen recomendado'], semaforo: ['Semáforo', 'grade', 'Semáforo'], alumnos: ['Alumnos', 'users', 'Alumnos'], herramientas: ['Herram.', 'tool', 'Herramientas'], proyecto: ['Proyecto', 'team', 'Proyecto por equipo'], tutoria: ['Tutoría', 'team', 'Tutoría'], temas: ['Temas', 'screen', 'Temas'], bitacora: ['Bitácora', 'book', 'Bitácora'], entregas: ['Entregas', 'clip', 'Tablero de entregas'] };
   R.NAV_DEF = ['inicio', 'clases', 'lista', 'calificaciones'];
   R.navKeys = () => { const n = D.cfg().nav; return Array.isArray(n) && n.length === 4 && n.every(k => R.NAV[k]) ? n : R.NAV_DEF; };
+  CH['frases-nota'] = el => { const l = el.value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 12); S.update('config', c => { c.frasesNota = l.length ? l : null; }, {}); u.toast('Frases guardadas', 'ok', 1600); };
   CH['nav-slot'] = el => {
     const i = Number(el.dataset.i), v = el.value; if (!R.NAV[v]) return;
     S.update('config', c => { const n = R.navKeys().slice(), j = n.indexOf(v); if (j >= 0 && j !== i) n[j] = n[i]; n[i] = v; c.nav = n; }, {});
@@ -307,7 +338,9 @@
       tog('autoSalto', 'Al capturar calificaciones, pasar solo al siguiente alumno (85 salta; 10 espera por si es 100)', c.autoSalto !== false) +
       tog('retomar', 'Al abrir Escuadra, volver a la última pantalla que usaste (solo si es el mismo día)', c.retomar !== false) +
       tog('vistaImpresion', 'Vista previa antes de imprimir: cuántas hojas salen y si algo se parte', c.vistaImpresion !== false) +
+      tog('deslizarFila', 'Pase de lista: deslizar a un alumno a la izquierda para «Faltó» y a la derecha para «Asistió». Con ↶ Deshacer. Apagado por defecto', c.deslizarFila === true) +
       '<h4>Barra de abajo (celular)</h4><div class="fgrid c4">' + nk.map((k, i) => '<label class="fld"><span>Botón ' + (i + 1) + '</span><select data-ch="nav-slot" data-i="' + i + '">' + Object.keys(R.NAV).map(x => '<option value="' + x + '"' + (x === k ? ' selected' : '') + '>' + esc(R.NAV[x][2]) + '</option>').join('') + '</select></label>').join('') + '</div><p class="muted small">«Más» siempre queda al final.</p>' +
+      '<h4>Frases para las notas</h4><p class="small">Una por línea, hasta 12. Aparecen al anotar una observación o una nota a varios. Vacío = las de fábrica.</p><label class="fld"><span>Frases</span><textarea data-ch="frases-nota" rows="5" maxlength="1200">' + esc((E.frasesNota ? E.frasesNota() : []).join('\n')) + '</textarea></label>' +
       '<h4>Rúbricas de un toque</h4><p class="small">Plantillas para cartel, plano, exposición, prototipo, bitácora y reporte (Excelente 100 · Bien 85 · Suficiente 70 · Insuficiente 50).</p>' + btn('🧾 Editar plantillas', 'rub-edit', '', 'small') +
       '<h4>Mapa del salón</h4><p class="small">Dónde se sienta cada quien: Modo clase acomoda los nombres como en el salón.</p><div class="row gap wrap">' + link('🏫 Aula', 'mapa/aula', 'small') + link('💻 Centro de cómputo', 'mapa/computo', 'small') + link('🛠️ Taller', 'mapa/taller', 'small') + '</div>' +
       '<h4>Íconos de acceso directo</h4><p class="small">Mantén presionado el ícono de Escuadra en tu celular: <b>Pasar lista</b>, <b>Modo clase</b> y <b>Cierre del día</b>. Chrome los actualiza solo, pero puede tardar uno o dos días; si no salen, descarga un respaldo, desinstala la app y vuelve a instalarla desde Chrome.</p>' +

@@ -105,7 +105,7 @@
       '<div class="lb-res"><span>Libreta de <b>' + esc(sel.nombre) + '</b></span><span class="g ' + (r.v == null ? 'na' : H.gclass(r.v)) + '">' + (r.v == null ? '—' : r.v) + '</span></div>' +
       '<ul class="lb-rev" data-kb="lb"' + (prev ? ' data-ant="libreta/' + pid + '/' + prev.id + '"' : '') + (next ? ' data-sig="libreta/' + pid + '/' + next.id + '"' : '') + '>' + ts.map(t => { const f = LB.factor(doc, sel.id, t.key); return '<li class="lb-card" data-kbr="' + esc(t.key) + '"><div class="lb-cab"><span class="chip">' + num[t.key] + '</span><small class="muted">' + (t.f ? u.fCorta(t.f) + ' · ' : '') + tipoTxt(t) + '</small>' + (f < 1 ? ' <span class="chip warn">⏰ tarde · vale ' + Math.round(f * 100) + ' %</span>' : '') + '</div><div class="lb-tit">' + esc(corto(t.t, 140)) + '</div><div class="cl-seg">' + [2, 1, 0].map(v => btn(MARCA[v][0] + ' ' + MARCA[v][1], 'lb-marca', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-v="' + v + '" data-k="' + (3 - v) + '"', 'small' + (m[t.key] != null && Number(m[t.key]) === v ? ' on ' + MARCA[v][2] : ''))).join('') +
         btn('⏰ Tarde', 'lb-tarde', 'data-pid="' + pid + '" data-aid="' + sel.id + '" data-key="' + t.key + '" data-k="t" aria-pressed="' + (f < 1) + '" title="La entregó tarde: vale ' + Math.round((f < 1 ? f : C.tardeVale()) * 100) + ' %"', 'small' + (f < 1 ? ' on warn' : '')) + '</div></li>'; }).join('') + '</ul>' +
-      '<div class="row gap wrap">' + btn('✓ Todas completas', 'lb-todas', 'data-pid="' + pid + '" data-aid="' + sel.id + '"', 'small') + (E.cap ? btn('🃏 Por tarjetas (una tarea, todo el grupo)', 'tj-lib', 'data-pid="' + pid + '"', 'small') : '') + (E.retro ? btn('💬 Retroalimentación', 'rt-open', 'data-aid="' + sel.id + '" data-ctx="libreta"', 'small') : '') + (next ? btn('Siguiente alumno ›', 'go', 'data-to="libreta/' + pid + '/' + next.id + '"', 'small primary') : '') + '</div>' +
+      '<div class="row gap wrap">' + btn('✓ Todas completas', 'lb-todas', 'data-pid="' + pid + '" data-aid="' + sel.id + '"', 'small') + btn('☑ Marcar a varios', 'lb-varios', 'data-pid="' + pid + '"', 'small') + (E.cap ? btn('🃏 Por tarjetas (una tarea, todo el grupo)', 'tj-lib', 'data-pid="' + pid + '"', 'small') : '') + (E.retro ? btn('💬 Retroalimentación', 'rt-open', 'data-aid="' + sel.id + '" data-ctx="libreta"', 'small') : '') + (next ? btn('Siguiente alumno ›', 'go', 'data-to="libreta/' + pid + '/' + next.id + '"', 'small primary') : '') + '</div>' +
       '<p class="muted small">Completa = 2 · incompleta = 1 · no la hizo = 0 · ⏰ entregada tarde: vale ' + Math.round(C.tardeVale() * 100) + ' % de lo que marques. Lo que no marques cuenta como no entregado; un alumno sin ninguna marca queda sin calificación. En la compu: ↑ ↓ eliges la tarea, 1 ✓ · 2 ½ · 3 ✗ · T tarde y ← → cambias de alumno.</p>');
     // 3) calificaciones
     const a = doc.actId && S.get('act:' + g.id + ':' + doc.actId);
@@ -147,6 +147,23 @@
     const g = D.grupoActual(), pid = el.dataset.pid, p = C.parcial(pid), id = u.uid('act');
     S.put('act:' + g.id + ':' + id, { id: id, parcial: pid, categoria: 'trabajos', nombre: 'Revisión de libreta', peso: 1, max: 100, fecha: p.fin, instrumento: 'LC', cuenta: true, notas: {}, libreta: true }, { silent: true });
     S.update(KL(g, pid), d => { d.actId = id; }, {}); LB.sync(g, pid); u.toast('Actividad creada en Libreta / Proyecto / Bitácora', 'ok');
+  };
+  // v1.27.20: la misma marca de una tarea para varios alumnos de un toque
+  A['lb-varios'] = el => {
+    const g = D.grupoActual(), pid = el.dataset.pid, ts = LB.tareas(g, pid).cuentan, al = D.alumnos(g);
+    if (!ts.length) { u.toast('No hay tareas que cuenten en este parcial', 'err'); return; }
+    E.modal.open('☑ Marcar a varios', '<p class="muted small">Elige la tarea y los alumnos. Después marca a todos de un toque.</p>' +
+      '<label class="fld"><span>Tarea</span><select id="lbv-t">' + ts.map(t => '<option value="' + t.key + '">' + esc(corto(t.t, 80)) + '</option>').join('') + '</select></label>' +
+      '<div class="row gap wrap"><button type="button" class="small ghost" data-act="lbv-todos" data-on="1">Elegir todos</button><button type="button" class="small ghost" data-act="lbv-todos" data-on="0">Quitar todos</button></div>' +
+      '<ul class="lbv-l">' + al.map(a => '<li><label class="ck"><input type="checkbox" class="lbv-a" value="' + a.id + '"> ' + a.num + '. ' + esc(a.nombre) + '</label></li>').join('') + '</ul>' +
+      '<div class="row gap wrap mt">' + btn('✓ Completa', 'lbv-marca', 'data-pid="' + pid + '" data-v="2"', 'primary') + btn('½ Incompleta', 'lbv-marca', 'data-pid="' + pid + '" data-v="1"', '') + btn('✗ No la hizo', 'lbv-marca', 'data-pid="' + pid + '" data-v="0"', 'ghost danger') + '</div>');
+  };
+  A['lbv-todos'] = el => { document.querySelectorAll('.lbv-a').forEach(x => { x.checked = el.dataset.on === '1'; }); };
+  A['lbv-marca'] = el => {
+    const ids = [...document.querySelectorAll('.lbv-a:checked')].map(x => x.value), key = (document.getElementById('lbv-t') || {}).value, v = Number(el.dataset.v);
+    if (!ids.length || !key) { u.toast('Elige al menos un alumno', 'err', 2200); return; }
+    upd(el.dataset.pid, d => { d.marcas = d.marcas || {}; ids.forEach(aid => { const m = d.marcas[aid] = d.marcas[aid] || {}; m[key] = v; }); });
+    E.modal.close(); u.toast(ids.length + (ids.length === 1 ? ' alumno marcado' : ' alumnos marcados') + ' en la tarea', 'ok', 2400);
   };
   A['lb-print'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, p = C.parcial(pid), ts = LB.tareas(g, pid).cuentan, al = D.alumnos(g), cf = D.cfg(), doc = LB.doc(g, pid);

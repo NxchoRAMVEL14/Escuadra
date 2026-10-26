@@ -9,7 +9,7 @@
   const card = H.card, btn = H.btn, link = H.link;
   const P = E.pend = {};
   const KO = g => 'pendOmit:' + g.id, KG = g => 'guionAct:' + g.id;
-  const TIPOS = { cierre: ['📝', 'Días sin cerrar'], lista: ['✅', 'Listas sin pasar'], guion: ['📌', 'Evidencias del guion para calificar'], act: ['📊', 'Actividades vencidas sin calificar'], exa: ['🧾', 'Exámenes sin capturar'], tarea: ['📒', 'Tareas sin revisar'], fc: ['💻', 'Prácticas de FreeCAD sin revisar'], rep: ['🔥', 'Calentamientos y boletos sin anotar'], proy: ['🧩', 'Avance del proyecto'] };
+  const TIPOS = { aviso: ['📨', 'Faltas sin avisar a casa'], cierre: ['📝', 'Días sin cerrar'], lista: ['✅', 'Listas sin pasar'], guion: ['📌', 'Evidencias del guion para calificar'], act: ['📊', 'Actividades vencidas sin calificar'], exa: ['🧾', 'Exámenes sin capturar'], tarea: ['📒', 'Tareas sin revisar'], fc: ['💻', 'Prácticas de FreeCAD sin revisar'], rep: ['🔥', 'Calentamientos y boletos sin anotar'], proy: ['🧩', 'Avance del proyecto'] };
   P.TIPOS = TIPOS;
   const ahora = () => { const d = new Date(); return u.pad(d.getHours()) + ':' + u.pad(d.getMinutes()); };
   const corto = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
@@ -80,6 +80,8 @@
     try {
       // 1) días sin cerrar
       if (E.cierre) E.cierre.pendientes(g, hoy).forEach(f => add('cierre', 'cierre@' + f, 'Cerrar el ' + u.fLarga(f), f === hoy ? 'Ya terminaron tus clases de hoy' : 'Lista, tarea, participación y destacados', 'cierre/' + f));
+      // 1b) v1.27.20: faltas de los últimos 7 días sin avisar a casa
+      if (E.casa && E.casa.faltasSinAvisar) for (let i = 0; i <= 7; i++) { const f = u.addDays(hoy, -i), n = E.casa.faltasSinAvisar(g, f).length; if (n) add('aviso', 'aviso@' + f, 'Avisar a casa las faltas del ' + u.fCorta(f), n + (n === 1 ? ' falta sin avisar' : ' faltas sin avisar') + ' · abre WhatsApp desde el pase de lista', 'lista/' + f); }
       // 2) listas sin pasar y 8) calentamientos y boletos sin anotar
       abiertos.forEach(p => {
         for (let f = desdeP(p); f <= hoy && f <= p.fin; f = u.addDays(f, 1)) {

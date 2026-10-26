@@ -1458,3 +1458,10 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .bnav a { position: relative }
 .bn-b { position: absolute; top: 3px; left: calc(50% + 7px); min-width: 17px; padding: 0 5px; border-radius: 999px; background: var(--warn); color: #fff; font-size: .66rem; line-height: 17px; text-align: center; font-weight: 700 }
 .bn-b[hidden] { display: none }
+
+/* ===== v1.27.20 ===== */
+.slist.swp .srow { touch-action: pan-y }
+.slist.swp .srow { transition: transform .18s }
+.lbv-l { list-style: none; padding: 0; margin: 8px 0; max-height: 40vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px }
+.lbv-l li { padding: 6px 10px; border-bottom: 1px solid var(--line) }
+.lbv-l li:last-child { border-bottom: 0 }

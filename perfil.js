@@ -23,14 +23,16 @@
   ];
   const OBS_BY = {}; E.OBS.forEach(o => { OBS_BY[o.id] = o; });
   E.obsDia = (g, f, aid) => ((S.get('obs:' + g.id + ':' + f) || {})[aid]) || [];
-  E.obsIcons = (g, f, aid) => E.obsDia(g, f, aid).map(id => OBS_BY[id] ? OBS_BY[id].ico : '').join('');
+  E.obsIcons = (g, f, aid) => E.obsDia(g, f, aid).map(id => OBS_BY[id] ? OBS_BY[id].ico : '').join('') + (E.obsNota(g, f, aid) ? '📝' : '');
   // v1.27.19: nota de texto con frases rápidas. Va en su propia clave (obsnota:), no dentro de obs:, para que los reportes no confundan la nota con un alumno.
   const OBS_FRASES = ['Llegó tarde.', 'Trabajó bien en equipo.', 'Necesita apoyo con la práctica.', 'No trajo material.', 'Participó con ideas.', 'Pidió apoyo para el trabajo.'];
+  // v1.27.20: las frases las puedes editar en Ajustes → Captura rápida
+  E.frasesNota = () => { const f = D.cfg().frasesNota; return Array.isArray(f) && f.length ? f : OBS_FRASES; };
   E.obsNota = (g, f, aid) => ((S.get('obsnota:' + g.id + ':' + f) || {})[aid]) || '';
   const saveNota = (g, f, aid, txt) => S.update('obsnota:' + g.id + ':' + f, d => { if (txt) d[aid] = txt.slice(0, 300); else delete d[aid]; }, {});
   function obsNota(g, o, a) {
     return '<label class="fld obs-nota"><span>Nota de hoy (opcional)</span><textarea id="obs-txt" rows="2" maxlength="300" data-ch="obs-txt" placeholder="Escribe o toca una frase">' + esc(E.obsNota(g, o.fecha, a.id)) + '</textarea></label>' +
-      '<div class="row gap wrap obs-frases">' + OBS_FRASES.map(f => btn(esc(f), 'obs-frase', 'data-f="' + esc(f) + '"', 'small ghost')).join('') + '</div>';
+      '<div class="row gap wrap obs-frases">' + E.frasesNota().map(f => btn(esc(f), 'obs-frase', 'data-f="' + esc(f) + '"', 'small ghost')).join('') + '</div>';
   }
 
   function obsHTML() {
@@ -53,6 +55,27 @@
     E.modal.body(obsHTML());
   };
   E.changes['obs-txt'] = el => { const g = D.grupoActual(), o = E.ui.obs; if (g && o) saveNota(g, o.fecha, o.aid, el.value.trim()); };
+  // v1.27.20: nota a varios desde la selección del pase de lista
+  A['lsel-nota'] = () => {
+    const s = E.ui.lsel, g = D.grupoActual(); if (!s || !g || !Object.keys(s.ids).length) return;
+    const n = Object.keys(s.ids).length;
+    E.modal.open('💬 Nota para ' + n + (n === 1 ? ' alumno' : ' alumnos'), '<p class="muted small">La misma nota para los ' + n + ' elegidos del ' + esc(u.fLarga(s.f)) + '. Si ya tienen una nota, la nueva se agrega al final.</p>' +
+      '<label class="fld"><span>Nota</span><textarea id="lsel-txt" rows="2" maxlength="300" placeholder="Escribe o toca una frase"></textarea></label>' +
+      '<div class="row gap wrap obs-frases">' + E.frasesNota().map(f => btn(esc(f), 'lsel-frase', 'data-f="' + esc(f) + '"', 'small ghost')).join('') + '</div>' +
+      '<div class="row gap wrap mt">' + btn('Guardar para ' + n, 'lsel-nota-go', '', 'primary') + btn('Cancelar', 'modal-close', '', 'ghost') + '</div>');
+  };
+  A['lsel-frase'] = el => { const ta = document.getElementById('lsel-txt'); if (!ta) return; const t = ta.value.trim(); ta.value = (t ? t + ' ' : '') + el.dataset.f; ta.focus(); };
+  A['lsel-nota-go'] = () => {
+    const s = E.ui.lsel, g = D.grupoActual(), ta = document.getElementById('lsel-txt'), txt = ta ? ta.value.trim() : '';
+    if (!s || !g) return; const ids = Object.keys(s.ids);
+    if (!txt || !ids.length) { u.toast('Escribe la nota o toca una frase', 'err', 2200); return; }
+    S.update('obsnota:' + g.id + ':' + s.f, d => { ids.forEach(aid => { d[aid] = d[aid] ? (d[aid] + ' ' + txt).slice(0, 300) : txt.slice(0, 300); }); }, {});
+    E.modal.close(); u.toast('Nota guardada para ' + ids.length + (ids.length === 1 ? ' alumno' : ' alumnos'), 'ok', 2400);
+    if (navigator.vibrate) navigator.vibrate(12);
+  };
+  // v1.27.20: las notas de observación aparecen en la ficha del alumno (las 10 más recientes)
+  const notasAlumno = (g, aid) => { const pre = 'obsnota:' + g.id + ':', out = []; S.keys(pre).forEach(k => { const t = (S.get(k) || {})[aid]; if (t) out.push({ f: k.slice(pre.length), t: t }); }); return out.sort((x, y) => (x.f < y.f ? 1 : -1)).slice(0, 10); };
+  if (V.alumno) { const va = V.alumno; V.alumno = function (id) { const o = va.apply(null, arguments), g = D.grupoActual(), a = g && D.alumno(g, id); if (o && a && !/Algo falló/.test(o.h)) { const ns = notasAlumno(g, a.id); if (ns.length && E.fichaInsert) o.h = E.fichaInsert(o.h, card('<h3>📝 Notas de observación</h3><ul class="ap-list">' + ns.map(x => '<li><div><b>' + u.fCorta(x.f) + '</b> · ' + esc(x.t) + '</div></li>').join('') + '</ul>')); } return o; }; }
   A['modal-close-go'] = el => { E.modal.close(); location.hash = '#/' + el.dataset.to; };
 
   /* ---------- cálculo del perfil ---------- */
