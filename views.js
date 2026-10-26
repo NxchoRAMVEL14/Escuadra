@@ -176,7 +176,7 @@
     const n = Object.keys(s.ids).length;
     return '<div class="lsel-bar" role="toolbar" aria-label="Alumnos elegidos"><div class="lsel-n"><b>' + n + '</b> ' + (n === 1 ? 'elegido' : 'elegidos') + (n ? '' : ' · toca a los alumnos que quieras marcar') + '</div>' +
       '<div class="lsel-ops">' + ['F', 'A', 'R', 'J'].map(x => '<button type="button" class="lsel-op st-' + x + '" data-act="lsel-marca" data-st="' + x + '"' + (n ? '' : ' disabled') + '>' + LSEL_TXT[x] + '</button>').join('') + '</div>' +
-      '<div class="lsel-ops2">' + btn('📷 Foto de su trabajo', 'lsel-foto', n ? '' : 'disabled', 'small ghost') + btn(n === al.length ? 'Quitar todos' : 'Elegir todos', 'lsel-todos', '', 'small ghost') + btn('Cancelar', 'lsel-off', '', 'small ghost') + '</div></div>';
+      '<div class="lsel-ops2">' + btn('💬 Nota', 'lsel-nota', n ? '' : 'disabled', 'small ghost') + btn('📷 Foto de su trabajo', 'lsel-foto', n ? '' : 'disabled', 'small ghost') + btn(n === al.length ? 'Quitar todos' : 'Elegir todos', 'lsel-todos', '', 'small ghost') + btn('Cancelar', 'lsel-off', '', 'small ghost') + '</div></div>';
   }
   V.lista = fecha => {
     const g = D.grupoActual(); if (!g) return noGroup();
@@ -205,7 +205,7 @@
     h += '<p class="legend"><span class="st st-A">A</span>Asistió <span class="st st-F">F</span>Falta <span class="st st-R">R</span>Retardo <span class="st st-J">J</span>Justificada · <b>toca</b> la letra: falta o asistió; <b>mantenla presionada</b> para retardo o justificada; <b>+</b> suma participación; toca el <b>nombre</b> para anotar una observación (🤝 ❓ 💡 ⭐ 👎…) y <b>mantenlo presionado</b> para elegir a varios o tomar la foto de su trabajo.</p>';
     if (sel) h += barraSel(sel, al);
     else if (E.rap) h += E.rap.filtroHTML('lista');
-    h += '<ul class="slist' + (sel ? ' lsel-on' : '') + '" data-kb="lista" data-f="' + fecha + '">' + al.map(a => {
+    h += '<ul class="slist' + (sel ? ' lsel-on' : '') + (D.cfg().deslizarFila && !sel ? ' swp' : '') + '" data-kb="lista" data-f="' + fecha + '">' + al.map(a => {
       const st = C.marca(doc, a.id, amb), n = Number(pd[a.id] || 0), exc = doc ? Object.keys(doc).filter(x => x.indexOf(a.id + '|') === 0).length : 0, on = !!(sel && sel.ids[a.id]);
       if (sel) return '<li class="srow lsel' + (on ? ' on' : '') + '"' + (E.rap ? E.rap.qAttr(a) : '') + ' data-kbr="' + a.id + '"><button type="button" class="st st-' + st + '" data-act="lsel-tog" data-aid="' + a.id + '" aria-pressed="' + on + '" aria-label="' + (on ? 'Quitar a ' : 'Elegir a ') + esc(a.nombre) + '">' + (on ? '✓' : st) + '</button>' +
         '<button type="button" class="sname obsbtn" data-act="lsel-tog" data-aid="' + a.id + '" aria-pressed="' + on + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + (E.obsIcons ? '<span class="obsi">' + E.obsIcons(g, fecha, a.id) + '</span>' : '') + '</button></li>';
