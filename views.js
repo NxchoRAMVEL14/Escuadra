@@ -194,6 +194,7 @@
     if (asu) h += '<p class="note warn">Este día está marcado como asueto.</p>';
     else if (!horas) h += '<p class="note">No tienes clase este día en tu horario. Si diste clase extra, puedes pasar lista igual.</p>';
     else h += '<p class="muted small">' + C.bloquesDia(g, fecha).map(b => b.inicio + '–' + b.fin).join(' · ') + ' · ' + horas + ' h</p>';
+    { const fa = E.casa && E.casa.faltasDia ? E.casa.faltasDia(g, fecha) : []; if (fa.length && !sel) h += '<div class="row gap wrap mt">' + btn('💬 Avisar a casa: ' + (fa.length === 1 ? 'quien faltó' : fa.length + ' que faltaron'), 'lista-avisar', 'data-f="' + fecha + '"', 'small ghost') + '</div>'; }
     const pl = (n, s, p) => n + ' ' + (n === 1 ? s : p);
     h += doc ? '<p class="note ok">Lista registrada · ' + pl(cnt.A, 'asistencia', 'asistencias') + ' · ' + pl(cnt.F, 'falta', 'faltas') + (cnt.R ? ' · ' + pl(cnt.R, 'retardo', 'retardos') : '') + (cnt.J ? ' · ' + pl(cnt.J, 'justificada', 'justificadas') : '') + (ks.length > 1 ? ' · en ' + ks.length + ' clases de 50 min' : '') + '</p>'
       : '<p class="note">Aún no registras esta lista. Toca la letra de quien falte: los demás quedan como presentes.</p>';
@@ -425,7 +426,7 @@
       return '<li class="srow' + (a.rub ? ' rub' : '') + (tar ? ' tarde' : '') + '" id="row-' + x.id + '"' + (E.rap ? E.rap.qAttr(x) : '') + '><div class="sname"><span class="num">' + x.num + '</span>' + esc(x.nombre) + '</div>' + (conv || tar ? '<span class="conv g ' + gclass(n100) + '"' + (tar ? ' title="Cuenta ' + Math.round(C.tardeF(a, x.id) * 100) + ' % por entregarlo tarde"' : '') + '>' + (n100 == null ? '' : u.round(n100, 1)) + '</span>' : '') + '<input class="score" id="sc-' + x.id + '" type="number" inputmode="decimal" min="0" max="' + mx + '" step="any" placeholder="NE" value="' + esc(v == null ? '' : v) + '" data-ch="nota" data-auto="1" data-id="' + id + '" data-aid="' + x.id + '"' + (nx ? ' data-next="sc-' + nx.id + '"' : '') + ' enterkeyhint="next" aria-label="' + (conv ? 'Puntos' : 'Calificación') + ' de ' + esc(x.nombre) + '">' + extraBtn(a, x) + (a.rub && E.cap ? E.cap.rubRow(a, x) : '') + '</li>';
     }).join('') + '</ul>';
     if (E.evid) h += E.evid.tiraHTML(g, { act: id });
-    h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + (D.gruposActivos().length > 1 ? btn(icon('copy') + ' Copiar a otro grupo', 'act-copiar', 'data-id="' + id + '"', 'small ghost') : '') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
+    h += '<div class="row gap wrap">' + link('Listo', 'calificaciones/' + a.parcial, 'primary') + (D.gruposActivos().length > 1 ? btn(icon('copy') + ' Copiar a otro grupo', 'act-copiar', 'data-id="' + id + '"', 'small ghost') : '') + (parcialSig(a.parcial) ? btn(icon('copy') + ' Copiar al ' + esc(parcialSig(a.parcial).nombre), 'act-parcial', 'data-id="' + id + '"', 'small ghost') : '') + btn(icon('trash') + ' Eliminar actividad', 'act-del', 'data-id="' + id + '"', 'ghost danger') + '</div>';
     return { t: a.nombre || 'Actividad', h: h, key: k };
   };
   CH['act-field'] = el => {
@@ -453,6 +454,8 @@
     const g = D.grupoActual(), k = 'act:' + g.id + ':' + el.dataset.id, a = S.get(k); if (!confirm('¿Eliminar "' + (a && a.nombre) + '" y sus calificaciones?')) return;
     S.del(k); location.hash = '#/calificaciones/' + (a ? a.parcial : '');
   };
+  // v1.27.19: el parcial que sigue al de la actividad (null si es el último)
+  const parcialSig = pid => { const ps = D.parciales(), i = ps.findIndex(p => p.id === pid); return i >= 0 && ps[i + 1] ? ps[i + 1] : null; };
   // v1.27.18: copia la configuración de la actividad a otro grupo (sin calificaciones: cada grupo captura las suyas)
   A['act-copiar'] = el => {
     const g = D.grupoActual(), a = S.get('act:' + g.id + ':' + el.dataset.id); if (!a) return;
@@ -468,6 +471,20 @@
     Object.assign(copia, { id: id, notas: {} });
     S.put('act:' + dst.id + ':' + id, copia);
     E.modal.close(); u.toast('Copiada a ' + dst.grupo + ': ya aparece en sus calificaciones del mismo parcial.', 'ok', 3800);
+  };
+
+  // v1.27.19: copia la actividad al parcial siguiente (sin calificaciones; la original no cambia)
+  A['act-parcial'] = el => {
+    const g = D.grupoActual(), src = S.get('act:' + g.id + ':' + el.dataset.id), sig = src ? parcialSig(src.parcial) : null; if (!src || !sig) return;
+    const cur = D.parciales().find(p => p.id === src.parcial);
+    const dias = cur ? Math.round((new Date(sig.inicio + 'T12:00:00') - new Date(cur.inicio + 'T12:00:00')) / 86400000) : 0;
+    const id = u.uid('act'), copia = u.clone(src);
+    ['notas', 'auto', 'freecad', 'libreta', 'sugerida'].forEach(k => { delete copia[k]; });
+    Object.assign(copia, { id: id, parcial: sig.id, notas: {} });
+    if (copia.fecha) copia.fecha = u.addDays(copia.fecha, dias);
+    S.put('act:' + g.id + ':' + id, copia);
+    u.toast('Copiada a ' + sig.nombre + ' sin calificaciones. La original no cambia' + (copia.fecha && dias ? '; sus fechas se movieron ' + dias + ' días' : '') + '.', 'ok', 4200);
+    location.hash = '#/calificaciones/' + sig.id;
   };
 
   /* =================== PLANEACIONES =================== */
@@ -576,6 +593,7 @@
       '<label class="switch" style="align-self:end"><input type="checkbox" data-ch="pr" data-f="marcas" ' + (pr.marcas ? 'checked' : '') + '><span>Incluir lo ya registrado</span></label></div><p class="muted small">Hojas tamaño carta. Las fechas salen de tu horario, sin asuetos' + (g.inicioDocente ? ', a partir del ' + u.fLarga(g.inicioDocente) : '') + '.</p>');
     if (!hasAl) h += card('<p class="note warn">Importa tu lista de alumnos para imprimir listas con nombres.</p>' + link('Importar lista', 'alumnos', 'primary'));
     const nF = C.fechasLista(g, p).length;
+    h += card('<h3>' + icon('print') + ' El día en un paso</h3><p class="muted small">Lista de asistencia y hoja de participación del parcial, en un solo archivo horizontal.</p>' + btn(icon('print') + ' Imprimir las dos', 'pr-dia', hasAl ? '' : 'disabled', 'primary'));
     h += '<div class="grid2">' +
       card('<h3>' + icon('check') + ' Lista de asistencia</h3><p class="muted small">' + nF + ' fechas de clase · horizontal.</p>' + btn(icon('print') + ' Imprimir', 'pr-asis', hasAl ? '' : 'disabled', 'primary')) +
       card('<h3>' + icon('plus') + ' Hoja de participación</h3><p class="muted small">Mismas fechas, con total por alumno.</p>' + btn(icon('print') + ' Imprimir', 'pr-part', hasAl ? '' : 'disabled', 'primary')) + '</div>';
@@ -593,6 +611,13 @@
   CH.pr = el => { const pr = E.ui.print, f = el.dataset.f; pr[f] = el.type === 'checkbox' ? el.checked : (f === 'ac' || f === 'equipos' ? Number(el.value) : el.value); if (f === 'pid') pr.ac = 0; E.render(); };
   const prCtx = () => { const g = D.grupoActual(), pr = E.ui.print; return { g: g, p: C.parcial(pr.pid || C.parcialActual().id), pr: pr }; };
   A['pr-asis'] = () => { const x = prCtx(); E.print.asistencia(x.g, x.p, { marcas: x.pr.marcas }); };
+  // v1.27.19: lista de asistencia y participación en un solo archivo (el día en un paso)
+  A['pr-dia'] = () => {
+    const x = prCtx(), P = E.print, cap = [], orig = P.run;
+    P.run = (h, o) => { cap.push({ h: h, o: o || {} }); };
+    try { P.asistencia(x.g, x.p, { marcas: x.pr.marcas }); P.participacion(x.g, x.p, { marcas: x.pr.marcas }); } finally { P.run = orig; }
+    if (cap.length) orig(cap.map(c => c.h).join(''), Object.assign({}, cap[0].o, { title: 'Día · ' + x.g.grupo + ' ' + x.p.nombre }));
+  };
   A['pr-part'] = () => { const x = prCtx(); E.print.participacion(x.g, x.p, { marcas: x.pr.marcas }); };
   A['pr-cotejo'] = () => { const x = prCtx(); E.print.cotejo(x.g, x.p, Number(x.pr.ac), x.pr); };
   A['pr-rubrica'] = () => { const x = prCtx(); E.print.rubrica(x.g, x.p, Number(x.pr.ac), x.pr); };
