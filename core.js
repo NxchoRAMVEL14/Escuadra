@@ -100,7 +100,7 @@
   const junta = (a, b) => { const o = Object.assign({}, a || {}); Object.keys(b || {}).forEach(k => { const x = o[k], y = b[k]; if (!x || Date.parse(y.ts) > Date.parse(x.ts)) o[k] = y; }); return o; };
   let wBusy = false, wAgain = false;
   const S = E.store = {
-    docs: {}, listeners: [], modo: 'local',
+    docs: {}, listeners: [], modo: 'local', _kv: 0, _kc: Object.create(null),
     // carga los datos (async): IndexedDB si existe; migra lo que hubiera en localStorage y lo borra de ahí al confirmar
     async load() {
       const ls = lsDocs();
@@ -110,6 +110,7 @@
         if (ls) { await idb.set(IDB_KEY, this.docs); const ver = await idb.get(IDB_KEY); if (ver && Object.keys(ver).length >= Object.keys(this.docs).length) { try { localStorage.removeItem(LS_DOCS); } catch (e) { } } }
         try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { }); } catch (e) { }
       } catch (e) { console.warn('IndexedDB no disponible, uso localStorage', e); idb.db = null; this.modo = 'local'; this.docs = ls || {}; }
+      this.invalidar();
     },
     persist() {
       if (this.modo === 'idb' && idb.db) {
@@ -125,15 +126,25 @@
     get(key) { const d = this.docs[key]; return d && !d.deleted ? d.data : undefined; },
     put(key, data, opt) {
       this.docs[key] = { data: data, ts: u.now(), dirty: true, deleted: false };
+      this.invalidar();
       this.persist(); if (E.sync) E.sync.schedule(); if (!(opt && opt.silent)) this.emit(key);
     },
-    seed(key, data) { if (!this.docs[key]) this.docs[key] = { data: data, ts: EPOCH, dirty: false, deleted: false }; },
+    seed(key, data) { if (!this.docs[key]) { this.docs[key] = { data: data, ts: EPOCH, dirty: false, deleted: false }; this.invalidar(); } },
     del(key) {
       if (!this.docs[key]) return;
       this.docs[key] = { data: null, ts: u.now(), dirty: true, deleted: true };
+      this.invalidar();
       this.persist(); if (E.sync) E.sync.schedule(); this.emit(key);
     },
-    keys(prefix) { return Object.keys(this.docs).filter(k => k.indexOf(prefix) === 0 && !this.docs[k].deleted); },
+    // Cualquier cambio en docs debe llamar a invalidar(). keys() guarda por prefijo la lista de claves vivas en orden de inserción.
+    invalidar() { this._kv++; this._kc = Object.create(null); },
+    keys(prefix) {
+      const hit = this._kc[prefix];
+      if (hit && hit.v === this._kv && hit.src === this.docs) return hit.list.slice();
+      const list = Object.keys(this.docs).filter(k => k.indexOf(prefix) === 0 && !this.docs[k].deleted);
+      this._kc[prefix] = { v: this._kv, src: this.docs, list: list };
+      return list.slice();
+    },
     list(prefix) { return this.keys(prefix).map(k => this.docs[k].data).filter(Boolean); },
     update(key, fn, fallback) { const cur = u.clone(this.get(key) !== undefined ? this.get(key) : fallback); const r = fn(cur); this.put(key, r === undefined ? cur : r); },
     on(fn) { this.listeners.push(fn); },
@@ -215,7 +226,7 @@
         if (rows.length < 1000) break;
       }
       this.setMeta({ lastPull: since });
-      if (changed) { S.persist(); S.emit('__pull'); }
+      if (changed) { S.invalidar(); S.persist(); S.emit('__pull'); }
     },
     async push() {
       const entries = Object.entries(S.docs).filter(e => e[1].dirty);

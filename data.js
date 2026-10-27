@@ -643,7 +643,7 @@ window.E = window.E || {};
       justCuenta: true,
       conteoActa: 'horas',
       escalaActa: 100,
-      minAsis: 80,
+      minAsis: 80, avisoRetardos: 3,
       minAprob: 60, umbralBien: 80,
       grupoActivo: '3AMEC',
       tema: 'auto',

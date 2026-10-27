@@ -230,7 +230,7 @@
   let enDemo = false; try { enDemo = sessionStorage.getItem(DEMO) === '1'; } catch (e) { enDemo = false; }
   TI.demo = () => enDemo;
   if (enDemo) {
-    S.load = async function () { this.docs = {}; this.modo = 'demo'; };
+    S.load = async function () { this.docs = {}; this.invalidar(); this.modo = 'demo'; };
     S.persist = function () { };
     if (E.sync) { E.sync.init = async function () { this.setState('local', 'Modo demostración: nada se guarda'); }; E.sync.now = async function () { }; E.sync.schedule = function () { }; }
     const seed0 = E.seed;
@@ -239,11 +239,11 @@
       const N = ['ARIAS BELTRÁN ANA', 'BRAVO CASTRO LUIS', 'CRUZ DOMÍNGUEZ MAYA', 'DÍAZ ESCOBAR PABLO', 'ESTRADA FUENTES SARA', 'FUENTES GARZA TOMÁS', 'GARZA HUERTA LUCÍA', 'HUERTA IBARRA DAVID', 'IBARRA JUÁREZ ELENA', 'JUÁREZ KURI MARCO', 'KURI LEAL NORA', 'LEAL MEZA RAÚL', 'MEZA NIETO JULIA', 'NIETO OLVERA ADRIÁN', 'OLVERA PEÑA CLARA', 'PEÑA QUIROZ IKER', 'QUIROZ RAMOS ALMA', 'RAMOS SOTO BRUNO', 'SOTO TAPIA DIANA', 'TAPIA URIBE GAEL'];
       const gk = 'grupo:3AMEC', g = S.get(gk); if (!g) return;
       g.alumnos = N.map((n, i) => ({ id: 'demo' + i, num: i + 1, nombre: n, activo: true, notas: '', tel: '' })); g.nombre = 'Grupo de demostración';
-      S.docs[gk] = { data: g, ts: u.now(), dirty: false, deleted: false };
+      S.docs[gk] = { data: g, ts: u.now(), dirty: false, deleted: false }; S.invalidar();
       let s = 11; const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
-      const hoy = u.today(); D.parciales().forEach(p => { for (let f = C.inicioEfectivo(g, p); f < hoy && f <= p.fin; f = u.addDays(f, 1)) { if (!C.esClase(g, f)) continue; const a = {}; g.alumnos.forEach((x, i) => { const r = rnd(); a[x.id] = r < (i % 7 === 3 ? 0.6 : 0.93) ? 'A' : r < 0.96 ? 'R' : 'F'; }); S.docs['asis:3AMEC:' + f] = { data: a, ts: u.now(), dirty: false, deleted: false }; } });
-      const p = C.parcialActual(); ['Libreta semana 1', 'Práctica guiada', 'Reporte de práctica'].forEach((nm, j) => { const id = 'demoact' + j, no = {}; g.alumnos.forEach((x, i) => { no[x.id] = Math.round(55 + rnd() * 45 - (i % 7 === 3 ? 20 : 0)); }); S.docs['act:3AMEC:' + id] = { data: { id: id, parcial: p.id, categoria: 'trabajos', nombre: nm, peso: 1, max: 100, fecha: u.addDays(p.inicio, 7 * (j + 1)), cuenta: true, notas: no }, ts: u.now(), dirty: false, deleted: false }; });
-      S.docs['manual:3AMEC'] = { data: {}, ts: u.now(), dirty: false, deleted: false };
+      const hoy = u.today(); D.parciales().forEach(p => { for (let f = C.inicioEfectivo(g, p); f < hoy && f <= p.fin; f = u.addDays(f, 1)) { if (!C.esClase(g, f)) continue; const a = {}; g.alumnos.forEach((x, i) => { const r = rnd(); a[x.id] = r < (i % 7 === 3 ? 0.6 : 0.93) ? 'A' : r < 0.96 ? 'R' : 'F'; }); S.docs['asis:3AMEC:' + f] = { data: a, ts: u.now(), dirty: false, deleted: false }; S.invalidar(); } });
+      const p = C.parcialActual(); ['Libreta semana 1', 'Práctica guiada', 'Reporte de práctica'].forEach((nm, j) => { const id = 'demoact' + j, no = {}; g.alumnos.forEach((x, i) => { no[x.id] = Math.round(55 + rnd() * 45 - (i % 7 === 3 ? 20 : 0)); }); S.docs['act:3AMEC:' + id] = { data: { id: id, parcial: p.id, categoria: 'trabajos', nombre: nm, peso: 1, max: 100, fecha: u.addDays(p.inicio, 7 * (j + 1)), cuenta: true, notas: no }, ts: u.now(), dirty: false, deleted: false }; S.invalidar(); });
+      S.docs['manual:3AMEC'] = { data: {}, ts: u.now(), dirty: false, deleted: false }; S.invalidar();
     };
     document.addEventListener('DOMContentLoaded', () => { const b = document.createElement('button'); b.type = 'button'; b.className = 'demo-band'; b.dataset.act = 'demo-salir'; b.textContent = '🎭 Modo demostración · datos ficticios, nada se guarda · toca para salir'; document.body.appendChild(b); });
   }

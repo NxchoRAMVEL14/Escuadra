@@ -154,6 +154,34 @@
     S.update('avisos:' + g.id + ':' + el.dataset.f, d => { d[a.id] = true; }, {});
   };
 
+  /* ---------- v1.27.21: aviso a casa por retardos acumulados ---------- */
+  // retardos de cada alumno en el parcial (cada clase de 50 min cuenta, igual que en la asistencia)
+  CA.retardosParcial = (g, p) => {
+    const tot = {}; if (!g || !p) return tot; const al = D.alumnos(g);
+    C.fechasRegistradas(g, p).forEach(fd => { const doc = S.get('asis:' + g.id + ':' + fd) || {}; C.clasesCuenta(g, fd).forEach(k => { al.forEach(a => { if (C.marca(doc, a.id, k) === 'R') tot[a.id] = (tot[a.id] || 0) + 1; }); }); });
+    return tot;
+  };
+  // pendientes: con N = Ajustes → avisoRetardos (0 = no avisar), toca aviso al llegar a N retardos y de nuevo en cada múltiplo de N
+  CA.retardosPend = (g, f) => {
+    const N = Number(D.cfg().avisoRetardos) || 0, p = C.parcialActual(f || u.today());
+    if (!g || !p || N <= 0) return [];
+    const tot = CA.retardosParcial(g, p), av = S.get('avisosR:' + g.id + ':' + p.id) || {};
+    return D.alumnos(g).filter(a => (tot[a.id] || 0) >= N && Math.floor(tot[a.id] / N) > Math.floor((av[a.id] || 0) / N)).map(a => ({ a: a, n: tot[a.id] }));
+  };
+  const msgRet = (g, a, n, p) => 'Buen día. Le escribe ' + (D.cfg().docente || 'su docente') + ', del grupo ' + g.nombre + '. Le informo que ' + u.corto(a.nombre) + ' lleva ' + n + (n === 1 ? ' retardo' : ' retardos') + ' en el ' + p.nombre + '. Le pido su apoyo para que llegue puntual a clase. Quedo a sus órdenes. Gracias.';
+  A['lista-retardos'] = el => {
+    const g = D.grupoActual(), f = el.dataset.f, p = C.parcialActual(f), lst = CA.retardosPend(g, f);
+    if (!lst.length) { u.toast('No hay retardos pendientes de avisar', 'ok', 2200); return; }
+    E.modal.open('⏰ Avisar por retardos · ' + p.nombre, '<p class="muted small">Cada ' + Number(D.cfg().avisoRetardos) + ' retardos del parcial toca un aviso. Se abre WhatsApp con el texto listo; tú lo revisas y lo mandas.</p><ul class="ap-list">' +
+      lst.map(x => '<li><div><b>' + x.a.num + '. ' + esc(x.a.nombre) + '</b><br><small class="muted">' + x.n + (x.n === 1 ? ' retardo' : ' retardos') + ' en el parcial · ' + (x.a.tel ? 'WhatsApp registrado' : 'sin teléfono (eliges el contacto)') + '</small></div>' + btn('💬 WhatsApp', 'lista-retardos-wa', 'data-aid="' + x.a.id + '" data-pid="' + p.id + '"', 'small') + '</li>').join('') + '</ul>');
+  };
+  A['lista-retardos-wa'] = el => {
+    const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid), p = C.parcial(el.dataset.pid); if (!a || !p) return;
+    const n = CA.retardosParcial(g, p)[a.id] || 0;
+    window.open(CA.wa(a, msgRet(g, a, n, p)), '_blank', 'noopener');
+    S.update('avisosR:' + g.id + ':' + p.id, d => { d[a.id] = n; }, {});
+  };
+
   /* ---------- v1.27.20: faltas sin avisar a casa (Pendientes y aviso en el cierre) ---------- */
   CA.faltasSinAvisar = (g, f) => { const av = S.get('avisos:' + g.id + ':' + f) || {}; return CA.faltasDia(g, f).filter(a => !av[a.id]); };
   if (V.cierre) { const vc = V.cierre; V.cierre = function (f) {
