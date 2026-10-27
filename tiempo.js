@@ -143,8 +143,8 @@
   });
   V.expediente = () => {
     const gs = D.grupos().filter(g => !g.archivado || g.parciales), cf = D.cfg();
-    let h = card('<h3>🗂 Expediente docente</h3><p class="small">Lo que la dirección suele pedir al cierre del semestre, revisado grupo por grupo. Imprime el expediente completo (concentrado de calificaciones y asistencia, planeaciones, seguridad y reconocimientos) o solo un grupo.</p>' + btn('🖨 Imprimir expediente de todos mis grupos', 'ex-print', '', 'primary') + ' ' + link('📋 Acta en Excel', 'imprimir', 'small'));
-    D.gruposActivos().forEach(g => { const ch = TI.checkGrupo(g); h += card('<div class="row between gap wrap"><h3>' + esc(g.nombre) + '</h3>' + btn('🖨 Solo este grupo', 'ex-print', 'data-g="' + g.id + '"', 'small') + '</div><ul class="ex-l">' + ch.map(x => '<li class="' + (x.ok ? 'ok' : 'warn') + '"><span>' + (x.ok ? '✓' : '!') + '</span><div><b>' + esc(x.t) + '</b><small>' + esc(x.d) + '</small></div><a class="small" href="#/' + x.to + '">Ir</a></li>').join('') + '</ul>'); });
+    let h = card('<h3>🗂 Expediente docente</h3><p class="small">Lo que la dirección suele pedir al cierre del semestre, revisado grupo por grupo. Imprime el expediente completo (concentrado de calificaciones y asistencia, planeaciones, seguridad y reconocimientos) o solo un grupo.</p>' + btn('🖨 Imprimir expediente de todos mis grupos', 'ex-expediente', '', 'primary') + ' ' + link('📋 Acta en Excel', 'imprimir', 'small'));
+    D.gruposActivos().forEach(g => { const ch = TI.checkGrupo(g); h += card('<div class="row between gap wrap"><h3>' + esc(g.nombre) + '</h3>' + btn('🖨 Solo este grupo', 'ex-expediente', 'data-g="' + g.id + '"', 'small') + '</div><ul class="ex-l">' + ch.map(x => '<li class="' + (x.ok ? 'ok' : 'warn') + '"><span>' + (x.ok ? '✓' : '!') + '</span><div><b>' + esc(x.t) + '</b><small>' + esc(x.d) + '</small></div><a class="small" href="#/' + x.to + '">Ir</a></li>').join('') + '</ul>'); });
     h += '<p class="muted small">Docente: ' + esc(cf.docente || '—') + ' · ' + esc(cf.plantel || '') + '. Ajusta tus datos en Ajustes.</p>';
     return { t: 'Expediente docente', h: h };
   };
@@ -163,7 +163,8 @@
     h += '<div class="firmas"><div>' + esc(cf.docente || 'Docente') + '<br><small>Docente</small></div><div>&nbsp;<br><small>Recibió (dirección / academia)</small></div></div></div>';
     return h;
   };
-  A['ex-print'] = el => E.print.run(TI.expedienteHTML(el.dataset.g ? [el.dataset.g] : null), { landscape: true, title: 'Expediente docente', margin: '10mm' });
+  // v1.27.22: nombre propio; antes se llamaba 'ex-print' y pisaba la impresión de la Versión A del examen (examen.js)
+  A['ex-expediente'] = el => E.print.run(TI.expedienteHTML(el.dataset.g ? [el.dataset.g] : null), { landscape: true, title: 'Expediente docente', margin: '10mm' });
 
   /* ================= 4) CHEQUEO DE SALUD DE LOS DATOS ================= */
   TI.salud = () => {
