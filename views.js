@@ -1099,7 +1099,6 @@
     catch (e) { u.toast('No se pudo iniciar sesión: ' + E.sync.explica(e), 'err', 7000); }
     E.render();
   };
-  A['sync-now'] = async () => { await E.sync.now(); E.render(); };
   A['sync-sql'] = async () => { const ok = await u.copy(E.SCHEMA_SQL); u.toast(ok ? 'SQL copiado: pégalo en Supabase → SQL Editor → Run' : 'No se pudo copiar', ok ? 'ok' : 'err', 5000); };
   A['app-update'] = async () => {
     u.toast('Buscando la versión más nueva…');
