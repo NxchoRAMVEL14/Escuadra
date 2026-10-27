@@ -178,6 +178,19 @@
       '<div class="lsel-ops">' + ['F', 'A', 'R', 'J'].map(x => '<button type="button" class="lsel-op st-' + x + '" data-act="lsel-marca" data-st="' + x + '"' + (n ? '' : ' disabled') + '>' + LSEL_TXT[x] + '</button>').join('') + '</div>' +
       '<div class="lsel-ops2">' + btn('💬 Nota', 'lsel-nota', n ? '' : 'disabled', 'small ghost') + btn('📷 Foto de su trabajo', 'lsel-foto', n ? '' : 'disabled', 'small ghost') + btn(n === al.length ? 'Quitar todos' : 'Elegir todos', 'lsel-todos', '', 'small ghost') + btn('Cancelar', 'lsel-off', '', 'small ghost') + '</div></div>';
   }
+  // v1.27.21: de dónde copiar las marcas. Dentro del día, la clase anterior; si es la primera, la última clase del día de clase anterior
+  function fuenteClase(g, f) {
+    const cd = C.clasesDia(g, f), amb = C.ambito(f), idx = amb ? cd.findIndex(c => c.k === amb) : -1;
+    if (idx > 0) { const doc = S.get('asis:' + g.id + ':' + f); if (doc) return { f: f, k: cd[idx - 1].k, doc: doc, mismo: true }; }
+    const pd = C.claseAnterior(g, f); if (!pd) return null;
+    const doc = S.get('asis:' + g.id + ':' + pd); if (!doc) return null;
+    const pcd = C.clasesDia(g, pd);
+    return { f: pd, k: pcd.length ? pcd[pcd.length - 1].k : null, doc: doc, mismo: false };
+  }
+  // v1.27.21: la actividad más reciente de un tipo (por fecha) en todo el grupo
+  function ultimaDeTipo(g, cat) {
+    return S.list('act:' + g.id + ':').filter(a => a.categoria === cat).sort((x, y) => String(y.fecha || '').localeCompare(String(x.fecha || '')))[0] || null;
+  }
   V.lista = fecha => {
     const g = D.grupoActual(); if (!g) return noGroup();
     const al = D.alumnos(g); if (!al.length) return needAlumnos('Pase de lista');
@@ -195,6 +208,12 @@
     else if (!horas) h += '<p class="note">No tienes clase este día en tu horario. Si diste clase extra, puedes pasar lista igual.</p>';
     else h += '<p class="muted small">' + C.bloquesDia(g, fecha).map(b => b.inicio + '–' + b.fin).join(' · ') + ' · ' + horas + ' h</p>';
     { const fa = E.casa && E.casa.faltasDia ? E.casa.faltasDia(g, fecha) : []; if (fa.length && !sel) h += '<div class="row gap wrap mt">' + btn('💬 Avisar a casa: ' + (fa.length === 1 ? 'quien faltó' : fa.length + ' que faltaron'), 'lista-avisar', 'data-f="' + fecha + '"', 'small ghost') + '</div>'; }
+    { // v1.27.21: copiar la clase anterior y avisos por retardos acumulados
+      const src = !sel ? fuenteClase(g, fecha) : null, rt = !sel && E.casa && E.casa.retardosPend ? E.casa.retardosPend(g, fecha) : [];
+      const cp = src ? btn('↺ Igual que ' + (src.mismo ? 'la clase anterior' : 'la clase del ' + u.fCorta(src.f)), 'lista-copiar', 'data-fecha="' + fecha + '"', 'small ghost') : '';
+      const rb = rt.length ? btn('⏰ Avisar por retardos (' + rt.length + ')', 'lista-retardos', 'data-f="' + fecha + '"', 'small ghost') : '';
+      if (cp || rb) h += '<div class="row gap wrap mt">' + cp + rb + '</div>';
+    }
     const pl = (n, s, p) => n + ' ' + (n === 1 ? s : p);
     h += doc ? '<p class="note ok">Lista registrada · ' + pl(cnt.A, 'asistencia', 'asistencias') + ' · ' + pl(cnt.F, 'falta', 'faltas') + (cnt.R ? ' · ' + pl(cnt.R, 'retardo', 'retardos') : '') + (cnt.J ? ' · ' + pl(cnt.J, 'justificada', 'justificadas') : '') + (ks.length > 1 ? ' · en ' + ks.length + ' clases de 50 min' : '') + '</p>'
       : '<p class="note">Aún no registras esta lista. Toca la letra de quien falte: los demás quedan como presentes.</p>';
@@ -223,6 +242,25 @@
     if (navigator.vibrate) navigator.vibrate(12);
   };
   A['lista-cls'] = el => { E.ui.listaCls = E.ui.listaCls || {}; const f = el.dataset.fecha, c = el.dataset.cls; if (c) E.ui.listaCls[f] = c; else delete E.ui.listaCls[f]; E.render(); };
+  // v1.27.21: copia las marcas de la clase anterior (A, F y J). Los retardos no se copian: son una llegada, no un hábito
+  A['lista-copiar'] = el => {
+    const g = D.grupoActual(), f = el.dataset.fecha, src = fuenteClase(g, f);
+    if (!src) { u.toast('No hay una clase anterior con lista registrada', 'err', 2600); return; }
+    const amb = C.ambito(f) || null, al = D.alumnos(g); let n = 0, r = 0;
+    const paso = () => S.update('asis:' + g.id + ':' + f, doc => {
+      if (!Object.keys(doc).length) al.forEach(a => { doc[a.id] = 'A'; });
+      al.forEach(a => {
+        const st = C.marca(src.doc, a.id, src.k);
+        if (st === 'R') { r++; return; }
+        n++;
+        if (amb) doc[a.id + '|' + amb] = st;
+        else { Object.keys(doc).forEach(x => { if (x.indexOf(a.id + '|') === 0) delete doc[x]; }); doc[a.id] = st; }
+      });
+    }, {});
+    if (E.undo) E.undo.run('asis-copiar', paso); else paso();
+    const quien = src.mismo ? 'la clase anterior' : 'la clase del ' + u.fCorta(src.f);
+    u.toast(n ? 'Copiadas ' + n + ' marcas de ' + quien + (r ? ' · los retardos no se copian' : '') : 'No había marcas que copiar de ' + quien, n ? 'ok' : 'err', 4000);
+  };
   A['asis-todos'] = el => { const g = D.grupoActual(), d = {}; D.alumnos(g).forEach(a => { d[a.id] = 'A'; }); S.put('asis:' + g.id + ':' + el.dataset.fecha, d); u.toast('Lista registrada: todos presentes', 'ok'); };
   A['asis-borrar'] = el => { if (!confirm('¿Borrar el registro de asistencia de este día?')) return; S.del('asis:' + D.grupoActual().id + ':' + el.dataset.fecha); };
   A.part = el => {
@@ -353,7 +391,7 @@
       const list = acts.filter(a => a.categoria === cat);
       if (cat === 'diagnostico' && !list.length) return '';
       const extra = cat === 'trabajos' ? '<p class="small">' + link('📒 Tareas y revisión de libreta', 'libreta/' + p.id, 'small') + '</p>' : cat === 'examen' ? '<p class="small">' + link('📝 Examen recomendado', 'examen', 'small') + '</p>' : '';
-      return '<div class="cat"><div class="cat-h"><h4>' + label + (c.pond[cat] != null ? ' <span class="chip brand">' + c.pond[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + '</div>' + extra +
+      return '<div class="cat"><div class="cat-h"><h4>' + label + (c.pond[cat] != null ? ' <span class="chip brand">' + c.pond[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + (cat !== 'diagnostico' && ultimaDeTipo(g, cat) ? btn('Basada en la última', 'act-basada', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small ghost') : '') + '</div>' + extra +
         (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (C.maxPts(a) !== 100 ? ' · de ' + C.maxPts(a) + ' pts' : '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (a.cuenta === false && cat !== 'diagnostico' ? ' · no cuenta' : '') + (C.sinCal(a) ? ' · del guion, aún no cuenta' : '') + (st.prom != null ? ' · prom. ' + Math.round(st.prom) : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') + '</div>';
     };
     h += card('<h3>' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + catBlock('examen', 'Examen') + catBlock('trabajos', 'Libreta / Proyecto / Bitácora') + catBlock('diagnostico', 'Diagnóstico') +
@@ -377,6 +415,16 @@
     const g = D.grupoActual(), id = u.uid('act'), cat = el.dataset.cat;
     S.put('act:' + g.id + ':' + id, { id: id, parcial: el.dataset.pid, categoria: cat, nombre: cat === 'examen' ? 'Examen' : cat === 'diagnostico' ? 'Examen diagnóstico' : 'Nueva actividad', peso: 1, max: 100, fecha: u.today(), instrumento: cat === 'trabajos' ? 'LC' : 'Exa', cuenta: cat !== 'diagnostico', notas: {} }, { silent: true });
     location.hash = '#/actividad/' + id;
+  };
+  // v1.27.21: actividad nueva con los datos de la última de su tipo (instrumento, puntos, peso, tema, cuenta). Fecha: 7 días después. Las notas no se copian
+  A['act-basada'] = el => {
+    const g = D.grupoActual(), cat = el.dataset.cat, src = ultimaDeTipo(g, cat);
+    if (!src) { u.toast('No hay una actividad anterior de este tipo', 'err', 2600); return; }
+    const id = u.uid('act'), a = { id: id, parcial: el.dataset.pid, categoria: cat, nombre: cat === 'examen' ? 'Examen' : 'Nueva actividad', peso: src.peso || 1, max: src.max || 100, fecha: src.fecha ? u.addDays(src.fecha, 7) : u.today(), instrumento: src.instrumento || (cat === 'trabajos' ? 'LC' : 'Exa'), cuenta: src.cuenta !== false, notas: {} };
+    if (src.tema) a.tema = src.tema;
+    S.put('act:' + g.id + ':' + id, a, { silent: true });
+    location.hash = '#/actividad/' + id;
+    u.toast('Creada con los datos de «' + src.nombre + '»', 'ok', 3000);
   };
   A['act-sugeridas'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, sm = D.submodulo(g, pid), p = C.parcial(pid);
@@ -991,7 +1039,7 @@
       (m.lastSyncAt ? '<p class="muted small mt">Última sincronización: ' + new Date(m.lastSyncAt).toLocaleString('es-MX') + '</p>' : ''));
     h += sec('docente', '👤 Docente y escuela', '<div class="fgrid">' + cf('docente', 'Nombre completo', c.docente) + cf('docenteCorto', 'Cómo te saludo', c.docenteCorto) + cf('plantel', 'Plantel', c.plantel) + cf('cct', 'C.C.T.', c.cct) + cf('entidad', 'Entidad', c.entidad) + cf('turno', 'Turno', c.turno) + cf('ciclo', 'Ciclo escolar', c.ciclo) + cf('periodo', 'Periodo', c.periodo) + '</div>' + cf('semestreTexto', 'Semestre (encabezado de planeaciones)', c.semestreTexto));
     h += sec('cal', '📊 Calificación', '<p class="small">Ponderación del parcial (debe sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.trabajos', 'Libreta/Proyecto/Bitácora %', c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
-      '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
+      '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('avisoRetardos', 'Aviso a casa cada N retardos (0 = no avisar)', c.avisoRetardos, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
       sel('escalaActa', 'Escala del acta', [[100, 'Base 100'], [10, 'Base 10']], c.escalaActa) + '' + '</div>' +
       '<div class="fgrid">' + sel('tardeValor', 'Lo entregado tarde vale (al marcar ⏰)', E.TARDE_OPC.map(x => [x, Math.round(x * 100) + ' %' + (x === 1 ? ' (sin descuento)' : '')]), C.tardeVale()) + '</div><p class="muted small">Cuando un alumno te entrega tarde, márcalo con ⏰ en la actividad, la libreta o la práctica (o «📥 Recibir tarde» en su ficha): su calificación se multiplica por este porcentaje. Con 75 %, un trabajo perfecto entregado tarde queda en 75 y uno de 80 queda en 60. Si después cambias el porcentaje, lo que ya marcaste conserva el que tenía.</p>' +
       tog('vaciasCero', 'Actividad sin calificación cuenta como 0 (no entregó) después de su fecha de entrega', c.vaciasCero) + tog('retardoCuenta', 'Retardo cuenta como asistencia', c.retardoCuenta) + tog('justCuenta', 'Falta justificada cuenta como asistencia', c.justCuenta));
@@ -1068,7 +1116,7 @@
       const data = JSON.parse(await file.text()); if (!data || data.app !== 'escuadra' || !data.docs) throw new Error('No es un respaldo de Escuadra');
       if (!confirm('Se combinará el respaldo con tus datos actuales (gana lo más reciente). ¿Continuar?')) return;
       Object.keys(data.docs).forEach(k => { const r = data.docs[k], l = S.docs[k]; if (!l || Date.parse(r.ts) > Date.parse(l.ts)) S.docs[k] = Object.assign({}, r, { dirty: true }); });
-      S.persist(); E.sync.schedule(); S.emit('__restore'); u.toast('Respaldo restaurado', 'ok');
+      S.invalidar(); S.persist(); E.sync.schedule(); S.emit('__restore'); u.toast('Respaldo restaurado', 'ok');
     } catch (e) { u.toast('No se pudo restaurar: ' + e.message, 'err', 6000); }
     el.value = '';
   };
