@@ -664,7 +664,7 @@
     const x = prCtx(), P = E.print, cap = [], orig = P.run;
     P.run = (h, o) => { cap.push({ h: h, o: o || {} }); };
     try { P.asistencia(x.g, x.p, { marcas: x.pr.marcas }); P.participacion(x.g, x.p, { marcas: x.pr.marcas }); } finally { P.run = orig; }
-    if (cap.length) orig(cap.map(c => c.h).join(''), Object.assign({}, cap[0].o, { title: 'Día · ' + x.g.grupo + ' ' + x.p.nombre }));
+    if (cap.length) orig(cap.map(c => c.h).join('<div style="page-break-before:always"></div>'), Object.assign({}, cap[0].o, { title: 'Día · ' + x.g.grupo + ' ' + x.p.nombre }));
   };
   A['pr-part'] = () => { const x = prCtx(); E.print.participacion(x.g, x.p, { marcas: x.pr.marcas }); };
   A['pr-cotejo'] = () => { const x = prCtx(); E.print.cotejo(x.g, x.p, Number(x.pr.ac), x.pr); };
