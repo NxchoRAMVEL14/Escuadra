@@ -103,7 +103,7 @@
     const g = D.grupoActual(), al = D.alumnos(g); if (!al.length) { u.toast('Primero importa tu lista', 'err'); return; }
     await CAM.qrListo(); const cf = D.cfg();
     E.print.run('<div class="pr qr-hoja"><div class="p-title">ETIQUETAS QR PARA LAS LIBRETAS · ' + esc(g.nombre.toUpperCase()) + '</div><p class="tiny c">Recorta y pega cada etiqueta en la portada de la libreta. El código solo trae un número interno de Escuadra, no el nombre. ' + esc(cf.plantel || '') + '</p>' +
-      '<div class="qr-grid">' + al.map(a => '<div class="qr-cel">' + CAM.qrSVG(CAM.qrTexto(g, a)) + '<div><b>' + a.num + '</b><span>' + esc(u.corto(a.nombre)) + '</span><small>' + esc(g.nombre) + '</small></div></div>').join('') + '</div></div>', { title: 'Etiquetas QR ' + g.nombre, margin: '8mm', sinLogo: true });
+      '<div class="qr-grid">' + al.map(a => '<div class="qr-cel">' + CAM.qrSVG(CAM.qrTexto(g, a)) + '<div><b>' + a.num + '</b><span>' + esc(u.corto(a.nombre)) + '</span><small>' + esc(g.nombre) + '</small></div></div>').join('') + '</div></div>', { title: 'Etiquetas QR ' + g.nombre, margin: '8mm' });
   };
 
   /* ---------- escanear libretas ---------- */

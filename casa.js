@@ -5,7 +5,8 @@
       lista e iniciales. Nada se guarda en internet.
    2) Mensajes para WhatsApp a madres, padres o tutores de quienes van abajo: lo que debe, fecha límite y el enlace.
       El teléfono es opcional (se guarda solo en tus datos); sin él, WhatsApp te deja elegir el contacto.
-   3) Repaso para casa: 5 preguntas de sus temas débiles (de su último examen o del grupo) en repaso.html, con QR. */
+   3) Repaso para casa, con QR: 5 preguntas por alumno de lo que más le cuesta en el parcial en curso (mini-exámenes,
+      actividades y faltas) y 10 para el grupo (lo que el grupo domina menos del parcial en curso). Va en repaso.html. */
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data, C = E.calc, esc = u.esc;
@@ -58,9 +59,43 @@
   const hash = s => { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
   const rng = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const tTit = id => { const t = (E.TEMAS || []).find(x => x.id === id); return t ? t.titulo : id; };
+  const conB = t => (E.BANCO || []).some(b => b.tema === t && b.tipo !== 'ab');
+  const N_ALUMNO = 5, N_GRUPO = 10;
+  // reparte n preguntas entre k temas: 5 entre 3 = 2, 2, 1; 10 entre 4 = 3, 3, 2, 2
+  const reparte = (n, k) => { const o = []; for (let i = 0; i < k; i++) o.push(Math.floor(n / k) + (i < n % k ? 1 : 0)); return o; };
+  // el parcial en curso, tema por tema (0 = lo domina, 1 = le cuesta). Pesan: mini-exámenes (3), actividades (1; cada una
+  // cuenta para los temas que se vieron ese día), calentamientos y boletos del grupo (1). Cada falta suma a los temas de ese día.
+  CA.parcialTemas = (g, a) => {
+    const p = C.parcialActual(), acc = {}, falt = {}; let propio = false;
+    const suma = (t, v, w) => { const x = acc[t] = acc[t] || { s: 0, w: 0 }; x.s += v * w; x.w += w; };
+    const temasDe = f => E.repaso.temasDia(g, E.clases.dia(g, f)).filter(conB);
+    if (E.examen) E.examen.list(g).filter(ex => ex.parcial === p.id).forEach(ex => {
+      const r = E.examen.analisis(g, ex); if (!r) return;
+      if (a) { const me = r.alumnos[a.id]; if (me) { propio = true; Object.keys(me.temas).forEach(t => suma(t, me.temas[t], 3)); } }
+      else Object.keys(r.temas).forEach(t => suma(t, r.temas[t].p, 3));
+    });
+    C.acts(g, p.id).filter(x => x.fecha && !x.examen && !C.sinCal(x)).forEach(x => {
+      const ts = temasDe(x.fecha); if (!ts.length) return;
+      if (a) { const v = C.nota(x, a.id); if (v == null) return; propio = true; ts.forEach(t => suma(t, v / 100, 1)); return; }
+      const vs = D.alumnos(g).map(al => C.nota(x, al.id)).filter(v => v != null);
+      if (vs.length) { const m = vs.reduce((s, v) => s + v, 0) / vs.length / 100; ts.forEach(t => suma(t, m, 1)); }
+    });
+    const gr = E.repaso.desempeno(g, p.inicio); Object.keys(gr).forEach(t => suma(t, gr[t].p, 1));
+    if (a) C.fechasRegistradas(g, p).forEach(f => {
+      const doc = S.get('asis:' + g.id + ':' + f) || {}, cl = C.clasesCuenta(g, f), mis = cl.filter(k => C.marca(doc, a.id, k) === 'F').length;
+      if (!mis) return; propio = true;
+      temasDe(f).forEach(t => { falt[t] = (falt[t] || 0) + mis / cl.length; });
+    });
+    const dif = {};
+    Object.keys(Object.assign({}, acc, falt)).forEach(t => { const b0 = acc[t] && acc[t].w ? 1 - acc[t].s / acc[t].w : 0.4; dif[t] = Math.min(1.3, b0 + Math.min(0.4, 0.25 * (falt[t] || 0))); });
+    return { dif: dif, propio: propio, p: p };
+  };
   CA.temasDebiles = (g, a) => {
+    if (a) {
+      const pt = CA.parcialTemas(g, a), ts = Object.keys(pt.dif).filter(t => conB(t) && pt.dif[t] > 0.2).sort((x, y) => pt.dif[y] - pt.dif[x]);
+      if (ts.length) return { ts: ts.slice(0, 3), fuente: pt.propio ? 'sus exámenes, actividades y faltas de este parcial' : 'cómo va el grupo en este parcial' };
+    }
     const hoy = u.today(); let vis = {}; try { vis = E.repaso ? E.repaso.vistos(g, u.addDays(hoy, 1)) : {}; } catch (e) { vis = {}; }
-    const conB = t => (E.BANCO || []).some(b => b.tema === t && b.tipo !== 'ab');
     let fuente = 'tu último examen', sc = {};
     if (E.examen && a) { const xs = E.examen.list(g).filter(ex => (ex.res || {})[a.id] && E.examen.puntaje(ex, a.id) != null); if (xs.length) { const r = E.examen.analisis(g, xs[0]), me = r && r.alumnos[a.id]; if (me) Object.keys(me.temas).forEach(t => { sc[t] = me.temas[t]; }); } }
     if (!Object.keys(sc).filter(conB).length) { fuente = 'cómo va el grupo'; sc = E.repaso ? E.repaso.debil(g) : {}; }
@@ -68,17 +103,30 @@
     if (!ts.length) { fuente = 'lo que vieron en las últimas semanas'; ts = Object.keys(vis).filter(conB).sort((x, y) => String(vis[y].fin).localeCompare(String(vis[x].fin))); }
     return { ts: ts.slice(0, 3), fuente: fuente };
   };
-  CA.repasoDatos = (g, a) => {
-    const td = CA.temasDebiles(g, a); if (!td.ts.length || !E.ejer) return null;
-    const rnd = rng(hash(g.id + '|casa|' + (a ? a.id : 'g') + '|' + u.today())), qs = [], por = td.ts.length === 1 ? [5] : td.ts.length === 2 ? [3, 2] : [2, 2, 1];
-    td.ts.forEach((t, i) => {
-      const c = (E.BANCO || []).filter(b => b.tema === t && b.tipo !== 'ab').map(b => ({ b: b, r: rnd() })).sort((x, y) => (x.b.niv || 2) - (y.b.niv || 2) + (x.r - y.r)).slice(0, por[i] || 1);
-      c.forEach(x => { const q = E.ejer.pregunta(x.b, rnd); if (q && q.opts) qs.push([corto(q.q, 320), q.opts.map(o => corto(o, 120)), q.ok, corto(q.a || '', 220), tTit(t)]); });
-    });
-    if (!qs.length) return null;
-    return { v: 1, k: 'rep', g: g.nombre, n: a ? a.num : null, f: u.today(), fu: td.fuente, q: qs.slice(0, 5) };
+  // grupo: lo que el grupo domina menos en el parcial en curso; si faltan temas, lo último que vieron
+  CA.temasGrupo = g => {
+    const pt = CA.parcialTemas(g, null), p = pt.p;
+    const debiles = Object.keys(pt.dif).filter(t => conB(t) && pt.dif[t] > 0.2).sort((x, y) => pt.dif[y] - pt.dif[x]);
+    let vis = {}; try { vis = E.repaso ? E.repaso.vistos(g, u.addDays(u.today(), 1)) : {}; } catch (e) { vis = {}; }
+    const recientes = Object.keys(vis).filter(t => conB(t) && vis[t].fin >= p.inicio && debiles.indexOf(t) < 0).sort((x, y) => String(vis[y].fin).localeCompare(String(vis[x].fin)));
+    const ts = debiles.concat(recientes).slice(0, 5);
+    if (!ts.length) return { ts: [], fuente: '' };
+    return { ts: ts, fuente: !debiles.length ? 'lo que vieron en este parcial' : ts.length > debiles.length ? 'cómo va el grupo en este parcial y lo último que vieron' : 'cómo va el grupo en este parcial' };
   };
-  CA.repasoURL = async (g, a) => { const d = CA.repasoDatos(g, a); return d ? base('repaso.html') + '#' + await CA.empaca(d) : null; };
+  CA.repasoDatos = (g, a, n) => {
+    n = n || (a ? N_ALUMNO : N_GRUPO);
+    const td = a ? CA.temasDebiles(g, a) : CA.temasGrupo(g); if (!td.ts.length || !E.ejer) return null;
+    const rnd = rng(hash(g.id + '|casa|' + (a ? a.id : 'g') + '|' + u.today())), por = reparte(n, td.ts.length), lim = a ? [320, 120, 220] : [200, 90, 150];
+    const pools = td.ts.map(t => (E.BANCO || []).filter(b => b.tema === t && b.tipo !== 'ab').map(b => ({ b: b, r: rnd() })).sort((x, y) => ((x.b.niv || 2) - (y.b.niv || 2)) || (x.r - y.r)).map(x => x.b));
+    // cada tema toma su cupo; si no le alcanzan preguntas, lo que falta lo toma el siguiente
+    const cuota = pools.map((pl, i) => Math.min(por[i], pl.length)); let falta = n - cuota.reduce((s, x) => s + x, 0), mov = true;
+    while (falta > 0 && mov) { mov = false; pools.forEach((pl, i) => { if (falta > 0 && cuota[i] < pl.length) { cuota[i]++; falta--; mov = true; } }); }
+    const qs = [];
+    pools.forEach((pl, i) => { let k = 0; for (let j = 0; j < pl.length && k < cuota[i]; j++) { const q = E.ejer.pregunta(pl[j], rnd); if (q && q.opts) { qs.push([corto(q.q, lim[0]), q.opts.map(o => corto(o, lim[1])), q.ok, corto(q.a || '', lim[2]), tTit(td.ts[i])]); k++; } } });
+    if (!qs.length) return null;
+    return { v: 1, k: 'rep', g: g.nombre, n: a ? a.num : null, f: u.today(), fu: td.fuente, q: qs };
+  };
+  CA.repasoURL = async (g, a, n) => { const d = CA.repasoDatos(g, a, n); return d ? base('repaso.html') + '#' + await CA.empaca(d) : null; };
 
   /* ---------- modales ---------- */
   const qrBox = (url, txt) => '<div class="ca-qr">' + (E.cam ? E.cam.qrSVG(url, 'ca-qrsvg', 'L') : '') + '<p class="small muted">' + txt + '</p></div>';
@@ -99,12 +147,13 @@
   };
   A['ca-repaso'] = async el => {
     const g = D.grupoActual(), a = el.dataset.aid ? D.alumno(g, el.dataset.aid) : null;
-    await listo(); const url = await CA.repasoURL(g, a); if (!url) { u.toast('Todavía no hay temas con preguntas en el banco para armar el repaso', 'err', 4000); return; }
-    E.ui.caUrl = url; const td = CA.temasDebiles(g, a);
-    E.modal.open('🏠 Repaso para casa' + (a ? ' · ' + u.corto(a.nombre) : ' · todo el grupo'), qrBox(url, '5 preguntas de ' + esc(td.ts.map(tTit).join(', ')) + ' (según ' + td.fuente + '). Se contestan en el celular; no se manda nada a ningún lado.') +
+    await listo(); const d = CA.repasoDatos(g, a); if (!d) { u.toast('Todavía no hay temas con preguntas en el banco para armar el repaso', 'err', 4000); return; }
+    const url = base('repaso.html') + '#' + await CA.empaca(d), temas = Array.from(new Set(d.q.map(x => x[4])));
+    E.ui.caUrl = url; E.ui.caN = d.q.length;
+    E.modal.open('🏠 Repaso para casa' + (a ? ' · ' + u.corto(a.nombre) : ' · todo el grupo'), qrBox(url, d.q.length + ' preguntas de ' + esc(temas.join(', ')) + ' (según ' + esc(d.fu) + '). Se contestan en el celular; no se manda nada a ningún lado.') +
       '<div class="row gap wrap">' + btn('📋 Copiar enlace', 'ca-copiar', '', 'primary') + '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Probar</a>' + (a ? '' : btn('📽 Proyectar QR', 'ca-proj', '', '')) + '</div>');
   };
-  A['ca-proj'] = () => { if (!E.proj || !E.ui.caUrl) return; E.modal.close(); E.proj.abrir({ id: 'casa-qr', titulo: 'Repaso para casa' }, [{ k: 'html', h: '🏠 Repaso para casa', html: '<div class="pj-qrbox">' + E.cam.qrSVG(E.ui.caUrl, 'pj-qr', 'L') + '<div><p>Escanea el código con tu celular y contesta las 5 preguntas en casa.</p><p>Al final te dice cuántas tuviste bien y por qué.</p></div></div>' }]); };
+  A['ca-proj'] = () => { if (!E.proj || !E.ui.caUrl) return; E.modal.close(); E.proj.abrir({ id: 'casa-qr', titulo: 'Repaso para casa' }, [{ k: 'html', h: '🏠 Repaso para casa', html: '<div class="pj-qrbox">' + E.cam.qrSVG(E.ui.caUrl, 'pj-qr', 'L') + '<div><p>Escanea el código con tu celular y contesta las ' + (E.ui.caN || N_GRUPO) + ' preguntas en casa.</p><p>Al final te dice cuántas tuviste bien y por qué.</p></div></div>' }]); };
 
   /* ---------- en la ficha del alumno ---------- */
   CA.alumnoHTML = (g, a) => {
@@ -197,17 +246,17 @@
     const al = D.alumnos(g), out = [];
     for (const a of al) {
       const url = tipo === 'rep' ? await CA.repasoURL(g, a) : await CA.consultaURL(g, a, pid); if (!url) continue;
-      out.push('<div class="ca-tira">' + E.cam.qrSVG(url, 'ca-tqr', 'L') + '<div><b>No. ' + a.num + '</b> · ' + esc(u.corto(a.nombre)) + '<br><span class="tiny">' + esc(g.nombre) + ' · ' + (tipo === 'rep' ? 'Repaso para casa: escanea y contesta 5 preguntas de tus temas débiles.' : esc(p.nombre) + ': escanea para ver tu calificación y lo que te falta (al ' + u.fCorta(u.today()) + ').') + '</span></div></div>');
+      out.push('<div class="ca-tira">' + E.cam.qrSVG(url, 'ca-tqr', 'L') + '<div><b>No. ' + a.num + '</b> · ' + esc(u.corto(a.nombre)) + '<br><span class="tiny">' + esc(g.nombre) + ' · ' + (tipo === 'rep' ? 'Repaso para casa: escanea y contesta ' + N_ALUMNO + ' preguntas de los temas que más te cuestan este parcial.' : esc(p.nombre) + ': escanea para ver tu calificación y lo que te falta (al ' + u.fCorta(u.today()) + ').') + '</span></div></div>');
     }
     if (!out.length) { u.toast('No hay preguntas en el banco para armar el repaso', 'err'); return; }
-    E.print.run('<div class="pr ca-tiras">' + out.join('') + '</div>', { title: (tipo === 'rep' ? 'Repaso para casa · ' : 'Consulta · ') + g.nombre, margin: '8mm', sinLogo: true });
+    E.print.run('<div class="pr ca-tiras">' + out.join('') + '</div>', { title: (tipo === 'rep' ? 'Repaso para casa · ' : 'Consulta · ') + g.nombre, margin: '8mm' });
   };
   if (V.imprimir) {
     const vi = V.imprimir;
     V.imprimir = function () {
       const o = vi.apply(null, arguments), g = D.grupoActual(); if (!o || !g || !D.alumnos(g).length || /Algo falló/.test(o.h)) return o;
       const pid = (E.ui.print && E.ui.print.pid) || C.parcialActual().id;
-      o.h += card('<h3>👪 Para llevar a casa</h3><p class="muted small">Tiras con QR, una por alumno, para recortar: su consulta del parcial (sin nombre en el enlace) o un repaso de 5 preguntas de sus temas débiles.</p><div class="row gap wrap">' + btn('🖨 Tiras de consulta (QR)', 'ca-tiras', 'data-pid="' + pid + '" data-t="con"', 'primary') + btn('🖨 Tiras de repaso para casa (QR)', 'ca-tiras', 'data-t="rep"') + btn('🏠 Repaso del grupo (un solo QR)', 'ca-repaso', '', 'ghost') + '</div>');
+      o.h += card('<h3>👪 Para llevar a casa</h3><p class="muted small">Tiras con QR, una por alumno, para recortar: su consulta del parcial (sin nombre en el enlace) o un repaso de ' + N_ALUMNO + ' preguntas de los temas que más les cuestan.</p><div class="row gap wrap">' + btn('🖨 Tiras de consulta (QR)', 'ca-tiras', 'data-pid="' + pid + '" data-t="con"', 'primary') + btn('🖨 Tiras de repaso para casa (QR)', 'ca-tiras', 'data-t="rep"') + btn('🏠 Repaso del grupo (' + N_GRUPO + ' preguntas, un solo QR)', 'ca-repaso', '', 'ghost') + '</div>');
       return o;
     };
   }
