@@ -1360,7 +1360,7 @@ details.ini-mas[open] > summary::before { content: '▾ ' }
 .iv-l small { display: block } .iv-n { min-width: 26px; text-align: center } .iv-l select { padding: 5px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink) }
 .sg-al { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px }
 .pr .sg-reglas li { margin: 4px 0; font-size: 10.5pt }
-.pr.cn-pr { page-break-after: always; height: 190mm; display: flex; align-items: center; justify-content: center; padding: 10mm }
+.pr.cn-pr { page-break-after: always; height: 180mm; display: flex; align-items: center; justify-content: center; padding: 10mm }
 .pr .cn-in { width: 100%; height: 100%; border: 3px double #0e5e5a; border-radius: 6mm; padding: 10mm 16mm; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3mm }
 .pr .cn-in svg { width: 18mm; height: 18mm } .pr .cn-in h1 { font-size: 28pt; color: #0e5e5a; margin: 0; letter-spacing: .02em } .pr .cn-in h2 { font-size: 24pt; margin: 0 } .pr .cn-in h3 { font-size: 15pt; margin: 0; color: #0e5e5a }
 .pr .cn-in p { margin: 0; font-size: 11pt } .pr .cn-k { font-size: 9pt !important; color: #444; text-transform: uppercase; letter-spacing: .08em } .pr .cn-det { color: #444 } .pr .cn-folio { font-size: 7pt !important; color: #666; margin-top: 2mm !important }
