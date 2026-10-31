@@ -135,7 +135,7 @@
   const ST = { ok: ['Pagó', 'ok'], par: ['Parcial', 'warn'], pend: ['Pendiente', ''], ex: ['No paga', 'info'] };
 
   /* ---------- vista ---------- */
-  const TABS = [['inicio', 'Inicio'], ['coop', '💵 Cooperaciones'], ['plan', '📝 Mi plan'], ['alumnos', '👥 Alumnos'], ['ideas', '💡 Ideas']];
+  const TABS = [['inicio', 'Inicio'], ['coop', '💵 Cooperaciones'], ['plan', '📝 Mi plan'], ['alumnos', '👥 Alumnos'], ['adeudos', '📋 Adeudos e inscripción'], ['ideas', '💡 Ideas']];
   V.tutoria = (tab, id) => {
     const g = D.grupoActual(); if (!g) return H.noGroup();
     tab = tab || 'inicio';
@@ -146,6 +146,7 @@
     else if (tab === 'alumnos') h += alumnosV(g);
     else if (tab === 'alumno') h += alumnoV(g, id);
     else if (tab === 'ideas') h += ideasV(g, id);
+    else if (tab === 'adeudos') h += adeudosV(g);
     else h += inicioV(g);
     return { t: 'Tutoría', h: h };
   };
@@ -160,6 +161,7 @@
     h += card('<div class="row between gap wrap"><h3>' + icon('alert') + ' Alerta temprana</h3>' + link('Ver alumnos', 'tutoria/alumnos', 'small') + '</div>' +
       '<p class="muted small">Últimos 30 días con lo que registras en tu módulo: <b>A</b> 2 o más faltas · <b>B</b> va mal en el semáforo · <b>C</b> 3 o más llamadas de atención (💤, 🎒). Con 2 o más señales, atención urgente. Pide a los demás docentes lo de sus materias.</p>' +
       (al.length ? '<ul class="risk tut-al">' + al.slice(0, 8).map(x => '<li><a href="#/tutoria/alumno/' + x.a.id + '">' + esc(x.a.nombre) + '</a><span class="tut-sen">' + (x.n >= 2 ? '<b class="badc small">urgente</b> ' : '') + senales(x) + estChip(x.est) + '</span></li>').join('') + '</ul>' + (al.length > 8 ? '<p class="small"><a href="#/tutoria/alumnos">Ver los ' + al.length + ' ›</a></p>' : '') : '<p class="note ok small">Nadie con señales de alerta en tu módulo.</p>'));
+    h += adeuInicio(g);
     h += card('<div class="row between gap wrap"><h3>💵 Cooperaciones</h3>' + link('Ver todas', 'tutoria/coop', 'small') + '</div>' +
       (coops.length ? '<ul class="risk">' + coops.map(c => { const k = T.calc(g, c); return '<li><a href="#/tutoria/coop/' + c.id + '">' + esc(c.concepto) + '</a><span class="small">' + $(k.rec) + (k.esperado ? ' de ' + $(k.esperado) : '') + ' · ' + k.nPend + ' pendientes · en caja <b>' + $(k.caja) + '</b></span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin cooperaciones activas. ' + link('Crear una', 'tutoria/coop', 'small') + '</p>'));
     h += card('<div class="row between gap wrap"><h3>📝 Lo que sigue</h3>' + link('Mi plan', 'tutoria/plan', 'small') + '</div>' +
@@ -333,7 +335,7 @@
     const al = D.alumnos(g), seg = T.seg(g), ale = {}; T.alertas(g).forEach(x => { ale[x.a.id] = x; });
     const cnt = { seg: 0, can: 0 }; al.forEach(a => { const e = (seg[a.id] || {}).estado; if (cnt[e] != null) cnt[e]++; });
     let h = card('<h3>👥 Seguimiento de tutoría</h3><p class="muted small">' + Object.keys(ale).length + ' con señales de alerta · ' + cnt.seg + ' en seguimiento · ' + cnt.can + ' canalizados. Toca un nombre para anotar acuerdos y su estado.</p>');
-    h += '<ul class="sf-list tut-seg">' + al.map(a => { const x = ale[a.id], s = seg[a.id] || {}, ul = (s.notas || []).slice(-1)[0]; return '<li class="sf-row"><span class="num">' + a.num + '</span><div class="sf-main"><a href="#/tutoria/alumno/' + a.id + '">' + esc(a.nombre) + '</a><span class="sf-tray">' + (x ? senales(x) : '') + estChip(s.estado) + (ul ? ' <small class="muted">nota ' + u.fCorta(ul.f) + '</small>' : '') + '</span></div></li>'; }).join('') + '</ul>';
+    h += '<ul class="sf-list tut-seg">' + al.map(a => { const x = ale[a.id], s = seg[a.id] || {}, ul = (s.notas || []).slice(-1)[0]; return '<li class="sf-row"><span class="num">' + a.num + '</span><div class="sf-main"><a href="#/tutoria/alumno/' + a.id + '">' + esc(a.nombre) + '</a><span class="sf-tray">' + (x ? senales(x) : '') + estChip(s.estado) + adeuChips(g, a.id) + (ul ? ' <small class="muted">nota ' + u.fCorta(ul.f) + '</small>' : '') + '</span></div></li>'; }).join('') + '</ul>';
     return h;
   }
   function alumnoV(g, aid) {
@@ -342,6 +344,7 @@
     let h = '<p><a href="#/tutoria/alumnos">‹ Seguimiento</a></p>';
     h += card('<h3>' + esc(a.nombre) + '</h3><p class="muted small">No. ' + a.num + ' · ' + link('Ficha del alumno', 'alumno/' + aid, 'small') + '</p>' + (x && x.n ? '<p>' + senales(x) + (x.n >= 2 ? ' <b class="badc small">2 o más señales: atención urgente</b>' : '') + '</p>' : '<p class="muted small">Sin señales de alerta en tu módulo.</p>') +
       '<div class="cl-seg">' + Object.keys(SEG).map(k => btn(SEG[k][0], 'ts-estado', 'data-aid="' + aid + '" data-e="' + k + '"', 'small' + ((s.estado || 'ok') === k ? ' on' : ''))).join('') + '</div>');
+    h += adeuCard(g, a);
     h += card('<h3>Notas de tutoría</h3>' + ((s.notas || []).length ? '<ul class="risk">' + s.notas.slice().reverse().map(n => '<li><span><small class="muted">' + u.fCorta(n.f) + '</small><br>' + esc(n.t) + '</span>' + btn(icon('trash'), 'ts-del', 'data-aid="' + aid + '" data-id="' + n.id + '" aria-label="Borrar nota"', 'small ghost') + '</li>').join('') + '</ul>' : '<p class="muted small">Sin notas.</p>') +
       '<label class="fld"><span>Nueva nota</span><textarea id="ts-txt" rows="3" placeholder="Ej. Platicamos: se compromete a entregar la práctica 3 el viernes. Aviso a la familia por mensaje."></textarea></label>' +
       '<p class="note small">Anota solo lo escolar: acuerdos, avances, avisos a la familia y a quién canalizaste y cuándo. No escribas diagnósticos, salud, situación familiar ni detalles de casos delicados; eso lo resguarda orientación.</p>' +
@@ -378,4 +381,85 @@
       coops.map(c => { const k = T.calc(g, c); return '<p class="small">💵 ' + esc(c.concepto) + ': ' + $(k.rec) + (k.esperado ? ' de ' + $(k.esperado) : '') + ' · ' + k.nPend + ' pendientes</p>'; }).join('') +
       (prox.length ? '<p class="small">📅 ' + prox.map(x => esc(x.t) + ' (' + u.fCorta(x.fecha) + ')').join(' · ') + '</p>' : ''));
   };
+  /* ---------- v1.27.25: adeudos de semestres anteriores e inscripción ---------- */
+  // por alumno: ins = {e: ins|pen|baja, f}; mat (materias reprobadas), pag (pagos o cuotas), doc (documentos): [{id, t, ok, f, …}]
+  const KA = g => 'tutadeu:' + g.id;
+  T.adeu = g => S.get(KA(g)) || {};
+  const INS = { ins: ['Inscrito', 'ok'], pen: ['Pendiente', 'warn'], baja: ['Baja', 'bad'] };
+  const TIPAD = { mat: 'Materia reprobada', pag: 'Pago o cuota', doc: 'Documento' };
+  const pl = (n, s1, s2) => n + ' ' + (n === 1 ? s1 : s2);
+  T.debe = (g, aid) => { const x = T.adeu(g)[aid] || {}, pen = k => (x[k] || []).filter(y => !y.ok); return { mat: pen('mat'), pag: pen('pag'), doc: pen('doc'), ins: x.ins || null }; };
+  const monto = d => d.pag.reduce((s, y) => s + (Number(y.monto) || 0), 0);
+  const insChip = i => i && INS[i.e] ? '<span class="chip ' + INS[i.e][1] + '">' + INS[i.e][0] + '</span>' : '<span class="chip">Inscripción sin registrar</span>';
+  const debeTxt = d => [d.mat.length ? pl(d.mat.length, 'materia', 'materias') : '', d.pag.length ? pl(d.pag.length, 'pago', 'pagos') + (monto(d) ? ' (' + $(monto(d)) + ')' : '') : '', d.doc.length ? pl(d.doc.length, 'documento', 'documentos') : ''].filter(Boolean).join(' · ');
+  const debeDet = d => d.mat.map(y => y.t + (y.sem ? ' (' + y.sem + ' sem.)' : '')).concat(d.pag.map(y => y.t + (Number(y.monto) ? ' ' + $(y.monto) : '')), d.doc.map(y => y.t)).join(', ');
+  function adeuChips(g, aid) { const d = T.debe(g, aid), t = debeTxt(d); return (t ? ' <span class="chip warn">Debe: ' + esc(t) + '</span>' : '') + (d.ins && d.ins.e !== 'ins' ? ' ' + insChip(d.ins) : ''); }
+  const NOTA_LGE = '<p class="note small">En escuela pública, las cuotas voluntarias no pueden condicionar la inscripción, los exámenes ni la entrega de documentos (Ley General de Educación, art. 7, fr. IV). Anota solo lo que la escuela te pida dar seguimiento.</p>';
+  function adeudosV(g) {
+    const al = D.alumnos(g), per = T.cfg(g).insPeriodo || '', cnt = { ins: 0, pen: 0, baja: 0, sin: 0 }; let nD = 0, tot = 0;
+    const L = al.map(a => { const d = T.debe(g, a.id); cnt[d.ins && INS[d.ins.e] ? d.ins.e : 'sin']++; const t = debeTxt(d); if (t) nD++; tot += monto(d); return { a: a, d: d, t: t }; });
+    let h = card('<h3>📋 Adeudos e inscripción</h3><p class="muted small">Por alumno: materias reprobadas de semestres anteriores, pagos o cuotas y documentos pendientes, y su estatus de inscripción. Toca un nombre para registrar o marcar como resuelto.</p>' +
+      '<label class="fld"><span>Periodo de inscripción</span><input value="' + esc(per) + '" placeholder="Ej. Reinscripción a 4° semestre, febrero 2027" data-ch="tut-cfg" data-f="insPeriodo"></label>' +
+      '<p><span class="chip ok">' + pl(cnt.ins, 'inscrito', 'inscritos') + '</span> <span class="chip warn">' + pl(cnt.pen, 'pendiente', 'pendientes') + '</span> <span class="chip bad">' + pl(cnt.baja, 'baja', 'bajas') + '</span> <span class="chip">' + cnt.sin + ' sin registrar</span></p>' +
+      '<p class="small">' + pl(nD, 'alumno con adeudos', 'alumnos con adeudos') + (tot ? ' · pagos pendientes ' + $(tot) : '') + '</p>' +
+      '<div class="row gap wrap">' + btn(icon('copy') + ' Copiar resumen para WhatsApp', 'ta-resumen', '', 'primary') + '</div>');
+    h += '<ul class="sf-list tut-seg">' + L.map(x => '<li class="sf-row"><span class="num">' + x.a.num + '</span><div class="sf-main"><a href="#/tutoria/alumno/' + x.a.id + '">' + esc(x.a.nombre) + '</a><span class="sf-tray">' + insChip(x.d.ins) + (x.t ? ' <span class="chip warn">' + esc(x.t) + '</span>' : '') + '</span></div></li>').join('') + '</ul>';
+    return h + NOTA_LGE;
+  }
+  function adeuInicio(g) {
+    const al = D.alumnos(g), pen = al.filter(a => { const d = T.debe(g, a.id); return !d.ins || d.ins.e === 'pen'; }).length, deb = al.filter(a => debeTxt(T.debe(g, a.id))).length;
+    return card('<div class="row between gap wrap"><h3>📋 Adeudos e inscripción</h3>' + link('Ver', 'tutoria/adeudos', 'small') + '</div><p class="small">' + pl(deb, 'alumno con adeudos', 'alumnos con adeudos') + ' · ' + pl(pen, 'inscripción pendiente o sin registrar', 'inscripciones pendientes o sin registrar') + '</p>');
+  }
+  function adeuCard(g, a) {
+    const x = T.adeu(g)[a.id] || {}, i = x.ins || {}, per = T.cfg(g).insPeriodo, d = T.debe(g, a.id);
+    const lista = (k, fmt) => { const L = x[k] || []; return L.length ? '<ul class="risk">' + L.map(y => '<li><span' + (y.ok ? ' class="muted"' : '') + '>' + (y.ok ? '✓ ' : '') + fmt(y) + (y.ok && y.fOk ? ' <small>(resuelto ' + u.fCorta(y.fOk) + ')</small>' : '') + '</span><span class="row gap">' +
+      btn(y.ok ? '↺' : '✓', 'ta-ok', 'data-aid="' + a.id + '" data-k="' + k + '" data-id="' + y.id + '" aria-label="' + (y.ok ? 'Volver a pendiente' : 'Marcar como resuelto') + '"', 'small' + (y.ok ? ' ghost' : '')) +
+      btn(icon('trash'), 'ta-del', 'data-aid="' + a.id + '" data-k="' + k + '" data-id="' + y.id + '" aria-label="Borrar"', 'small ghost') + '</span></li>').join('') + '</ul>' : '<p class="muted small">Nada registrado.</p>'; };
+    return card('<h3>📋 Inscripción y adeudos</h3><p class="small">' + esc(per || 'Inscripción') + ': ' + insChip(x.ins) + (i.f ? ' <small class="muted">desde ' + u.fCorta(i.f) + '</small>' : '') + '</p>' +
+      '<div class="cl-seg">' + Object.keys(INS).map(k => btn(INS[k][0], 'ta-ins', 'data-aid="' + a.id + '" data-e="' + k + '"', 'small' + (i.e === k ? ' on' : ''))).join('') + '</div>' +
+      '<h4>Materias reprobadas</h4>' + lista('mat', y => esc(y.t) + (y.sem ? ' <small class="muted">' + esc(y.sem) + ' sem.</small>' : '') + (y.via ? ' · <small>' + esc(y.via) + '</small>' : '')) +
+      '<h4>Pagos o cuotas</h4>' + lista('pag', y => esc(y.t) + (Number(y.monto) ? ' · ' + $(y.monto) : '')) +
+      '<h4>Documentos</h4>' + lista('doc', y => esc(y.t)) +
+      '<details class="sub"><summary>➕ Agregar adeudo</summary><div class="fgrid">' +
+      '<label class="fld"><span>Tipo</span><select id="ta-tipo">' + Object.keys(TIPAD).map(k => '<option value="' + k + '">' + TIPAD[k] + '</option>').join('') + '</select></label>' +
+      '<label class="fld"><span>Qué debe</span><input id="ta-t" placeholder="Ej. Matemáticas II · Cuota de inscripción · Acta de nacimiento"></label>' +
+      '<label class="fld"><span>Semestre (materias)</span><input id="ta-sem" placeholder="Ej. 2°"></label>' +
+      '<label class="fld"><span>Cómo la recupera (materias)</span><input id="ta-via" placeholder="Ej. Extraordinario el 15 nov"></label>' +
+      '<label class="fld"><span>Monto (pagos)</span><input id="ta-monto" inputmode="decimal" placeholder="Ej. 350"></label></div>' +
+      btn('Agregar', 'ta-add', 'data-aid="' + a.id + '"', 'primary') + '</details>' +
+      (debeTxt(d) || i.e === 'pen' ? '<div class="row gap wrap">' + btn('💬 Avisar a casa', 'ta-wa', 'data-aid="' + a.id + '"', 'small') + '</div>' : '') + NOTA_LGE);
+  }
+  const updAd = (aid, fn) => { const g = D.grupoActual(); S.update(KA(g), dd => { const x = dd[aid] = dd[aid] || {}; fn(x); }, {}); };
+  A['ta-ins'] = el => updAd(el.dataset.aid, x => { x.ins = x.ins && x.ins.e === el.dataset.e ? null : { e: el.dataset.e, f: u.today() }; });
+  A['ta-add'] = el => {
+    const k = TIPAD[val('ta-tipo')] ? val('ta-tipo') : 'mat', t = val('ta-t'); if (!t) { u.toast('Escribe qué debe', 'err'); return; }
+    const y = { id: u.uid('ta'), t: t, ok: false, f: u.today() };
+    if (k === 'mat') { y.sem = val('ta-sem'); y.via = val('ta-via'); }
+    if (k === 'pag') y.monto = Number(val('ta-monto').replace(/[$,\s]/g, '')) || 0;
+    updAd(el.dataset.aid, x => { (x[k] = x[k] || []).push(y); }); u.toast('Agregado', 'ok');
+  };
+  A['ta-ok'] = el => updAd(el.dataset.aid, x => { const y = (x[el.dataset.k] || []).find(z => z.id === el.dataset.id); if (y) { y.ok = !y.ok; y.fOk = y.ok ? u.today() : null; } });
+  A['ta-del'] = el => { if (!confirm('¿Borrar este adeudo?')) return; updAd(el.dataset.aid, x => { x[el.dataset.k] = (x[el.dataset.k] || []).filter(z => z.id !== el.dataset.id); }); };
+  T.msgAdeudo = (g, a) => {
+    const d = T.debe(g, a.id), per = T.cfg(g).insPeriodo, l = ['Buen día. Le escribe ' + (D.cfg().docente || 'el tutor') + ', tutor del grupo ' + g.nombre + '.', 'Para ' + (per || 'la inscripción') + ', a ' + u.corto(a.nombre) + ' le falta:'];
+    d.mat.forEach(y => l.push('• Materia: ' + y.t + (y.sem ? ' (' + y.sem + ' semestre)' : '') + (y.via ? ' — ' + y.via : '')));
+    d.pag.forEach(y => l.push('• Pago: ' + y.t + (Number(y.monto) ? ' (' + $(y.monto) + ')' : '')));
+    d.doc.forEach(y => l.push('• Documento: ' + y.t));
+    if (!debeTxt(d)) l.push('• Completar su inscripción');
+    l.push('Quedo a sus órdenes por este medio o en la escuela. Gracias por su apoyo.');
+    return l.join('\n');
+  };
+  A['ta-wa'] = el => { const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (!a || !E.casa) return; window.open(E.casa.wa(a, T.msgAdeudo(g, a)), '_blank', 'noopener'); };
+  T.resumenAdeudos = g => {
+    const al = D.alumnos(g), per = T.cfg(g).insPeriodo, est = a => (T.debe(g, a.id).ins || {}).e || 'sin', de = e => al.filter(a => est(a) === e);
+    const nom = L => L.map(a => u.corto(a.nombre)).join(', ');
+    const deb = al.map(a => ({ a: a, d: T.debe(g, a.id) })).filter(x => debeTxt(x.d));
+    return 'Inscripción ' + g.nombre + (per ? ' · ' + per : '') + ' · al ' + u.fCorta(u.today()) +
+      '\nInscritos: ' + de('ins').length + ' de ' + al.length +
+      (de('pen').length ? '\nPendientes (' + de('pen').length + '): ' + nom(de('pen')) : '') +
+      (de('baja').length ? '\nBajas (' + de('baja').length + '): ' + nom(de('baja')) : '') +
+      (de('sin').length ? '\nSin registrar (' + de('sin').length + '): ' + nom(de('sin')) : '') +
+      '\n\nAdeudos:\n' + (deb.length ? deb.map(x => '• ' + u.corto(x.a.nombre) + ': ' + debeDet(x.d)).join('\n') : '• Nadie con adeudos registrados');
+  };
+  A['ta-resumen'] = () => copiar(T.resumenAdeudos(D.grupoActual()), 'Resumen copiado: pégalo en WhatsApp');
 })();

@@ -204,7 +204,7 @@
   };
 
   /* ---------- v1.27.21: aviso a casa por retardos acumulados ---------- */
-  // retardos de cada alumno en el parcial (cada clase de 50 min cuenta, igual que en la asistencia)
+  // retardos de cada alumno en el parcial (por día o por clase, igual que en la asistencia)
   CA.retardosParcial = (g, p) => {
     const tot = {}; if (!g || !p) return tot; const al = D.alumnos(g);
     C.fechasRegistradas(g, p).forEach(fd => { const doc = S.get('asis:' + g.id + ':' + fd) || {}; C.clasesCuenta(g, fd).forEach(k => { al.forEach(a => { if (C.marca(doc, a.id, k) === 'R') tot[a.id] = (tot[a.id] || 0) + 1; }); }); });

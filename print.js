@@ -71,37 +71,38 @@
   P.head = head; P.firma = firma;   // los usan otros reportes (consejo técnico)
   const smTxt = (g, p) => { const sm = D.submodulo(g, p.id); return sm ? 'MÓDULO ' + g.modulo + ' · SUBMÓDULO ' + sm.num + ': ' + sm.nombre.toUpperCase() : ''; };
 
-  // lista de asistencia: una columna por CLASE de 50 min (cada día ocupa tantas columnas como horas tenga)
+  // lista de asistencia: una columna por DÍA (por omisión) o, con Ajustes → asisPorClase, una por clase de 50 min
   P.asistencia = (g, p, o) => {
     o = o || {}; const al = D.alumnos(g), fechas = C.fechasLista(g, p);
     const docs = {}; fechas.forEach(f => { docs[f] = S.get('asis:' + g.id + ':' + f) || null; });
-    const dias = fechas.map(f => { const cl = C.clasesDia(g, f); return { f: f, cls: (cl.length ? cl : [{ k: null, ini: '' }]).map(c => ({ f: f, k: c.k, ini: c.ini })) }; });
+    const pc = C.porClase(), cw = pc ? 4.8 : 6.5;
+    const dias = fechas.map(f => { const cl = pc ? C.clasesDia(g, f) : [{ k: C.clasesCuenta(g, f)[0], ini: '' }]; return { f: f, cls: (cl.length ? cl : [{ k: null, ini: '' }]).map(c => ({ f: f, k: c.k, ini: c.ini })) }; });
     const cols = [].concat(...dias.map(d => d.cls));
     // null = esa clase todavía no tiene pase de lista (no cuenta)
     const marca = (a, c) => { const doc = docs[c.f]; return doc ? C.marca(doc, a.id, c.k) : null; };
-    // los totales cuentan clases, igual que en el resto de la app (C.cuenta)
+    // los totales cuentan días (o clases, según Ajustes), igual que en el resto de la app (C.cuenta)
     const tot = {};
     al.forEach(a => { let na = 0, nf = 0; if (o.marcas) cols.forEach(c => { const st = marca(a, c); if (st) { if (C.cuenta(st)) na++; else nf++; } }); tot[a.id] = { a: na, f: nf }; });
     // bloques de días que caben a lo ancho de una hoja horizontal (40 clases de 4.8 mm); los totales van en el último bloque
-    const MAX = 40, bl = []; let cur = [], n = 0;
+    const MAX = pc ? 40 : 30, bl = []; let cur = [], n = 0;
     dias.forEach(d => { if (cur.length && n + d.cls.length > MAX) { bl.push(cur); cur = []; n = 0; } cur.push(d); n += d.cls.length; });
     bl.push(cur);
     const tabla = (bloque, ultimo, idx) => {
-      const cs = [].concat(...bloque.map(d => d.cls)), ancho = 7 + 44 + 4.8 * cs.length + (ultimo ? 18 : 0);
+      const cs = [].concat(...bloque.map(d => d.cls)), ancho = 7 + 44 + cw * cs.length + (ultimo ? 18 : 0);
       const cab = bl.length > 1 ? '<p class="tiny"><b>' + esc(p.nombre) + '</b> · parte ' + (idx + 1) + ' de ' + bl.length + (bloque.length ? ' · días del ' + u.fDM(bloque[0].f) + ' al ' + u.fDM(bloque[bloque.length - 1].f) : '') + '</p>' : '';
       const h1 = bloque.map(d => '<th colspan="' + d.cls.length + '"><div class="vd">' + u.DIAS3[u.dow(d.f)] + ' ' + u.fDM(d.f) + '</div></th>').join('');
-      const h2 = cs.map(c => '<th><div class="vd">' + esc(c.ini || 'día') + '</div></th>').join('');
+      const h2 = pc ? cs.map(c => '<th><div class="vd">' + esc(c.ini || 'día') + '</div></th>').join('') : '', rs = pc ? ' rowspan="2"' : '';
       const filas = al.map(a => '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' +
         cs.map(c => { const st = o.marcas ? marca(a, c) : null; return st ? '<td class="c' + (st === 'F' ? ' f' : '') + '">' + SYM[st] + '</td>' : '<td></td>'; }).join('') +
         (ultimo ? '<td class="c">' + (o.marcas ? tot[a.id].a : '') + '</td><td class="c">' + (o.marcas ? tot[a.id].f : '') + '</td>' : '') + '</tr>').join('');
       return cab + '<table class="grid att" style="table-layout:fixed;width:' + ancho + 'mm"><colgroup><col style="width:7mm"><col style="width:44mm">' +
-        cs.map(() => '<col style="width:4.8mm">').join('') + (ultimo ? '<col style="width:9mm"><col style="width:9mm">' : '') + '</colgroup>' +
-        '<thead><tr><th rowspan="2">No.</th><th class="l" rowspan="2">NOMBRE</th>' + h1 + (ultimo ? '<th rowspan="2">A</th><th rowspan="2">F</th>' : '') + '</tr><tr>' + h2 + '</tr></thead><tbody>' + filas + '</tbody></table>';
+        cs.map(() => '<col style="width:' + cw + 'mm">').join('') + (ultimo ? '<col style="width:9mm"><col style="width:9mm">' : '') + '</colgroup>' +
+        '<thead><tr><th' + rs + '>No.</th><th class="l"' + rs + '>NOMBRE</th>' + h1 + (ultimo ? '<th' + rs + '>A</th><th' + rs + '>F</th>' : '') + '</tr>' + (pc ? '<tr>' + h2 + '</tr>' : '') + '</thead><tbody>' + filas + '</tbody></table>';
     };
     P.run('<div class="pr pr-compacto">' + head(g, 'LISTA DE ASISTENCIA · ' + p.nombre.toUpperCase(), 'DOCENTE: ' + D.cfg().docente) + '<p class="tiny c">' + esc(smTxt(g, p)) + '</p>' +
       '<style>.att td,.att th{padding:0!important}.att td.nm{padding:0 2px!important;white-space:nowrap;overflow:hidden;font-size:8pt}</style>' +
       bl.map((b, i) => tabla(b, i === bl.length - 1, i)).join('') +
-      '<p class="tiny">Cada columna es una clase de 50 min: arriba el día y abajo la hora de inicio. • Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos. A y F cuentan clases, no días.</p>' + firma() + '</div>', { landscape: true, title: 'Lista ' + g.grupo + ' ' + p.nombre });
+      '<p class="tiny">' + (pc ? 'Cada columna es una clase de 50 min: arriba el día y abajo la hora de inicio. • Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos. A y F cuentan clases, no días.' : 'Cada columna es un día de clase. • Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos. A y F cuentan días: si faltó a todas las clases del día es F; si fue al menos a una, cuenta como asistencia.') + '</p>' + firma() + '</div>', { landscape: true, title: 'Lista ' + g.grupo + ' ' + p.nombre });
   };
   P.participacion = (g, p, o) => {
     o = o || {}; const al = D.alumnos(g), fechas = C.fechasLista(g, p);

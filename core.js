@@ -360,9 +360,20 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
     // minutos de un bloque que caen fuera del receso (para calcular las horas de un bloque)
     minutosSinReceso(ini, fin) { const [rA, rB] = C.RECESO, a = C.hmAMin(ini), b = C.hmAMin(fin), solape = Math.max(0, Math.min(b, rB) - Math.max(a, rA)); return Math.max(0, b - a - solape); },
     clasesDia(g, f) { const out = []; C.bloquesDia(g, f).forEach(b => { const n = Math.max(1, Math.ceil(Number(b.horas) || 1)); C.horasClases(b.inicio, n, b.fin).forEach((h, s) => out.push({ k: b.inicio + '#' + s, ini: h.ini, fin: h.fin, lugar: b.lugar || 'aula' })); }); return out; },
-    clasesCuenta(g, f) { const cl = C.clasesDia(g, f); return cl.length ? cl.map(x => x.k) : [null]; },
+    // v1.27.25: por omisión la asistencia cuenta por DÍA (1 día = 1 asistencia o 1 falta); con Ajustes → asisPorClase cuenta cada clase de 50 min.
+    // En modo día se devuelve una sola «clase» especial (*dia:k1,k2…) y C.marca la resuelve con las marcas de todas las clases del día.
+    porClase() { return !!D.cfg().asisPorClase; },
+    clasesCuenta(g, f) { const cl = C.clasesDia(g, f); if (!C.porClase()) return ['*dia:' + cl.map(x => x.k).join(',')]; return cl.length ? cl.map(x => x.k) : [null]; },
+    // marca del día: si faltó a todas sus clases es falta; si fue al menos a una, cuenta como asistencia (A, o R/J si así vino)
+    marcaDia(doc, aid, ks) {
+      const ms = ks.length ? ks.map(k => C.marca(doc, aid, k)) : [C.marca(doc, aid, null)];
+      if (ms.every(m => m === ms[0])) return ms[0];
+      const si = ['A', 'R', 'J'].filter(m => ms.indexOf(m) >= 0 && C.cuenta(m));
+      if (si.length) return si[0];
+      return ['F', 'J', 'R'].find(m => ms.indexOf(m) >= 0) || 'F';
+    },
     // la marca del día aplica a todas sus clases; una excepción (aid|clase) cambia solo esa clase
-    marca(doc, aid, k) { doc = doc || {}; if (k && doc[aid + '|' + k] != null) return doc[aid + '|' + k]; return doc[aid] || 'A'; },
+    marca(doc, aid, k) { doc = doc || {}; if (k && k.indexOf('*dia:') === 0) return C.marcaDia(doc, aid, k.slice(5).split(',').filter(Boolean)); if (k && doc[aid + '|' + k] != null) return doc[aid + '|' + k]; return doc[aid] || 'A'; },
     ambito(f) { return ((E.ui && E.ui.listaCls) || {})[f] || null; },
     setMarca(g, f, aid, st, k) {
       S.update('asis:' + g.id + ':' + f, doc => {

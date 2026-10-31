@@ -640,6 +640,7 @@ window.E = window.E || {};
       partModo: 'max',
       vaciasCero: true,
       retardoCuenta: true,
+      asisPorClase: false,
       justCuenta: true,
       conteoActa: 'horas',
       escalaActa: 100,
