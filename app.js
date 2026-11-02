@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.27.26';
+  E.VERSION = '1.28.0';
   E.CHANGELOG = [
+            { v: '1.28.0', f: '2026-10-31', t: '15 mejoras. 1) Cerrar parcial (Pre-cierre): guarda una foto de las calificaciones entregadas; el acta, la consulta y los informes la usan aunque cambies ajustes, notas o listas, y te avisa si un cambio movería alguna. 2) Adeudos, inscripción y notas de tutoría cifrados con tu PIN. 3) El repaso para casa da un código de 4 dígitos al terminar (de su primer intento); lo capturas en Imprimir → Registrar códigos y cuenta para sus temas difíciles. 4) Pruebas automáticas en GitHub (carpeta pruebas/ y .github): te avisan por correo si algo se rompe. 5) Abre más rápido: los Ajustes se leen una sola vez y el texto del manual se carga al abrir la ayuda. 6) La lupa encuentra secciones, formatos para imprimir y órdenes como «falta Karla» o «retardo 12». 7) Tamaño de letra en Ajustes → Apariencia. 8) La vista previa de impresión dibuja la hoja 1. 9) Más → Historial de cambios: lo de hoy y ayer, y revertir uno. 10) Análisis del examen: «Preguntas para revisar», las que fallan los que van mejor. 11) Imprimir → QR del grupo para el salón: entregas, examen y temas. 12) La vista de la co-tutora trae inscripción y adeudos. 13) La planeación se descarga en Word (.docx) con el logo en cada hoja. 14) Respaldos diarios: 7 días en el aparato y 30 en tu nube, con Restaurar. 15) Ajustes → Reporte de errores: copia un reporte para Claude.' },
             { v: '1.27.26', f: '2026-10-30', t: 'Logo en cada hoja también desde el celular. El logo de CETAC 19 ahora va como imagen y no como fondo: antes, Chrome en Android (y cualquier impresión con «Gráficos de fondo» apagado) lo quitaba. Se revisaron todos los formatos de impresión: cada hoja lleva el logo arriba a la derecha, a por lo menos 8 mm de la orilla (las constancias, que van sin margen, también).' },
             { v: '1.27.25', f: '2026-10-30', t: 'Asistencia por día y adeudos en Tutoría. La asistencia vuelve a contarse por día en todo (calificación, hoja impresa, Consejo, Tutoría, avisos): si el alumno faltó a todas las clases del día es 1 falta; si fue al menos a una, 1 asistencia. Puedes seguir marcando por clase. Ajustes → «Contar la asistencia por clase de 50 min» regresa al conteo por clase. Tutoría → 📋 Adeudos e inscripción: materias reprobadas de semestres anteriores, pagos o cuotas y documentos pendientes por alumno, su estatus de inscripción, resumen del grupo para WhatsApp y aviso a casa.' },
             { v: '1.27.24', f: '2026-10-30', t: 'Repaso para casa a la medida. Cada QR por alumno trae 5 preguntas de los temas que más le cuestan en el parcial en curso, según sus mini-exámenes, sus actividades (cuentan para los temas que se vieron ese día) y sus faltas (los temas del día que faltó), más cómo va el grupo en calentamientos y boletos. El repaso del grupo (un solo QR) ahora trae 10 preguntas de lo que el grupo domina menos en el parcial en curso, repartidas en hasta 5 temas.' },
@@ -98,7 +99,7 @@
     const ae = document.activeElement; const fid = ae && ae.id && view.contains(ae) ? ae.id : null; let sel = null;
     try { if (fid && ae.selectionStart != null) sel = [ae.selectionStart, ae.selectionEnd]; } catch (e) { }
     const open = {}; view.querySelectorAll('details[data-sec],details[id]').forEach(d => { open[d.dataset.sec || d.id] = d.open; });
-    let out; try { out = fn.apply(null, r.args); } catch (e) { console.error(e); out = { t: 'Error', h: '<section class="card"><h3>Algo falló al mostrar esta sección</h3><p class="muted small">Copia esto en "Mejoras" para pasárselo a Claude:</p><pre class="err">' + u.esc(e.stack || e.message) + '</pre></section>' }; }
+    let out; try { out = fn.apply(null, r.args); } catch (e) { console.error(e); out = { t: 'Error', h: '<section class="card"><h3>Algo falló al mostrar esta sección</h3><p class="muted small">Ya quedó anotado. Toca el botón y pégaselo a Claude para que lo arregle:</p><pre class="err">' + u.esc(e.stack || e.message) + '</pre><button type="button" class="btn primary" data-act="err-copiar">📋 Copiar reporte para Claude</button></section>' }; if (E.errores) E.errores.anota(e, 'pantalla'); }
     view.innerHTML = out.h; document.getElementById('vt').textContent = out.t; document.title = out.t + ' · Escuadra';
     if (routeKey === lastRoute) view.querySelectorAll('details[data-sec],details[id]').forEach(d => { const k = d.dataset.sec || d.id; if (k in open) d.open = open[k]; });
     const act = ACTIVO[r.name] || r.name, enBarra = navKeys().indexOf(act) >= 0;
@@ -121,7 +122,9 @@
     if (t) { t.dataset.s = sy.state; t.title = sy.msg; }
     if (s) s.innerHTML = '<span class="dot" data-s="' + sy.state + '"></span>' + u.esc(sy.msg);
   }
-  E.applyTheme = () => { const t = D.cfg().tema; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; };
+  E.applyTheme = () => { const c = D.cfg(), t = c.tema; if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+    // v1.28: tamaño de letra (Ajustes → Apariencia); escala toda la app, no lo impreso
+    const k = Number(c.letra) > 0.8 && Number(c.letra) < 1.6 ? Number(c.letra) : 1; document.documentElement.style.setProperty('--esc', String(k)); };
 
   /* ---------- eventos delegados ---------- */
   // cada acción que guarda datos queda como un paso que se puede deshacer (ver rapido.js)

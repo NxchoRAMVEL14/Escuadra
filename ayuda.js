@@ -5,11 +5,17 @@
   const E = window.E, u = E.u, esc = u.esc;
   const V = E.views, A = E.actions, IN = E.inputs, H = E.h;
   const card = H.card;
+  // v1.28: el texto del manual (ayuda-data.js, 128 KB) ya no va en el arranque: se carga al abrir la ayuda
+  // (o solo, unos segundos después de abrir la app). Sigue funcionando sin internet: está en la caché de la app.
   const datos = () => (window.ESCUADRA_AYUDA || { secciones: [] });
+  let carga = null;
+  E.ayudaCarga = () => { if (window.ESCUADRA_AYUDA) return Promise.resolve(); if (!carga) carga = u.loadScript('ayuda-data.js').catch(e => { carga = null; throw e; }); return carga; };
+  setTimeout(() => { E.ayudaCarga().catch(() => { }); }, 6000);
   // sección que corresponde a la pantalla actual
   const deRuta = r => { const ss = datos().secciones; return (ss.find(s => (s.rutas || []).indexOf(r) >= 0) || {}).id || ''; };
-  A.ayuda = () => { const r = location.hash.replace(/^#\/?/, '').split('/')[0] || 'inicio'; location.hash = '#/ayuda/' + (r === 'ayuda' ? '' : deRuta(r)); };
+  A.ayuda = async () => { const r = location.hash.replace(/^#\/?/, '').split('/')[0] || 'inicio'; try { await E.ayudaCarga(); } catch (e) { } location.hash = '#/ayuda/' + (r === 'ayuda' ? '' : deRuta(r)); };
   V.ayuda = sec => {
+    if (!window.ESCUADRA_AYUDA) { E.ayudaCarga().then(() => E.render(), () => { }); return { t: 'Ayuda', h: card('<p class="muted">Abriendo el manual…</p>') }; }
     const d = datos(), q = (E.ui.ayQ || '').trim(), nq = u.norm(q).toLowerCase();
     const ss = d.secciones.filter(s => !nq || u.norm(s.t + ' ' + s.texto).toLowerCase().indexOf(nq) >= 0);
     let h = card('<h3>❓ Ayuda y manual de Escuadra</h3><p class="muted small">Cómo usar cada pantalla, con capturas. El botón <b>?</b> de arriba te trae a la parte de la pantalla donde estás. Versión ' + esc(E.VERSION) + '.</p>' +
