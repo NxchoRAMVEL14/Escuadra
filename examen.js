@@ -133,6 +133,13 @@
       (ex.items || []).forEach(it => { const b = item(it.id); const v = Number(m[it.id]) || 0; pts += v * it.pts; if (!b) return; const x = tt[b.tema] = tt[b.tema] || { s: 0, w: 0 }; x.s += v * it.pts; x.w += it.pts; });
       Object.keys(tt).forEach(t => { tt[t] = tt[t].w ? tt[t].s / tt[t].w : 0; }); alumnos[aid] = { pts: pts, temas: tt };
     });
+    // v1.28: discriminación de cada pregunta (grupo alto contra grupo bajo, 27 % de cada lado). Si los que van mejor la
+    // fallan tanto o más que los que van peor, la pregunta confunde o la clave está mal (Kelley, 1939; Ebel y Frisbie, 1991).
+    if (al.length >= 10) {
+      const ord = al.slice().sort((a, b) => alumnos[a].pts - alumnos[b].pts), k = Math.max(3, Math.round(al.length * 0.27)), bajo = ord.slice(0, k), alto = ord.slice(-k);
+      const prom = (L, id) => { let s = 0, n = 0; L.forEach(aid => { const v = res[aid].m[id]; if (v != null) { s += Number(v); n++; } }); return n ? s / n : null; };
+      (ex.items || []).forEach(it => { const pa = prom(alto, it.id), pb = prom(bajo, it.id), x = items[it.id]; if (pa == null || pb == null) return; x.pa = pa; x.pb = pb; x.d = pa - pb; x.revisa = x.p != null && x.p < 0.9 && (x.d < 0.1 || pa < 0.5); });
+    }
     const prom = al.length ? al.reduce((s, aid) => s + alumnos[aid].pts, 0) / al.length : (ex.items || []).reduce((s, it) => s + (items[it.id].p || 0) * it.pts, 0);
     return { items: items, temas: temas, alumnos: alumnos, n: al.length || Number(rap.pres), modo: al.length ? 'alumno' : 'rapido', prom: prom };
   };
@@ -316,6 +323,10 @@
     let h = card('<h3>📊 Cómo le fue al grupo</h3><p>Promedio: <b>' + u.round(r.prom, 1) + ' de ' + ex.total + '</b> (' + pct(r.prom / ex.total) + '/100) · ' + r.n + ' alumnos' + (r.modo === 'rapido' ? ' (captura rápida)' : '') + '.</p>' +
       '<ul class="ex-bars">' + ts.map(t => { const p = r.temas[t].p, nv = nivel(p); return '<li><span class="ex-bl">' + esc(tTit(t)) + '</span><span class="ex-bar"><i class="' + nv[1] + '" style="width:' + Math.max(2, pct(p)) + '%"></i></span><b>' + pct(p) + '%</b><span class="chip ' + nv[1] + '">' + nv[0] + '</span></li>'; }).join('') + '</ul>' +
       '<p class="muted small">Aciertos por tema, ponderados por puntos. Reenseñar: menos de 50% · Reforzar: 50 a 69% · Bien: 70 a 84% · Dominado: 85% o más. El siguiente examen dará más peso a lo que salió bajo y repasará estos temas.</p>');
+    // v1.28: preguntas que confunden (discriminación baja o negativa)
+    const rev = its.filter(x => r.items[x.id] && r.items[x.id].revisa);
+    if (rev.length) h += card('<h3>🔎 Preguntas para revisar</h3><p class="muted small">En estas, los alumnos que mejor van en el examen acertaron igual o menos que los que peor van. Suele pasar cuando la redacción confunde, hay dos respuestas defendibles o la clave está mal. Revísalas antes de volver a usarlas.</p><ul class="risk">' +
+      rev.map(x => { const it = r.items[x.id]; return '<li><span><b>' + x.n + '.</b> ' + esc(x.q.length > 110 ? x.q.slice(0, 108) + '…' : x.q) + '<br><small class="muted">Aciertos: ' + pct(it.p) + '% · los que van mejor ' + pct(it.pa) + '% · los que van peor ' + pct(it.pb) + '%' + (x.opts ? ' · clave: ' + 'ABCDE'[x.ok] + ') ' + esc(String(x.opts[x.ok]).slice(0, 60)) : '') + '</small></span><span class="chip ' + (it.d < 0 ? 'bad' : 'warn') + '">' + (it.d < 0 ? 'al revés' : 'no distingue') + '</span></li>'; }).join('') + '</ul><p class="muted small">Numeración de la versión A. Con menos de 10 alumnos capturados no se calcula.</p>');
     // qué hacer
     const bajos = ts.filter(t => r.temas[t].p < 0.7);
     if (bajos.length) h += card('<h3>🧭 Qué hacer la próxima clase</h3>' + bajos.map(t => { const p = r.temas[t].p, peor = r.temas[t].items.slice().sort((a, b) => r.items[a].p - r.items[b].p).slice(0, 2).map(id => its.find(x => x.id === id)).filter(Boolean);

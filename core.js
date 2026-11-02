@@ -207,16 +207,18 @@
         await this.pull(); await this.push();
         this.setMeta({ lastSyncAt: u.now() });
         this.setState('ok', 'Sincronizado ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }));
+        if (E.respaldo) setTimeout(() => E.respaldo.trasSync(), 1500);
       } catch (e) { console.error(e); this.setState('error', 'Error al sincronizar: ' + this.explica(e)); }
       finally { this.busy = false; }
     },
     async pull() {
       let since = this.meta().lastPull || '1970-01-01T00:00:00Z'; let changed = false;
       for (let page = 0; page < 50; page++) {
-        const r = await this.client.from('escuadra_docs').select('key,data,deleted,client_ts,updated_at').gt('updated_at', since).order('updated_at', { ascending: true }).limit(1000);
+        const r = await this.client.from('escuadra_docs').select('key,data,deleted,client_ts,updated_at').gt('updated_at', since).not('key', 'like', 'respaldo:%').order('updated_at', { ascending: true }).limit(1000);
         if (r.error) throw r.error;
         const rows = r.data || [];
         rows.forEach(row => {
+          if (String(row.key).indexOf('respaldo:') === 0) return;   // v1.28: los respaldos diarios se quedan en la nube
           const loc = S.docs[row.key]; const rts = Date.parse(row.client_ts); const lts = loc ? Date.parse(loc.ts) : 0;
           if (!loc || (!loc.dirty && rts !== lts) || (loc.dirty && rts > lts)) {
             S.docs[row.key] = { data: row.data, ts: new Date(rts).toISOString(), dirty: false, deleted: !!row.deleted }; changed = true;
@@ -286,8 +288,11 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
   /* ---------------- acceso a datos ---------------- */
   // grupo con el que trabajas en ESTE aparato (cada celular o compu puede estar en un grupo distinto)
   let gLoc = null; try { gLoc = localStorage.getItem('escuadra.grupo'); } catch (e) { gLoc = null; }
+  let cfgC = null, cfgV = -1;
   const D = E.data = {
-    cfg() { const raw = S.get('config') || {}; const d = E.DEFAULTS.config; return Object.assign({}, d, raw, { pond: Object.assign({}, d.pond, raw.pond || {}) }); },
+    // v1.28: se arma una vez por cada cambio de datos (antes se armaba miles de veces al dibujar Inicio: ~90 ms en un celular de gama media).
+    // No modifiques el objeto que regresa: para cambiar un ajuste usa S.update('config', …).
+    cfg() { if (cfgC && cfgV === S._kv) return cfgC; const raw = S.get('config') || {}; const d = E.DEFAULTS.config; cfgC = Object.assign({}, d, raw, { pond: Object.assign({}, d.pond, raw.pond || {}) }); cfgV = S._kv; return cfgC; },
     // fechas de parciales: las del semestre (Ajustes); un grupo archivado conserva las suyas
     parciales() { const g = D.grupoActual(); return (g && g.archivado && Array.isArray(g.parciales) && g.parciales.length ? g.parciales : null) || S.get('parciales') || E.DEFAULTS.parciales; },
     grupos() { return S.list('grupo:').sort((a, b) => String(a.id).localeCompare(String(b.id))); },

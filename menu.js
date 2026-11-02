@@ -75,12 +75,14 @@
       ['inicio', 'home', 'Inicio', 'La pantalla de hoy'],
       ['claude', 'sparkle', 'Pídeselo a Claude', 'Mensajes listos, sin nombres'],
       ['mejoras', 'sparkle', 'Mejoras', 'Ideas para la app'],
+      ['historial', 'undo', 'Historial de cambios', 'Lo que cambiaste hoy; revierte uno'],
       ['ajustes', 'gear', 'Ajustes', 'Escuela, grupo, sincronización'],
       ['ayuda', 'help', 'Ayuda y manual', 'Cómo usar cada pantalla · PDF']
     ] }
   ];
   const mk = x => ({ r: x[0], i: x[1], t: x[2], d: x[0] === 'freecad' ? (E.PRACTICAS ? E.PRACTICAS.length : 17) + ' prácticas con plano para proyectar' : x[3] });
   const todas = () => [].concat(...GRUPOS.map(g => g.it.map(mk)));
+  MN.todas = () => todas();   // v1.28: la lupa busca secciones por nombre y descripción
 
   const KUSO = () => { try { return JSON.parse(localStorage.getItem(KU) || '{}') || {}; } catch (e) { return {}; } };
   MN.uso = KUSO;

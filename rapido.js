@@ -15,6 +15,7 @@
   // Cada toque o cambio que guarda datos queda como un paso; «↶ Deshacer» (o Ctrl+Z) regresa los documentos a como estaban.
   const UD = E.undo = { stack: [], cur: null, depth: 0, busy: false };
   const NOMBRE = { asis: 'asistencia', 'asis-set': 'asistencia', 'asis-todos': 'lista', 'asis-borrar': 'lista', part: 'participación', 'cr-part': 'participación', 'au-tap': 'Modo clase', 'bs-part': 'participación', nota: 'calificación', 'act-fill': 'calificaciones', 'act-extra': 'punto extra', 'lb-marca': 'libreta', 'lb-todas': 'libreta', 'cr-mk': 'tarea', 'cr-mk-todos': 'tarea', 'fc-marca': 'práctica', 'fc-pend': 'prácticas', 'fc-todos': 'prácticas', 'obs-tog': 'observación', 'cr-obs': 'destacado', 'cap-niv': 'rúbrica', 'cap-crit-ok': 'rúbrica', 'cap-pg-ok': 'calificaciones pegadas', 'cap-eq-ok': 'calificación por equipo', tarjeta: 'tarjeta', dictado: 'dictado', 'jus-ok': 'justificación', 'mp-seat': 'mapa', 'mp-al': 'mapa', 'mp-llenar': 'mapa', 'mp-vaciar': 'mapa', 'pd-omit': 'pendientes', 'pd-ev': 'actividad', 'pj-st': 'proyecto', qr: 'escaneo', 'esc-cambia': 'tarea', 'esc-fin-asis': 'lista', 'tj2-guardar': 'tarjetas', omr: 'hoja de respuestas', 'omr-ok': 'hoja de respuestas', formulario: 'formulario', 'fm-aplicar': 'formulario', 'act-tarde': 'entrega tarde', 'lb-tarde': 'entrega tarde', 'fc-tarde': 'entrega tarde', 'ap-rec-ok': 'entrega tarde', 'ap-rec-m': 'entrega tarde' };
+  UD.NOMBRE = NOMBRE;
   const put0 = S.put.bind(S), del0 = S.del.bind(S);
   const foto = k => { const d = S.docs[k]; return d ? { data: u.clone(d.data), deleted: !!d.deleted } : null; };
   const anota = k => { const c = UD.cur; if (c && !UD.busy && !Object.prototype.hasOwnProperty.call(c.prev, k)) c.prev[k] = foto(k); };
@@ -106,8 +107,47 @@
     const out = [];
     if (/^IMPRIM/.test(f) && /LISTA|ASIST|PASE/.test(f) && D.alumnos(gr).length) out.push('<li><button type="button" class="bs-cmd" data-act="bs-print" data-gid="' + gr.id + '"><span class="bs-ico">🖨</span><span><b>Imprimir la lista de asistencia</b><small>' + esc(gr.grupo) + ' · ' + esc(C.parcialActual().nombre) + '</small></span></button></li>');
     CMDS.forEach(c => { if (c[0].test(f)) { const to = c[3](); out.push('<li><a href="#/' + to + '" data-act="bs-go" data-to="' + to + '" class="bs-cmd"><span class="bs-ico">▶</span><span><b>' + esc(c[1]) + '</b>' + (c[2] ? '<small>' + esc(c[2]) + '</small>' : '') + '</span></a></li>'); } });
+    // v1.28: «falta Karla», «retardo 12», «justificada Pérez», «asistió Ana»: marca hoy en el pase de lista
+    const mA = f.match(/^(FALTA|FALTO|RETARDO|TARDE|JUSTIFICADA|JUSTIFICA|ASISTIO|PRESENTE)\s+(.+)$/);
+    if (mA) {
+      const st = /^(FALTA|FALTO)/.test(mA[1]) ? 'F' : /^(RETARDO|TARDE)/.test(mA[1]) ? 'R' : /^JUSTIFIC/.test(mA[1]) ? 'J' : 'A';
+      const TX = { F: ['✗', 'Falta'], R: ['⏰', 'Retardo'], J: ['📝', 'Justificada'], A: ['✓', 'Asistió'] }, quien = R.filtra(D.alumnos(g), mA[2]).slice(0, 5);
+      quien.forEach(a => out.push('<li><button type="button" class="bs-cmd" data-act="bs-asis" data-aid="' + a.id + '" data-st="' + st + '"><span class="bs-ico">' + TX[st][0] + '</span><span><b>' + TX[st][1] + ' hoy: ' + esc(a.num + '. ' + a.nombre) + '</b><small>En el pase de lista de hoy' + (C.ambito(u.today()) ? ' (la clase elegida)' : ' (todo el día)') + '</small></span></button></li>'));
+    }
+    // v1.28: formatos de Imprimir por nombre («imprimir rúbrica», «imprimir etiquetas qr», «imprimir constancias»…)
+    const pr = f.match(/^(IMPRIM\w*|IMPRESION|HOJA|FORMATO)\s+(.+)$/);
+    if (pr && E.views.imprimir) out.push(...formatos(pr[2]).slice(0, 6));
+    // v1.28: cualquier sección por su nombre o lo que hace («tutoria», «adeudos», «normas», «respaldo»…)
+    if (!/^\d+$/.test(f) && f.length >= 3 && E.menu && E.menu.todas && !mA) {
+      const toks = f.split(' ').filter(t => t.length >= 3), ya = new Set(out.join('').match(/data-to="[^"]+"/g) || []);
+      if (toks.length) E.menu.todas().filter(x => { const t = u.norm(x.t + ' ' + (x.d || '') + ' ' + x.r); return toks.every(k => t.indexOf(k) >= 0); }).slice(0, 5).forEach(x => {
+        if (ya.has('data-to="' + x.r + '"')) return;
+        out.push('<li><a href="#/' + x.r + '" data-act="bs-go" data-to="' + x.r + '" class="bs-cmd"><span class="bs-ico">' + icon(x.i || 'more') + '</span><span><b>' + esc(x.t) + '</b>' + (x.d ? '<small>' + esc(x.d) + '</small>' : '') + '</span></a></li>');
+      });
+    }
     return out.length ? '<p class="muted small bs-h">Acciones · Enter las hace</p><ul class="bs-res bs-cmds">' + out.join('') + '</ul>' : '';
   }
+  // botones de la pantalla Imprimir que coinciden con lo escrito (se usan tal cual: mismo data-act y datos)
+  function formatos(q) {
+    let o; try { o = E.views.imprimir(); } catch (e) { return []; } if (!o || !o.h) return [];
+    const toks = u.norm(q).split(' ').filter(t => t.length >= 3); if (!toks.length) return [];
+    const doc = new DOMParser().parseFromString('<div>' + o.h + '</div>', 'text/html'), res = [];
+    doc.querySelectorAll('section.card, .card').forEach(c => {
+      const tit = ((c.querySelector('h3') || {}).textContent || '').trim();
+      c.querySelectorAll('button[data-act]').forEach(b => {
+        const lbl = b.textContent.trim(), txt = u.norm(tit + ' ' + lbl); if (!toks.every(k => txt.indexOf(k) >= 0) || b.disabled) return;
+        const at = [...b.attributes].filter(x => /^data-/.test(x.name)).map(x => x.name + '="' + esc(x.value) + '"').join(' ');
+        res.push('<li><button type="button" class="bs-cmd" ' + at + '><span class="bs-ico">🖨</span><span><b>' + esc(lbl.replace(/^🖨\s*/, '')) + '</b><small>' + esc(tit.replace(/^\W+\s*/, '')) + '</small></span></button></li>');
+      });
+    });
+    return res;
+  }
+  A['bs-asis'] = el => {
+    const g = D.grupoActual(), f = u.today(), a = D.alumno(g, el.dataset.aid), st = el.dataset.st; if (!g || !a) return;
+    if (!C.esClase(g, f)) { u.toast(C.esAsueto(f) ? 'Hoy es día sin clases (asueto). Si sí diste clase, márcalo en Pase de lista.' : 'Hoy no tienes clase con este grupo en tu horario. Márcalo en Pase de lista.', 'err', 4000); return; }
+    C.setMarca(g, f, a.id, st, C.ambito(f)); E.modal.close();
+    u.toast(({ F: 'Falta', R: 'Retardo', J: 'Justificada', A: 'Asistió' })[st] + ' hoy: ' + u.corto(a.nombre) + ' · ↶ Deshacer si te equivocaste', 'ok', 3500);
+  };
   A['bs-print'] = el => {
     const gr = D.gruposActivos().find(x => x.id === el.dataset.gid) || D.grupoActual(); if (!gr) return;
     if (!D.grupoActual() || D.grupoActual().id !== gr.id) D.setGrupo(gr.id);
@@ -115,14 +155,14 @@
   };
   function buscaHTML(q) {
     const g = D.grupoActual(); if (!g) return '<p class="muted">No hay grupo.</p>';
-    if (!String(q || '').trim()) return '<p class="muted small">Escribe el número de lista, parte del nombre o una orden: «cierre», «lista», «imprimir 3A lista». Enter hace la primera.</p>';
+    if (!String(q || '').trim()) return '<p class="muted small">Escribe el número de lista o parte del nombre; el nombre de una sección («tutoría», «normas», «historial»); un formato («imprimir rúbrica», «imprimir constancias»); o una orden: «falta Karla», «retardo 12», «cierre», «lista». Enter hace la primera.</p>';
     const cm = comandos(q, g), r = R.filtra(D.alumnos(g), q), hoy = u.today();
     if (!r.length && !cm) return '<p class="muted small">Nadie coincide con «' + esc(q) + '».</p>';
     return cm + (r.length ? '<p class="muted small bs-h">Alumnos</p><ul class="bs-res">' + r.slice(0, 12).map(a => '<li><a href="#/alumno/' + a.id + '" data-act="bs-go" data-to="alumno/' + a.id + '"><span class="num">' + a.num + '</span>' + esc(a.nombre) + '</a><span class="row gap">' +
       btn('+1 ⭐', 'bs-part', 'data-aid="' + a.id + '" aria-label="Sumar participación hoy"', 'small') + btn('👁', 'obs-open', 'data-aid="' + a.id + '" data-fecha="' + hoy + '" aria-label="Anotar observación"', 'small ghost') + '</span></li>').join('') + '</ul>' : '');
   }
   A.buscar = () => {
-    E.modal.open('Buscar alumno', '<input type="search" class="inp" id="bs-q" data-in="bs-q" placeholder="Número de lista o nombre" autocomplete="off" enterkeyhint="go" aria-label="Buscar alumno"><div id="bs-out" class="mt">' + buscaHTML('') + '</div>');
+    E.modal.open('Buscar', '<input type="search" class="inp" id="bs-q" data-in="bs-q" placeholder="Alumno, sección u orden: «falta Karla», «imprimir rúbrica»" autocomplete="off" enterkeyhint="go" aria-label="Buscar alumno"><div id="bs-out" class="mt">' + buscaHTML('') + '</div>');
     setTimeout(() => { const i = document.getElementById('bs-q'); if (i) i.focus(); }, 30);
   };
   IN['bs-q'] = el => { const o = document.getElementById('bs-out'); if (o) o.innerHTML = buscaHTML(el.value); };

@@ -23,7 +23,9 @@
   CT.datos = g => {
     const cf = D.cfg(), hoy = u.today(), p = C.parcialActual(hoy), al = D.alumnos(g), T = E.tutoria, seg = T ? T.seg(g) : {}, alertas = T ? T.alertas(g) : [];
     const sem = {}; if (E.semaforo && p) { try { E.semaforo.datos(g, p.id).filas.forEach(r => { sem[r.a.id] = r.n; }); } catch (e) { } }
-    const desde = u.addDays(hoy, -30), fal = {}; S.keys('asis:' + g.id + ':').forEach(k => { const f = k.split(':').pop(); if (f < desde || f > hoy) return; const doc = S.get(k) || {}; al.forEach(a => { if (!C.cuenta(doc[a.id] || 'A')) fal[a.id] = (fal[a.id] || 0) + 1; }); });
+    const desde = u.addDays(hoy, -30), fal = {}; S.keys('asis:' + g.id + ':').forEach(k => { const f = k.split(':').pop(); if (f < desde || f > hoy) return; const doc = S.get(k) || {}, ks = C.clasesCuenta(g, f); al.forEach(a => { ks.forEach(kl => { if (!C.cuenta(C.marca(doc, a.id, kl))) fal[a.id] = (fal[a.id] || 0) + 1; }); }); });
+    // v1.28: inscripción y adeudos de cada alumno (si están protegidos con PIN, solo con la app desbloqueada)
+    const ad = T && T.debe ? al.map(a => { const x = T.debe(g, a.id), det = x.mat.map(y => 'Materia: ' + y.t + (y.sem ? ' (' + y.sem + ' sem.)' : '') + (y.via ? ' — ' + y.via : '')).concat(x.pag.map(y => 'Pago: ' + y.t + (Number(y.monto) ? ' ($' + y.monto + ')' : '')), x.doc.map(y => 'Documento: ' + y.t)); return [a.num, x.ins ? x.ins.e : '', det]; }) : [];
     const sig = {}; alertas.forEach(x => { sig[x.a.id] = (x.sA ? 'A' : '') + (x.sB ? 'B' : '') + (x.sC ? 'C' : ''); });
     const tcf = T ? T.cfg(g) : {}, RESP = { yo: cf.docenteCorto || 'Docente', co: 'Co-tutora', ambos: 'Los dos', grupo: 'El grupo' };
     return {
@@ -31,11 +33,12 @@
       al: al.map(a => [a.num, u.corto(a.nombre), fal[a.id] || 0, sem[a.id] || '', sig[a.id] || '', (seg[a.id] || {}).estado || '']),
       co: T ? T.coops(g).slice(0, 4).map(c => { const r = T.calc(g, c); return [c.concepto || 'Cooperación', r.monto, r.nOk, r.nPend, r.caja, r.filas.filter(x => x.st === 'pend' || x.st === 'par').map(x => x.a.num)]; }) : [],
       pn: (tcf.plan || []).filter(x => x.estado !== 'hecha').slice(0, 8).map(x => [x.fecha || '', x.t, RESP[x.resp] || x.resp || '']),
-      cs: E.consejo && E.consejo.actual ? (E.consejo.actual(hoy) || '') : ''
+      cs: E.consejo && E.consejo.actual ? (E.consejo.actual(hoy) || '') : '',
+      ad: ad, ip: tcf.insPeriodo || ''
     };
   };
   A['ct-abrir'] = () => {
-    E.modal.open('👩‍🏫 Vista para la co-tutora', '<p class="small">Genera un enlace cifrado con lo de tutoría del grupo (alerta temprana, faltas del mes, semáforo, seguimiento, cooperaciones y plan). Ella lo abre en su celular con el PIN; no puede cambiar nada.</p>' +
+    E.modal.open('👩‍🏫 Vista para la co-tutora', '<p class="small">Genera un enlace cifrado con lo de tutoría del grupo (alerta temprana, faltas del mes, semáforo, seguimiento, cooperaciones, plan, inscripción y adeudos). Ella lo abre en su celular con el PIN; no puede cambiar nada.</p>' + (E.secreto && E.secreto.docBloqueado && E.secreto.docBloqueado() ? '<p class="note warn small">🔒 Tus datos de tutoría están bloqueados: desbloquéalos con tu PIN para que el enlace lleve el seguimiento, la inscripción y los adeudos.</p>' : '') +
       '<label class="fld"><span>PIN (4 a 8 números; dáselo aparte, no en el mismo mensaje)</span><input class="inp" id="ct-pin" inputmode="numeric" maxlength="8" placeholder="Ej. 4821"></label>' + btn('🔒 Generar enlace', 'ct-gen', '', 'primary') + '<div id="ct-out"></div>');
   };
   A['ct-gen'] = async () => {

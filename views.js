@@ -1056,7 +1056,7 @@
       ['inicio', 'fin', 'captura'].map(f => fieldIn(({ inicio: 'Inicio', fin: 'Cierre', captura: 'Captura de calificaciones' })[f], 'data-ch="parcial" data-pid="' + p.id + '" data-f="' + f + '"', p[f], 'date')).join('') + '</div>' +
       '<p class="small">Asuetos: ' + ((p.asuetos || []).map(a => '<span class="chip">' + u.fCorta(a) + ' <button type="button" class="xbtn" data-act="asueto-del" data-pid="' + p.id + '" data-d="' + a + '" aria-label="Quitar">×</button></span>').join(' ') || '—') + '</p>' +
       '<div class="row gap"><input type="date" class="inp" id="asu-' + p.id + '" style="max-width:180px">' + btn('Agregar asueto', 'asueto-add', 'data-pid="' + p.id + '"', 'small') + '</div></div>').join(''));
-    h += sec('app', '🎨 Apariencia y avisos', sel('tema', 'Tema', [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']], c.tema) +
+    h += sec('app', '🎨 Apariencia y avisos', sel('tema', 'Tema', [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Oscuro']], c.tema) + sel('letra', 'Tamaño de letra', [['0.9375', 'Chica'], ['1', 'Normal'], ['1.125', 'Grande'], ['1.25', 'Muy grande']], c.letra || '1') +
       ('Notification' in window ? (Notification.permission === 'granted' ? '<p class="note ok">Notificaciones activas: te aviso al abrir la app cuando falten 7 días o menos para capturar.</p>' : btn('Activar notificaciones', 'notif-on', '', 'primary')) : '') +
       '<p class="muted small mt">Los avisos fuertes (captura, cierres y asuetos) ya están en tu Google Calendar con recordatorio por notificación y correo.</p>');
     if (E.rap) h += sec('rapida', '⚡ Captura rápida', E.rap.ajustesHTML(c));
@@ -1069,7 +1069,7 @@
     const path = el.dataset.path; let v = el.type === 'checkbox' ? el.checked : el.value;
     if (el.type === 'number' || ['escalaActa', 'tardeValor'].indexOf(path) >= 0) v = Number(v);
     S.update('config', cfg => { u.set(cfg, path, v); }, {});
-    if (path === 'tema') E.applyTheme();
+    if (path === 'tema' || path === 'letra') E.applyTheme();
   };
   CH.grupo = el => {
     const g = D.grupoActual(), path = el.dataset.path;

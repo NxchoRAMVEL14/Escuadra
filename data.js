@@ -648,6 +648,7 @@ window.E = window.E || {};
       minAprob: 60, umbralBien: 80,
       grupoActivo: '3AMEC',
       tema: 'auto',
+      letra: '1',
       abrirDonde: true, autoSalto: true, tardeValor: 0.75
     },
     parciales: [

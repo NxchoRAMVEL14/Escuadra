@@ -81,6 +81,10 @@
       if (vs.length) { const m = vs.reduce((s, v) => s + v, 0) / vs.length / 100; ts.forEach(t => suma(t, m, 1)); }
     });
     const gr = E.repaso.desempeno(g, p.inicio); Object.keys(gr).forEach(t => suma(t, gr[t].p, 1));
+    // v1.28: lo que sacó en los repasos para casa (por código) cuenta para los temas de ese repaso
+    const rc = CA.rc(g), enP = x => x.f >= p.inicio && x.f <= p.fin, temasRep = (aid, x) => { const gx = (rc.gen || {})[x.f] || {}; return (x.k === 'g' ? gx.g : (gx.al || {})[aid]) || []; };
+    if (a) CA.resultados(g, a.id).filter(enP).forEach(x => { propio = true; temasRep(a.id, x).filter(conB).forEach(t => suma(t, x.ok / x.n, 1)); });
+    else { const agg = {}; Object.keys(rc.res || {}).forEach(aid => (rc.res[aid] || []).filter(enP).forEach(x => temasRep(aid, x).filter(conB).forEach(t => { const o = agg[t] = agg[t] || { s: 0, n: 0 }; o.s += x.ok / x.n; o.n++; }))); Object.keys(agg).forEach(t => suma(t, agg[t].s / agg[t].n, 1)); }
     if (a) C.fechasRegistradas(g, p).forEach(f => {
       const doc = S.get('asis:' + g.id + ':' + f) || {}, cl = C.clasesCuenta(g, f), mis = cl.filter(k => C.marca(doc, a.id, k) === 'F').length;
       if (!mis) return; propio = true;
@@ -93,7 +97,7 @@
   CA.temasDebiles = (g, a) => {
     if (a) {
       const pt = CA.parcialTemas(g, a), ts = Object.keys(pt.dif).filter(t => conB(t) && pt.dif[t] > 0.2).sort((x, y) => pt.dif[y] - pt.dif[x]);
-      if (ts.length) return { ts: ts.slice(0, 3), fuente: pt.propio ? 'sus exámenes, actividades y faltas de este parcial' : 'cómo va el grupo en este parcial' };
+      if (ts.length) return { ts: ts.slice(0, 3), fuente: pt.propio ? 'sus exámenes, actividades, faltas y repasos de este parcial' : 'cómo va el grupo en este parcial' };
     }
     const hoy = u.today(); let vis = {}; try { vis = E.repaso ? E.repaso.vistos(g, u.addDays(hoy, 1)) : {}; } catch (e) { vis = {}; }
     let fuente = 'tu último examen', sc = {};
@@ -124,9 +128,34 @@
     const qs = [];
     pools.forEach((pl, i) => { let k = 0; for (let j = 0; j < pl.length && k < cuota[i]; j++) { const q = E.ejer.pregunta(pl[j], rnd); if (q && q.opts) { qs.push([corto(q.q, lim[0]), q.opts.map(o => corto(o, lim[1])), q.ok, corto(q.a || '', lim[2]), tTit(td.ts[i])]); k++; } } });
     if (!qs.length) return null;
-    return { v: 1, k: 'rep', g: g.nombre, n: a ? a.num : null, f: u.today(), fu: td.fuente, q: qs };
+    return { v: 1, k: 'rep', g: g.nombre, n: a ? a.num : null, f: u.today(), fu: td.fuente, q: qs, c: CA.sal(g, a ? a.id : 'g', u.today()), ts: td.ts };
   };
-  CA.repasoURL = async (g, a, n) => { const d = CA.repasoDatos(g, a, n); return d ? base('repaso.html') + '#' + await CA.empaca(d) : null; };
+  /* ---------- v1.28: comprobante del repaso (código de 4 dígitos que da repaso.html al terminar) ---------- */
+  const KRC = g => 'casaRep:' + g.id;
+  CA.sal = (g, quien, f) => hash(g.id + '|rc|' + quien + '|' + f).toString(16);
+  CA.codigo = (c, num, ok, tot) => String(1000 + hash('esc|' + c + '|' + num + '|' + ok + '/' + tot) % 9000);
+  CA.rc = g => S.get(KRC(g)) || { gen: {}, res: {} };
+  // anota qué repaso se generó (fecha, para quién y de qué temas) para poder reconocer después los códigos
+  CA.anotaGen = (g, f, quien, ts, n) => S.update(KRC(g), d => {
+    d.gen = d.gen || {}; d.res = d.res || {}; const x = d.gen[f] = d.gen[f] || {};
+    if (quien === 'g') { x.g = ts; x.nG = n; } else { (x.al = x.al || {})[quien] = ts; x.nA = n; }
+    const lim = u.addDays(u.today(), -60); Object.keys(d.gen).forEach(k => { if (k < lim) delete d.gen[k]; });
+  }, { gen: {}, res: {} });
+  // ¿a qué repaso corresponde el código que trae este alumno? (el más reciente que coincida)
+  CA.verifica = (g, a, cod) => {
+    cod = String(cod || '').replace(/\D/g, ''); if (cod.length !== 4) return null; const gen = CA.rc(g).gen || {};
+    for (const f of Object.keys(gen).sort().reverse()) {
+      const x = gen[f];
+      for (const k of ['al', 'g']) {
+        const ts = k === 'al' ? (x.al || {})[a.id] : x.g, tot = k === 'al' ? x.nA : x.nG; if (!ts || !tot) continue;
+        const c = CA.sal(g, k === 'al' ? a.id : 'g', f);
+        for (let ok = 0; ok <= tot; ok++) if (CA.codigo(c, a.num, ok, tot) === cod) return { f: f, k: k, ok: ok, n: tot, ts: ts };
+      }
+    }
+    return null;
+  };
+  CA.resultados = (g, aid) => ((CA.rc(g).res || {})[aid] || []);
+  CA.repasoURL = async (g, a, n) => { const d = CA.repasoDatos(g, a, n); if (!d) return null; CA.anotaGen(g, d.f, a ? a.id : 'g', d.ts, d.q.length); const p = Object.assign({}, d); delete p.ts; return base('repaso.html') + '#' + await CA.empaca(p); };
 
   /* ---------- modales ---------- */
   const qrBox = (url, txt) => '<div class="ca-qr">' + (E.cam ? E.cam.qrSVG(url, 'ca-qrsvg', 'L') : '') + '<p class="small muted">' + txt + '</p></div>';
@@ -148,12 +177,33 @@
   A['ca-repaso'] = async el => {
     const g = D.grupoActual(), a = el.dataset.aid ? D.alumno(g, el.dataset.aid) : null;
     await listo(); const d = CA.repasoDatos(g, a); if (!d) { u.toast('Todavía no hay temas con preguntas en el banco para armar el repaso', 'err', 4000); return; }
-    const url = base('repaso.html') + '#' + await CA.empaca(d), temas = Array.from(new Set(d.q.map(x => x[4])));
+    CA.anotaGen(g, d.f, a ? a.id : 'g', d.ts, d.q.length); const pq = Object.assign({}, d); delete pq.ts;
+    const url = base('repaso.html') + '#' + await CA.empaca(pq), temas = Array.from(new Set(d.q.map(x => x[4])));
     E.ui.caUrl = url; E.ui.caN = d.q.length;
-    E.modal.open('🏠 Repaso para casa' + (a ? ' · ' + u.corto(a.nombre) : ' · todo el grupo'), qrBox(url, d.q.length + ' preguntas de ' + esc(temas.join(', ')) + ' (según ' + esc(d.fu) + '). Se contestan en el celular; no se manda nada a ningún lado.') +
+    E.modal.open('🏠 Repaso para casa' + (a ? ' · ' + u.corto(a.nombre) : ' · todo el grupo'), qrBox(url, d.q.length + ' preguntas de ' + esc(temas.join(', ')) + ' (según ' + esc(d.fu) + '). Se contestan en el celular; no se manda nada a ningún lado. Al terminar les da un código de 4 dígitos que capturas en «Registrar códigos del repaso».') +
       '<div class="row gap wrap">' + btn('📋 Copiar enlace', 'ca-copiar', '', 'primary') + '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener">Probar</a>' + (a ? '' : btn('📽 Proyectar QR', 'ca-proj', '', '')) + '</div>');
   };
   A['ca-proj'] = () => { if (!E.proj || !E.ui.caUrl) return; E.modal.close(); E.proj.abrir({ id: 'casa-qr', titulo: 'Repaso para casa' }, [{ k: 'html', h: '🏠 Repaso para casa', html: '<div class="pj-qrbox">' + E.cam.qrSVG(E.ui.caUrl, 'pj-qr', 'L') + '<div><p>Escanea el código con tu celular y contesta las ' + (E.ui.caN || N_GRUPO) + ' preguntas en casa.</p><p>Al final te dice cuántas tuviste bien y por qué.</p></div></div>' }]); };
+
+  /* ---------- v1.28: registrar los códigos que traen los alumnos ---------- */
+  const resTxt = x => x.ok + ' de ' + x.n + ' · ' + u.fCorta(x.f) + (x.k === 'g' ? ' (del grupo)' : '');
+  const rcFila = (g, a) => { const L = CA.resultados(g, a.id), ul = L[L.length - 1]; return '<li><div><b>' + a.num + '. ' + esc(u.corto(a.nombre)) + '</b><br><small class="muted" id="rc-r-' + a.id + '">' + (ul ? '✓ ' + resTxt(ul) + (L.length > 1 ? ' · ' + L.length + ' repasos' : '') : 'Sin código registrado') + '</small></div><input class="inp" style="max-width:96px;text-align:center" inputmode="numeric" maxlength="4" placeholder="0000" data-ch="rc-cod" data-aid="' + a.id + '" aria-label="Código de ' + esc(a.nombre) + '"></li>'; };
+  A['rc-abrir'] = () => {
+    const g = D.grupoActual(), gen = CA.rc(g).gen || {}, fs = Object.keys(gen).sort().reverse();
+    E.modal.open('✅ Códigos del repaso para casa', '<p class="small">Al terminar el repaso, cada alumno ve un código de 4 dígitos (de su primer intento). Escríbelo junto a su nombre: la app reconoce de qué repaso es y cuántas tuvo bien, y lo usa para elegir sus temas difíciles la próxima vez.</p>' +
+      (fs.length ? '<p class="muted small">Repasos generados: ' + fs.slice(0, 6).map(f => u.fCorta(f)).join(', ') + '.</p>' : '<p class="note warn small">Todavía no has generado repasos con esta versión: los códigos solo se reconocen de repasos generados desde la v1.28.</p>') +
+      '<ul class="ap-list">' + D.alumnos(g).map(a => rcFila(g, a)).join('') + '</ul>');
+  };
+  CH['rc-cod'] = el => {
+    const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid), cod = el.value.trim(); if (!a || !cod) return;
+    const r = CA.verifica(g, a, cod);
+    if (!r) { u.toast('El código ' + cod + ' no corresponde a ningún repaso de ' + u.corto(a.nombre) + '. Revisa el número de lista o el código.', 'err', 4500); el.select && el.select(); return; }
+    const ya = CA.resultados(g, a.id).some(x => x.f === r.f && x.k === r.k);
+    if (!ya) S.update(KRC(g), d => { d.gen = d.gen || {}; d.res = d.res || {}; (d.res[a.id] = d.res[a.id] || []).push({ f: r.f, k: r.k, ok: r.ok, n: r.n, reg: u.today() }); }, { gen: {}, res: {} });
+    el.value = ''; const sm = document.getElementById('rc-r-' + a.id); if (sm) sm.textContent = '✓ ' + resTxt(r);
+    u.toast((ya ? 'Ya estaba: ' : '✓ ') + a.num + '. ' + u.corto(a.nombre) + ': ' + resTxt(r), 'ok', 2500);
+    const li = el.closest('li'), sig = li && li.nextElementSibling && li.nextElementSibling.querySelector('input'); if (sig) sig.focus();
+  };
 
   /* ---------- en la ficha del alumno ---------- */
   CA.alumnoHTML = (g, a) => {
@@ -161,7 +211,8 @@
     return card('<h3>👪 Comunicar a casa</h3><p class="muted small">Consulta con QR o enlace (sin nombre), mensaje de WhatsApp a su madre, padre o tutor(a) y repaso de sus temas débiles.</p>' +
       '<label class="fld"><span>WhatsApp de su madre, padre o tutor(a) (opcional, 10 dígitos)</span><input id="al-tel" inputmode="tel" value="' + esc(a.tel || '') + '" data-ch="alumno-f" data-aid="' + a.id + '" data-f="tel" placeholder="Ej. 4761234567"></label>' +
       '<div class="row gap wrap">' + btn('🔗 Consulta (QR)', 'ca-consulta', 'data-aid="' + a.id + '" data-pid="' + pid + '"', 'small primary') + btn('💬 WhatsApp a casa', 'ca-wa', 'data-aid="' + a.id + '" data-pid="' + pid + '"', 'small') + btn('🏠 Repaso para casa', 'ca-repaso', 'data-aid="' + a.id + '"', 'small') + '</div>' +
-      (lg.length ? '<p class="muted small">Mensajes a casa: ' + lg.slice(-5).map(f => u.fCorta(f)).join(', ') + '.</p>' : ''));
+      (lg.length ? '<p class="muted small">Mensajes a casa: ' + lg.slice(-5).map(f => u.fCorta(f)).join(', ') + '.</p>' : '') +
+      (CA.resultados(g, a.id).length ? '<p class="muted small">Repasos para casa hechos: ' + CA.resultados(g, a.id).slice(-5).map(resTxt).join(' · ') + '.</p>' : ''));
   };
   E.fichaInsert = (h, extra) => { const i = h.indexOf('<label class="fld"><span>Nombre</span>'), j = i >= 0 ? h.lastIndexOf('<section', i) : -1; return j >= 0 ? h.slice(0, j) + extra + h.slice(j) : h + extra; };
   if (V.alumno) { const va = V.alumno; V.alumno = function (id) { const o = va.apply(null, arguments), g = D.grupoActual(), a = g && D.alumno(g, id); if (o && a && !/Algo falló/.test(o.h)) o.h = E.fichaInsert(o.h, CA.alumnoHTML(g, a)); return o; }; }
@@ -246,7 +297,7 @@
     const al = D.alumnos(g), out = [];
     for (const a of al) {
       const url = tipo === 'rep' ? await CA.repasoURL(g, a) : await CA.consultaURL(g, a, pid); if (!url) continue;
-      out.push('<div class="ca-tira">' + E.cam.qrSVG(url, 'ca-tqr', 'L') + '<div><b>No. ' + a.num + '</b> · ' + esc(u.corto(a.nombre)) + '<br><span class="tiny">' + esc(g.nombre) + ' · ' + (tipo === 'rep' ? 'Repaso para casa: escanea y contesta ' + N_ALUMNO + ' preguntas de los temas que más te cuestan este parcial.' : esc(p.nombre) + ': escanea para ver tu calificación y lo que te falta (al ' + u.fCorta(u.today()) + ').') + '</span></div></div>');
+      out.push('<div class="ca-tira">' + E.cam.qrSVG(url, 'ca-tqr', 'L') + '<div><b>No. ' + a.num + '</b> · ' + esc(u.corto(a.nombre)) + '<br><span class="tiny">' + esc(g.nombre) + ' · ' + (tipo === 'rep' ? 'Repaso para casa: escanea y contesta ' + N_ALUMNO + ' preguntas de los temas que más te cuestan este parcial. Al final dale a tu profe el código de 4 dígitos.' : esc(p.nombre) + ': escanea para ver tu calificación y lo que te falta (al ' + u.fCorta(u.today()) + ').') + '</span></div></div>');
     }
     if (!out.length) { u.toast('No hay preguntas en el banco para armar el repaso', 'err'); return; }
     E.print.run('<div class="pr ca-tiras">' + out.join('') + '</div>', { title: (tipo === 'rep' ? 'Repaso para casa · ' : 'Consulta · ') + g.nombre, margin: '8mm' });
@@ -256,7 +307,7 @@
     V.imprimir = function () {
       const o = vi.apply(null, arguments), g = D.grupoActual(); if (!o || !g || !D.alumnos(g).length || /Algo falló/.test(o.h)) return o;
       const pid = (E.ui.print && E.ui.print.pid) || C.parcialActual().id;
-      o.h += card('<h3>👪 Para llevar a casa</h3><p class="muted small">Tiras con QR, una por alumno, para recortar: su consulta del parcial (sin nombre en el enlace) o un repaso de ' + N_ALUMNO + ' preguntas de los temas que más les cuestan.</p><div class="row gap wrap">' + btn('🖨 Tiras de consulta (QR)', 'ca-tiras', 'data-pid="' + pid + '" data-t="con"', 'primary') + btn('🖨 Tiras de repaso para casa (QR)', 'ca-tiras', 'data-t="rep"') + btn('🏠 Repaso del grupo (' + N_GRUPO + ' preguntas, un solo QR)', 'ca-repaso', '', 'ghost') + '</div>');
+      o.h += card('<h3>👪 Para llevar a casa</h3><p class="muted small">Tiras con QR, una por alumno, para recortar: su consulta del parcial (sin nombre en el enlace) o un repaso de ' + N_ALUMNO + ' preguntas de los temas que más les cuestan.</p><div class="row gap wrap">' + btn('🖨 Tiras de consulta (QR)', 'ca-tiras', 'data-pid="' + pid + '" data-t="con"', 'primary') + btn('🖨 Tiras de repaso para casa (QR)', 'ca-tiras', 'data-t="rep"') + btn('🏠 Repaso del grupo (' + N_GRUPO + ' preguntas, un solo QR)', 'ca-repaso', '', 'ghost') + btn('✅ Registrar códigos del repaso', 'rc-abrir', '', 'ghost') + '</div>');
       return o;
     };
   }

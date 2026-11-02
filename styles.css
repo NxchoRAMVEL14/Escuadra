@@ -24,7 +24,8 @@
 }
 * { box-sizing: border-box }
 html, body { margin: 0; padding: 0 }
-body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--font); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overflow-x: hidden }
+html { font-size: calc(16px * var(--esc, 1)) }
+body { background: var(--bg); color: var(--ink); font: calc(15px * var(--esc, 1))/1.45 var(--font); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overflow-x: hidden }
 a { color: var(--brand) }
 h1, h2, h3, h4 { margin: 0 0 .4em; line-height: 1.2 }
 h1 { font-size: 1.55rem; letter-spacing: -.01em }
@@ -1465,3 +1466,7 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .lbv-l { list-style: none; padding: 0; margin: 8px 0; max-height: 40vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px }
 .lbv-l li { padding: 6px 10px; border-bottom: 1px solid var(--line) }
 .lbv-l li:last-child { border-bottom: 0 }
+
+/* v1.28 · miniatura de la hoja en la vista previa de impresión */
+.pv-mini { margin: 12px auto 4px; background: #fff; border-radius: 3px; box-shadow: 0 1px 6px rgba(0,0,0,.25); overflow: hidden; pointer-events: none; position: relative }
+.pv-pag { position: absolute; left: 0; top: 0; transform-origin: 0 0; background: #fff; color: #000 }

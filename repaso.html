@@ -42,14 +42,21 @@ h1 { font-size:1.25rem; margin:0 0 6px } p { margin:.3em 0 .6em } .mut { color:v
   }
   let d; try { d = await lee(); } catch (e) { m.innerHTML = '<div class="card"><h1>No se pudo abrir el repaso</h1><p>' + (e.message === 'nav' ? 'Tu navegador es muy antiguo: ábrelo en Chrome o Safari actualizados.' : 'El enlace está incompleto. Escanea otra vez el QR.') + '</p></div>'; return; }
   const Q = d.q || [], res = [];
+  // v1.28: código de comprobante (4 dígitos). Depende del repaso, del número de lista y de cuántas tuvo bien en su PRIMER
+  // intento en este celular; tu profe lo captura en Escuadra y así sabe quién lo hizo y cómo le fue. No se manda nada.
+  const fnv = s => { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const codigo = (c, num, ok, tot) => String(1000 + fnv('esc|' + c + '|' + num + '|' + ok + '/' + tot) % 9000);
+  const primero = ok => { const k = 'escuadra.rep.' + d.c; try { const v = localStorage.getItem(k); if (v != null && !isNaN(Number(v))) return Number(v); localStorage.setItem(k, String(ok)); } catch (e) { } return ok; };
+  const codHTML = (num, o1) => '<div class="card" style="text-align:center"><p class="mut sm">Tu código para tu profe' + (d.n ? '' : ' (No. ' + esc(num) + ')') + '</p><div class="score" style="letter-spacing:.15em">' + codigo(d.c, num, o1, Q.length) + '</div><p class="sm mut">Díctaselo o enséñaselo: así sabe que hiciste el repaso. Cuenta tu primer intento (' + o1 + ' de ' + Q.length + ').</p></div>';
   let i = 0;
   const head = '<div class="top">' + logo + '<div><b>' + esc(d.t || 'Repaso para casa') + '</b><small>' + esc(d.g) + (d.n ? ' · No. ' + esc(d.n) : '') + '</small></div></div>';
   function pinta() {
     if (i >= Q.length) {
-      const ok = res.filter(Boolean).length;
-      m.innerHTML = head + '<div class="card" style="text-align:center"><p class="mut">Tuviste bien</p><div class="score">' + ok + ' de ' + Q.length + '</div><p>' + (ok === Q.length ? '¡Excelente! Ya dominas estos temas.' : ok >= Q.length / 2 ? 'Vas bien. Repasa en tu libreta las que fallaste y vuelve a intentarlo mañana.' : 'Estos temas todavía te cuestan: repasa tus apuntes y pregunta en clase. Equivocarse ahora es la mejor forma de aprender.') + '</p><button class="btn" id="otra">Volver a empezar</button></div>' +
+      const ok = res.filter(Boolean).length, o1 = primero(ok);
+      m.innerHTML = head + (d.c ? '<div id="cod">' + (d.n ? codHTML(d.n, o1) : '<div class="card" style="text-align:center"><p class="sm"><b>¿Cuál es tu número de lista?</b> Te doy un código para tu profe.</p><input id="num" inputmode="numeric" maxlength="3" style="font:inherit;font-size:1.4rem;width:90px;text-align:center;padding:8px;border-radius:10px;border:1.5px solid var(--line);background:var(--s);color:var(--ink)"> <button class="btn" id="vcod">Ver mi código</button></div>') + '</div>' : '') + '<div class="card" style="text-align:center"><p class="mut">Tuviste bien</p><div class="score">' + ok + ' de ' + Q.length + '</div><p>' + (ok === Q.length ? '¡Excelente! Ya dominas estos temas.' : ok >= Q.length / 2 ? 'Vas bien. Repasa en tu libreta las que fallaste y vuelve a intentarlo mañana.' : 'Estos temas todavía te cuestan: repasa tus apuntes y pregunta en clase. Equivocarse ahora es la mejor forma de aprender.') + '</p><button class="btn" id="otra">Volver a empezar</button></div>' +
         '<div class="card"><p class="sm"><b>Temas:</b> ' + esc(Array.from(new Set(Q.map(q => q[4]))).join(', ')) + '</p><p class="sm mut">Elegidos según ' + esc(d.fu || 'tus temas débiles') + '.</p></div><p class="foot">Tus respuestas no se mandan a ningún lado: quedan solo en este celular.</p>';
       document.getElementById('otra').onclick = () => { i = 0; res.length = 0; pinta(); };
+      const vc = document.getElementById('vcod'); if (vc) vc.onclick = () => { const n = parseInt(document.getElementById('num').value, 10); if (!(n > 0)) return; document.getElementById('cod').innerHTML = codHTML(n, o1); };
       return;
     }
     const q = Q[i];
