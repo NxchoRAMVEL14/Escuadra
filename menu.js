@@ -61,6 +61,7 @@
     { k: 'admin', t: '🗂 Planeaciones, consejo y administración', d: 'Planeación, reportes y todo lo administrativo', it: [
       ['planeacion', 'doc', 'Planeaciones', 'Formato SEMS, revisión y Word'],
       ['imprimir', 'print', 'Imprimir', 'Listas, cotejo, rúbrica y acta'],
+      ['cobros', 'clip', 'Cobros de impresiones', 'Quién te pagó las copias y quién debe'],
       ['precierre', 'check', 'Pre-cierre', 'Lo que falta para el acta'],
       ['consejo', 'chart', 'Consejo técnico', 'Reporte de cada grupo: imprimir o proyectar'],
       ['resultadosmas', 'chart', 'Resultados', 'Indicadores, juntas y autoevaluación'],

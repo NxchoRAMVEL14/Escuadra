@@ -57,6 +57,7 @@
   let pend = null;
   const imprime = () => {
     const p = pend; pend = null; if (!p) return;
+    if (P.registra && p.info) { try { P.registra(p.info); } catch (e) { console.error(e); } }
     document.title = p.title;
     setTimeout(() => { try { window.print(); } catch (e) { u.toast('No se pudo abrir la impresión', 'err'); } setTimeout(() => { document.title = p.t; }, 1000); }, 120);
   };
@@ -72,6 +73,8 @@
     let st = document.getElementById('page-style'); if (!st) { st = document.createElement('style'); st.id = 'page-style'; document.head.appendChild(st); }
     st.textContent = '@page{size:letter ' + (o.landscape ? 'landscape' : 'portrait') + ';margin:' + (lm + LOGO_MM) + 'mm ' + m + 'mm ' + m + 'mm ' + m + 'mm;@top-right{content:image-set(url("' + LOGO + '") ' + LOGO_X + 'x);vertical-align:top;text-align:right;padding-top:' + lm + 'mm;padding-right:' + (lm - m) + 'mm}' + (n > 2 ? ';@bottom-right{content:"Página " counter(page) " de " counter(pages);font:7.5pt Arial,Helvetica,sans-serif;color:#444}' : '') + '}';
     const t = document.title; pend = { t: t, title: o.title || t };
+    // v1.28.1: lo que se imprime queda registrado (para Cobros): hojas y cuántos bloques por alumno trae
+    try { const tp = document.createElement('template'); tp.innerHTML = cuerpo; pend.info = { t: pend.title, n: n, land: !!o.landscape, blq: [...tp.content.children].filter(x => x.classList && x.classList.contains('pr')).length }; } catch (e) { }
     if (D.cfg().vistaImpresion === false) { imprime(); return; }
     E.modal.open('🖨 Vista previa de impresión', '<p><b>Saldrá en ' + n + (n === 1 ? ' hoja' : ' hojas') + '</b> · ' + (o.landscape ? 'horizontal' : 'vertical') + ' · carta · ' + esc(pend.title) + '</p>' +
       (rv.av.length ? '<div class="note warn pv-av">' + rv.av.map(x => '<div>' + esc(x) + '</div>').join('') + '<p class="small mt">Prueba en horizontal o quita una fila antes de imprimir.</p></div>' : '<p class="note ok">Todo cabe bien en ' + (n === 1 ? 'una hoja' : n + ' hojas') + '. 👍</p>') +

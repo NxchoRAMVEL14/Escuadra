@@ -647,6 +647,7 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .tut-pagos { list-style: none; padding: 0; margin: 8px 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r) }
 .tut-pagos li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line) }
 .tut-pagos li:last-child { border: 0 }
+.cb-pagos .cb-nm { flex: 1; min-width: 0 } .cb-pagos .cb-nm small { display: block } .cb-l { list-style: none; padding: 0; margin: 0 }
 .tut-pagos .num { width: 24px; text-align: right; color: var(--muted); font-size: .8rem; flex: none }
 .tut-pagos li.ok { background: color-mix(in srgb, var(--ok-soft) 45%, transparent) }
 .tut-nm { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 2px 0; color: var(--ink); font: inherit; font-size: .9rem; cursor: pointer; display: flex; flex-direction: column }
