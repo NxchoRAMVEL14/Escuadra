@@ -65,12 +65,12 @@
   };
 
   /* ---------- hojas para imprimir ---------- */
-  const CSS = '<style>.pfi{font:9.5pt/1.3 Arial,Helvetica,sans-serif;color:#000}.pfi h1{font-size:14pt;margin:0;text-align:center;letter-spacing:.02em}.pfi .sub{text-align:center;margin:1mm 0 4mm;font-size:10pt;color:#333}' +
-    '.pfi .lin{display:flex;gap:6mm;margin:0 0 3mm}.pfi .lin span{flex:1;border-bottom:1px solid #000;padding:0 1mm 1px;min-height:5mm}.pfi .lin b{white-space:nowrap}' +
+  const CSS = '<style>.pfi{font:9.5pt/1.3 Arial,Helvetica,sans-serif;color:#000}.pfi h1{font-size:14pt;margin:0;text-align:center;letter-spacing:.02em}.pfi .sub{text-align:center;margin:1mm 0 3mm;font-size:10pt;color:#333}' +
+    '.pfi .lin{display:flex;gap:6mm;margin:0 0 2.5mm}.pfi .lin span{flex:1;border-bottom:1px solid #000;padding:0 1mm 1px;min-height:5mm}.pfi .lin span.ck{flex:none;min-height:0;padding:0;border:1px solid #000;margin:0 1.5mm 0 4mm}.pfi .lin b{white-space:nowrap}' +
     '.pfi table{border-collapse:collapse;width:100%}.pfi th,.pfi td{border:1px solid #000;padding:2mm;vertical-align:middle}.pfi th{background:#dde6e5;font-size:8.5pt}.pfi td.a{width:28mm;font-weight:bold;font-size:9pt}.pfi td.n{width:19mm;text-align:center;font-size:12pt;font-weight:bold}.pfi td.o{width:21mm;text-align:center;font-size:12pt}' +
     '.pfi .tot{display:flex;justify-content:flex-end;gap:3mm;margin:3mm 0;font-weight:bold;font-size:11pt}.pfi .tot span{min-width:30mm;border-bottom:1.5px solid #000;text-align:center}.pfi .obs{border:1px solid #000;min-height:28mm;padding:2mm;font-size:9pt}' +
-    '.pfi .fase{background:#dde6e5;font-weight:bold;padding:1.5mm 2mm;margin:4mm 0 2mm;border-left:4px solid #0e5e5a}.pfi .q{margin:2mm 0 1mm}.pfi .r{border-bottom:1px dotted #555;min-height:6mm;margin:0 0 1mm;padding:0 1mm;font-family:inherit}.pfi .ck{display:inline-block;width:3.2mm;height:3.2mm;border:1px solid #000;margin:0 1mm 0 3mm;vertical-align:-.4mm;text-align:center;line-height:3mm;font-size:8pt}' +
-    '.pfi .pie{font-size:7.5pt;color:#444;margin-top:5mm}.pfi-hoja{page-break-after:always}.pfi-hoja:last-child{page-break-after:auto}</style>';
+    '.pfi .fase{background:#dde6e5;font-weight:bold;padding:1.2mm 2mm;margin:3mm 0 1.5mm;border-left:4px solid #0e5e5a}.pfi .q{margin:1.5mm 0 .5mm}.pfi .r{border-bottom:1px dotted #555;min-height:5.2mm;margin:0 0 .7mm;padding:0 1mm;font-family:inherit}.pfi .ck{display:inline-block;width:3.2mm;height:3.2mm;border:1px solid #000;margin:0 1mm 0 3mm;vertical-align:-.4mm;text-align:center;line-height:3mm;font-size:8pt}' +
+    '.pfi .pie{font-size:7.5pt;color:#444;margin-top:3mm}.pfi-hoja{page-break-after:always;break-inside:avoid;box-sizing:border-box}.pfi-hoja:last-child{page-break-after:auto}</style>';
   const pie = g => '<p class="pie">' + esc((g.carrera ? 'Especialidad en ' + u.cap(String(g.carrera).toLowerCase().replace(/^t[eé]cnico en /, '').replace(/\s+\d{4}$/, '')) : 'Especialidad') + ' - ' + (g.semestre || '') + 'er Semestre · ' + g.nombre) + '</p>';
   const nomEq = eq => eq ? eq.nombre + (eq.proy ? ' · ' + eq.proy : '') : '';
   PF.hojaRubrica = (g, pid, eq, k, conPts) => {
@@ -103,7 +103,21 @@
       '<p class="q">Menciona 3 modificaciones técnicas que le harán a su mecanismo para mejorar su resistencia y precisión (ej. reforzar la base, cambiar el eje, modificar los planos en FreeCAD).</p>' +
       [0, 1, 2].map(i => '<p class="q"><b>' + (i + 1) + '.</b></p>' + lineas((b.mej || [])[i], 1)).join('') + pie(g) + '</div>';
   };
-  const imprime = (g, hojas, titulo) => E.print.run(CSS + hojas.join(''), { title: titulo + ' · ' + g.nombre, margin: '10mm' });
+  // alto y ancho útiles de una hoja carta con margen de 10 mm (arriba se reservan 19 mm para el logo)
+  const MARGEN = 10, ANCHO_MM = 215.9 - 2 * MARGEN, ALTO_MM = 279.4 - MARGEN - (MARGEN + 19) - 3;
+  PF.ajusta = hojas => {
+    const box = document.createElement('div'), mm = 96 / 25.4;
+    box.style.cssText = 'position:absolute;left:-10000px;top:0;visibility:hidden;width:' + ANCHO_MM + 'mm';
+    box.innerHTML = CSS + hojas.join(''); document.body.appendChild(box);
+    try {
+      return [...box.querySelectorAll('.pfi-hoja')].map(h => {
+        const alto = h.getBoundingClientRect().height / mm;
+        if (alto > ALTO_MM) { const z = Math.max(0.6, Math.floor(ALTO_MM / alto * 1000) / 1000); h.style.zoom = String(z); h.style.width = (ANCHO_MM / z).toFixed(2) + 'mm'; h.dataset.zoom = String(z); }
+        return h.outerHTML;
+      });
+    } finally { box.remove(); }
+  };
+  const imprime = (g, hojas, titulo) => E.print.run(CSS + PF.ajusta(hojas).join(''), { title: titulo + ' · ' + g.nombre, margin: MARGEN + 'mm' });
   A['pfi-print'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, que = el.dataset.q, eqs = equipos(g, pid), hojas = [];
     if (que === 'rub') {
