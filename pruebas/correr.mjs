@@ -4,13 +4,15 @@
 //   npm install --prefix pruebas playwright && npx --prefix pruebas playwright install chromium && node pruebas/correr.mjs
 import http from 'node:http';
 import { spawn } from 'node:child_process';
-import { readFileSync, readdirSync, existsSync, statSync, mkdirSync, appendFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync, mkdirSync, appendFileSync, rmSync } from 'node:fs';
 import { join, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 
 const AQUI = dirname(fileURLToPath(import.meta.url)), RAIZ = process.env.SRC || join(AQUI, '..');
 const PUERTOS = [8765, 8771], OUT = process.env.OUT_DIR || join(os.tmpdir(), 'escuadra-pruebas');
+// cada corrida empieza con la carpeta de resultados vacía (si no, las imágenes de una corrida anterior se mezclan)
+try { rmSync(OUT, { recursive: true, force: true }); } catch (e) { }
 mkdirSync(OUT, { recursive: true });
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.mjs': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.pdf': 'application/pdf', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain' };
 const servidor = puerto => new Promise(res => {

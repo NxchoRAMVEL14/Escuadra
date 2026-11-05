@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 const PORT = process.env.PORT || 8765;
 const OUT = (process.env.OUT_DIR || '/tmp/escuadra-pruebas') + '/t153'; 
@@ -87,6 +87,7 @@ console.log('formatos que imprimieron: ' + hechos.length + ' de ' + lista.length
 console.log('sin imprimir con datos de prueba: ' + faltan.map(x => x.k + (x.err ? ' (' + x.err + ')' : '')).join(', '));
 // 2) cada formato real: PDF sin gráficos de fondo (como Chrome de Android) y el logo en cada hoja
 const mide = (pdf, pre, land, lm) => { const y1 = lm + 18.5;
+  readdirSync(pre.replace(/\/[^/]*$/, '')).filter(x => x.startsWith(pre.split('/').pop() + '-') && x.endsWith('.png')).forEach(x => rmSync(pre.replace(/[^/]*$/, '') + x));
   execFileSync('pdftoppm', ['-r', '60', '-png', pdf, pre]);
   const py = `
 import glob, json
