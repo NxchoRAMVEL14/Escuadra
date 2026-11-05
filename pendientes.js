@@ -128,7 +128,7 @@
       // 9) etapas del proyecto vencidas sin marcar (solo si ya llevas el avance)
       if (E.proyecto) {
         const p0 = C.parcialActual(hoy), p = p0 && E.proyecto.canon ? C.parcial(E.proyecto.canon(g, p0.id)) : p0;
-        if (p && E.proyecto.ETAPAS[E.clases.smKey(g, p.id)]) {
+        if (p && (E.proyecto.def ? E.proyecto.def(g, p.id) : E.proyecto.ETAPAS[E.clases.smKey(g, p.id)])) {
           const dp = E.proyecto.doc(g, p.id), eqs = dp.equipos || [];
           if (eqs.length && Object.keys(dp.etapas || {}).some(k => Object.keys(dp.etapas[k] || {}).length)) {
             const mal = eqs.map(eq => E.proyecto.estado(g, p.id, eq, hoy)).filter(r => r.atr.length);

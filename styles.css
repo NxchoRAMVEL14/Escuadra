@@ -1471,3 +1471,12 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 /* v1.28 · miniatura de la hoja en la vista previa de impresión */
 .pv-mini { margin: 12px auto 4px; background: #fff; border-radius: 3px; box-shadow: 0 1px 6px rgba(0,0,0,.25); overflow: hidden; pointer-events: none; position: relative }
 .pv-pag { position: absolute; left: 0; top: 0; transform-origin: 0 0; background: #fff; color: #000 }
+
+/* v1.28.2 · editar el proyecto */
+.pj-proy { color: var(--brand); font-weight: 600 } .pj-edq > input.pj-proyin { font-weight: 400; margin-top: 4px; font-size: .88rem }
+.pj-proys { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 10px }
+.pj-etl { padding-left: 1.6em; margin: 8px 0 } .pj-etl li { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line) }
+.pj-etl .pj-ett { grid-column: 1 / -1; width: 100%; font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: var(--surface); color: var(--ink) }
+.pj-etl .pj-etf { display: flex; flex-direction: column; gap: 2px } .pj-etl .pj-etf input { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px; background: var(--surface); color: var(--ink); max-width: 170px }
+.pj-edq .row > input { flex: 1; min-width: 0; font: inherit; font-weight: 700; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; background: var(--surface); color: var(--ink) }
+.pj-sin { list-style: none; padding: 0; margin: 6px 0 0 } .pj-sin li { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 3px 0 } .pj-sin select { max-width: 150px; font-size: .8rem }

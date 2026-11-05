@@ -31,6 +31,7 @@
       case 'coop': return 'Cooperación «' + (nom() || x || '') + '»';
       case 'cerrado': { const pp = C.parcial(x); return 'Cierre del ' + (pp ? pp.nombre : 'parcial'); }
       case 'casaRep': return 'Códigos del repaso para casa';
+      case 'proy': { const pp = C.parcial(x); return 'Proyecto del ' + (pp ? pp.nombre : 'parcial'); }
       case 'cobro': return 'Cobro «' + (nom() || 'de copias') + '»';
       case 'impLog': return 'Registro de impresiones';
       case 'cobAvisos': return 'Avisos de cobros';
