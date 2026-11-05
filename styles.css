@@ -1480,3 +1480,13 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .pj-etl .pj-etf { display: flex; flex-direction: column; gap: 2px } .pj-etl .pj-etf input { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px; background: var(--surface); color: var(--ink); max-width: 170px }
 .pj-edq .row > input { flex: 1; min-width: 0; font: inherit; font-weight: 700; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; background: var(--surface); color: var(--ink) }
 .pj-sin { list-style: none; padding: 0; margin: 6px 0 0 } .pj-sin li { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 3px 0 } .pj-sin select { max-width: 150px; font-size: .8rem }
+
+/* v1.28.4 · pruebas físicas del proyecto */
+.pfi-eqs { list-style: none; padding: 0; margin: 8px 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface) }
+.pfi-eqs li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line) } .pfi-eqs li:last-child { border: 0 }
+.pfi-eqb { flex: 1; min-width: 0; text-align: left; background: none; border: 0; color: var(--ink); font: inherit; padding: 4px 0; cursor: pointer } .pfi-eqb small { display: block }
+.pfi-cap { list-style: none; padding: 0; margin: 6px 0 } .pfi-cap li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line) } .pfi-cap li small { display: block; font-size: .78rem }
+.pfi-tot { font-size: 1.05rem; margin: 8px 0 }
+.pfi-ra { border-bottom: 1px solid var(--line); padding: 6px 0 } .pfi-ra .row input:first-child { flex: 1 } .pfi-ra textarea { width: 100%; margin-top: 4px; font: inherit; font-size: .85rem }
+.pfi-mej { background: var(--brand-soft); border-radius: 10px; padding: 8px 10px; margin: 8px 0 } .pfi-mej ul { list-style: none; padding: 0; margin: 4px 0 0 } .pfi-mej li { display: flex; align-items: center; gap: 8px; padding: 3px 0 }
+.pfi-mejb { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 700; flex: none; cursor: pointer } .pfi-mejb.ok { background: var(--ok); color: #fff; border-color: var(--ok) }
