@@ -111,7 +111,7 @@
     /* proyecto por equipo */
     const PJ = E.proyecto; R.pj = null;
     if (PJ && pAct) {
-      const pid = PJ.canon(g, pAct.id), def = PJ.ETAPAS[E.clases.smKey(g, pid)], eqs = (PJ.doc(g, pid).equipos || []);
+      const pid = PJ.canon(g, pAct.id), def = PJ.def ? PJ.def(g, pid) : PJ.ETAPAS[E.clases.smKey(g, pid)], eqs = (PJ.doc(g, pid).equipos || []);
       if (def && eqs.length) { const est = eqs.map(eq => ({ eq: eq, r: PJ.estado(g, pid, eq, per.corte) })); R.pj = { nombre: def.nombre, pid: pid, eqs: est, ok: est.filter(x => x.r.nv === 'ok').length, atr: est.filter(x => x.r.nv !== 'ok'), metas: PJ.metas(g, pid) || [] }; }
     }
 
