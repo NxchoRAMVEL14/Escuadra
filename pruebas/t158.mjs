@@ -131,5 +131,25 @@ ok('en el 3er parcial el equipo ve sus 3 mejoras y las palomea', !r2.sin && r2.m
 // editar una rúbrica
 const r3 = await ev(async () => { const E = window.E; E.actions['pfi-rub-ed'](); await new Promise(r => setTimeout(r, 200)); const el = document.querySelector('.modal [data-ch=pfi-rub][data-k=garra][data-i="0"][data-f=pts]'); el.value = '30'; el.dispatchEvent(new Event('change', { bubbles: true })); await new Promise(r => setTimeout(r, 200)); const mx = E.pruebas.max('garra'); E.actions['pfi-rub-orig']({ dataset: { k: 'garra' } }); await new Promise(r => setTimeout(r, 200)); E.modal.close(); return { mx, mx2: E.pruebas.max('garra') }; });
 ok('las rúbricas se editan (puntos posibles) y vuelven a la original', r3.mx === 110 && r3.mx2 === 100, JSON.stringify(r3));
+// v1.28.6: los puntos van a una actividad que ya existe («Proyecto vs 2 pruebas», 20 puntos, peso 25)
+const r4 = await ev(async r0 => {
+  const E = window.E, S = E.store, g = E.data.grupoActual(), PF = E.pruebas, pa = E.calc.parcialActual(), eq = E.proyecto.doc(g, r0.pid).equipos[0], out = {};
+  const id = 'act_vs2'; S.put('act:' + g.id + ':' + id, { id, parcial: pa.id, categoria: 'trabajos', nombre: 'Proyecto vs 2 pruebas', peso: 25, max: 20, fecha: '2026-11-05', instrumento: 'O', cuenta: true, notas: {} });
+  const vieja = PF.doc(g, r0.pid).actId;
+  out.lista = PF.destinos(g, r0.pid).some(a => a.id === id);
+  E.changes['pfi-dest']({ value: id, dataset: { pid: r0.pid } }); await new Promise(r => setTimeout(r, 200));
+  const a = S.get('act:' + g.id + ':' + id); out.notas = eq.al.map(x => a.notas[x]); out.nota = E.calc.nota(a, eq.al[0]); out.actId = PF.doc(g, r0.pid).actId;
+  out.sel = (document.querySelector('[data-ch=pfi-dest]') || {}).value;
+  // sin elegir nada: la detecta sola por el nombre
+  S.update('prueba:' + g.id + ':' + r0.pid, d => { d.actId = null; }, { silent: true }); out.auto = PF.destino(g, r0.pid);
+  E.changes['pfi-dest']({ value: 'nueva', dataset: { pid: r0.pid } }); await new Promise(r => setTimeout(r, 200));
+  out.viejaBorrada = !S.get('act:' + g.id + ':' + vieja); out.vs2Limpia = eq.al.every(x => (S.get('act:' + g.id + ':' + id).notas || {})[x] == null); out.nueva = PF.doc(g, r0.pid).actId; out.nuevaNom = (S.get('act:' + g.id + ':' + out.nueva) || {}).nombre; out.vieja = vieja;
+  return out;
+}, r0);
+ok('la lista de la tarjeta trae las actividades de Libreta, Proyecto y Bitácora', r4.lista);
+ok('al elegir «Proyecto vs 2 pruebas» los puntos caen ahí en su escala (90 % de 20 = 18)', r4.notas.every(n => n === 18) && r4.nota === 90 && r4.actId === 'act_vs2', JSON.stringify(r4));
+ok('al cambiar de actividad, la anterior ya no cuenta doble (la creada se borra, la tuya se limpia)', r4.viejaBorrada && r4.vs2Limpia, JSON.stringify([r4.viejaBorrada, r4.vs2Limpia]));
+ok('si no eliges, la detecta sola por el nombre «prueba»', r4.auto === 'act_vs2', r4.auto);
+ok('«Una actividad nueva» vuelve a crear «Prueba física del proyecto»', r4.nueva && r4.nueva !== 'act_vs2' && /Prueba física del proyecto/.test(r4.nuevaNom || ''), JSON.stringify(r4.nuevaNom));
 ok('sin errores de página', errs.length === 0, errs.slice(0, 3).join(' | '));
 await b.close();
