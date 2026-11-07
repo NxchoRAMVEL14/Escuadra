@@ -232,7 +232,7 @@
     { id: 'el6', tema: 'sm3-electro', tipo: 'ab', niv: 3, q: 'Dibuja el escalón de autorretención con botón de paro, botón de arranque y relé K1.', r: 'Paro (NC) en serie → (Arranque NA en paralelo con contacto NA de K1) → bobina K1.' },
     { id: 'mo1', tema: 'sm3-motordc', tipo: 'om', niv: 1, q: '¿Cómo inviertes el sentido de giro de un motor de CD?', op: ['Invirtiendo la polaridad (DPDT o puente H)', 'Subiendo el voltaje de la fuente', 'Agregando un resistor en serie', 'Cambiando el carrete por uno más grande'] },
     { id: 'mo2', tema: 'sm3-motordc', tipo: 'calc', niv: 3, gen: 'torque' },
-    { id: 'mo3', tema: 'sm3-motordc', tipo: 'om', niv: 2, q: 'Si en la grúa pones un carrete más grande, el motor…', op: ['Sube más rápido pero levanta menos peso', 'Sube más lento y levanta más peso', 'Levanta exactamente lo mismo', 'Invierte su giro'] },
+    { id: 'mo3', tema: 'sm3-motordc', tipo: 'om', niv: 2, q: 'Si al motor de su mecanismo le pones un carrete más grande, el motor…', op: ['Sube más rápido pero levanta menos peso', 'Sube más lento y levanta más peso', 'Levanta exactamente lo mismo', 'Invierte su giro'] },
     { id: 'mo4', tema: 'sm3-motordc', tipo: 'om', niv: 1, q: 'Dos pilas AA de 1.5 V conectadas en serie dan…', op: ['3 V', '1.5 V', '0.75 V', '6 V'] },
     { id: 'mo5', tema: 'sm3-motordc', tipo: 'vf', niv: 2, q: 'Un error en el cruce del interruptor DPDT puede provocar un corto en la pila.', v: true, exp: 'Por eso se revisa el cruce antes de conectar.' },
     { id: 'fa1', tema: 'sm3-fallas', tipo: 'om', niv: 2, q: 'Un sistema hidráulico se siente «esponjoso». ¿Cuál es la causa probable?', op: ['Aire atrapado', 'Demasiado aceite', 'Presión muy alta', 'Manguera nueva'] },

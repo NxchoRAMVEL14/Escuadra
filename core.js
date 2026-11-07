@@ -456,30 +456,43 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       const c = D.cfg(); const p = C.parcial(pid); const man = D.manual(g, pid);
       if (man.activo) {
         const r = (man.alumnos || {})[aid] || {};
-        return { manual: true, final: (r.cal === '' || r.cal == null) ? null : Number(r.cal), asis: r.asis, fal: r.fal, enCurso: false, comp: {} };
+        return { manual: true, final: (r.cal === '' || r.cal == null) ? null : C.of100(Number(r.cal)), asis: r.asis, fal: r.fal, enCurso: false, comp: {} };
       }
       const comp = { examen: C.promCat(g, pid, 'examen', aid), trabajos: C.promCat(g, pid, 'trabajos', aid) };
       const as = C.asis(g, p, aid); comp.asistencia = as.pct;
       const np = C.part(g, p, aid); comp.participacion = C.partPct(g, p, np);
       let sw = 0, s = 0; const falta = [];
       ['examen', 'trabajos', 'asistencia', 'participacion'].forEach(k => { const w = Number(c.pond[k] || 0); if (!w) return; if (comp[k] == null) { falta.push(k); return; } s += comp[k] * w; sw += w; });
-      const final = sw ? u.round(s / sw, 0) : null;
-      return { manual: false, comp: comp, final: final, enCurso: falta.length > 0, falta: falta, np: np, as: as };
+      // v1.29.0: calificación oficial: base 10, entera (7.5 → 8) y mínima 5; se guarda ×10 para que los umbrales (60, 80) sigan igual
+      const bruta = sw ? s / sw : null, final = C.of100(bruta);
+      return { manual: false, comp: comp, bruta: bruta, final: final, enCurso: falta.length > 0, falta: falta, np: np, as: as };
     },
     finalSem(g, aid) {
       const v = D.parciales().map(p => C.cal(g, p.id, aid).final); const ok = v.filter(x => x != null);
-      return { parciales: v, final: ok.length ? u.round(ok.reduce((a, b) => a + b, 0) / ok.length, 0) : null, completo: ok.length === v.length };
+      return { parciales: v, final: ok.length ? C.of100(ok.reduce((a, b) => a + b, 0) / ok.length) : null, completo: ok.length === v.length };
     },
-    escala(v) { return Number(D.cfg().escalaActa) === 10 ? u.round(v / 10, 1) : v; },
+    // v1.29.0 (reglas de control escolar): calificación de 5 a 10, sin decimales (7.5 → 8, 7.4 → 7), nunca 0
+    oficial(v) { if (v == null || v === '' || isNaN(Number(v))) return null; return Math.max(5, Math.min(10, u.round(Number(v) / 10, 0))); },
+    of100(v) { const o = C.oficial(v); return o == null ? null : o * 10; },
+    c10(v) { const o = C.oficial(v); return o == null ? '—' : String(o); },
+    escala(v) { return C.oficial(v); },
+    // quiénes van en el acta: los activos y las bajas que siguen en la lista oficial (las que quitó una lista nueva llevan número 900+)
+    actaAlumnos(g) { return D.alumnos(g, true).filter(a => a.activo !== false || Number(a.num) < 900); },
+    // ¿la baja aplica en este parcial? Sin fecha de baja: en todos. Con fecha: en los parciales que todavía no se subían
+    // a la plataforma cuando lo diste de baja (fecha de captura en o después de la baja)
+    bajaEn(a, p) { return !!a && a.activo === false && (!a.bajaF || (p.captura || p.fin) >= a.bajaF); },
     actaFila(g, aid) {
-      const c = D.cfg(); const row = [];
+      const al = D.alumno ? D.alumno(g, aid) : null, row = [], hoy = u.today(); let suma = 0, n = 0;
       D.parciales().forEach(p => {
+        // alumno dado de baja («no viene»): asistencia 2 y calificación 5, como pide control escolar
+        if (C.bajaEn(al, p) && p.inicio <= hoy) { const d = C.fechasLista ? C.fechasLista(g, p).length : 0; row.push(5, 2, Math.max(0, d - 2)); suma += 5; n++; return; }
         const k = C.cal(g, p.id, aid); let as = '', fa = '';
         if (k.manual) { as = k.asis == null ? '' : k.asis; fa = k.fal == null ? '' : k.fal; }
         else { const a = C.asis(g, p, aid); if (a.ses) { as = a.a; fa = a.f; } }
-        row.push(k.final == null ? '' : C.escala(k.final), as, fa);
+        const o = C.oficial(k.final); if (o != null) { suma += o; n++; }
+        row.push(o == null ? '' : o, as, fa);
       });
-      const fs = C.finalSem(g, aid); row.push(fs.final == null ? '' : C.escala(fs.final));
+      row.push(n ? Math.max(5, u.round(suma / n, 0)) : '');
       return row;
     },
     riesgos(g, p) {
@@ -489,7 +502,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
         if (as.racha >= 2) out.push({ id: a.id, nombre: a.nombre, kind: 'bad', txt: as.racha + ' faltas seguidas' });
         else if (as.ses >= 3 && as.pct != null && as.pct < c.minAsis) out.push({ id: a.id, nombre: a.nombre, kind: 'warn', txt: 'Asistencia ' + Math.round(as.pct) + '%' });
         const k = C.cal(g, p.id, a.id);
-        if (!k.manual && k.final != null && k.final < c.minAprob && C.acts(g, p.id).length) out.push({ id: a.id, nombre: a.nombre, kind: 'bad', txt: 'Va en ' + k.final + (k.enCurso ? '*' : '') });
+        if (!k.manual && k.final != null && k.final < c.minAprob && C.acts(g, p.id).length) out.push({ id: a.id, nombre: a.nombre, kind: 'bad', txt: 'Va en ' + C.c10(k.final) + (k.enCurso ? '*' : '') });
       });
       return out;
     },

@@ -45,7 +45,7 @@
   CA.mensaje = (g, a, pid, url, limite) => {
     const p = C.parcial(pid), cf = D.cfg(), r = E.aprobar ? E.aprobar.analiza(g, pid, a.id) : null, k = C.cal(g, pid, a.id), nom = u.corto(a.nombre);
     const l = ['Buen día. Le escribe ' + (cf.docente || 'el docente') + ', docente del módulo de ' + (g.carrera ? u.cap(String(g.carrera).toLowerCase().replace(/^t[eé]cnico en /, '').replace(/\s+\d{4}$/, '')) : 'la carrera') + ' del grupo ' + g.nombre + (cf.plantel ? ' en el ' + cf.plantel : '') + '.',
-      'Le comparto cómo va ' + nom + ' en el ' + p.nombre + ' al ' + u.fLarga(u.today()) + ': lleva ' + (k.final == null ? 'calificación pendiente' : k.final + (k.enCurso ? ' (en curso)' : '')) + '; se aprueba con ' + minA() + '.'];
+      'Le comparto cómo va ' + nom + ' en el ' + p.nombre + ' al ' + u.fLarga(u.today()) + ': lleva ' + (k.final == null ? 'calificación pendiente' : C.c10(k.final) + (k.enCurso ? ' (en curso)' : '')) + '; se aprueba con ' + C.c10(minA()) + '.'];
     if (r && r.pend.length) { l.push('Le falta:'); r.pend.slice(0, 5).forEach(x => l.push('• ' + x.tipo + ': ' + corto(x.t, 90) + (x.gain != null ? ' (sube ' + (Math.round(x.gain * 10) / 10) + ')' : ''))); }
     if (r && r.todo != null && r.pend.length) l.push('Si entrega todo, puede llegar a ' + Math.round(r.todo) + '.');
     if (r && r.nec != null && r.nec > 0 && r.nec <= 100) l.push('En el examen necesita al menos ' + r.nec + '.');

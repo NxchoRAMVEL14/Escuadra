@@ -78,7 +78,7 @@ const r15 = await p.evaluate(async () => {
   return { L: E.errores.lista().map(x => x.o + ':' + x.m), pant: /Algo falló/.test(pant), btnOk, rep: window.__clip.slice(-1)[0] || '', aj: /Reporte de errores/.test(document.body.innerText) && /3 errores anotados/.test(document.body.innerText) };
 });
 ok('15 · errores: se anotan los de la página, los atrapados y los de pantalla', ['error:', 'atrapado:', 'pantalla:'].every(k => r15.L.some(x => x.indexOf(k) === 0)), r15.L.join(' | '));
-ok('15 · la pantalla de error trae «Copiar reporte para Claude» y copia versión y errores', r15.pant && r15.btnOk && /Reporte de errores de Escuadra/.test(r15.rep) && /Versión: 1\.28/.test(r15.rep) && /prueba-error-escuadra pantalla/.test(r15.rep), r15.rep.split('\n').slice(0, 2).join(' / '));
+ok('15 · la pantalla de error trae «Copiar reporte para Claude» y copia versión y errores', r15.pant && r15.btnOk && /Reporte de errores de Escuadra/.test(r15.rep) && /Versión: 1\.\d+\.\d+/.test(r15.rep) && /prueba-error-escuadra pantalla/.test(r15.rep), r15.rep.split('\n').slice(0, 2).join(' / '));
 ok('15 · Ajustes muestra el reporte de errores', r15.aj);
 
 /* ===== 7. tamaño de letra ===== */

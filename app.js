@@ -2,8 +2,10 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.28.8';
+  E.VERSION = '1.29.0';
   E.CHANGELOG = [
+            { v: '1.29.0', f: '2026-11-07', t: 'Reglas de control escolar. Toda la app califica de 5 a 10 sin decimales (7.5 → 8, 7.4 → 7; nunca menos de 5 ni 0). Nuevo «📤 Para subir a la plataforma» en Final y acta: copia solo calificación y asistencias por día del parcial que toca, con su fecha y aviso de blancos o ceros; las faltas van solo en el Excel para Norma. Los dados de baja salen con asistencia 2 y calificación 5. La captura a mano y la autoevaluación también van de 5 a 10.' },
+            { v: '1.28.9', f: '2026-11-07', t: 'Proyecto del 3er parcial: ya no es una grúa, es su mismo mecanismo del 2º parcial (garra o brazo) con todos sus movimientos por hidráulica y 1 motor obligatorio; así quedaron el proyecto, las clases, los temas, las ideas, el banco y la planeación. Cada equipo hereda el nombre y el tipo de su mecanismo del 2º parcial. La rúbrica impresa trae al pie el plan de mejora hacia el 3er parcial (y en el 3er parcial, esas mejoras para palomear si las hicieron).' },
             { v: '1.28.8', f: '2026-11-06', t: 'Una sola captura, varios lados. Examen recomendado: su actividad en Calificaciones se crea sola y las calificaciones que capturas caen solas (si ya tienes tu actividad de examen, la usa y no se duplica; la eliges en la tarjeta). Reglamento: marcar «Alumno» en Seguridad deja su calificación en la tarea del reglamento, y capturar esa tarea en Calificaciones marca la firma en Seguridad.' },
             { v: '1.28.7', f: '2026-11-06', t: 'Imprimir: nuevo «📐 Examen práctico de FreeCAD 2D». Una hoja por alumno con su nombre, el plano de la placa y la rúbrica de 100 puntos, todo en una carta y con el logo de CETAC 19. Imprime todo el grupo, un alumno o una hoja en blanco.' },
             { v: '1.28.6', f: '2026-11-05', t: 'Pruebas físicas: eliges a qué actividad de Calificaciones caen los puntos de la rúbrica (por ejemplo «Proyecto vs 2 pruebas»). Si no eliges, toma la que diga «prueba». Se guardan en la escala de esa actividad (90 % de 20 = 18) y, al cambiarla, la anterior se limpia para no contar doble.' },

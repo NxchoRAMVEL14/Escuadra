@@ -20,13 +20,13 @@
     const z = g && CZ.de(g, pid), x = z && z.alumnos && z.alumnos[aid];
     // si después activaste la captura a mano de ese parcial, manda la captura a mano
     if (!x || D.manual(g, pid).activo) return vivo(g, pid, aid);
-    return { manual: false, cerrado: z.f, final: x.final, comp: Object.assign({}, x.comp), enCurso: !!x.enCurso, falta: x.falta || [], np: x.np, as: Object.assign({ fechasF: [] }, x.as) };
+    return { manual: false, cerrado: z.f, final: C.of100(x.final), comp: Object.assign({}, x.comp), enCurso: !!x.enCurso, falta: x.falta || [], np: x.np, as: Object.assign({ fechasF: [] }, x.as) };
   };
   // en el acta, asistencias y faltas también salen de la foto
   const fila0 = C.actaFila.bind(C);
   C.actaFila = function (g, aid) {
     const row = fila0(g, aid);
-    D.parciales().forEach((p, i) => { const k = C.cal(g, p.id, aid); if (k.cerrado && k.as) { row[i * 3 + 1] = k.as.ses ? k.as.a : ''; row[i * 3 + 2] = k.as.ses ? k.as.f : ''; } });
+    const al = D.alumno(g, aid); D.parciales().forEach((p, i) => { if (C.bajaEn(al, p)) return; const k = C.cal(g, p.id, aid); if (k.cerrado && k.as) { row[i * 3 + 1] = k.as.ses ? k.as.a : ''; row[i * 3 + 2] = k.as.ses ? k.as.f : ''; } });
     return row;
   };
   const foto = (g, pid) => {
@@ -44,9 +44,9 @@
   // quién tendría otra calificación con los datos de hoy
   CZ.difs = (g, pid) => {
     const z = CZ.de(g, pid); if (!z) return [];
-    return D.alumnos(g).map(a => { const x = (z.alumnos || {})[a.id]; if (!x) return null; const k = vivo(g, pid, a.id); return k.final !== x.final ? { a: a, antes: x.final, hoy: k.final } : null; }).filter(Boolean);
+    return D.alumnos(g).map(a => { const x = (z.alumnos || {})[a.id]; if (!x) return null; const k = vivo(g, pid, a.id); return C.of100(k.final) !== C.of100(x.final) ? { a: a, antes: C.of100(x.final), hoy: C.of100(k.final) } : null; }).filter(Boolean);
   };
-  const fmt = v => v == null ? '—' : v;
+  const fmt = v => C.c10(v);
 
   A['cz-cerrar'] = el => {
     const g = D.grupoActual(), p = C.parcial(el.dataset.pid); if (!g || !p) return;

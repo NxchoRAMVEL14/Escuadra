@@ -68,7 +68,7 @@
     /* calificaciones de los parciales del periodo */
     R.cal = ps.map(p => {
       const rows = al.map(a => ({ a: a, k: C.cal(g, p.id, a.id) })), con = rows.filter(r => r.k.final != null && (r.k.manual || (r.k.comp || {}).examen != null || (r.k.comp || {}).trabajos != null));
-      return { p: p, n: con.length, prom: con.length ? Math.round(con.reduce((s, r) => s + r.k.final, 0) / con.length * 10) / 10 : null, aprob: con.filter(r => r.k.final >= minA).length,
+      return { p: p, n: con.length, prom: con.length ? Math.round(con.reduce((s, r) => s + r.k.final, 0) / con.length) / 10 : null, aprob: con.filter(r => r.k.final >= minA).length,
         reprob: con.filter(r => r.k.final < minA), sin: rows.length - con.length, enCurso: p.fin >= per.corte || con.some(r => r.k.enCurso), cerrado: p.fin < per.corte };
     }).filter(x => x.p.inicio <= per.corte);
 
@@ -250,7 +250,7 @@
     return [
       ['Asistencia', pctTxt(k.asis), diasTxt(R.asis.dias) + ' con lista', k.asis == null ? '' : k.asis >= 90 ? 'ok' : k.asis >= 80 ? 'warn' : 'bad'],
       ['Promedio', k.prom == null ? '—' : String(k.prom), R.cAct ? R.cAct.p.nombre + (R.cAct.enCurso ? ' (en curso)' : '') : '', k.prom == null ? '' : k.prom >= 80 ? 'ok' : k.prom >= 60 ? 'warn' : 'bad'],
-      ['Aprobando', k.aprob == null ? '—' : k.aprob + ' de ' + k.nCal, k.reprob ? k.reprob + ' con menos de ' + (Number(D.cfg().minAprob) || 60) : 'nadie por debajo', k.aprob == null ? '' : k.reprob ? (k.reprob / Math.max(1, k.nCal) > 0.2 ? 'bad' : 'warn') : 'ok'],
+      ['Aprobando', k.aprob == null ? '—' : k.aprob + ' de ' + k.nCal, k.reprob ? k.reprob + ' con menos de ' + C.c10(Number(D.cfg().minAprob) || 60) : 'nadie por debajo', k.aprob == null ? '' : k.reprob ? (k.reprob / Math.max(1, k.nCal) > 0.2 ? 'bad' : 'warn') : 'ok'],
       ['Avance', pctTxt(k.avance), R.avAct ? R.avAct.hParcial + ' de ' + R.avAct.cal + ' h del ' + R.avAct.p.nombre : '', k.avance == null ? '' : 'ok'],
       ['Entregas', pctTxt(k.ent), R.ent.trab + ' trabajos calificables', k.ent == null ? '' : k.ent >= 85 ? 'ok' : k.ent >= 70 ? 'warn' : 'bad'],
       ['Requieren atención', String(k.atencion), 'de ' + nAl + ' alumnos', k.atencion ? (k.atencion / Math.max(1, nAl) > 0.2 ? 'bad' : 'warn') : 'ok']
@@ -292,7 +292,7 @@
       (av.temas.length ? '<p class="small"><b>Temas:</b> ' + esc(lista(av.temas, 8)) + '</p>' : '') +
       (av.evs.length ? '<details class="sub"><summary>Evidencias del periodo (' + av.evs.length + ')</summary><ul class="small">' + av.evs.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></details>' : '') + '</div>').join('') : '<p class="muted small">Este grupo no tiene secuencia de clases en el periodo.</p>'));
     // aprovechamiento
-    h += card('<h3>📈 Aprovechamiento</h3>' + (R.cal.length ? '<div class="tbl-wrap"><table class="tbl cte-t"><thead><tr><th>Parcial</th><th>Promedio</th><th>Aprobando</th><th>Menos de ' + (Number(D.cfg().minAprob) || 60) + '</th><th>Sin calificación</th></tr></thead><tbody>' +
+    h += card('<h3>📈 Aprovechamiento</h3>' + (R.cal.length ? '<div class="tbl-wrap"><table class="tbl cte-t"><thead><tr><th>Parcial</th><th>Promedio</th><th>Aprobando</th><th>Menos de ' + C.c10(Number(D.cfg().minAprob) || 60) + '</th><th>Sin calificación</th></tr></thead><tbody>' +
       R.cal.map(c => '<tr><td>' + esc(c.p.nombre) + (c.enCurso ? ' <small class="muted">en curso</small>' : '') + '</td><td>' + (c.prom == null ? '—' : c.prom) + '</td><td>' + c.aprob + '</td><td>' + c.reprob.length + '</td><td>' + c.sin + '</td></tr>').join('') + '</tbody></table></div>' : '<p class="muted small">Sin calificaciones todavía.</p>') +
       (R.sem ? '<p class="small mt"><b>Semáforo (' + esc(R.sem.p.nombre) + '):</b> 🔴 ' + R.sem.cnt.mal + ' · 🟡 ' + R.sem.cnt.reg + ' · 🟢 ' + R.sem.cnt.bien + (R.sem.cnt.sin ? ' · sin datos ' + R.sem.cnt.sin : '') + esc(semNota(R)) +
         (R.sem.conInicio ? '. En el periodo subieron de nivel ' + R.sem.subieron.length + ' y bajaron ' + R.sem.bajaron.length : '') + '.</p>' : '') +
@@ -370,7 +370,7 @@
     h += sec('1. Indicadores del periodo') + tabla(kpis(R).map(k => k[0]), [kpis(R).map(k => k[1] + (k[2] ? ' · ' + k[2] : ''))], 'cte-kp');
     h += sec('2. Avance del programa') + (R.av.length ? tabla(['Parcial', 'Horas dadas / del parcial', 'En el periodo', 'Clases perdidas', 'Actividades clave trabajadas'], R.av.map(av => [av.p.nombre + (av.sm ? ' · SM' + av.sm.num : ''), av.hParcial + ' / ' + av.cal + ' h (' + (pct(av.hParcial, av.cal) || 0) + ' %)', av.hDadas + ' h', av.nPerd ? av.nPerd + ' (' + av.hPerd + ' h)' : '0', av.acs.join('; ') || '—'])) +
       ul(R.av.filter(av => av.temas.length).map(av => 'Temas (' + av.p.nombre + '): ' + lista(av.temas, 10) + '.').concat(R.av.filter(av => av.faltan > 0 && !av.flujo).map(av => 'Con los días que quedan del ' + av.p.nombre + ' faltan ' + av.faltan + ' h de la secuencia.'))) : '<p class="tiny">Sin secuencia de clases en el periodo.</p>');
-    h += sec('3. Aprovechamiento') + (R.cal.length ? tabla(['Parcial', 'Promedio', 'Aprobando', 'Menos de ' + (Number(cfg.minAprob) || 60), 'Sin calificación', 'Alumnos por debajo'], R.cal.map(c => [c.p.nombre + (c.enCurso ? ' (en curso)' : ''), c.prom == null ? '—' : String(c.prom), String(c.aprob), String(c.reprob.length), String(c.sin), lista(c.reprob.map(r => corto(r.a.nombre) + ' ' + r.k.final), 8) || '—'])) : '') +
+    h += sec('3. Aprovechamiento') + (R.cal.length ? tabla(['Parcial', 'Promedio', 'Aprobando', 'Menos de ' + C.c10(Number(cfg.minAprob) || 60), 'Sin calificación', 'Alumnos por debajo'], R.cal.map(c => [c.p.nombre + (c.enCurso ? ' (en curso)' : ''), c.prom == null ? '—' : String(c.prom), String(c.aprob), String(c.reprob.length), String(c.sin), lista(c.reprob.map(r => corto(r.a.nombre) + ' ' + r.k.final), 8) || '—'])) : '') +
       ul([].concat(R.sem ? ['Semáforo (' + R.sem.p.nombre + '): rojo ' + R.sem.cnt.mal + ', amarillo ' + R.sem.cnt.reg + ', verde ' + R.sem.cnt.bien + semNota(R) + (R.sem.conInicio ? '; en el periodo subieron de nivel ' + R.sem.subieron.length + ' y bajaron ' + R.sem.bajaron.length : '') + '.'] : [],
         R.exam.map(x => x.ex.titulo + (x.pct != null ? ': ' + x.pct + ' % de aciertos (' + x.n + ' alumnos)' + (x.debiles.length ? '; temas a reforzar: ' + x.debiles.map(d => d.titulo + ' ' + d.p + ' %').join(', ') : '') : ': sin capturar') + '.')));
     h += sec('4. Asistencia y entregas') + ul(['Asistencia del grupo: ' + pctTxt(R.asis.pct) + ' en ' + diasTxt(R.asis.dias) + ' con lista; ' + nTxt(R.asis.retardos, 'retardo', 'retardos') + ' y ' + nTxt(R.asis.just, 'justificada', 'justificadas') + '.' + (R.asis.semanas.length ? ' Por semana: ' + R.asis.semanas.map(w => u.fDM(w.lun) + ' ' + pctTxt(w.pct)).join(', ') + '.' : ''),

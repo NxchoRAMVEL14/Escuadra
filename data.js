@@ -725,24 +725,24 @@ window.E = window.E || {};
         proceso: s3.map(a => a.titulo),
         desarrollo: [s3[0].desarrollo[0], s3[2].desarrollo[0], s3[2].desarrollo[1], s3[3].desarrollo[0], s3[3].desarrollo[1]],
         transv: { fund: ['Pensamiento Matemático'], amp: ['Cuidado Físico Corporal'], hvyt: ['Colaboración y trabajo en equipo', 'Resolución de problemas', 'Toma de decisiones'], cocends: ['Economía ecológica'] },
-        paec: 'Proyecto integrador: "Construcción y operación de una Grúa Mecatrónica Hidráulica y Motorizada"',
-        paecEvid: 'Grúa operando (Producto) y defensa oral (Desempeño)',
+        paec: 'Proyecto integrador: "Su garra o brazo articulado del 2º parcial, ahora hidráulico y motorizado (todos los movimientos con hidráulica y 1 motor obligatorio)"',
+        paecEvid: 'Mecanismo hidráulico operando (Producto) y defensa oral (Desempeño)',
         uac: [{}, {}, {}],
         estrategia: {
           diag: 'Cuestionario inicial sobre propiedades de los fluidos, Principio de Pascal y nociones básicas de circuitos eléctricos',
           form: 'Supervisión directa durante el ensamblaje, sellado de mangueras, purgado y conexión segura de motores DC; asesoría en la resolución de fugas o fallas eléctricas',
-          sum: 'Evaluación práctica y defensa final de la grúa operando integradamente (levantando y moviendo carga), bitácora técnica de fallas y examen del parcial'
+          sum: 'Evaluación práctica y defensa final del mecanismo hidráulico operando integradamente (tomando y moviendo carga con hidráulica y el motor), bitácora técnica de fallas y examen del parcial'
         },
         practicas: [
           'Demostrativa: trazado en libreta del circuito hidráulico (simbología ISO 1219) y del diagrama de escalera del motor.',
           'Guiada: montaje, sellado y purgado de un sistema hidráulico cerrado con jeringas y mangueras.',
           'Supervisada: instalación de un circuito eléctrico de CD (motor, portapilas e interruptor).',
-          'Autónoma: integración electrohidráulica en el mecanismo del 2º parcial para operar la grúa.'
+          'Autónoma: integración electrohidráulica en el mecanismo del 2º parcial (todo con hidráulica y 1 motor).'
         ],
         secuencia: {
           apertura: { periodo: '10 y 11 de noviembre', horas: 9, ei: 2, desc: 'Exposición sobre el Principio de Pascal, fuerza y fluidos. Lluvia de ideas sobre usos industriales (retroexcavadoras, frenos, prensas). Cuestionario diagnóstico. Asignación de materiales a comprar.', tecnicas: ['Exposición magistral', 'Lluvia de ideas', 'Cuestionario diagnóstico'], evidencias: ['Cuestionario diagnóstico contestado (Desempeño)', 'Participación en clase (Desempeño)'], eval: { H: true }, instr: { GO: true, Exa: true }, otro: '', pond: 10 },
           desarrollo: { periodo: '12 de noviembre al 4 de diciembre', horas: 51, ei: 13, desc: 'Taller de diagramas en libreta (hidráulico con simbología ISO 1219 y eléctrico de escalera). Instalación física: jeringas y mangueras purgadas con agua, empalme de cables del motor DC con pilas e interruptor, adaptando todo al mecanismo del 2º parcial.', tecnicas: ['Aprendizaje basado en proyectos (ABP)', 'Taller de conexión: diagramas en la libreta', 'Instalación hidráulica y eléctrica'], evidencias: ['Diagramas en libreta (Producto)', 'Instalación hidráulica purgada sin fugas (Desempeño)', 'Circuito eléctrico funcionando sin cortos (Desempeño)'], eval: { C: true, H: true }, instr: { LC: true }, otro: '', pond: 40 },
-          cierre: { periodo: '7 al 18 de diciembre', horas: 32, ei: 8, desc: 'Feria de proyectos: pruebas de funcionamiento de la grúa levantando y moviendo carga, detección y corrección de fallas en tiempo real, examen del parcial y plenaria final.', tecnicas: ['Exposición de proyectos (feria)', 'Pruebas de funcionamiento con carga', 'Detección y corrección de fallas en tiempo real', 'Plenaria final de aprendizajes'], evidencias: ['Grúa mecatrónica operando correctamente (Producto)', 'Defensa oral del proyecto (Desempeño)', 'Bitácora técnica de fallas y soluciones (Producto)'], eval: { A: true, H: true }, instr: { R: true, B: true, Exa: true }, otro: '', pond: 50 }
+          cierre: { periodo: '7 al 18 de diciembre', horas: 32, ei: 8, desc: 'Feria de proyectos: pruebas de funcionamiento del mecanismo hidráulico tomando y moviendo carga, detección y corrección de fallas en tiempo real, examen del parcial y plenaria final.', tecnicas: ['Exposición de proyectos (feria)', 'Pruebas de funcionamiento con carga', 'Detección y corrección de fallas en tiempo real', 'Plenaria final de aprendizajes'], evidencias: ['Mecanismo hidráulico y motorizado operando correctamente (Producto)', 'Defensa oral del proyecto (Desempeño)', 'Bitácora técnica de fallas y soluciones (Producto)'], eval: { A: true, H: true }, instr: { R: true, B: true, Exa: true }, otro: '', pond: 50 }
         },
         recursos: {
           material: ['Jeringas de plástico nuevas sin aguja (10 ml y 20 ml)', 'Manguera transparente flexible (de acuario o silicón)', 'Agua con colorante vegetal', 'Motores DC de 3 a 5 V, portapilas AA y pilas', 'Interruptores de botón o palanca; cable calibre 22 o 24', 'Cinchos, cinta de aislar e hilo resistente (polea del motor)', 'Mecanismo de cartón/madera del 2º parcial'],
