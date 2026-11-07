@@ -367,10 +367,16 @@
     const p = fin ? null : (ps.find(x => x.id === pid) || C.parcialActual());
     let h = '<div class="tabs">' + ps.map(x => '<a class="tab ' + (p && x.id === p.id ? 'on' : '') + '" href="#/calificaciones/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '<a class="tab ' + (fin ? 'on' : '') + '" href="#/calificaciones/final">Final y acta</a></div>';
     if (fin) {
-      h += card('<h3>Calificación final</h3><p class="muted small">Promedio de los 3 parciales' + (Number(c.escalaActa) === 10 ? ' (escala 10)' : ' (base 100)') + '. En el acta, ASIS y FAL se cuentan por ' + (C.porClase() ? 'clases de 50 min' : 'días de clase') + ' (cámbialo en Ajustes).</p>' +
-        '<div class="row gap wrap">' + btn(icon('copy') + ' Copiar para el acta', 'acta-copy', '', 'primary') + btn(icon('download') + ' Descargar acta (.xlsx)', 'acta-xlsx') + btn(icon('print') + ' Imprimir acta', 'pr-acta') + '</div>');
+      const pSub = ps.find(x => x.id === E.ui.platP) || (ps.find(x => x.captura && x.captura >= u.today() && x.inicio <= u.today()) || ps.slice().reverse().find(x => x.inicio <= u.today()) || ps[0]), rev = E.print.revisaActa(g, pSub.id), dSub = pSub.captura ? u.diffDays(u.today(), pSub.captura) : null;
+      h += card('<h3>📤 Para subir a la plataforma · ' + esc(pSub.nombre) + '</h3><p class="small">' + (pSub.captura ? 'Se sube el <b>' + u.fLarga(pSub.captura) + '</b>' + (dSub != null && dSub >= 0 ? (dSub === 0 ? ' (<b>hoy</b>)' : ' (faltan ' + dSub + ' días)') : '') + '. ' : '') + 'Solo calificación (5 a 10, sin decimales) y asistencias por día, en orden de lista. Las faltas no van aquí: van solo en el Excel para Norma.</p>' +
+        '<div class="row gap wrap">' + ps.map(x => btn(esc(x.nombre), 'plat-p', 'data-pid="' + x.id + '"', 'small' + (x.id === pSub.id ? ' on' : ' ghost'))).join('') + '</div>' +
+        '<div class="row gap wrap mt">' + btn(icon('copy') + ' Copiar calificaciones', 'plat-copy', 'data-pid="' + pSub.id + '" data-q="cal"', 'primary') + btn(icon('copy') + ' Copiar asistencias', 'plat-copy', 'data-pid="' + pSub.id + '" data-q="asis"') + btn(icon('copy') + ' Las dos columnas', 'plat-copy', 'data-pid="' + pSub.id + '" data-q="dos"', 'ghost') + '</div>' +
+        (rev.length ? '<p class="note warn small">Revisa antes de subir: la plataforma no acepta espacios en blanco ni ceros.<br>' + rev.map(x => esc(x.a.num + '. ' + u.corto(x.a.nombre)) + ': ' + esc(x.t)).join('<br>') + '</p>' : '<p class="note ok small">✓ Sin espacios en blanco ni ceros.</p>') +
+        '<p class="muted small">Alumnos dados de baja: asistencia 2 y calificación 5.</p>');
+      h += card('<h3>Calificación final y Excel para Norma</h3><p class="muted small">Calificaciones de 5 a 10 sin decimales (7.5 → 8, 7.4 → 7). La final es el promedio de los 3 parciales, redondeado igual. ASIS y FAL se cuentan por ' + (C.porClase() ? 'clases de 50 min' : 'días de clase') + '. El Excel lleva las faltas.</p>' +
+        '<div class="row gap wrap">' + btn(icon('download') + ' Excel para Norma (con faltas)', 'acta-xlsx', '', 'primary') + btn(icon('copy') + ' Copiar para el acta', 'acta-copy') + btn(icon('print') + ' Imprimir acta', 'pr-acta') + '</div>');
       h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th>' + ps.map(x => '<th>' + esc(x.nombre.replace(' parcial', '')) + '</th>').join('') + '<th>Final</th></tr></thead><tbody>' +
-        al.map(a => { const fs = C.finalSem(g, a.id); return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td>' + fs.parciales.map(v => '<td><span class="g ' + gclass(v) + '">' + gfmt(v) + '</span></td>').join('') + '<td><span class="g ' + gclass(fs.final) + '">' + gfmt(fs.final) + (fs.completo ? '' : '*') + '</span></td></tr>'; }).join('') +
+        al.map(a => { const fs = C.finalSem(g, a.id); return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td>' + fs.parciales.map(v => '<td><span class="g ' + gclass(v) + '">' + C.c10(v) + '</span></td>').join('') + '<td><span class="g ' + gclass(fs.final) + '">' + C.c10(fs.final) + (fs.completo ? '' : '*') + '</span></td></tr>'; }).join('') +
         '</tbody></table></div><p class="muted small">* Promedio con los parciales que ya tienen calificación.</p>';
       return { t: 'Calificaciones', h: h };
     }
@@ -378,11 +384,11 @@
     if (E.cap) h += E.cap.seguirHTML(g);
     h += '<label class="switch"><input type="checkbox" data-ch="manual-toggle" data-pid="' + p.id + '" ' + (man.activo ? 'checked' : '') + '><span>Captura manual (este parcial lo calificó otro docente)</span></label>';
     if (man.activo) {
-      h += card('<h3>' + esc(p.nombre) + ' · captura manual</h3><p class="muted small">Escribe la calificación (base 100), asistencias y faltas que te pasen. Se usan para la calificación final y el acta.</p>');
+      h += card('<h3>' + esc(p.nombre) + ' · captura manual</h3><p class="muted small">Escribe la calificación (de 5 a 10, sin decimales), asistencias y faltas que te pasen. Se usan para la calificación final y el acta.</p>');
       h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Calif.</th><th>Asis</th><th>Fal</th></tr></thead><tbody>' + al.map((a, i) => {
         const r = (man.alumnos || {})[a.id] || {}; const nx = al[i + 1];
         const inp = (f, v) => '<input type="number" inputmode="decimal" id="mn-' + f + '-' + a.id + '" value="' + esc(v == null ? '' : v) + '" data-ch="manual-val" data-pid="' + p.id + '" data-aid="' + a.id + '" data-f="' + f + '"' + (nx ? ' data-next="mn-' + f + '-' + nx.id + '"' : '') + '>';
-        return '<tr><td>' + a.num + '</td><td class="l">' + esc(a.nombre) + '</td><td>' + inp('cal', r.cal) + '</td><td>' + inp('asis', r.asis) + '</td><td>' + inp('fal', r.fal) + '</td></tr>';
+        return '<tr><td>' + a.num + '</td><td class="l">' + esc(a.nombre) + '</td><td>' + inp('cal', r.cal === '' || r.cal == null ? null : (Number(r.cal) > 10 ? C.oficial(r.cal) : r.cal)) + '</td><td>' + inp('asis', r.asis) + '</td><td>' + inp('fal', r.fal) + '</td></tr>';
       }).join('') + '</tbody></table></div>';
       return { t: 'Calificaciones', h: h };
     }
@@ -401,7 +407,7 @@
       (!acts.some(a => a.categoria === 'diagnostico') ? btn(icon('plus') + ' Examen diagnóstico (no cuenta)', 'act-nueva', 'data-cat="diagnostico" data-pid="' + p.id + '"', 'small ghost') : '') + '</div>');
     h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Calif.</th><th>Exa</th><th>Trab</th><th>Asis</th><th>Part</th></tr></thead><tbody>' + al.map(a => {
       const k = C.cal(g, p.id, a.id), cp = k.comp;
-      return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + (k.enCurso && k.final != null ? '*' : '') + '</span></td><td>' + gfmt(cp.examen) + '</td><td>' + gfmt(cp.trabajos) + '</td><td>' + gfmt(cp.asistencia) + '</td><td>' + gfmt(cp.participacion) + '</td></tr>';
+      return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td><td><span class="g ' + gclass(k.final) + '">' + C.c10(k.final) + (k.enCurso && k.final != null ? '*' : '') + '</span></td><td>' + gfmt(cp.examen) + '</td><td>' + gfmt(cp.trabajos) + '</td><td>' + gfmt(cp.asistencia) + '</td><td>' + gfmt(cp.participacion) + '</td></tr>';
     }).join('') + '</tbody></table></div><p class="muted small">* En curso: se calcula con los rubros que ya tienen datos. ' + (c.vaciasCero ? 'Una actividad sin calificación cuenta como 0 cuando ya pasó su fecha de entrega.' : 'Las actividades sin calificación no cuentan.') + '</p>';
     return { t: 'Calificaciones', h: h };
   };
@@ -409,6 +415,8 @@
   CH['manual-val'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, aid = el.dataset.aid, f = el.dataset.f; let v = el.value.trim();
     if (v !== '') { v = Number(v); if (isNaN(v)) v = ''; }
+    // la calificación se escribe de 5 a 10 y se guarda en base 100 (8 → 80)
+    if (f === 'cal' && v !== '') v = v <= 10 ? Math.max(5, Math.round(v)) * 10 : C.of100(v);
     S.update('manual:' + g.id, d => { d[pid] = d[pid] || { activo: true, alumnos: {} }; d[pid].alumnos = d[pid].alumnos || {}; d[pid].alumnos[aid] = Object.assign({}, d[pid].alumnos[aid] || {}); d[pid].alumnos[aid][f] = v; }, {});
   };
   A['act-nueva'] = el => {
@@ -672,6 +680,8 @@
   A['pr-acta'] = () => E.print.acta(D.grupoActual());
   A['acta-xlsx'] = () => E.print.actaXlsx(D.grupoActual());
   A['acta-copy'] = () => E.print.actaCopy(D.grupoActual());
+  A['plat-copy'] = el => E.print.plataformaCopy(D.grupoActual(), el.dataset.pid, el.dataset.q);
+  A['plat-p'] = el => { E.ui.platP = el.dataset.pid; E.render(); };
 
   /* =================== IDEAS =================== */
   // pestañas: las del módulo de tu grupo (más «todos los módulos»)
@@ -866,7 +876,7 @@
     if (E.rap) h += E.rap.filtroHTML('alumnos');
     h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Asis ' + esc(p.nombre.replace(' parcial', '')) + '</th><th>Calif.</th></tr></thead><tbody>' + al.map(a => {
       const as = C.asis(g, p, a.id), k = C.cal(g, p.id, a.id);
-      return '<tr class="' + (a.activo === false ? 'baja' : '') + '"' + (E.rap ? E.rap.qAttr(a) : '') + '><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a>' + (a.activo === false ? ' <span class="chip">baja</span>' : '') + '</td><td>' + (as.pct == null ? '—' : Math.round(as.pct) + '%') + '</td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + '</span></td></tr>';
+      return '<tr class="' + (a.activo === false ? 'baja' : '') + '"' + (E.rap ? E.rap.qAttr(a) : '') + '><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a>' + (a.activo === false ? ' <span class="chip">baja</span>' : '') + '</td><td>' + (as.pct == null ? '—' : Math.round(as.pct) + '%') + '</td><td><span class="g ' + gclass(k.final) + '">' + C.c10(k.final) + '</span></td></tr>';
     }).join('') + '</tbody></table></div><p class="muted small">' + al.filter(a => a.activo !== false).length + ' alumnos activos.</p>';
     return { t: 'Alumnos', h: h };
   };
@@ -938,7 +948,7 @@
     h += card('<h3>' + esc(a.nombre) + '</h3><p class="muted small">Número de lista ' + a.num + (a.activo === false ? ' · <b>baja</b>' : '') + '</p>' +
       '<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="l">Parcial</th><th>Asistencias</th><th>Faltas</th><th>Part.</th><th>Calif.</th></tr></thead><tbody>' + D.parciales().map(p => {
         const as = C.asis(g, p, a.id), k = C.cal(g, p.id, a.id);
-        return '<tr><td class="l">' + esc(p.nombre) + '</td><td>' + (k.manual ? (k.asis == null ? '—' : k.asis) : as.a) + '</td><td>' + (k.manual ? (k.fal == null ? '—' : k.fal) : as.f) + '</td><td>' + (k.manual ? '—' : C.part(g, p, a.id)) + '</td><td><span class="g ' + gclass(k.final) + '">' + gfmt(k.final) + '</span></td></tr>';
+        return '<tr><td class="l">' + esc(p.nombre) + '</td><td>' + (k.manual ? (k.asis == null ? '—' : k.asis) : as.a) + '</td><td>' + (k.manual ? (k.fal == null ? '—' : k.fal) : as.f) + '</td><td>' + (k.manual ? '—' : C.part(g, p, a.id)) + '</td><td><span class="g ' + gclass(k.final) + '">' + C.c10(k.final) + '</span></td></tr>';
       }).join('') + '</tbody></table></div>');
     if (E.perfil) h += card((E.semaforo ? E.semaforo.alumnoHTML(g, a) : '') + E.perfil.cardHTML(g, a), 'pf');
     if (E.apoyos && E.semaforo) h += E.apoyos.alumnoHTML(g, a);
@@ -962,7 +972,7 @@
     const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (!a || !confirm('¿Quitar a "' + a.nombre + '" de la lista? Sus calificaciones guardadas dejarán de mostrarse.')) return;
     S.update('grupo:' + g.id, gr => { gr.alumnos = (gr.alumnos || []).filter(x => x.id !== a.id); }); location.hash = '#/alumnos';
   };
-  A['alumno-baja'] = el => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { const a = (gr.alumnos || []).find(x => x.id === el.dataset.aid); if (a) a.activo = a.activo === false; }); };
+  A['alumno-baja'] = el => { const g = D.grupoActual(); S.update('grupo:' + g.id, gr => { const a = (gr.alumnos || []).find(x => x.id === el.dataset.aid); if (a) { a.activo = a.activo === false; if (a.activo === false) a.bajaF = u.today(); else delete a.bajaF; } }); };
 
   /* =================== CALENDARIO =================== */
   V.calendario = () => {
@@ -1039,8 +1049,8 @@
       (m.lastSyncAt ? '<p class="muted small mt">Última sincronización: ' + new Date(m.lastSyncAt).toLocaleString('es-MX') + '</p>' : ''));
     h += sec('docente', '👤 Docente y escuela', '<div class="fgrid">' + cf('docente', 'Nombre completo', c.docente) + cf('docenteCorto', 'Cómo te saludo', c.docenteCorto) + cf('plantel', 'Plantel', c.plantel) + cf('cct', 'C.C.T.', c.cct) + cf('entidad', 'Entidad', c.entidad) + cf('turno', 'Turno', c.turno) + cf('ciclo', 'Ciclo escolar', c.ciclo) + cf('periodo', 'Periodo', c.periodo) + '</div>' + cf('semestreTexto', 'Semestre (encabezado de planeaciones)', c.semestreTexto));
     h += sec('cal', '📊 Calificación', '<p class="small">Ponderación del parcial (debe sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.trabajos', 'Libreta/Proyecto/Bitácora %', c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
-      '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('avisoRetardos', 'Aviso a casa cada N retardos (0 = no avisar)', c.avisoRetardos, 'number') + cf('minAprob', 'Calificación mínima aprobatoria (debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde', c.umbralBien, 'number') +
-      sel('escalaActa', 'Escala del acta', [[100, 'Base 100'], [10, 'Base 10']], c.escalaActa) + '' + '</div>' +
+      '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('avisoRetardos', 'Aviso a casa cada N retardos (0 = no avisar)', c.avisoRetardos, 'number') + cf('minAprob', 'Mínimo aprobatorio en base 100 (60 = 6; debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde (base 100: 80 = 8)', c.umbralBien, 'number') +
+      '<p class="muted small" style="align-self:end">Calificaciones de 5 a 10, sin decimales (como pide control escolar).</p></div>' +
       '<div class="fgrid">' + sel('tardeValor', 'Lo entregado tarde vale (al marcar ⏰)', E.TARDE_OPC.map(x => [x, Math.round(x * 100) + ' %' + (x === 1 ? ' (sin descuento)' : '')]), C.tardeVale()) + '</div><p class="muted small">Cuando un alumno te entrega tarde, márcalo con ⏰ en la actividad, la libreta o la práctica (o «📥 Recibir tarde» en su ficha): su calificación se multiplica por este porcentaje. Con 75 %, un trabajo perfecto entregado tarde queda en 75 y uno de 80 queda en 60. Si después cambias el porcentaje, lo que ya marcaste conserva el que tenía.</p>' +
       tog('vaciasCero', 'Actividad sin calificación cuenta como 0 (no entregó) después de su fecha de entrega', c.vaciasCero) + tog('retardoCuenta', 'Retardo cuenta como asistencia', c.retardoCuenta) + tog('justCuenta', 'Falta justificada cuenta como asistencia', c.justCuenta) + tog('asisPorClase', 'Contar la asistencia por clase de 50 min (apagado: por día; faltó a todas las clases del día = 1 falta, fue al menos a una = 1 asistencia)', c.asisPorClase));
     if (g) {

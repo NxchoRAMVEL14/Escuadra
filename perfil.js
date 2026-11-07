@@ -263,7 +263,7 @@
   function fichaHTML(g, a) {
     const r = P.calc(g, a), c = D.cfg(), bar = v => '<td class="bx"><div class="bf" style="width:' + (v == null ? 0 : Math.max(2, Math.min(100, v))) + '%"></div></td>';
     let curso = false;
-    const cal = D.parciales().map(p => { const k = C.cal(g, p.id, a.id); if (k.final != null && k.enCurso) curso = true; return '<td>' + esc(p.nombre) + '<br><b>' + (k.final == null ? '—' : k.final + (k.enCurso ? '*' : '')) + '</b></td>'; }).join('');
+    const cal = D.parciales().map(p => { const k = C.cal(g, p.id, a.id); if (k.final != null && k.enCurso) curso = true; return '<td>' + esc(p.nombre) + '<br><b>' + (k.final == null ? '—' : C.c10(k.final) + (k.enCurso ? '*' : '')) + '</b></td>'; }).join('');
     return '<div class="pr ficha"><div class="fh">' + esc(c.plantelNombre || c.plantel || '') + ' · ' + esc(g.carrera || '') + ' · Grupo ' + esc(g.nombre || g.grupo || '') + ' · ' + esc(c.semestreTexto || '') + '</div>' +
       '<h2>' + esc(a.nombre) + '</h2><p class="tiny">No. de lista ' + a.num + ' · Ficha de seguimiento elaborada el ' + u.fFecha(u.today()) + '</p>' +
       (r.base != null ? '<p><b>Punto de partida:</b> ' + Math.round(r.base) + '/100 (' + esc(r.baseTxt) + ')' + (r.tend ? ' · Tendencia: ' + TEND[r.tend.k][0] : '') + '</p>' : '') +

@@ -1,4 +1,4 @@
-/* Escuadra · Avance del proyecto por equipo (un proyecto por submódulo: en el Módulo II, garra en el 2º parcial y grúa en el 3er parcial).
+/* Escuadra · Avance del proyecto por equipo (un proyecto por submódulo: en el Módulo II, garra o brazo en el 2º parcial y el mismo mecanismo hidráulico en el 3er parcial).
    Las etapas salen del guion de Clases y su fecha meta es el día que te toca esa clase; cada equipo lleva su semáforo:
    verde al día, amarillo con una etapa atrasada, rojo con dos o más (o una atrasada más de una semana).
    Es seguimiento: no entra a calificación.
@@ -15,7 +15,7 @@
   // [id, nombre, actividades de Clases que la cierran]
   PJ.ETAPAS = {
     'II-2': { nombre: 'Garra o brazo articulado', et: [['idea', 'Idea y esquema cinemático', ['proyecto']], ['proto', 'Prototipo de cartón', ['prototipo']], ['croquis', 'Croquis acotado', ['croquis']], ['piezas', 'Piezas en FreeCAD', ['fc-piezas']], ['ensfc', 'Ensamble en FreeCAD', ['fc-ensamble']], ['plano', 'Plano y plantillas 1:1', ['fc-plano']], ['corte', 'Piezas cortadas', ['corte']], ['armado', 'Perforado y armado', ['ensamble']], ['pruebas', 'Primeras pruebas', ['pruebas']], ['ajustes', 'Ajustes sin trabas', ['ajustes']], ['final', 'Acabado y ensayo', ['acabado']], ['expo', 'Exposición', ['expo', 'expo2']]] },
-    'II-3': { nombre: 'Grúa hidráulica', et: [['diseno', 'Diseño y cálculos', ['diseno-grua']], ['diagrama', 'Diagrama hidráulico', ['diagrama-grua']], ['montaje', 'Montaje hidráulico', ['montaje']], ['motor', 'Hidráulica y motor', ['montaje2']], ['integra', 'Integración con el mecanismo', ['integracion']], ['opera', 'Opera el circuito', ['opera']], ['pruebas', 'Pruebas y corrección', ['pruebas3']], ['plano', 'Plano «como quedó»', ['doc-grua']], ['carga', 'Prueba con carga', ['carga1', 'carga2']], ['feria', 'Feria', ['feria1', 'feria2']]] }
+    'II-3': { nombre: 'Garra o brazo hidráulico', et: [['diseno', 'Diseño y cálculos', ['diseno-grua']], ['diagrama', 'Diagrama hidráulico', ['diagrama-grua']], ['montaje', 'Montaje hidráulico', ['montaje']], ['motor', 'Hidráulica y motor', ['montaje2']], ['integra', 'Integración con su mecanismo', ['integracion']], ['opera', 'Opera el circuito', ['opera']], ['pruebas', 'Pruebas y corrección', ['pruebas3']], ['plano', 'Plano «como quedó»', ['doc-grua']], ['carga', 'Prueba con carga', ['carga1', 'carga2']], ['feria', 'Feria', ['feria1', 'feria2']]] }
   };
   const ST = { '': ['○', 'Pendiente', ''], proc: ['◐', 'En proceso', 'warn'], ok: ['✓', 'Lista', 'ok'] };
   const SIG = { '': 'proc', proc: 'ok', ok: '' };
@@ -23,7 +23,17 @@
   PJ.doc = (g, pid) => S.get(KP(g, pid)) || {};
   // etapas del proyecto: las tuyas (si las editaste) o las del programa
   const base = (g, pid) => { const d = PJ.ETAPAS[E.clases.smKey(g, pid)]; return d ? { nombre: d.nombre, et: d.et.map(e => ({ id: e[0], t: e[1], base: e[2].slice(), f: '' })) } : null; };
-  PJ.def = (g, pid) => { const c = PJ.doc(g, pid).def; if (c && Array.isArray(c.et)) return Object.assign({ propio: true }, c); const b = base(g, pid); return b ? Object.assign({ propio: false }, b) : null; };
+  // v1.28.9: el 3er parcial es el mismo mecanismo del 2º (garra o brazo), ahora hidráulico y con 1 motor
+  const VIEJO = { 'Grúa hidráulica': 'Garra o brazo hidráulico' };
+  // el equipo del parcial anterior que comparte más integrantes con este
+  PJ.previo = (g, pid, eq) => {
+    const p0 = C.parcial(pid) || {}, mios = new Set((eq && eq.al) || []); let best = null, n = 0;
+    PJ.parciales(g).filter(p => p.id !== pid && p.inicio < p0.inicio).forEach(p => (PJ.doc(g, p.id).equipos || []).forEach(e2 => { const k = (e2.al || []).filter(a => mios.has(a)).length; if (k > n) { n = k; best = { pid: p.id, eq: e2 }; } }));
+    return best;
+  };
+  // nombre del proyecto del equipo: el suyo; si no tiene, el de su mecanismo del parcial anterior (versión hidráulica)
+  PJ.proyDe = (g, pid, eq) => { if (!eq) return ''; if (eq.proy) return eq.proy; const pr = PJ.previo(g, pid, eq); return pr && pr.eq.proy ? pr.eq.proy + ' (versión hidráulica)' : ''; };
+  PJ.def = (g, pid) => { const c = PJ.doc(g, pid).def; if (c && Array.isArray(c.et)) return Object.assign({ propio: true }, c, VIEJO[c.nombre] ? { nombre: VIEJO[c.nombre] } : {}); const b = base(g, pid); return b ? Object.assign({ propio: false }, b) : null; };
   if (E.undo && E.undo.NOMBRE) ['pj-eq-nuevo', 'pj-eq-del', 'pj-edit-ok', 'pj-def-nom', 'pj-et-t', 'pj-et-f', 'pj-et-sube', 'pj-et-baja', 'pj-et-del', 'pj-et-add', 'pj-et-guion', 'pj-et-orig', 'pj-proy', 'pj-st', 'pj-nom', 'pj-nota', 'pj-mover', 'pj-armar'].forEach(k => { E.undo.NOMBRE[k] = 'proyecto'; });
   // un proyecto por submódulo: si el submódulo dura dos parciales (de corrido), se lleva en el primero
   PJ.parciales = g => { const vistos = {}; return D.parciales().filter(p => { const k = E.clases.smKey(g, p.id); if (!PJ.ETAPAS[k] || vistos[k]) return false; vistos[k] = true; return true; }); };
@@ -61,7 +71,7 @@
       '<details class="sub" data-sec="pj-metas"><summary>Fechas meta de las etapas</summary><ol class="small">' + ms.map(m => '<li>' + esc(m.t) + ': <b>' + (m.f ? u.fCorta(m.f) : 'sin fecha') + '</b>' + (m.man ? ' <span class="chip small">a mano</span>' : '') + (m.f && m.f < hoy ? ' <span class="muted">(ya pasó)</span>' : '') + '</li>').join('') + '</ol></details>');
     est.sort((a, b) => ({ bad: 0, warn: 1, ok: 2 })[a.r.nv] - ({ bad: 0, warn: 1, ok: 2 })[b.r.nv]).forEach(x => {
       const eq = x.eq, r = x.r, mi = eq.al.map(id => D.alumno(g, id)).filter(Boolean);
-      h += card('<div class="row between gap wrap"><h3>' + NV[r.nv][0] + ' ' + esc(eq.nombre) + (eq.proy ? ' · <span class="pj-proy">' + esc(eq.proy) + '</span>' : '') + '</h3><span class="chip ' + r.nv + '">' + r.listas + ' de ' + r.total + ' etapas</span></div>' +
+      h += card('<div class="row between gap wrap"><h3>' + NV[r.nv][0] + ' ' + esc(eq.nombre) + (PJ.proyDe(g, pid, eq) ? ' · <span class="pj-proy">' + esc(PJ.proyDe(g, pid, eq)) + '</span>' : '') + '</h3><span class="chip ' + r.nv + '">' + r.listas + ' de ' + r.total + ' etapas</span></div>' +
         '<p class="small muted">' + mi.map(a => '<a href="#/alumno/' + a.id + '">' + esc(corto(a.nombre)) + '</a>').join(', ') + '</p>' +
         (r.atr.length ? '<p class="note ' + r.nv + ' small">Atrasado en: ' + r.atr.map(z => esc(z.m.t) + ' (meta ' + u.fCorta(z.m.f) + ', hace ' + z.dias + (z.dias === 1 ? ' día' : ' días') + ')').join('; ') + '.</p>' : r.sig ? '<p class="small">Sigue: <b>' + esc(r.sig.t) + '</b>' + (r.sig.f ? ' · meta ' + u.fCorta(r.sig.f) : '') + '</p>' : '<p class="note ok small">¡Todas las etapas listas! 🎉</p>') +
         '<div class="pj-et">' + ms.map(m => { const s = (r.st[m.id] || {}).st || '', late = m.f && m.f < hoy && s !== 'ok'; return '<button type="button" class="pj-e ' + (ST[s][2] || '') + (late ? ' late' : '') + '" data-act="pj-st" data-pid="' + pid + '" data-eq="' + eq.id + '" data-et="' + m.id + '" title="' + esc(ST[s][1]) + '"><b>' + ST[s][0] + '</b><span>' + esc(m.t) + '</span><small>' + (m.f ? u.fCorta(m.f) : '—') + '</small></button>'; }).join('') + '</div>' +
@@ -80,7 +90,7 @@
     if (!eqs.length) return card('<h3>👥 Equipos del ' + esc(C.parcial(pid).nombre) + '</h3><p class="muted small">Ármalos equilibrados (según Perfiles: un alumno fuerte en cada equipo) o al azar, y luego mueve a quien quieras. Si el proyecto continúa del parcial anterior, puedes conservar los mismos equipos.</p>' + armar);
     return card('<h3>👥 Equipos del ' + esc(C.parcial(pid).nombre) + '</h3><p class="muted small">Para cambiar a alguien de equipo usa «Mover a». Si alguien se separa, elige «➕ Equipo nuevo»: queda en su propio equipo con el avance que ya llevaba con el anterior. Los demás equipos no cambian.</p>' +
       '<div class="pj-ed">' + eqs.map((eq, i) => '<div class="pj-edq"><div class="row between gap"><input data-ch="pj-nom" ' + d + ' data-i="' + i + '" value="' + esc(eq.nombre) + '" aria-label="Nombre del equipo"><span class="chip">' + eq.al.length + '</span>' + btn('🗑', 'pj-eq-del', d + ' data-eq="' + eq.id + '" aria-label="Quitar este equipo"', 'small ghost') + '</div>' +
-        '<input class="pj-proyin" data-ch="pj-proy" ' + d + ' data-eq="' + eq.id + '" value="' + esc(eq.proy || '') + '" placeholder="Su proyecto (ej. garra de 3 dedos)" aria-label="Proyecto del equipo">' +
+        '<input class="pj-proyin" data-ch="pj-proy" ' + d + ' data-eq="' + eq.id + '" value="' + esc(eq.proy || '') + '" placeholder="' + esc(PJ.proyDe(g, pid, eq) || 'Su proyecto (ej. garra de 3 dedos)') + '" aria-label="Proyecto del equipo">' +
         (eq.al.length ? '<ul>' + eq.al.map(id => { const a = D.alumno(g, id); return a ? '<li>' + esc(corto(a.nombre)) + destinos(id, i) + '</li>' : ''; }).join('') + '</ul>' : '<p class="muted small">Sin integrantes. Al tocar «✓ Listo» se quita.</p>') + '</div>').join('') + '</div>' +
       (sin.length ? '<div class="note warn small mt"><b>Sin equipo (' + sin.length + '):</b><ul class="pj-sin">' + sin.map(a => '<li>' + esc(corto(a.nombre)) + destinos(a.id, null) + '</li>').join('') + '</ul></div>' : '') +
       '<div class="row gap wrap mt">' + btn('➕ Equipo nuevo', 'pj-eq-nuevo', d, 'small') + btn('✓ Listo', 'pj-edit-ok', d, 'primary') + '</div>' +

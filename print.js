@@ -170,23 +170,31 @@
   /* ---------- acta ---------- */
   const ACTA_H = ['No.', 'NOMBRE', '1 PAR', 'ASIS', 'FAL', '2 PAR', 'ASIS', 'FAL', '3 PAR', 'ASIS', 'FAL', '', 'CALIFICACION FINAL'];
   P.acta = g => {
-    const al = D.alumnos(g);
+    const al = C.actaAlumnos(g);
     const rows = al.map(a => { const r = C.actaFila(g, a.id); return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + r.slice(0, 9).map(v => '<td class="c">' + esc(v) + '</td>').join('') + '<td class="c"><b>' + esc(r[9]) + '</b></td></tr>'; }).join('');
     P.run('<div class="pr">' + head(g, 'ACTA PARA ENVÍO DE CALIFICACIONES', 'DOCENTE: ' + D.cfg().docente) +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">NOMBRE</th><th>1 PAR</th><th>ASIS</th><th>FAL</th><th>2 PAR</th><th>ASIS</th><th>FAL</th><th>3 PAR</th><th>ASIS</th><th>FAL</th><th>CALIF. FINAL</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<p class="tiny">Escala: ' + (Number(D.cfg().escalaActa) === 10 ? '10' : '100') + ' · ASIS/FAL por ' + 'clase de 50 min' + '. Generado con Escuadra el ' + u.fFecha(u.today()) + '.</p>' + firma() + '</div>', { landscape: true, title: 'Acta ' + g.grupo });
+      '<p class="tiny">Calificación de 5 a 10, sin decimales · ASIS/FAL por ' + (C.porClase() ? 'clase de 50 min' : 'día de clase') + ' · alumnos dados de baja: asistencia 2 y calificación 5. Generado con Escuadra el ' + u.fFecha(u.today()) + '.</p>' + firma() + '</div>', { landscape: true, title: 'Acta ' + g.grupo });
   };
   P.actaCopy = async g => {
-    const t = D.alumnos(g).map(a => C.actaFila(g, a.id).slice(0, 9).join('\t')).join('\n');
+    const t = C.actaAlumnos(g).map(a => C.actaFila(g, a.id).slice(0, 9).join('\t')).join('\n');
     const ok = await u.copy(t);
     u.toast(ok ? 'Copiado. En la hoja "ACTA CAL." pégalo en la celda C9 (1 PAR del alumno 1). La columna final de la escuela ya tiene su fórmula.' : 'No se pudo copiar', ok ? 'ok' : 'err', 8000);
   };
+  // v1.29.0: para la plataforma van solo calificación y asistencias (las faltas van solo en el Excel para Norma)
+  P.plataformaFilas = (g, pid) => { const i = D.parciales().findIndex(p => p.id === pid); return C.actaAlumnos(g).map(a => { const r = C.actaFila(g, a.id); return { a: a, cal: r[i * 3], asis: r[i * 3 + 1] }; }); };
+  P.plataformaCopy = async (g, pid, q) => {
+    const F = P.plataformaFilas(g, pid), t = F.map(x => q === 'cal' ? x.cal : q === 'asis' ? x.asis : x.cal + '\t' + x.asis).join('\n');
+    const ok = await u.copy(t); u.toast(ok ? 'Copiado ' + (q === 'cal' ? 'calificaciones' : q === 'asis' ? 'asistencias' : 'calificación y asistencias') + ' de ' + F.length + ' alumnos en orden de lista (sin faltas).' : 'No se pudo copiar', ok ? 'ok' : 'err', 6000);
+  };
+  // lo que la plataforma no acepta: espacios en blanco y ceros
+  P.revisaActa = (g, pid) => { const out = []; P.plataformaFilas(g, pid).forEach(x => { if (x.cal === '' || x.cal == null) out.push({ a: x.a, t: 'sin calificación' }); if (x.asis === '' || x.asis == null) out.push({ a: x.a, t: 'sin asistencias' }); else if (Number(x.asis) === 0) out.push({ a: x.a, t: '0 asistencias (la plataforma no acepta 0)' }); }); return out; };
   P.actaXlsx = async g => {
     try {
       if (!window.XLSX) { u.toast('Preparando Excel…'); await u.loadScript(E.XLSX_CDN); }
       const c = D.cfg(), X = window.XLSX;
       const aoa = [['OPCION EDUCATIVA: ' + c.opcion, '', 'ENTIDAD: ' + c.entidad], ['PLANTEL: ' + c.plantel, '', 'C.C.T.: ' + c.cct], ['CARRERA: ' + g.carrera, '', 'TURNO: ' + c.turno], ['SEMESTRE: ' + g.semestre, '', 'GRUPO: ' + g.grupo], ['CICLO ESCOLAR ' + c.ciclo + ' PERIODO : ' + c.periodo], ['ACTA PARA ENVIO DE CALIFICACIONES'], [], ACTA_H];
-      D.alumnos(g).forEach(a => { const r = C.actaFila(g, a.id); aoa.push([a.num, a.nombre].concat(r.slice(0, 9), [''], [r[9]])); });
+      C.actaAlumnos(g).forEach(a => { const r = C.actaFila(g, a.id); aoa.push([a.num, a.nombre].concat(r.slice(0, 9), [''], [r[9]])); });
       const ws = X.utils.aoa_to_sheet(aoa); ws['!cols'] = [{ wch: 5 }, { wch: 42 }].concat(Array(11).fill({ wch: 8 })); ws['!cols'][12] = { wch: 20 };
       const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, ('ACTA CAL.' + g.grupo + ' ' + (g.id.indexOf('MEC') >= 0 ? 'MEC' : '')).slice(0, 31));
       X.writeFile(wb, 'ACTA_' + g.id + '_' + u.today() + '.xlsx');

@@ -149,14 +149,14 @@ window.E = window.E || {};
       obj: 'Comprobar que la fuerza se multiplica según el área: F2 = F1 · (A2/A1).',
       mat: ['Jeringas de 10 y 20 ml sin aguja', 'Manguera de acuario', 'Agua con colorante', 'Bolsitas de arena como pesas'],
       pasos: ['Midan el diámetro interior de cada jeringa y calculen su área.', 'Conecten ambas con agua sin burbujas.', 'Pongan peso en la jeringa grande y empujen la chica: ¿cuánto cuesta levantarlo?', 'Comparen con el cálculo y expliquen la diferencia (fricción, aire).'],
-      evid: 'Cálculo y medición en la libreta', tip: 'Es la apertura perfecta del Submódulo 3 y conecta con la grúa del proyecto.'
+      evid: 'Cálculo y medición en la libreta', tip: 'Es la apertura perfecta del Submódulo 3 y conecta con el mecanismo hidráulico del proyecto.'
     },
     {
       id: 'aire-vs-agua', titulo: 'Jeringa de aire vs. agua: neumática sin compresor', sm: ['II-3'], tipo: 'Práctica', dur: '30 min', costo: 'Bajo',
       obj: 'Cubrir la parte neumática del programa: el aire se comprime, el agua no.',
       mat: ['Pares de jeringas con manguera: uno con aire y otro con agua'],
-      pasos: ['Empujen el sistema con aire y luego el de agua.', 'Anoten la diferencia: el de aire "rebota" y responde tarde.', 'Discutan: ¿por qué las grúas usan aceite y las pinzas de una línea de ensamble usan aire?', 'Relacionen con presión (bar, psi) y caudal.'],
-      evid: 'Conclusión escrita en la bitácora', tip: 'Así tu proyecto de grúa cubre neumática y no solo hidráulica, como pide el programa.'
+      pasos: ['Empujen el sistema con aire y luego el de agua.', 'Anoten la diferencia: el de aire "rebota" y responde tarde.', 'Discutan: ¿por qué las retroexcavadoras usan aceite y las pinzas de una línea de ensamble usan aire?', 'Relacionen con presión (bar, psi) y caudal.'],
+      evid: 'Conclusión escrita en la bitácora', tip: 'Así su proyecto hidráulico también cubre neumática, como pide el programa.'
     },
     {
       id: 'memorama-iso', titulo: 'Memorama de simbología ISO 1219', sm: ['II-3'], tipo: 'Dinámica', dur: '25 min', costo: 'Impresión',
@@ -174,9 +174,9 @@ window.E = window.E || {};
     },
     {
       id: 'inversion-giro', titulo: 'Inversión de giro con interruptor de doble polo', sm: ['II-3'], tipo: 'Práctica', dur: '50 min', costo: 'Bajo',
-      obj: 'Que la grúa suba y baje la carga con un solo motor.',
+      obj: 'Que el motor obligatorio de su mecanismo gire en los dos sentidos (p. ej. el giro de la base).',
       mat: ['Interruptor de doble polo doble tiro (DPDT)', 'Motor DC, pilas y cable'],
-      pasos: ['Explica cómo el interruptor cruza la polaridad del motor.', 'Dibujan el circuito y lo arman en la mesa.', 'Prueban subir y bajar con la polea de hilo.', 'Agregan el circuito a la grúa.'],
+      pasos: ['Explica cómo el interruptor cruza la polaridad del motor.', 'Dibujan el circuito y lo arman en la mesa.', 'Prueban los dos sentidos de giro.', 'Agregan el circuito a su mecanismo.'],
       evid: 'Circuito funcionando (Lista de cotejo)', tip: 'Es la versión de taller de lo que hace un arrancador con inversión de giro en la industria.'
     },
     {
@@ -253,7 +253,7 @@ window.E = window.E || {};
     },
     {
       id: 'pr-phet-circuitos', titulo: 'Simula el circuito antes de cablear (PhET)', sm: ['II-3'], tipo: 'Proyector', dur: '30 min', costo: '$0',
-      obj: 'Armar el circuito de la grúa de forma virtual y entender por qué un corto es peligroso.',
+      obj: 'Armar el circuito del motor de su mecanismo de forma virtual y entender por qué un corto es peligroso.',
       mat: ['Simulación gratuita PhET "Kit de construcción de circuitos: CD"'], link: 'https://phet.colorado.edu/es/simulations/circuit-construction-kit-dc',
       pasos: ['Arma en vivo pila + interruptor + foco (el foco hace de motor).', 'Mide voltaje y corriente con los instrumentos de la simulación.', 'Provoca un corto a propósito y comenten lo que muestra la simulación.', 'Después cada equipo dibuja su circuito real en la libreta.'],
       evid: 'Diagrama aprobado antes de recibir material', tip: 'Ver el corto en pantalla convence más que cualquier advertencia verbal.'

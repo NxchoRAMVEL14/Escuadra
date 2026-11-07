@@ -264,7 +264,7 @@ window.E = window.E || {};
       ],
       pantalla: ['La presión se transmite a todo el fluido', 'F2 = F1 · (A2 / A1)', 'Relación de áreas = (D2 / D1)²', 'Ganas fuerza, pierdes recorrido', 'Así funcionan frenos, gatos y excavadoras'],
       clave: [['Fluido confinado', 'Encerrado, sin escape'], ['Multiplicación de fuerza', 'Efecto de usar un émbolo de salida más grande'], ['Incompresible', 'Un líquido casi no cambia de volumen al presionarlo']],
-      ejemplo: { titulo: 'Jeringas del proyecto (mide las tuyas)', pasos: ['Supón D1 = 15 mm (jeringa chica) y D2 = 20 mm (grande).', 'Relación de áreas = (20 / 15)² ≈ 1.78.', 'Empujas con 10 N → la grande empuja con ≈ 17.8 N.', 'Si la chica avanza 30 mm, la grande avanza 30 / 1.78 ≈ 17 mm.'], resultado: 'La grúa levanta más peso si el "músculo" es la jeringa grande.' },
+      ejemplo: { titulo: 'Jeringas del proyecto (mide las tuyas)', pasos: ['Supón D1 = 15 mm (jeringa chica) y D2 = 20 mm (grande).', 'Relación de áreas = (20 / 15)² ≈ 1.78.', 'Empujas con 10 N → la grande empuja con ≈ 17.8 N.', 'Si la chica avanza 30 mm, la grande avanza 30 / 1.78 ≈ 17 mm.'], resultado: 'Su garra aprieta (o su brazo levanta) más si el "músculo" es la jeringa grande.' },
       preguntas: [['D1 = 10 mm, D2 = 30 mm. ¿Cuántas veces se multiplica la fuerza?', '9 veces ((30/10)² = 9).'], ['Y si el chico avanza 90 mm, ¿cuánto avanza el grande?', '10 mm.'], ['¿Por qué no funciona igual con aire?', 'Porque el aire se comprime: parte del recorrido se pierde comprimiéndolo.']],
       errores: ['Usar la relación de diámetros sin elevar al cuadrado.', 'Dejar burbujas: el sistema se vuelve "esponjoso".'],
       vida: 'Los frenos de un auto, el gato de un taller y las prensas industriales de cientos de toneladas funcionan con este principio.',
@@ -369,7 +369,7 @@ window.E = window.E || {};
       ideas: ['escalera-papel', 'pr-phet-circuitos'], fuente: 'Programa SEP 2024, Submódulo 3 (p. 42); Bolton (2013).'
     },
     {
-      id: 'sm3-motordc', sm: 'II-3', ac: 'Arma sistemas neumáticos, electroneumáticos, hidráulicos y electrohidráulicos', titulo: 'Motor de CD e inversión de giro (para la grúa)', dur: '50 min',
+      id: 'sm3-motordc', sm: 'II-3', ac: 'Arma sistemas neumáticos, electroneumáticos, hidráulicos y electrohidráulicos', titulo: 'Motor de CD e inversión de giro (el motor de su mecanismo)', dur: '50 min',
       objetivo: 'Conectar un motor de CD de forma segura e invertir su sentido de giro.',
       explica: [
         'Un motor de corriente directa gira en un sentido u otro según la polaridad. Su velocidad depende sobre todo del voltaje y su fuerza de giro (torque) de la corriente que puede tomar.',
@@ -378,7 +378,7 @@ window.E = window.E || {};
       ],
       pantalla: ['Cambiar polaridad = cambiar sentido de giro', 'DPDT en cruz o puente H para invertir', 'Revisa el cruce: un error = corto en la pila', 'Torque = fuerza × radio del carrete', 'Motorreductor = más fuerza, menos velocidad'],
       clave: [['Polaridad', 'Qué terminal es positiva y cuál negativa'], ['DPDT', 'Interruptor de doble polo y doble tiro'], ['Puente H', 'Circuito que invierte la polaridad de un motor'], ['Motorreductor', 'Motor con caja de engranes']],
-      ejemplo: { titulo: 'Carrete de la grúa', pasos: ['Supón un motorreductor de 0.05 N·m (revisa su ficha).', 'Carrete de radio 5 mm = 0.005 m.', 'F = T / r = 0.05 / 0.005 = 10 N ≈ 1 kg.', 'Con radio de 10 mm solo levantaría unos 500 g.'], resultado: 'Carrete chico = más fuerza. Conecta engranes (Submódulo 2) con motores (Submódulo 3).' },
+      ejemplo: { titulo: 'Carrete movido por el motor', pasos: ['Supón un motorreductor de 0.05 N·m (revisa su ficha).', 'Carrete de radio 5 mm = 0.005 m.', 'F = T / r = 0.05 / 0.005 = 10 N ≈ 1 kg.', 'Con radio de 10 mm solo levantaría unos 500 g.'], resultado: 'Carrete chico = más fuerza. Conecta engranes (Submódulo 2) con motores (Submódulo 3).' },
       preguntas: [['¿Cómo inviertes el giro de un motor de CD?', 'Invirtiendo la polaridad (DPDT o puente H).'], ['Dos pilas AA en serie, ¿qué voltaje dan?', '3 V.'], ['¿Qué pasa si el carrete es más grande?', 'Sube más rápido, pero levanta menos peso.']],
       errores: ['Cablear mal el cruce y provocar un corto.', 'Usar un motor sin reducción para levantar peso.', 'Dejar empalmes sin aislar.'],
       vida: 'Los motores de CD con inversión están en puertas automáticas, elevadores de ventanas y robots. Es tu primer paso hacia el control de motores industriales.',
@@ -394,7 +394,7 @@ window.E = window.E || {};
       ],
       pantalla: ['Síntoma → hipótesis → prueba una cosa → corrige → registra', 'Hidráulico "esponjoso" = aire atrapado: purga', 'Cilindro lento = revisa reguladora y presión', 'Despresuriza antes de desconectar', 'Nunca apuntes aire a una persona'],
       clave: [['Síntoma', 'Lo que observas que está mal'], ['Causa raíz', 'El origen real de la falla'], ['Despresurizar', 'Liberar la presión antes de intervenir']],
-      ejemplo: { titulo: 'La grúa no levanta', pasos: ['Síntoma: la jeringa grande no se mueve aunque empujo.', 'Hipótesis 1: manguera desconectada → revisar: está bien.', 'Hipótesis 2: aire atrapado → purgar: ahora sube, pero con poca fuerza.', 'Hipótesis 3: fuga en la unión → silicón y cincho: funciona.'], resultado: 'Tres hipótesis, una a la vez, todo registrado: eso es pensar como técnico.' },
+      ejemplo: { titulo: 'El brazo no sube', pasos: ['Síntoma: la jeringa grande no se mueve aunque empujo.', 'Hipótesis 1: manguera desconectada → revisar: está bien.', 'Hipótesis 2: aire atrapado → purgar: ahora sube, pero con poca fuerza.', 'Hipótesis 3: fuga en la unión → silicón y cincho: funciona.'], resultado: 'Tres hipótesis, una a la vez, todo registrado: eso es pensar como técnico.' },
       preguntas: [['¿Por qué probar una sola cosa a la vez?', 'Para saber cuál fue la causa real.'], ['¿Qué haces antes de desconectar una manguera?', 'Despresurizar el sistema.'], ['Un hidráulico se siente "esponjoso". ¿Causa probable?', 'Aire atrapado.']],
       errores: ['Cambiar varias cosas al mismo tiempo.', 'No registrar lo que se hizo.', 'Intervenir con presión.'],
       vida: 'El mantenimiento es una de las áreas que más técnicos contrata en el Bajío, y su habilidad principal es diagnosticar con método. Además, sirve para la vida: los problemas se resuelven igual.',

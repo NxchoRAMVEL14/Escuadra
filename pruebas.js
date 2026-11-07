@@ -45,7 +45,7 @@
   // tipo de mecanismo: el que elegiste, o el que se lee en el nombre de su proyecto
   // solo se adivina si el nombre dice un solo tipo («Garra o brazo articulado» no basta: se elige)
   const lee = s => { const n = u.norm(s || ''), h = [/GARRA|PINZA|MORDAZA/.test(n) && 'garra', /BRAZO/.test(n) && 'brazo', /GRUA/.test(n) && 'grua'].filter(Boolean); return h.length === 1 ? h[0] : null; };
-  PF.tipo = (g, pid, eq) => { const t = PF.eq(g, pid, eq.id).tipo; if (TIPOS[t]) return t; return lee(eq.proy) || lee(def(g, pid).nombre); };
+  PF.tipo = (g, pid, eq) => { const t = PF.eq(g, pid, eq.id).tipo; if (TIPOS[t]) return t; const pr = PJ() && PJ().previo ? PJ().previo(g, pid, eq) : null; return lee(eq.proy) || (pr && PF.tipo(g, pr.pid, pr.eq)) || lee(def(g, pid).nombre); };
   PF.total = (g, pid, eq) => { const x = PF.eq(g, pid, eq.id), t = PF.tipo(g, pid, eq); if (!t || !x.pts) return null; const as = PF.rub(rubDe(t)).asp; if (!as.some(a => x.pts[a.id] != null && x.pts[a.id] !== '')) return null; return as.reduce((s, a) => s + Math.min(Number(a.pts || 0), Number(x.pts[a.id] || 0)), 0); };
   const integrantes = (g, eq) => (eq.al || []).map(id => D.alumno(g, id)).filter(Boolean);
   const upd = (pid, fn) => { const g = D.grupoActual(); S.update(KD(g, pid), d => { d.eq = d.eq || {}; fn(d, g); }, {}); };
@@ -89,26 +89,39 @@
     '.pfx .dat{display:flex;gap:5mm;align-items:flex-end;font-size:10pt;margin-bottom:1.5mm}.pfx .dat .n{flex:1}.pfx .nom{border-bottom:1px solid #000;font-weight:bold;padding:0 1mm;font-size:10.5pt;min-height:5.5mm}.pfx .fl{border-bottom:1px solid #000;display:inline-block;min-width:22mm}' +
     '.pfx .ins{background:#f3f6fa;border:1px solid #c9d2dc;border-radius:1.5mm;padding:2mm 3.5mm;font-size:9pt;line-height:1.3;margin-top:1.5mm}.pfx .ins ol{margin:0;padding-left:5mm}.pfx code{font-family:monospace;font-size:8.5pt}' +
     '.pfx .plano{display:block;width:92%;border:1px solid #444;margin:2mm auto}.pfx table{font-size:9pt}.pfx th{background:#eef2f7}.pfx td{padding:1.1mm 2mm}.pfx th{padding:1.2mm 2mm}.pfx td.v{text-align:center;width:20mm;white-space:nowrap}.pfx td.pt{width:28mm}.pfx tr.suma td{font-weight:bold;text-align:right}.pfx tr.suma td.v{text-align:center}' +
+    '.pfi .mej{border:1px solid #000;padding:1.2mm 2.5mm;margin-top:2mm;font-size:9pt}.pfi .mej b{display:block;margin-bottom:.6mm}.pfi .mej .mi{display:flex;gap:1.5mm;align-items:baseline;min-height:5.2mm}.pfi .mej .nm{font-weight:bold}.pfi .mej .ln{flex:1;border-bottom:1px solid #777;height:4mm}.pfi .mej .ck{flex:none;margin:0 1.5mm 0 0}' +
     '.pfi .pie{font-size:7.5pt;color:#444;margin-top:3mm}.pfi-hoja{page-break-after:always;break-inside:avoid;box-sizing:border-box}.pfi-hoja:last-child{page-break-after:auto}</style>';
   const pie = g => '<p class="pie">' + esc((g.carrera ? 'Especialidad en ' + u.cap(String(g.carrera).toLowerCase().replace(/^t[eé]cnico en /, '').replace(/\s+\d{4}$/, '')) : 'Especialidad') + ' - ' + (g.semestre || '') + 'er Semestre · ' + g.nombre) + '</p>';
-  const nomEq = eq => eq ? eq.nombre + (eq.proy ? ' · ' + eq.proy : '') : '';
+  const proyEq = (g, pid, eq) => (PJ() && PJ().proyDe ? PJ().proyDe(g, pid, eq) : eq.proy) || '';
+  const nomEq = (eq, g, pid) => eq ? eq.nombre + (g ? (proyEq(g, pid, eq) ? ' · ' + proyEq(g, pid, eq) : '') : (eq.proy ? ' · ' + eq.proy : '')) : '';
   PF.hojaRubrica = (g, pid, eq, k, conPts) => {
     const r = PF.rub(k), x = eq ? PF.eq(g, pid, eq.id) : {}, pts = conPts && x.pts ? x.pts : {}, tot = conPts && eq ? PF.total(g, pid, eq) : null;
     return '<div class="pfi pfi-hoja"><h1>RÚBRICA DE EVALUACIÓN FÍSICA</h1><p class="sub">' + esc(r.t) + '</p>' +
-      '<div class="lin"><b>Equipo:</b><span>' + esc(nomEq(eq)) + '</span><b>Fecha:</b><span style="flex:.45">' + (conPts && x.f ? esc(u.fCorta(x.f)) : '') + '</span></div>' +
+      '<div class="lin"><b>Equipo:</b><span>' + esc(nomEq(eq, g, pid)) + '</span><b>Fecha:</b><span style="flex:.45">' + (conPts && x.f ? esc(u.fCorta(x.f)) : '') + '</span></div>' +
       (eq ? '<div class="lin"><b>Integrantes:</b><span style="font-size:8.5pt">' + integrantes(g, eq).map(a => esc(a.nombre)).join(', ') + '</span></div>' : '<div class="lin"><b>Integrantes:</b><span></span></div>') +
       '<table><thead><tr><th>Aspecto a Evaluar</th><th>Criterio de Desempeño</th><th>Puntos<br>Posibles</th><th>Puntos<br>Obtenidos</th></tr></thead><tbody>' +
       r.asp.map((a, i) => '<tr><td class="a">' + (i + 1) + '. ' + esc(a.t) + '</td><td>' + esc(a.c) + '</td><td class="n">' + a.pts + '</td><td class="o">' + (pts[a.id] != null && pts[a.id] !== '' ? esc(pts[a.id]) : '') + '</td></tr>').join('') + '</tbody></table>' +
       '<div class="tot">Calificación Total:<span>' + (tot != null ? tot + ' / ' + PF.max(k) : '') + '</span></div>' +
-      '<div class="obs"><b>Observaciones / Comentarios del Docente:</b><br>' + (conPts && x.obs ? esc(x.obs) : '') + '</div>' + pie(g) + '</div>';
+      '<div class="obs"><b>Observaciones / Comentarios del Docente:</b><br>' + (conPts && x.obs ? esc(x.obs) : '') + '</div>' + mejRub(g, pid, eq) + pie(g) + '</div>';
   };
+  // v1.28.9: en la rúbrica van sus mejoras: las que comprometieron hacia el siguiente parcial (o renglones para escribirlas)
+  // y, si vienen de un parcial anterior, las que prometieron allá para palomear si las hicieron
+  const sigParcial = (g, pid) => { const p0 = C.parcial(pid) || {}; return ((PJ() && PJ().parciales(g)) || []).filter(p => p.inicio > p0.inicio).sort((a, b) => a.inicio < b.inicio ? -1 : 1)[0] || null; };
+  function mejRub(g, pid, eq) {
+    let h = ''; const sig = sigParcial(g, pid);
+    const ant = eq ? PF.mejoras(g, pid, eq) : [], hech = eq ? (((PF.doc(g, pid).hechas || {})[eq.id]) || {}) : {};
+    if (ant.length) h += '<div class="mej"><b>Mejoras que comprometieron en el ' + esc(ant[0].p) + ' (¿las hicieron?)</b>' + ant.map(m => '<div class="mi">' + ck(!!hech[m.k]) + esc(m.t) + '</div>').join('') + '</div>';
+    if (sig) { const mej = eq ? ((PF.eq(g, pid, eq.id).bit || {}).mej || []) : [];
+      h += '<div class="mej"><b>Plan de mejora hacia el ' + esc(sig.nombre) + '</b>' + [0, 1, 2].map(i => '<div class="mi"><span class="nm">' + (i + 1) + '.</span>' + (mej[i] ? esc(mej[i]) : '<span class="ln"></span>') + '</div>').join('') + '</div>'; }
+    return h;
+  }
   const ck = on => '<span class="ck">' + (on ? '✓' : '') + '</span>';
   const lineas = (txt, n) => txt ? '<div class="r">' + esc(txt) + '</div>' : Array.from({ length: n }, () => '<div class="r"></div>').join('');
   PF.hojaBitacora = (g, pid, eq, alumno, conResp) => {
     const t = eq ? PF.tipo(g, pid, eq) : null, b = conResp && eq ? (PF.eq(g, pid, eq.id).bit || {}) : {}, sn = v => ck(v === 'si') + ' SÍ ' + ck(v === 'no') + ' NO';
     return '<div class="pfi pfi-hoja"><h1>BITÁCORA DE PRUEBAS Y ANÁLISIS DE FALLAS</h1><p class="sub">Reporte Técnico ' + (alumno ? 'del Alumno' : 'del Equipo') + '</p>' +
       (alumno ? '<div class="lin"><b>Nombre:</b><span>' + esc(alumno.nombre) + '</span><b>No.</b><span style="flex:.12">' + alumno.num + '</span></div>' : '') +
-      '<div class="lin"><b>Nombre del Equipo:</b><span>' + esc(nomEq(eq)) + '</span></div>' +
+      '<div class="lin"><b>Nombre del Equipo:</b><span>' + esc(nomEq(eq, g, pid)) + '</span></div>' +
       '<div class="lin"><b>Integrantes:</b><span style="font-size:8.5pt">' + (eq ? integrantes(g, eq).map(a => esc(a.nombre)).join(', ') : '') + '</span></div>' +
       '<div class="lin"><b>Tipo de Mecanismo:</b>' + ck(t === 'garra') + 'Garra ' + ck(t === 'brazo') + 'Brazo ' + ck(t === 'grua') + 'Grúa <b style="margin-left:4mm">Material Principal:</b><span>' + esc(b.mat || '') + '</span></div>' +
       '<div class="fase">Fase 1: Reporte de Pruebas Físicas</div>' +
