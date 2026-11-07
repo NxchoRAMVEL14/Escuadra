@@ -29,6 +29,27 @@
   const EPP = ['Lentes de seguridad puestos (corte, perforado, resortes)', 'Cabello recogido, sin pulseras ni anillos', 'Zapato cerrado', 'Mesa despejada y herramienta revisada', 'Saben dónde están el botiquín y el extintor', 'Corriente: trabajan a 12 V; el 127 V lo conecta el docente', 'Cúter con regla metálica y tapete'];
   SG.cfg = () => { const c = S.get(KC) || {}; return { reglas: (c.reglas && c.reglas.length) ? c.reglas : REGLAS, epp: (c.epp && c.epp.length) ? c.epp : EPP, version: c.version || 1 }; };
   SG.doc = g => S.get(KG(g)) || {};
+  // v1.28.8: el reglamento firmado y su tarea en Calificaciones son lo mismo: marcas una vez y queda en los dos lados.
+  // La tarea es la que elijas en «¿Quién firmó el reglamento?» o, si no eliges, una actividad de Libreta que diga «reglamento».
+  SG.act = g => {
+    const d = SG.doc(g); if (d.actId === false) return null;
+    const a = d.actId && S.get('act:' + g.id + ':' + d.actId); if (a) return a;
+    const L = S.list('act:' + g.id + ':').filter(x => x.categoria === 'trabajos' && /REGLAMENT/.test(u.norm(x.nombre || '')));
+    return L.find(x => x.parcial === C.parcialActual().id) || L[0] || null;
+  };
+  // firma → tarea: pone la calificación completa (solo si estaba vacía) o la quita si era justo esa
+  SG.aAct = (g, aids, on) => {
+    const a = SG.act(g); if (!a) return; const mx = C.maxPts(a), ns = a.notas || {};
+    const ch = aids.filter(id => { const v = ns[id], vacio = v === '' || v == null; return on ? vacio : (!vacio && Number(v) === mx); }); if (!ch.length) return;
+    S.update('act:' + g.id + ':' + a.id, x => { x.notas = x.notas || {}; ch.forEach(id => { if (on) x.notas[id] = mx; else delete x.notas[id]; }); });
+  };
+  // tarea → firma: quien tiene calificación mayor que 0 en la tarea, ya firmó (con la fecha de la tarea)
+  SG.desdeAct = g => {
+    const a = SG.act(g); if (!a) return; const ns = a.notas || {}, fir = SG.doc(g).firmas || {};
+    const nuevos = D.alumnos(g).filter(x => !fir[x.id] && Number(ns[x.id]) > 0); if (!nuevos.length) return;
+    S.update(KG(g), d => { d.firmas = d.firmas || {}; nuevos.forEach(x => { d.firmas[x.id] = a.fecha || u.today(); }); }, {});
+  };
+  S.on(key => { if (key.indexOf('act:') !== 0) return; const g = D.grupoActual(); if (!g || key.indexOf('act:' + g.id + ':') !== 0) return; const a = SG.act(g); if (a && key === 'act:' + g.id + ':' + a.id) SG.desdeAct(g); });
   SG.firmo = (g, aid) => !!((SG.doc(g).firmas || {})[aid]);
   const RIESGO = /desarm|tijera|taller|cort[ae]|c[uú]ter|segueta|taladr|perfor|caut[ií]n|sold|127|l[aá]ser|herramient|silic[oó]n|prototipo|ensambl|montaje|piezas|instalaci[oó]n|circuito|motor|hidr[aá]ulic|neum[aá]tic/i;
   // ¿hay práctica con riesgo ese día? (taller, o actividad práctica con herramienta o corriente)
@@ -52,13 +73,20 @@
   };
   CH['sg-epp'] = el => { const g = D.grupoActual(); S.update(KE(g, el.dataset.f), d => { d.items = d.items || {}; if (el.checked) d.items[el.dataset.i] = true; else delete d.items[el.dataset.i]; }, {}); };
   A['sg-epp-ok'] = el => { const g = D.grupoActual(), cf = SG.cfg(); S.update(KE(g, el.dataset.f), d => { d.items = d.items || {}; cf.epp.forEach((x, i) => { d.items[i] = true; }); d.ok = new Date().toISOString(); }, {}); u.toast('Revisión de seguridad registrada', 'ok'); };
-  A['sg-firma'] = el => { const g = D.grupoActual(), aid = el.dataset.aid, on = el.dataset.on === '1'; S.update(KG(g), d => { d.firmas = d.firmas || {}; if (on) d.firmas[aid] = u.today(); else delete d.firmas[aid]; }, {}); };
+  A['sg-firma'] = el => { const g = D.grupoActual(), aid = el.dataset.aid, on = el.dataset.on === '1'; S.update(KG(g), d => { d.firmas = d.firmas || {}; if (on) d.firmas[aid] = u.today(); else delete d.firmas[aid]; }, {}); SG.aAct(g, [aid], on); };
+  CH['sg-act'] = el => {
+    const g = D.grupoActual(); S.update(KG(g), d => { d.actId = el.value === 'none' ? false : el.value; }, {});
+    const fir = SG.doc(g).firmas || {}; SG.aAct(g, D.alumnos(g).filter(a => fir[a.id]).map(a => a.id), true); SG.desdeAct(g);
+    const a = SG.act(g); u.toast(a ? 'Las firmas y «' + a.nombre + '» quedan unidas' : 'Sin tarea ligada', 'ok', 3500);
+  };
   A['sg-firma-p'] = el => { const g = D.grupoActual(), aid = el.dataset.aid; S.update(KG(g), d => { d.padres = d.padres || {}; if (d.padres[aid]) delete d.padres[aid]; else d.padres[aid] = u.today(); }, {}); };
   A['sg-proj'] = () => { const cf = SG.cfg(); if (E.proj) E.proj.abrir({ id: 'seg-reglas', titulo: 'Reglas del taller' }, [{ k: 'cover', h: '🦺 Seguridad en el taller', sub: 'Antes de sacar la herramienta', p: 'Nadie se lastima en esta clase.' }, { k: 'list', h: 'Revisamos', items: cf.epp }, { k: 'list', h: 'Reglamento', items: cf.reglas.slice(0, 6) }, { k: 'list', h: 'Reglamento (cont.)', items: cf.reglas.slice(6) }]); };
   if (V.clase) { const vc = V.clase; V.clase = function (f) { const o = vc.apply(null, arguments), g = D.grupoActual(); if (o && g && !/Algo falló/.test(o.h)) { const x = SG.antesHTML(g, f || u.today()); if (x) { const i = o.h.indexOf('<section'); o.h = i >= 0 ? o.h.slice(0, i) + x + o.h.slice(i) : o.h + x; } } return o; }; }
   if (V.lista) { const vl = V.lista; V.lista = function (f) { const o = vl.apply(null, arguments), g = D.grupoActual(); if (o && g && !/Algo falló|Primero importa/.test(o.h)) { const fe = f || C.fechaListaDefault(g, u.today()); if (SG.riesgoDia(g, fe).length) { const sin = SG.sinFirma(g, fe); if (sin.length) o.h += '<p class="note warn small">🦺 Hoy hay práctica con herramienta o corriente y ' + sin.length + (sin.length === 1 ? ' alumno presente no ha' : ' alumnos presentes no han') + ' firmado el reglamento. ' + link('Ver', 'clase/' + fe, 'small') + '</p>'; } } return o; }; }
 
   /* ---------- pantalla ---------- */
+  const actSel = g => { const cur = SG.act(g), L = S.list('act:' + g.id + ':').filter(x => x.categoria === 'trabajos').sort((a, b) => String(a.fecha || '').localeCompare(String(b.fecha || '')));
+    return '<label class="fld"><span>Tarea en Calificaciones donde cuenta el reglamento firmado</span><select data-ch="sg-act">' + L.map(a => '<option value="' + a.id + '"' + (cur && cur.id === a.id ? ' selected' : '') + '>' + esc(a.nombre) + '</option>').join('') + '<option value="none"' + (cur ? '' : ' selected') + '>Ninguna (no ligar)</option></select></label>' + (cur ? '<p class="muted small">Al marcar «Alumno» queda su calificación completa en esa tarea, y quien ya tiene calificación en ella aparece firmado aquí.</p>' : '<p class="muted small">Elige tu tarea del reglamento para que una sola captura llene los dos lados.</p>'); };
   V.seguridad = (sub, id) => {
     const g = D.grupoActual(); if (!g) return H.noGroup(); const al = D.alumnos(g); if (!al.length) return { t: 'Seguridad', h: card('<h3>🦺 Reglamento del taller</h3><p class="small">Todavía no importas la lista de ' + esc(g.nombre) + ': puedes imprimir el reglamento con la hoja de firmas en blanco (30 renglones) y marcar quién firmó cuando tengas la lista.</p><div class="row gap wrap">' + btn('🖨 Reglamento con hoja de firmas', 'sg-print', '', 'primary small') + btn('🖨 Una copia para casa', 'sg-print-ind', '', 'small') + link('Importar lista', 'alumnos', 'small ghost') + '</div>') };
     if (sub === 'incidente') return incidenteV(g, id);
@@ -67,7 +95,7 @@
     let h = card('<h3>🦺 Seguridad en el taller</h3><div class="en-kpis"><div class="' + (nF === al.length ? 'ok' : 'warn') + '"><b>' + nF + '/' + al.length + '</b><span>reglamento firmado</span></div><div><b>' + al.filter(a => pad[a.id]).length + '</b><span>firma de casa</span></div><div><b>' + inc.filter(x => x.tipo !== 'equipo').length + '</b><span>incidentes y casi-accidentes</span></div><div><b>' + prox.length + '</b><span>prácticas con riesgo en 2 semanas</span></div></div>' +
       (prox.length ? '<p class="small">Próximas: ' + prox.map(f => '<a href="#/clase/' + f + '">' + u.fCorta(f) + '</a>').join(' · ') + '</p>' : '') +
       '<div class="row gap wrap">' + btn('🖨 Reglamento con hoja de firmas', 'sg-print', '', 'primary small') + btn('🖨 Uno por alumno (para casa)', 'sg-print-ind', '', 'small') + btn('📽 Proyectar reglas', 'sg-proj', '', 'small') + link('⚠️ Registrar incidente', 'seguridad/incidente', 'small') + '</div>');
-    h += card('<h3>✍️ ¿Quién firmó el reglamento?</h3><p class="muted small">Toca para marcar. «Casa» = firma de su madre, padre o tutor(a) (recomendada para prácticas con herramienta).</p>' + (E.rap ? E.rap.filtroHTML('seguridad') : '') +
+    h += card('<h3>✍️ ¿Quién firmó el reglamento?</h3><p class="muted small">Toca para marcar. «Casa» = firma de su madre, padre o tutor(a) (recomendada para prácticas con herramienta).</p>' + actSel(g) + (E.rap ? E.rap.filtroHTML('seguridad') : '') +
       '<ul class="sg-l">' + al.map(a => '<li' + (E.rap ? E.rap.qAttr(a) : '') + '><span><b>' + a.num + '.</b> ' + esc(a.nombre) + '</span><span class="row gap">' + btn(fir[a.id] ? '✓ Alumno ' + u.fCorta(fir[a.id]) : 'Alumno', 'sg-firma', 'data-aid="' + a.id + '" data-on="' + (fir[a.id] ? '0' : '1') + '"', 'small' + (fir[a.id] ? ' on ok' : '')) + btn(pad[a.id] ? '✓ Casa' : 'Casa', 'sg-firma-p', 'data-aid="' + a.id + '"', 'small' + (pad[a.id] ? ' on ok' : ' ghost')) + '</span></li>').join('') + '</ul>' +
       (nF < al.length ? btn('✓ Marcar a todos como firmados hoy', 'sg-todos', '', 'small ghost') : ''));
     h += card('<h3>⚠️ Incidentes y casi-accidentes</h3><p class="muted small">Registra también lo que estuvo a punto de pasar: es lo que más enseña a prevenir. Solo lo necesario.</p>' + (inc.length ? '<ul class="pc-l">' + inc.slice().reverse().map(x => '<li class="' + (x.tipo === 'lesion' ? 'bad' : 'warn') + '"><span class="pc-i">' + (x.tipo === 'lesion' ? '!' : x.tipo === 'equipo' ? '🔧' : '≈') + '</span><div><b><a href="#/seguridad/incidente/' + x.id + '">' + esc(TIPO[x.tipo] || x.tipo) + ' · ' + u.fCorta(x.f) + '</a></b><small class="muted">' + esc((x.desc || '').slice(0, 120)) + (x.medida ? ' · Medida: ' + esc(x.medida.slice(0, 80)) : '') + '</small></div></li>').join('') + '</ul>' : '<p class="small">Sin registros. 👏</p>') + link('＋ Registrar', 'seguridad/incidente', 'small'));
@@ -108,7 +136,7 @@
       [['Tipo', TIPO[x.tipo] || x.tipo], ['Fecha y hora', u.fFecha(x.f) + (x.hora ? ', ' + x.hora : '')], ['Lugar', x.lugar], ['Alumnos', (x.aids || []).map(id => { const a = D.alumno(g, id); return a ? a.num + '. ' + a.nombre : ''; }).join('; ') || '—'], ['¿Qué pasó?', x.desc], ['¿Qué se hizo?', x.accion || '—'], ['Medida preventiva', x.medida || '—'], ['Aviso a casa', x.casa ? 'Sí' : 'No']].map(r => '<tr><td class="f" style="width:28%">' + esc(r[0]) + '</td><td class="l">' + esc(r[1]) + '</td></tr>').join('') +
       '</tbody></table><div class="sig"><div>' + esc(cf.docente || 'Docente') + '</div></div><div class="sig"><div>Dirección / Coordinación</div></div></div>', { title: 'Incidente ' + x.f, margin: '12mm' });
   };
-  A['sg-todos'] = () => { if (!confirm('¿Marcar a todos los alumnos como que firmaron hoy el reglamento?')) return; const g = D.grupoActual(); S.update(KG(g), d => { d.firmas = d.firmas || {}; D.alumnos(g).forEach(a => { if (!d.firmas[a.id]) d.firmas[a.id] = u.today(); }); }, {}); };
+  A['sg-todos'] = () => { if (!confirm('¿Marcar a todos los alumnos como que firmaron hoy el reglamento?')) return; const g = D.grupoActual(); S.update(KG(g), d => { d.firmas = d.firmas || {}; D.alumnos(g).forEach(a => { if (!d.firmas[a.id]) d.firmas[a.id] = u.today(); }); }, {}); SG.aAct(g, D.alumnos(g).map(a => a.id), true); };
   A['sg-cfg'] = () => { const r = (document.getElementById('sg-reglas') || {}).value || '', e = (document.getElementById('sg-epp-t') || {}).value || ''; const L = t => t.split('\n').map(x => x.replace(/^\s*[\d.)\-•]+\s*/, '').trim()).filter(Boolean); S.update(KC, c => { c.reglas = L(r); c.epp = L(e); c.version = (c.version || 1) + 1; }, {}); u.toast('Guardado', 'ok'); };
   A['sg-cfg-base'] = () => { if (!confirm('¿Volver al reglamento y la lista de base?')) return; S.put(KC, {}); };
   const reglamento = (g, a) => { const cf = D.cfg(), sc = SG.cfg(); return '<div class="pr sg-pr"><div class="p-title">REGLAMENTO DE SEGURIDAD DEL TALLER</div><p class="tiny c">' + esc(cf.plantel || '') + ' · ' + esc(g.carrera || '') + ' · Grupo ' + esc(g.nombre) + ' · Docente: ' + esc(cf.docente || '') + '</p><ol class="sg-reglas">' + sc.reglas.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol>' +

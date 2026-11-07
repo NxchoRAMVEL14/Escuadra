@@ -144,10 +144,36 @@
     return { items: items, temas: temas, alumnos: alumnos, n: al.length || Number(rap.pres), modo: al.length ? 'alumno' : 'rapido', prom: prom };
   };
   // mantiene al día la actividad ligada en Calificaciones
+  // v1.28.8: el examen y su actividad en Calificaciones son lo mismo. Al crear el examen (o al capturar el primer resultado) se enlaza solo.
+  const kAct = (g, id) => 'act:' + g.id + ':' + id;
+  X.libres = (g, ex) => { const usados = {}; S.list('exa:' + g.id + ':').forEach(x => { if (x.id !== ex.id && x.actId) usados[x.actId] = 1; }); return C.acts(g, ex.parcial).filter(a => a.categoria === 'examen' && !usados[a.id] && (!a.examen || a.examen === ex.id)); };
+  X.nuevaAct = (g, ex) => { const id = u.uid('act'); S.put(kAct(g, id), { id: id, parcial: ex.parcial, categoria: 'examen', nombre: ex.titulo, peso: 1, max: ex.total, fecha: ex.fecha, instrumento: 'Exa', cuenta: true, notas: {}, examen: ex.id }, { silent: true }); S.update(KX(g, ex.id), d => { d.actId = id; }, {}); ex.actId = id; return id; };
+  // la actividad que le toca: la ya ligada; si no, una tuya del mismo parcial (misma fecha, o la única que haya); si no hay ninguna, crea una
+  X.candidato = (g, ex) => { const L = X.libres(g, ex); return L.find(x => x.fecha === ex.fecha) || (L.length === 1 ? L[0] : null); };
+  X.enlaza = (g, ex) => {
+    if (ex.actId && S.get(kAct(g, ex.actId))) return ex.actId;
+    const c = X.candidato(g, ex); if (c) { S.update(KX(g, ex.id), d => { d.actId = c.id; }, {}); ex.actId = c.id; return c.id; }
+    return X.libres(g, ex).length ? null : X.nuevaAct(g, ex);
+  };
   X.sync = (g, ex) => {
-    if (!ex.actId) return; const k = 'act:' + g.id + ':' + ex.actId, a = S.get(k); if (!a) return; const notas = Object.assign({}, a.notas || {});
-    D.alumnos(g).forEach(x => { const r = (ex.res || {})[x.id]; if (!r) return; const p = X.puntaje(ex, x.id); notas[x.id] = r.np ? '' : p == null ? notas[x.id] : Math.round(p * 10) / 10; });
-    if (JSON.stringify(notas) !== JSON.stringify(a.notas || {}) || Number(a.max) !== Number(ex.total)) S.update(k, x => { x.notas = notas; x.max = ex.total; });
+    if (!(ex.actId && S.get(kAct(g, ex.actId))) && !Object.keys(ex.res || {}).length) return;
+    const id = X.enlaza(g, ex); if (!id) return; const k = kAct(g, id), a = S.get(k); if (!a) return; const notas = Object.assign({}, a.notas || {});
+    const propia = a.examen === ex.id, mx = propia ? Number(ex.total) : (Number(a.max) > 0 ? Number(a.max) : 100);
+    // si la actividad es tuya y vale otra cosa (p. ej. 20 puntos), se guarda en su escala: 85 de 100 = 17 de 20
+    D.alumnos(g).forEach(x => { const r = (ex.res || {})[x.id]; if (!r) return; const p = X.puntaje(ex, x.id); notas[x.id] = r.np ? '' : p == null ? notas[x.id] : Math.round(p / (Number(ex.total) || 100) * mx * 10) / 10; });
+    if (JSON.stringify(notas) !== JSON.stringify(a.notas || {}) || (propia && Number(a.max) !== Number(ex.total))) S.update(k, y => { y.notas = notas; if (propia) y.max = ex.total; });
+  };
+  const destHTML = (g, ex) => {
+    const L = X.libres(g, ex), cur = (ex.actId && S.get(kAct(g, ex.actId)) && ex.actId) || (X.candidato(g, ex) || {}).id || '';
+    return '<label class="fld"><span>Los resultados van a esta actividad de Calificaciones</span><select data-ch="ex-dest" data-id="' + ex.id + '">' + (cur ? '' : '<option value="" selected>Elige una…</option>') + L.map(a => '<option value="' + a.id + '"' + (a.id === cur ? ' selected' : '') + '>' + esc(a.nombre) + ' · peso ' + (a.peso || 1) + (a.examen === ex.id ? ' (la del examen)' : '') + '</option>').join('') + '<option value="nueva">➕ Crear una actividad nueva</option></select></label>';
+  };
+  CH['ex-dest'] = el => {
+    const g = D.grupoActual(), ex = X.get(g, el.dataset.id); if (!ex || !el.value) return; if (el.value === ex.actId) return;
+    const av = ex.actId && S.get(kAct(g, ex.actId));
+    if (av) { const ids = Object.keys(ex.res || {}); if (av.examen === ex.id && Object.keys(av.notas || {}).every(x => ids.indexOf(x) >= 0)) S.del(kAct(g, av.id)); else S.update(kAct(g, av.id), a => { ids.forEach(x => { if (a.notas) delete a.notas[x]; }); }); }
+    S.update(KX(g, ex.id), d => { d.actId = null; }, {}); const ex1 = X.get(g, ex.id);
+    if (el.value === 'nueva') X.nuevaAct(g, ex1); else S.update(KX(g, ex.id), d => { d.actId = el.value; }, {});
+    const ex2 = X.get(g, ex.id); X.sync(g, ex2); const a = S.get(kAct(g, ex2.actId)); u.toast('Los resultados van a «' + (a ? a.nombre : '') + '»', 'ok', 3500);
   };
   const nivel = p => p < 0.5 ? ['Reenseñar', 'bad'] : p < 0.7 ? ['Reforzar', 'warn'] : p < 0.85 ? ['Bien', 'info'] : ['Dominado', 'ok'];
 
@@ -192,7 +218,8 @@
     const o = { pid: pid, fecha: val('ex-fecha') || p.fin, n: Math.max(5, Math.min(40, Number(val('ex-n')) || 15)), total: Math.max(10, Number(val('ex-total')) || 100), dur: Number(val('ex-dur')) || 50, mezcla: val('ex-mez') || 'eq', abiertas: Math.max(0, Number(val('ex-ab')) || 0), repaso: !!(document.getElementById('ex-rep') || {}).checked, seed: id };
     const r = X.generar(g, o); if (!r.items.length) { u.toast('No hay temas con preguntas para ese parcial', 'err'); return; }
     S.put(KX(g, id), { id: id, parcial: pid, titulo: 'Examen del ' + p.nombre, fecha: o.fecha, dur: o.dur, total: o.total, mezcla: o.mezcla, abiertas: o.abiertas, seed: id, items: r.items, horas: r.horas, rep: r.rep, creado: new Date().toISOString(), res: {} });
-    location.hash = '#/examen/' + id; u.toast('Examen listo: revísalo y cambia lo que quieras', 'ok');
+    const ex0 = X.get(g, id); if (ex0 && !X.libres(g, ex0).length) X.nuevaAct(g, ex0);
+    location.hash = '#/examen/' + id; u.toast('Examen listo: revísalo y cambia lo que quieras. Sus resultados caerán solos en Calificaciones.', 'ok', 5000);
   };
 
   function detalleV(g, ex) {
@@ -203,7 +230,7 @@
       '<div class="fgrid"><label class="fld"><span>Fecha</span><input type="date" value="' + esc(ex.fecha) + '" data-ch="ex-campo" data-id="' + ex.id + '" data-f="fecha"></label><label class="fld"><span>Duración (min)</span><input type="number" value="' + ex.dur + '" data-ch="ex-campo" data-id="' + ex.id + '" data-f="dur"></label><label class="fld"><span>Puntos totales</span><input type="number" value="' + ex.total + '" data-ch="ex-campo" data-id="' + ex.id + '" data-f="total"></label></div>' +
       '<p class="small">' + ex.items.length + ' preguntas · ' + ex.total + ' puntos · recordar ' + niv[1] + ' · comprender ' + niv[2] + ' · aplicar ' + niv[3] + '</p>' +
       '<div class="row gap wrap">' + btn(icon('print') + ' Versión A', 'ex-print', 'data-id="' + ex.id + '" data-v="A"', 'primary') + btn(icon('print') + ' Versión B', 'ex-print', 'data-id="' + ex.id + '" data-v="B"') + btn(icon('print') + ' Clave de respuestas', 'ex-clave', 'data-id="' + ex.id + '"') +
-      (a ? link('Ver en Calificaciones', 'actividad/' + a.id, 'small') : btn(icon('plus') + ' Crear actividad en Calificaciones', 'ex-act', 'data-id="' + ex.id + '"', 'small')) + '</div>' +
+      (a ? link('Ver en Calificaciones', 'actividad/' + a.id, 'small') : '') + '</div>' + destHTML(g, ex) +
       '<p class="muted small">Versión B: mismas preguntas en otro orden, opciones revueltas y otros datos en los problemas.</p>' +
       (E.omr ? '<div class="row gap wrap">' + btn(icon('print') + ' Hoja de respuestas (burbujas)', 'omr-print', 'data-id="' + ex.id + '" data-m="alumnos"', 'small') + btn('📷 Calificar con foto', 'ex-foto', 'data-id="' + ex.id + '"', 'small') + '</div>' : ''));
     h += card('<h3>📐 Tabla de especificaciones</h3><div class="tbl-wrap"><table class="tbl"><thead><tr><th class="l">Tema</th><th>Horas vistas</th><th>Preguntas</th><th>Puntos</th><th>%</th></tr></thead><tbody>' +
@@ -243,9 +270,8 @@
   };
   A['ex-borrar'] = el => { const g = D.grupoActual(); if (!confirm('¿Borrar este examen y sus resultados? La actividad en Calificaciones se queda.')) return; S.del(KX(g, el.dataset.id)); location.hash = '#/examen'; };
   A['ex-act'] = el => {
-    const g = D.grupoActual(), ex = X.get(g, el.dataset.id), id = u.uid('act'); if (!ex) return;
-    S.put('act:' + g.id + ':' + id, { id: id, parcial: ex.parcial, categoria: 'examen', nombre: ex.titulo, peso: 1, max: ex.total, fecha: ex.fecha, instrumento: 'Exa', cuenta: true, notas: {}, examen: ex.id }, { silent: true });
-    updEx(ex.id, d => { d.actId = id; }); u.toast('Actividad creada: las calificaciones se llenan solas al capturar resultados', 'ok', 5000);
+    const g = D.grupoActual(), ex = X.get(g, el.dataset.id); if (!ex) return;
+    X.nuevaAct(g, ex); updEx(ex.id, d => { }); u.toast('Actividad creada: las calificaciones se llenan solas al capturar resultados', 'ok', 5000);
   };
 
   /* ---------- impresión ---------- */
@@ -278,7 +304,7 @@
   /* ---------- captura ---------- */
   function capturaV(g, ex) {
     const al = D.alumnos(g), modo = E.ui.exModo || 'alumno', a = ex.actId && S.get('act:' + g.id + ':' + ex.actId);
-    let h = (a ? '' : card('<p class="small">Para que las calificaciones lleguen solas a Calificaciones, crea la actividad del examen.</p>' + btn(icon('plus') + ' Crear actividad en Calificaciones', 'ex-act', 'data-id="' + ex.id + '"', 'primary')));
+    let h = a ? '' : card('<p class="small">Al capturar el primer resultado se enlaza solo con tu actividad de examen en Calificaciones (o se crea una). Si prefieres otra, elígela aquí.</p>' + destHTML(g, ex));
     h += '<div class="filters">' + [['alumno', 'Por alumno'], ['foto', '📷 Con foto'], ['rapido', 'Rápido: cuántos fallaron']].filter(x => x[0] !== 'foto' || E.omr).map(x => '<button type="button" class="tab ' + (modo === x[0] ? 'on' : '') + '" data-act="ex-modo" data-m="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>';
     if (modo === 'foto' && E.omr) return h + E.omr.capturaHTML(g, ex);
     if (modo === 'rapido') {

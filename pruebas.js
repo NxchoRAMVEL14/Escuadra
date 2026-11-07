@@ -1,4 +1,4 @@
-/* Escuadra · Pruebas físicas del proyecto (v1.28.4). En Proyecto, la tarjeta «🧪 Pruebas físicas y bitácora de fallas»:
+/* Escuadra · Pruebas físicas del proyecto (v1.28.4; examen de FreeCAD 2D en Imprimir, v1.28.7). En Proyecto, la tarjeta «🧪 Pruebas físicas y bitácora de fallas»:
    1) Rúbricas de evaluación física (garras; brazos y grúas), una hoja por equipo con su nombre, proyecto e integrantes ya
       escritos, o en blanco. Los criterios y puntos se pueden editar (para el 3er parcial).
    2) Capturar los puntos de cada aspecto por equipo: el total pasa a Calificaciones como actividad de Libreta, Proyecto y
@@ -14,7 +14,7 @@
   const PF = E.pruebas = {};
   const KD = (g, pid) => 'prueba:' + g.id + ':' + pid, KR = 'rubFisica';
   const PJ = () => E.proyecto;
-  if (E.undo && E.undo.NOMBRE) ['pfi-pt', 'pfi-tipo', 'pfi-campo', 'pfi-bit', 'pfi-ok', 'pfi-mej', 'pfi-rub', 'pfi-rub-add', 'pfi-rub-del', 'pfi-rub-orig'].forEach(k => { E.undo.NOMBRE[k] = 'prueba del proyecto'; });
+  if (E.undo && E.undo.NOMBRE) ['pfi-dest', 'pfi-pt', 'pfi-tipo', 'pfi-campo', 'pfi-bit', 'pfi-ok', 'pfi-mej', 'pfi-rub', 'pfi-rub-add', 'pfi-rub-del', 'pfi-rub-orig'].forEach(k => { E.undo.NOMBRE[k] = 'prueba del proyecto'; });
 
   /* ---------- rúbricas (las del docente; se pueden editar) ---------- */
   const RUB0 = {
@@ -52,16 +52,31 @@
   const updEq = (pid, eqId, fn) => upd(pid, d => { const x = d.eq[eqId] = d.eq[eqId] || {}; fn(x, d); });
 
   // la calificación va a una actividad de Libreta, Proyecto y Bitácora (trabajos), en base 100
+  // v1.28.6: los puntos pueden ir a una actividad que ya tengas (ej. «Proyecto vs 2 pruebas») o a una nueva
+  PF.destinos = (g, pid) => { const ids = {}, L = []; [pid, C.parcialActual().id].forEach(q => C.acts(g, q).forEach(a => { if (a.categoria === 'trabajos' && !ids[a.id]) { ids[a.id] = 1; L.push(a); } })); return L; };
+  PF.destino = (g, pid) => { const dd = PF.doc(g, pid), id = dd.actId; if (id && S.get('act:' + g.id + ':' + id)) return id; if (dd.nueva) return null; const a = PF.destinos(g, pid).find(x => /PRUEBA/.test(u.norm(x.nombre || '')) && !/REGLAMENTO|LIBRETA/.test(u.norm(x.nombre || ''))); return a ? a.id : null; };
   PF.sync = (g, pid, eqId) => {
     const eq = equipos(g, pid).find(e => e.id === eqId); if (!eq) return; const tot = PF.total(g, pid, eq), t = PF.tipo(g, pid, eq); if (tot == null || !t) return;
     const mx = PF.max(rubDe(t)), cal = mx ? Math.round(tot / mx * 1000) / 10 : 0, x = PF.eq(g, pid, eqId), fecha = x.f || u.today();
-    let id = PF.doc(g, pid).actId, a = id && S.get('act:' + g.id + ':' + id);
+    let id = PF.destino(g, pid), a = id && S.get('act:' + g.id + ':' + id);
+    if (a && PF.doc(g, pid).actId !== id) upd(pid, d => { d.actId = id; });
     if (!a) {
       id = u.uid('act'); const pa = C.parcialActual(fecha);
       S.put('act:' + g.id + ':' + id, { id: id, parcial: pa.id, categoria: 'trabajos', nombre: 'Prueba física del proyecto · ' + def(g, pid).nombre, peso: 1, max: 100, fecha: fecha, instrumento: 'R', cuenta: true, notas: {}, prueba: pid }, { silent: true });
       upd(pid, d => { d.actId = id; });
     }
-    S.update('act:' + g.id + ':' + id, act => { act.notas = act.notas || {}; integrantes(g, eq).forEach(al => { act.notas[al.id] = cal; }); });
+    // se guarda en la escala de esa actividad (si vale 20 puntos, 90 % = 18)
+    S.update('act:' + g.id + ':' + id, act => { act.notas = act.notas || {}; const v = Math.round(cal / 100 * C.maxPts(act) * 100) / 100; integrantes(g, eq).forEach(al => { act.notas[al.id] = v; }); });
+  };
+  CH['pfi-dest'] = el => {
+    const g = D.grupoActual(), pid = el.dataset.pid, viejo = PF.destino(g, pid), av = viejo && S.get('act:' + g.id + ':' + viejo);
+    if (el.value === (viejo || 'nueva')) return;
+    // quita de la actividad anterior lo que puso la prueba (para que no cuente dos veces)
+    if (av) { if (av.prueba === pid) S.del('act:' + g.id + ':' + viejo); else S.update('act:' + g.id + ':' + viejo, act => { equipos(g, pid).forEach(eq => { if (PF.total(g, pid, eq) != null) integrantes(g, eq).forEach(al => { if (act.notas) delete act.notas[al.id]; }); }); }); }
+    if (el.value === 'nueva') { upd(pid, d => { d.actId = null; d.nueva = true; }); }
+    else upd(pid, d => { d.actId = el.value; d.nueva = false; });
+    equipos(g, pid).forEach(eq => PF.sync(g, pid, eq.id));
+    const a = S.get('act:' + g.id + ':' + (PF.doc(g, pid).actId || '')); u.toast(a ? 'Los puntos van a «' + a.nombre + '»' : 'Se creará «Prueba física del proyecto» al capturar', 'ok', 3500);
   };
 
   /* ---------- hojas para imprimir ---------- */
@@ -70,6 +85,10 @@
     '.pfi table{border-collapse:collapse;width:100%}.pfi th,.pfi td{border:1px solid #000;padding:2mm;vertical-align:middle}.pfi th{background:#dde6e5;font-size:8.5pt}.pfi td.a{width:28mm;font-weight:bold;font-size:9pt}.pfi td.n{width:19mm;text-align:center;font-size:12pt;font-weight:bold}.pfi td.o{width:21mm;text-align:center;font-size:12pt}' +
     '.pfi .tot{display:flex;justify-content:flex-end;gap:3mm;margin:3mm 0;font-weight:bold;font-size:11pt}.pfi .tot span{min-width:30mm;border-bottom:1.5px solid #000;text-align:center}.pfi .obs{border:1px solid #000;min-height:28mm;padding:2mm;font-size:9pt}' +
     '.pfi .fase{background:#dde6e5;font-weight:bold;padding:1.2mm 2mm;margin:3mm 0 1.5mm;border-left:4px solid #0e5e5a}.pfi .q{margin:1.5mm 0 .5mm}.pfi .r{border-bottom:1px dotted #555;min-height:5.2mm;margin:0 0 .7mm;padding:0 1mm;font-family:inherit}.pfi .ck{display:inline-block;width:3.2mm;height:3.2mm;border:1px solid #000;margin:0 1mm 0 3mm;vertical-align:-.4mm;text-align:center;line-height:3mm;font-size:8pt}' +
+    '.pfx h1{font-size:15pt;text-align:center;margin:0;letter-spacing:.3px}.pfx .sub{text-align:center;font-size:10.5pt;margin:1mm 0 2mm}.pfx .rl{border-top:1.5px solid #000;margin-bottom:2mm}' +
+    '.pfx .dat{display:flex;gap:5mm;align-items:flex-end;font-size:10pt;margin-bottom:1.5mm}.pfx .dat .n{flex:1}.pfx .nom{border-bottom:1px solid #000;font-weight:bold;padding:0 1mm;font-size:10.5pt;min-height:5.5mm}.pfx .fl{border-bottom:1px solid #000;display:inline-block;min-width:22mm}' +
+    '.pfx .ins{background:#f3f6fa;border:1px solid #c9d2dc;border-radius:1.5mm;padding:2mm 3.5mm;font-size:9pt;line-height:1.3;margin-top:1.5mm}.pfx .ins ol{margin:0;padding-left:5mm}.pfx code{font-family:monospace;font-size:8.5pt}' +
+    '.pfx .plano{display:block;width:92%;border:1px solid #444;margin:2mm auto}.pfx table{font-size:9pt}.pfx th{background:#eef2f7}.pfx td{padding:1.1mm 2mm}.pfx th{padding:1.2mm 2mm}.pfx td.v{text-align:center;width:20mm;white-space:nowrap}.pfx td.pt{width:28mm}.pfx tr.suma td{font-weight:bold;text-align:right}.pfx tr.suma td.v{text-align:center}' +
     '.pfi .pie{font-size:7.5pt;color:#444;margin-top:3mm}.pfi-hoja{page-break-after:always;break-inside:avoid;box-sizing:border-box}.pfi-hoja:last-child{page-break-after:auto}</style>';
   const pie = g => '<p class="pie">' + esc((g.carrera ? 'Especialidad en ' + u.cap(String(g.carrera).toLowerCase().replace(/^t[eé]cnico en /, '').replace(/\s+\d{4}$/, '')) : 'Especialidad') + ' - ' + (g.semestre || '') + 'er Semestre · ' + g.nombre) + '</p>';
   const nomEq = eq => eq ? eq.nombre + (eq.proy ? ' · ' + eq.proy : '') : '';
@@ -130,6 +149,27 @@
     else if (que === 'bit0') { hojas.push(PF.hojaBitacora(g, pid, null, null)); imprime(g, hojas, 'Bitácora de pruebas'); }
   };
 
+  /* ---------- v1.28.7: examen práctico de FreeCAD 2D (Imprimir): una hoja por alumno con su nombre y la rúbrica ---------- */
+  const FC_IMG = 'examen-freecad2d.jpg';
+  PF.hojaExamenFC = (g, nombre) => '<div class="pfi pfi-hoja pfx"><h1>ACADEMIA DE MECATRÓNICA</h1><p class="sub">Examen Práctico de Dibujo Asistido por Computadora</p><div class="rl"></div>' +
+    '<div class="dat"><div class="n"><b>Nombre del Alumno:</b><div class="nom">' + esc(nombre || '') + '</div></div><div><b>Fecha:</b> <span class="fl"></span></div><div><b>Calificación:</b> <span class="fl" style="min-width:18mm"></span> / 100</div></div>' +
+    '<div style="font-size:10pt"><b>Grupo:</b> ' + esc(g.semestre || '3') + '° Semestre</div>' +
+    '<div class="ins"><b>Instrucciones:</b><ol><li>Abre el software <b>FreeCAD</b> y crea un nuevo documento.</li><li>Ingresa al banco de trabajo <b>Sketcher</b> y crea un nuevo croquis en el plano <b>XY (Planta)</b>.</li>' +
+    '<li>Modela la placa mostrada en el plano inferior. <b>El centro del barreno principal (Ø32) o la esquina inferior izquierda deben estar anclados al origen.</b></li><li>Aplica primero las <b>restricciones geométricas</b> (simetría, igualdad, tangencia) para dar forma lógica a la pieza.</li>' +
+    '<li>Aplica las cotas dimensionales exactamente como se indican (todas en milímetros).</li><li>El croquis debe quedar <b>totalmente restringido (color verde)</b>.</li><li>Guarda tu archivo como <code>EXAMEN_Apellido_Nombre.FCStd</code> y notifica al profesor.</li></ol></div>' +
+    '<img class="plano" src="' + FC_IMG + '" alt="Plano de la placa">' +
+    '<table><tr><th>Criterio de Evaluación</th><th>Valor</th><th>Puntos obtenidos</th></tr>' +
+    [['Posicionamiento y Origen:', 'El croquis está correctamente anclado al origen del plano coordenado.', 20], ['Restricciones Geométricas:', 'Uso correcto y lógico de tangencias, simetrías, paralelismo e igualdades.', 30], ['Precisión Dimensional:', 'Las cotas ingresadas corresponden exactamente al plano (radios, diámetros y distancias).', 30], ['Resolución:', 'El croquis está 100% definido (Fully Constrained - líneas en verde) sin conflictos.', 20]]
+      .map(r => '<tr><td><b>' + r[0] + '</b> ' + r[1] + '</td><td class="v">' + r[2] + ' pts</td><td class="pt"></td></tr>').join('') + '<tr class="suma"><td>TOTAL:</td><td class="v">100 pts</td><td></td></tr></table></div>';
+  A['pfi-fc'] = el => {
+    const g = D.grupoActual(); if (!g) return; const q = el.dataset.q, al = D.alumnos(g); let noms;
+    if (q === 'grupo') { if (!al.length) { u.toast('Primero importa tu lista de alumnos', 'err'); return; } noms = al.map(a => a.nombre); }
+    else if (q === 'uno') { const sel = document.getElementById('pfi-fc-al'), a = sel && al.find(x => x.id === sel.value); if (!a) return; noms = [a.nombre]; }
+    else noms = [''];
+    const im = new Image(), va = () => imprime(g, noms.map(n => PF.hojaExamenFC(g, n)), 'Examen práctico FreeCAD 2D' + (q === 'grupo' ? '' : q === 'uno' ? ' · ' + noms[0] : ' (en blanco)'));
+    im.onload = va; im.onerror = () => { u.toast('No cargó el plano del examen (examen-freecad2d.jpg). Revisa que el archivo esté subido.', 'err', 6000); }; im.src = FC_IMG;
+  };
+
   /* ---------- capturar: puntos de la rúbrica y respuestas de la bitácora ---------- */
   const capturaHTML = (g, pid, eq) => {
     const x = PF.eq(g, pid, eq.id), t = PF.tipo(g, pid, eq), b = x.bit || {}, d = 'data-pid="' + pid + '" data-eq="' + eq.id + '"';
@@ -141,7 +181,7 @@
       '<h4>📋 ' + esc(r.t) + '</h4><ul class="pfi-cap">' + r.asp.map((a, i) => '<li><span><b>' + (i + 1) + '. ' + esc(a.t) + '</b><small class="muted">' + esc(a.c) + '</small></span><span class="row gap"><input class="inp" inputmode="decimal" style="width:64px;text-align:center" data-ch="pfi-pt" ' + d + ' data-a="' + a.id + '" data-max="' + a.pts + '" value="' + esc(x.pts && x.pts[a.id] != null ? x.pts[a.id] : '') + '" aria-label="Puntos de ' + esc(a.t) + '"><small>/ ' + a.pts + '</small></span></li>').join('') + '</ul>' +
       '<p class="pfi-tot">Calificación total: <b id="pfi-tot">' + (tot == null ? '—' : tot + ' / ' + PF.max(rubDe(t))) + '</b></p>' +
       '<label class="fld"><span>Observaciones del docente</span><textarea rows="2" data-ch="pfi-campo" ' + d + ' data-k="obs">' + esc(x.obs || '') + '</textarea></label>' +
-      '<p class="muted small">El total pasa a Calificaciones («Prueba física del proyecto», en Libreta, Proyecto y Bitácora) a cada integrante.</p>' +
+      '<p class="muted small">El total pasa a Calificaciones («' + esc((S.get('act:' + g.id + ':' + (PF.destino(g, pid) || '')) || {}).nombre || 'Prueba física del proyecto') + '») a cada integrante.</p>' +
       '<details class="sub"><summary>📝 Bitácora de pruebas y fallas (lo que respondieron)</summary>' +
       '<label class="fld"><span>Material principal</span><input data-ch="pfi-bit" ' + d + ' data-k="mat" value="' + esc(b.mat || '') + '" placeholder="Ej. MDF de 3 mm"></label>' +
       sn('p1ok', 'Prueba 1 (Fuerza / Carga): ¿se logró?') + tx('p1', '¿Qué parte sufrió más estrés o se dobló?') + sn('p2ok', 'Prueba 2 (Precisión / Control): ¿se logró?') + tx('p2', '¿Qué dificultad tuvieron para controlar el movimiento?') +
@@ -197,6 +237,7 @@
     return card('<h3>🧪 Pruebas físicas y bitácora de fallas</h3><p class="muted small">Rúbrica de evaluación física por equipo (garras; brazos y grúas) y bitácora de pruebas. Toca un equipo para capturar sus puntos (pasan a Calificaciones) y lo que respondieron en la bitácora.</p>' +
       '<ul class="pfi-eqs">' + eqs.map(eq => { const t = PF.tipo(g, pid, eq), tot = PF.total(g, pid, eq), b = PF.eq(g, pid, eq.id).bit || {}, mej = (b.mej || []).filter(Boolean).length;
         return '<li><button type="button" class="pfi-eqb" data-act="pfi-cap" ' + d + ' data-eq="' + eq.id + '"><b>' + esc(eq.nombre) + '</b>' + (eq.proy ? ' <small>' + esc(eq.proy) + '</small>' : '') + '<small class="muted">' + (t ? TIPOS[t] : '⚠️ elige el tipo') + (mej ? ' · ' + mej + ' mejoras' : '') + '</small></button><span class="chip ' + (tot == null ? '' : 'ok') + '">' + (tot == null ? 'sin capturar' : tot + ' / ' + PF.max(rubDe(t))) + '</span></li>'; }).join('') + '</ul>' +
+      (() => { const des = PF.destino(g, pid); return '<label class="fld"><span>Los puntos van a esta actividad de Calificaciones</span><select data-ch="pfi-dest" ' + d + '>' + PF.destinos(g, pid).map(a => '<option value="' + a.id + '"' + (a.id === des ? ' selected' : '') + '>' + esc(a.nombre) + ' · peso ' + (a.peso || 1) + '</option>').join('') + '<option value="nueva"' + (des ? '' : ' selected') + '>➕ Una actividad nueva («Prueba física del proyecto»)</option></select></label>'; })() +
       '<div class="row gap wrap">' + btn('🖨 Rúbricas (una por equipo)', 'pfi-print', d + ' data-q="rub"', 'primary small') + btn('🖨 Bitácora por equipo', 'pfi-print', d + ' data-q="bitEq"', 'small') + btn('🖨 Bitácora por alumno', 'pfi-print', d + ' data-q="bitAl"', 'small') + '</div>' +
       '<details class="sub"><summary>Más: en blanco, con puntos y editar rúbricas</summary><div class="row gap wrap">' + btn('🖨 Rúbricas con los puntos capturados', 'pfi-print', d + ' data-q="rub" data-c="1"', 'small') + btn('🖨 Rúbrica de garras en blanco', 'pfi-print', d + ' data-q="rub0" data-k="garra"', 'small ghost') + btn('🖨 Rúbrica de brazos y grúas en blanco', 'pfi-print', d + ' data-q="rub0" data-k="brazo"', 'small ghost') + btn('🖨 Bitácora en blanco', 'pfi-print', d + ' data-q="bit0"', 'small ghost') + btn('✏️ Editar rúbricas', 'pfi-rub-ed', '', 'small ghost') + '</div></details>');
   };
@@ -220,6 +261,9 @@
       return o;
     };
   }
+  if (V.imprimir) { const vf = V.imprimir; V.imprimir = function () { const o = vf.apply(null, arguments), g = D.grupoActual(); if (!o || !g || /Algo falló/.test(o.h)) return o; const al = D.alumnos(g);
+    o.h += card('<h3>📐 Examen práctico de FreeCAD 2D</h3><p class="muted small">Una hoja por alumno con su nombre, el plano de la placa y la rúbrica de 100 puntos, todo en una carta' + (al.length ? ' (' + al.length + ' hojas)' : '') + '.</p><div class="row gap wrap">' + btn('🖨 Todo el grupo', 'pfi-fc', (al.length ? '' : 'disabled ') + 'data-q="grupo"', 'primary small') + btn('🖨 En blanco', 'pfi-fc', 'data-q="blanco"', 'small') + '</div>' +
+      (al.length ? '<div class="row gap wrap mt"><select id="pfi-fc-al" class="inp">' + al.map(a => '<option value="' + a.id + '">' + esc(a.nombre) + '</option>').join('') + '</select>' + btn('🖨 Solo este alumno', 'pfi-fc', 'data-q="uno"', 'small') + '</div>' : '')); return o; }; }
   if (V.imprimir) { const vi = V.imprimir; V.imprimir = function () { const o = vi.apply(null, arguments), g = D.grupoActual(); if (!o || !g || /Algo falló/.test(o.h) || !PJ()) return o; const p0 = C.parcialActual(), pid = PJ().canon(g, p0.id); if (!equipos(g, pid).length) return o;
     o.h += card('<h3>🧪 Pruebas físicas del proyecto</h3><p class="muted small">Rúbricas de evaluación física y bitácora de pruebas, ya con equipo, proyecto e integrantes. Para capturar puntos, ve a Proyecto.</p><div class="row gap wrap">' + btn('🖨 Rúbricas (una por equipo)', 'pfi-print', 'data-pid="' + pid + '" data-q="rub"', 'primary small') + btn('🖨 Bitácora de pruebas por equipo', 'pfi-print', 'data-pid="' + pid + '" data-q="bitEq"', 'small') + btn('🖨 Bitácora de pruebas por alumno', 'pfi-print', 'data-pid="' + pid + '" data-q="bitAl"', 'small') + '</div>'); return o; }; }
 })();
