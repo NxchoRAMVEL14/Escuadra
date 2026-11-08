@@ -387,7 +387,11 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
         else { Object.keys(doc).forEach(x => { if (x.indexOf(aid + '|') === 0) delete doc[x]; }); doc[aid] = st; }
       }, {});
     },
-    fechasRegistradas(g, p) { const pre = 'asis:' + g.id + ':'; return S.keys(pre).map(k => k.slice(pre.length)).filter(f => f >= p.inicio && f <= p.fin).sort(); },
+    // v1.29.1: eventos en asueto (desfile, ceremonia…): se pasa lista ese día; si «no cuenta para asistencia», la lista solo sirve para dar puntos
+    eventos(g) { return (g && S.get('eventos:' + g.id)) || {}; },
+    evento(g, f) { return C.eventos(g)[f] || null; },
+    fechasEvento(g) { return Object.keys(C.eventos(g)).sort(); },
+    fechasRegistradas(g, p) { const pre = 'asis:' + g.id + ':', ev = C.eventos(g); return S.keys(pre).map(k => k.slice(pre.length)).filter(f => f >= p.inicio && f <= p.fin && !(ev[f] && ev[f].asis === false)).sort(); },
     fechasLista(g, p) { const set = {}; C.clases(g, p).forEach(c => { set[c.fecha] = 1; }); C.fechasRegistradas(g, p).forEach(f => { set[f] = 1; }); return Object.keys(set).sort(); },
     cuenta(st) { const c = D.cfg(); return st === 'A' || (st === 'R' && c.retardoCuenta) || (st === 'J' && c.justCuenta); },
     asis(g, p, aid) {

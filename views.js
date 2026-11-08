@@ -114,7 +114,9 @@
     if (g && E.reconoce) h += E.reconoce.inicioHTML(g, hoy);
     if (g) {
       const bl = C.bloquesDia(g, hoy), asu = C.esAsueto(hoy); let t = '';
-      if (asu) t = '<p>🏖️ Hoy es asueto.</p>';
+      const evH = C.evento(g, hoy);
+      if (evH) t = '<p>🎺 Hoy: <b>' + esc(evH.n) + '</b>.</p>' + link(icon('check') + ' Pasar lista del evento', 'lista/' + hoy, 'primary');
+      else if (asu) t = '<p>🏖️ Hoy es asueto. ¿Hay desfile o evento? ' + link('🎺 Registrarlo y pasar lista', 'lista/' + hoy, 'small') + '</p>';
       else if (bl.length && C.esClase(g, hoy)) { const rs = E.clases && E.clases.resumenDia(g, hoy); t = '<ul class="blocks">' + (rs ? rs.map(r => '<li><b>' + esc(r.b.inicio) + '–' + esc(r.b.fin) + '</b> · ' + esc(r.txt) + '</li>') : bl.map(b => '<li><b>' + esc(b.inicio) + '–' + esc(b.fin) + '</b> · ' + b.horas + ' h</li>')).join('') + '</ul><div class="row gap wrap">' + link(icon('check') + ' Pasar lista', 'lista/' + hoy, 'primary') + (E.aula ? link(icon('grid') + ' Modo clase', 'aula/' + hoy) : '') + (rs ? link(icon('board') + ' Guion de hoy', 'clase/' + hoy) : '') + (E.cierre ? link('📝 Cierre del día', 'cierre/' + hoy) : '') + '</div>';
         const nx = C.siguienteClase(g, hoy), rn = nx && E.clases && E.clases.resumenDia(g, nx);
         if (rn) t += '<p class="small mt"><b>Próxima clase (' + u.fLarga(nx) + '):</b> ' + esc(rn.map(r => r.txt).join(' · ')) + ' · <a href="#/clase/' + nx + '">Preparar ›</a></p>'; }
@@ -196,7 +198,9 @@
     const al = D.alumnos(g); if (!al.length) return needAlumnos('Pase de lista');
     fecha = fecha || C.fechaListaDefault(g, u.today());
     const doc = S.get('asis:' + g.id + ':' + fecha), pd = S.get('part:' + g.id + ':' + fecha) || {};
-    const prev = C.claseAnterior(g, fecha), next = C.siguienteClase(g, fecha), horas = C.horasDia(g, fecha), asu = C.esAsueto(fecha);
+    // las fechas con evento (desfile en asueto) también entran al recorrer clase anterior / siguiente
+    const evs = C.fechasEvento(g), ca = C.claseAnterior(g, fecha), cs = C.siguienteClase(g, fecha), ea = evs.filter(x => x < fecha).pop(), es = evs.find(x => x > fecha);
+    const prev = [ca, ea].filter(Boolean).sort().pop() || null, next = [cs, es].filter(Boolean).sort()[0] || null, horas = C.horasDia(g, fecha), asu = C.esAsueto(fecha), ev = C.evento(g, fecha);
     const ks = C.clasesCuenta(g, fecha), amb = C.ambito(fecha), cd = C.clasesDia(g, fecha), cnt = { A: 0, F: 0, R: 0, J: 0 }; al.forEach(a => ks.forEach(k => { cnt[C.marca(doc, a.id, k)]++; }));
     const sel = E.ui.lsel && E.ui.lsel.f === fecha ? E.ui.lsel : null;
     // deslizar a la izquierda o derecha cambia de clase (rapido.js); no mientras eliges alumnos
@@ -204,7 +208,14 @@
     let h = '<div class="datebar"' + sw + '><button type="button" class="iconbtn" data-act="go" data-to="lista/' + (prev || fecha) + '" ' + (prev ? '' : 'disabled') + ' aria-label="Clase anterior">' + icon('chevL') + '</button>' +
       '<div class="datebox"><b>' + u.cap(u.fLarga(fecha)) + '</b><input type="date" class="dateinp" value="' + fecha + '" data-ch="lista-fecha" aria-label="Elegir fecha"></div>' +
       '<button type="button" class="iconbtn" data-act="go" data-to="lista/' + (next || fecha) + '" ' + (next ? '' : 'disabled') + ' aria-label="Clase siguiente">' + icon('chevR') + '</button></div>';
-    if (asu) h += '<p class="note warn">Este día está marcado como asueto.</p>';
+    if (ev) {
+      const pres = al.filter(a => ks.some(k => C.cuenta(C.marca(doc, a.id, k)))).length;
+      h += card('<h3>🎺 ' + esc(ev.n || 'Evento') + '</h3><p class="small">' + (asu ? 'Asueto con evento. ' : '') + 'Pasa lista como siempre: toca a quienes no fueron. ' + (ev.asis === false ? '<b>No cuenta para asistencia</b>: solo sirve para dar puntos.' : '<b>Cuenta como un día de asistencia</b>: quien no fue lleva falta.') + '</p>' +
+        '<label class="switch"><input type="checkbox" data-ch="ev-asis" data-f="' + fecha + '"' + (ev.asis === false ? '' : ' checked') + '><span>Cuenta para asistencia</span></label>' +
+        '<div class="row gap wrap mt"><label class="fld" style="max-width:150px"><span>Puntos de participación</span><input type="number" min="1" max="10" inputmode="numeric" class="inp" id="ev-pts" value="' + (ev.pts || 1) + '"></label>' + btn('⭐ Darlos a los que fueron (' + pres + ')', 'ev-dar', 'data-f="' + fecha + '"', 'primary small') + '</div>' +
+        '<p class="muted small">Los puntos extra cuentan como participación. Si vuelves a darlos, se reemplazan (no se suman dos veces). ' + (ev.dados ? 'Ya los diste a ' + ev.dados + '.' : '') + '</p>' +
+        '<div class="row gap wrap">' + btn('✏️ Cambiar nombre', 'ev-nombre', 'data-f="' + fecha + '"', 'small ghost') + btn('Quitar evento', 'ev-quitar', 'data-f="' + fecha + '"', 'small ghost') + '</div>');
+    } else if (asu) h += card('<p class="note warn">Este día está marcado como asueto.</p><p class="small">¿Hubo desfile, ceremonia u otro evento? Regístralo para pasar lista y dar participación o puntos extra a quienes fueron.</p><div class="row gap wrap"><input class="inp" id="ev-n" placeholder="Ej. Desfile del 20 de noviembre" style="max-width:280px">' + btn('🎺 Registrar evento y pasar lista', 'ev-nuevo', 'data-f="' + fecha + '"', 'primary small') + '</div>');
     else if (!horas) h += '<p class="note">No tienes clase este día en tu horario. Si diste clase extra, puedes pasar lista igual.</p>';
     else h += '<p class="muted small">' + C.bloquesDia(g, fecha).map(b => b.inicio + '–' + b.fin).join(' · ') + ' · ' + horas + ' h</p>';
     { const fa = E.casa && E.casa.faltasDia ? E.casa.faltasDia(g, fecha) : []; if (fa.length && !sel) h += '<div class="row gap wrap mt">' + btn('💬 Avisar a casa: ' + (fa.length === 1 ? 'quien faltó' : fa.length + ' que faltaron'), 'lista-avisar', 'data-f="' + fecha + '"', 'small ghost') + '</div>'; }
@@ -268,6 +279,20 @@
     S.update('part:' + g.id + ':' + el.dataset.fecha, doc => { doc[aid] = Math.max(0, Number(doc[aid] || 0) + d); }, {});
   };
   CH['lista-fecha'] = el => { if (el.value) location.hash = '#/lista/' + el.value; };
+  const KEV = g => 'eventos:' + g.id;
+  A['ev-nuevo'] = el => { const g = D.grupoActual(), f = el.dataset.f, i = document.getElementById('ev-n'), n = (i && i.value.trim()) || 'Evento';
+    S.update(KEV(g), d => { d[f] = { n: n, asis: true, pts: 1 }; }, {});
+    if (!S.get('asis:' + g.id + ':' + f)) S.put('asis:' + g.id + ':' + f, {}, {});
+    u.toast('Listo: como en cualquier pase de lista, toca a quienes no fueron', 'ok', 4500); };
+  CH['ev-asis'] = el => { const g = D.grupoActual(); S.update(KEV(g), d => { if (d[el.dataset.f]) d[el.dataset.f].asis = el.checked; }, {}); };
+  A['ev-dar'] = el => {
+    const g = D.grupoActual(), f = el.dataset.f, i = document.getElementById('ev-pts'), n = Math.max(1, Math.min(10, Math.round(Number(i && i.value) || 1))), doc = S.get('asis:' + g.id + ':' + f) || {};
+    const fueron = D.alumnos(g).filter(a => C.clasesCuenta(g, f).some(k => C.cuenta(C.marca(doc, a.id, k))));
+    S.update('part:' + g.id + ':' + f, d => { Object.keys(d).forEach(k => { delete d[k]; }); fueron.forEach(a => { d[a.id] = n; }); }, {});
+    S.update(KEV(g), d => { if (d[f]) { d[f].pts = n; d[f].dados = fueron.length; } }, {});
+    u.toast(n + (n === 1 ? ' punto' : ' puntos') + ' de participación a ' + fueron.length + ' alumnos', 'ok', 4000); };
+  A['ev-nombre'] = el => { const g = D.grupoActual(), f = el.dataset.f, ev = C.evento(g, f), n = prompt('Nombre del evento', ev ? ev.n : ''); if (n != null && n.trim()) S.update(KEV(g), d => { if (d[f]) d[f].n = n.trim(); }, {}); };
+  A['ev-quitar'] = el => { const g = D.grupoActual(), f = el.dataset.f; if (!confirm('¿Quitar el evento? Se borran la lista y los puntos de ese día.')) return; S.update(KEV(g), d => { delete d[f]; }, {}); S.del('asis:' + g.id + ':' + f); S.del('part:' + g.id + ':' + f); };
 
   /* ---------- alumno al azar y equipos ---------- */
   function presentes(g, f) { const doc = S.get('asis:' + g.id + ':' + f); return D.alumnos(g).filter(a => !doc || ['A', 'R'].indexOf(doc[a.id] || 'A') >= 0); }

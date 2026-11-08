@@ -40,7 +40,8 @@
   M.videos = id => (E.VIDEOS[id] || []).map(v => ({ yt: v[0], t: v[1], a: v[2] })).concat(M.propios(id).filter(r => r.tipo === 'video').map(r => ({ yt: r.yt, t: r.titulo || 'Mi video', a: 'Agregado por ti', propio: r.id })));
   M.imagenes = id => M.propios(id).filter(r => r.tipo === 'imagen');
   M.links = id => M.propios(id).filter(r => r.tipo === 'link');
-  M.embed = (yt, auto) => 'https://www.youtube-nocookie.com/embed/' + yt + '?rel=0&modestbranding=1&playsinline=1&enablejsapi=1' + (auto ? '&autoplay=1' : '');
+  // con sonido (mute=0) y origin para que los botones ▶/⏸ del control lleguen al reproductor
+  M.embed = (yt, auto) => 'https://www.youtube-nocookie.com/embed/' + yt + '?rel=0&modestbranding=1&playsinline=1&enablejsapi=1&mute=0&origin=' + encodeURIComponent(location.origin) + (auto ? '&autoplay=1' : '');
   M.thumb = yt => 'https://i.ytimg.com/vi/' + yt + '/mqdefault.jpg';
   const vidCard = (tema, v) => '<div class="vcard"><button type="button" class="vthumb" data-act="vid-ver" data-yt="' + v.yt + '" data-tema="' + tema + '" aria-label="Ver ' + esc(v.t) + '"><img loading="lazy" alt="" src="' + M.thumb(v.yt) + '" onerror="this.style.visibility=\'hidden\'"><span>▶</span></button><div class="vinfo"><b>' + esc(v.t) + '</b><span class="muted small">' + esc(v.a) + '</span>' + (v.propio ? btn('Quitar', 'rec-del', 'data-tema="' + tema + '" data-id="' + v.propio + '"', 'small ghost danger') : '') + '</div></div>';
 

@@ -395,6 +395,7 @@
     if (it.mat) h += '<p class="small"><b>Material:</b> ' + esc(it.mat) + '</p>';
     if (it.nota) h += '<p class="small"><b>Tip:</b> ' + esc(it.nota) + '</p>';
     if (it.ev) h += '<p class="small"><b>Evidencia:</b> ' + esc(it.ev) + '</p>';
+    if (E.diag) h += E.diag.claseHTML(g, pid, it);
     if (it.tarea) h += '<p class="note info small"><b>Tarea:</b> ' + esc(it.tarea) + '</p>';
     if (it.pre) h += '<p class="small"><b>Para adelantar el tema</b> a quien lo necesite: <i>' + esc(it.pre) + '</i></p>';
     if (it.guia) h += K.guiaHTML(it, pid);

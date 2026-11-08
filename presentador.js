@@ -32,6 +32,7 @@
     if (E.modoPantalla) return alPantalla(m);
     // en el control
     if (m.tipo === 'hola' || m.tipo === 'vivo') { const antes = PR.conectada(); PR.vivo = Date.now(); if (m.tipo === 'hola') enviarEstado(); if (!antes) pintarEstado(); }
+    if (m.tipo === 'sinSonido') u.toast('🔇 El video arrancó sin sonido: toca una vez la pantalla del proyector (el navegador lo pide) y ya suena.', 'warn', 7000);
     if (m.tipo === 'estado') { const s = st(); if (m.tema === s.tema) { s.i = m.i; s.rev = m.rev; if (/^#\/presentador/.test(location.hash)) E.render(); } }
   }
   PR.conectada = () => Date.now() - PR.vivo < 7000;
@@ -56,9 +57,17 @@
     if (m.tipo === 'cerrar') { P.close(); espera(true); }
   }
   // controla el video de YouTube que está en el proyector (API de mensajes del reproductor)
+  function yt(func, args) { const f = document.querySelector('#proj .pj-video iframe'); if (f && f.contentWindow) try { f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*'); } catch (e) { } }
+  // v1.29.1: con sonido. El navegador solo deja sonar un video si alguien ya tocó esta ventana; si no, YouTube lo pone en silencio.
+  const activa = () => !!(navigator.userActivation ? navigator.userActivation.hasBeenActive : PR.tocada);
   function videoCmd(cmd) {
-    const f = document.querySelector('#proj .pj-video iframe');
-    if (f && f.contentWindow) try { f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd, args: [] }), '*'); } catch (e) { }
+    yt(cmd);
+    if (cmd === 'playVideo') { yt('unMute'); yt('setVolume', [100]); if (!activa()) { avisoSonido(true); enviar({ tipo: 'sinSonido' }); } }
+  }
+  function avisoSonido(on) {
+    let el = document.getElementById('pj-sonido'); if (!on) { if (el) el.remove(); return; }
+    if (!el) { el = document.createElement('button'); el.type = 'button'; el.id = 'pj-sonido'; el.className = 'pj-sonido'; el.textContent = '🔇 Toca aquí para el sonido';
+      el.addEventListener('click', ev => { ev.stopPropagation(); PR.tocada = true; yt('unMute'); yt('setVolume', [100]); yt('playVideo'); avisoSonido(false); }); document.body.appendChild(el); }
   }
   // cuando el profe cambia de diapositiva desde la laptop (teclado o toque), el control se entera
   PR.alDibujar = () => { if (E.modoPantalla && !PR.aplicando && E.proj.t) enviar({ tipo: 'estado', tema: E.proj.t.id, i: E.proj.i, rev: E.proj.rev }); };
@@ -66,7 +75,7 @@
     let el = document.getElementById('pant-espera');
     if (!on) { if (el) el.remove(); return; }
     if (!el) { el = document.createElement('div'); el.id = 'pant-espera'; document.body.appendChild(el); }
-    el.innerHTML = '<div class="pe-in">' + E.logo() + '<h1>Pantalla del proyector</h1><p>Lleva esta ventana a la pantalla del proyector y tócala para verla completa. Todo se controla desde tu celular o desde la otra ventana.</p></div>';
+    el.innerHTML = '<div class="pe-in">' + E.logo() + '<h1>Pantalla del proyector</h1><p>Lleva esta ventana a la pantalla del proyector y tócala una vez: se pone completa y activa el sonido de los videos. Todo se controla desde tu celular o desde la otra ventana.</p></div>';
   }
   function botonCompleta() {
     let b = document.getElementById('pant-full');
@@ -78,7 +87,8 @@
     const app = document.getElementById('app'); if (app) app.innerHTML = '';
     abrirCanal(); espera(true); botonCompleta();
     document.addEventListener('fullscreenchange', botonCompleta);
-    document.addEventListener('click', () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => { }); });
+    document.addEventListener('click', () => { PR.tocada = true; avisoSonido(false); if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => { }); });
+    document.addEventListener('keydown', () => { PR.tocada = true; });
     enviar({ tipo: 'hola' }); setInterval(() => enviar({ tipo: 'vivo' }), 3000);
     // si la sincronización se conecta después, también escucha al celular
     setTimeout(() => { if (E.sync && E.sync.init) E.sync.init().then(() => { abrirCanal(); enviar({ tipo: 'hola' }); }).catch(() => { }); }, 300);
