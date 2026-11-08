@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.29.0';
+  E.VERSION = '1.29.1';
   E.CHANGELOG = [
+            { v: '1.29.1', f: '2026-11-08', t: 'Evento en asueto (desfile): pasas lista ese día, eliges si cuenta para asistencia y das puntos de participación a quienes fueron. Videos de YouTube con sonido en el proyector (basta tocar la pantalla una vez). Cuestionarios diagnósticos listos para imprimir (uno por alumno o en blanco), proyectar y con su clave; el del 3er parcial trae 15 preguntas de fluidos, Pascal y circuitos. El informe para padres ocupa una hoja con las firmas hasta abajo.' },
             { v: '1.29.0', f: '2026-11-07', t: 'Reglas de control escolar. Toda la app califica de 5 a 10 sin decimales (7.5 → 8, 7.4 → 7; nunca menos de 5 ni 0). Nuevo «📤 Para subir a la plataforma» en Final y acta: copia solo calificación y asistencias por día del parcial que toca, con su fecha y aviso de blancos o ceros; las faltas van solo en el Excel para Norma. Los dados de baja salen con asistencia 2 y calificación 5. La captura a mano y la autoevaluación también van de 5 a 10.' },
             { v: '1.28.9', f: '2026-11-07', t: 'Proyecto del 3er parcial: ya no es una grúa, es su mismo mecanismo del 2º parcial (garra o brazo) con todos sus movimientos por hidráulica y 1 motor obligatorio; así quedaron el proyecto, las clases, los temas, las ideas, el banco y la planeación. Cada equipo hereda el nombre y el tipo de su mecanismo del 2º parcial. La rúbrica impresa trae al pie el plan de mejora hacia el 3er parcial (y en el 3er parcial, esas mejoras para palomear si las hicieron).' },
             { v: '1.28.8', f: '2026-11-06', t: 'Una sola captura, varios lados. Examen recomendado: su actividad en Calificaciones se crea sola y las calificaciones que capturas caen solas (si ya tienes tu actividad de examen, la usa y no se duplica; la eliges en la tarjeta). Reglamento: marcar «Alumno» en Seguridad deja su calificación en la tarea del reglamento, y capturar esa tarea en Calificaciones marca la firma en Seguridad.' },

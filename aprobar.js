@@ -189,8 +189,22 @@
       '<h3>Comentarios del docente</h3>' + (coms.length ? '<ul>' + coms.map(c => '<li>' + esc(c.txt) + ' <span class="tiny">(' + u.fCorta(c.f) + ')</span></li>').join('') + '</ul>' : '') + '<div class="pd-lineas"></div>' +
       '<div class="ap-firmas"><span>Firma de enterado: madre, padre o tutor(a)</span><span>' + esc(cf.docente || 'Docente') + '</span></div></div>';
   };
-  A['ap-padres'] = el => { const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (a) E.print.run(AP.padres(g, a, el.dataset.pid), { title: 'Informe para padres · ' + a.nombre, margin: '10mm' }); };
-  A['ap-padres-todos'] = el => { const g = D.grupoActual(), pid = el.dataset.pid; E.print.run(D.alumnos(g).map(a => AP.padres(g, a, pid)).join(''), { title: 'Informes para padres · ' + g.nombre, margin: '10mm' }); };
+  // v1.29.1: cada informe ocupa exactamente una hoja carta y las firmas quedan hasta abajo; si el texto no cabe, se reduce un poco
+  const PD_MARGEN = 10, PD_ANCHO = 215.9 - 2 * PD_MARGEN, PD_ALTO = 279.4 - PD_MARGEN - (PD_MARGEN + 19) - 4;
+  AP.ajustaPadres = hojas => {
+    const box = document.createElement('div'), mm = 96 / 25.4;
+    box.style.cssText = 'position:absolute;left:-10000px;top:0;visibility:hidden;width:' + PD_ANCHO + 'mm'; box.innerHTML = hojas.join(''); document.body.appendChild(box);
+    try {
+      return [...box.querySelectorAll('.pr.padres')].map(h => {
+        const alto = h.getBoundingClientRect().height / mm;
+        if (alto <= PD_ALTO) h.style.height = PD_ALTO + 'mm';
+        else { const z = Math.max(0.6, Math.floor(PD_ALTO / alto * 1000) / 1000); h.style.zoom = String(z); h.style.width = (PD_ANCHO / z).toFixed(2) + 'mm'; h.style.height = (PD_ALTO / z).toFixed(2) + 'mm'; h.dataset.zoom = String(z); }
+        h.classList.add('pd-fit'); return h.outerHTML;
+      });
+    } finally { box.remove(); }
+  };
+  A['ap-padres'] = el => { const g = D.grupoActual(), a = D.alumno(g, el.dataset.aid); if (a) E.print.run(AP.ajustaPadres([AP.padres(g, a, el.dataset.pid)]).join(''), { title: 'Informe para padres · ' + a.nombre, margin: PD_MARGEN + 'mm' }); };
+  A['ap-padres-todos'] = el => { const g = D.grupoActual(), pid = el.dataset.pid; E.print.run(AP.ajustaPadres(D.alumnos(g).map(a => AP.padres(g, a, pid))).join(''), { title: 'Informes para padres · ' + g.nombre, margin: PD_MARGEN + 'mm' }); };
 
   // en Imprimir: informes para padres y planes para aprobar
   if (V.imprimir) { const im = V.imprimir; V.imprimir = function () { const o = im.apply(null, arguments), g = D.grupoActual(); if (o && g && D.alumnos(g).length && !/Algo falló/.test(o.h)) { const pid = (E.ui.print && E.ui.print.pid) || C.parcialActual().id; o.h += card('<h3>👪 Junta con padres</h3><p class="muted small">Un informe por alumno: calificación con desglose, asistencia, FreeCAD, fortalezas, lo que le falta, cómo apoyar en casa y tus comentarios.</p><div class="row gap wrap">' + btn('🖨 Informes para padres (todo el grupo)', 'ap-padres-todos', 'data-pid="' + pid + '"', 'primary') + link('🎯 Para aprobar', 'aprobar/' + pid, '') + '</div>'); } return o; }; }
