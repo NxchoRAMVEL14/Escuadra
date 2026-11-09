@@ -321,11 +321,11 @@ details.sub > summary { cursor: pointer; font-weight: 600; font-size: .88rem; co
 .pr .crit { font-size: 8pt; margin: 4px 0 6px; padding-left: 26px; columns: 2 }
 .pr .crit li::marker { content: "C" counter(list-item) ". "; font-weight: bold }
 .pr .box { border: 1px solid #000; height: 60px }
-.pr .sig { margin-top: 26px; display: flex; justify-content: center }
-.pr .sig div { border-top: 1px solid #000; padding-top: 3px; min-width: 240px; text-align: center; font-size: 8.5pt }
+.pr .sig { margin-top: 20mm; display: flex; justify-content: center; break-inside: avoid; page-break-inside: avoid }
+.pr .sig div { border-top: 1px solid #000; padding-top: 3px; min-width: 75mm; text-align: center; font-size: 8.5pt }
 .pr tr { page-break-inside: avoid }
 .pr thead { display: table-header-group }
-.pr.pr-compacto .grid td, .pr.pr-compacto .grid th { padding: 0 3px; height: 17px } .pr.pr-compacto .sig { margin-top: 12px }
+.pr.pr-compacto .grid td, .pr.pr-compacto .grid th { padding: 0 3px; height: 17px } .pr.pr-compacto .sig { margin-top: 14mm }
 
 /* v1.2 · perfil, observaciones y puntos máximos */
 .conv { flex: none; font-size: .8rem; min-width: 44px }
@@ -880,11 +880,11 @@ details.est[open] > summary::after { transform: rotate(90deg) }
 .rt-chip.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); font-weight: 700 }
 .pr.ap-plan { font-size: 10.5pt; line-height: 1.45; padding: 2mm 0 } .pr.ap-plan p { margin: 5px 0 }
 .pr .apl-chk { list-style: none; padding: 0; margin: 4px 0 } .pr .apl-chk li { margin-bottom: 5px }
-.pr .ap-firmas { display: flex; justify-content: space-around; gap: 20px; margin-top: 22px }
-.pr .ap-firmas span { border-top: 1px solid #000; padding-top: 3px; min-width: 200px; text-align: center; font-size: 8.5pt }
+.pr .ap-firmas { display: flex; justify-content: space-around; gap: 20px; margin-top: 20mm; break-inside: avoid; page-break-inside: avoid }
+.pr .ap-firmas span { border-top: 1px solid #000; padding-top: 3px; min-width: 70mm; text-align: center; font-size: 8.5pt }
 .ap-corte { border-top: 1px dashed #000; margin: 6mm 0 }
 .pr.padres { font-size: 10pt; line-height: 1.4; page-break-after: always } .pr.padres:last-child { page-break-after: auto }
-.pr.padres .ap-firmas { margin-top: 0; padding-top: 16mm } .pr.padres.pd-fit { display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box } .pr.padres.pd-fit > * { flex-shrink: 0 } .pr.padres.pd-fit > .ap-firmas { margin-top: auto }
+.pr.padres .ap-firmas { margin-top: 0; padding-top: 22mm } .pr.padres.pd-fit { display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box } .pr.padres.pd-fit > * { flex-shrink: 0 } .pr.padres.pd-fit > .ap-firmas { margin-top: auto }
 .pr.padres h2 { font-size: 14pt; margin: 6px 0 } .pr.padres h3 { font-size: 10.5pt; margin: 8px 0 3px } .pr.padres ul { margin: 0; padding-left: 16px }
 .pr .pd-cal { width: 70%; margin: 4px 0 6px } .pr .pd-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
 .pr .pd-lineas { height: 18mm; background: repeating-linear-gradient(transparent 0 7.5mm, #999 7.5mm 7.8mm) }
@@ -1367,7 +1367,7 @@ details.ini-mas[open] > summary::before { content: '▾ ' }
 .pr .cn-in { width: 100%; height: 100%; border: 3px double #0e5e5a; border-radius: 6mm; padding: 10mm 16mm; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3mm }
 .pr .cn-in svg { width: 18mm; height: 18mm } .pr .cn-in h1 { font-size: 28pt; color: #0e5e5a; margin: 0; letter-spacing: .02em } .pr .cn-in h2 { font-size: 24pt; margin: 0 } .pr .cn-in h3 { font-size: 15pt; margin: 0; color: #0e5e5a }
 .pr .cn-in p { margin: 0; font-size: 11pt } .pr .cn-k { font-size: 9pt !important; color: #444; text-transform: uppercase; letter-spacing: .08em } .pr .cn-det { color: #444 } .pr .cn-folio { font-size: 7pt !important; color: #666; margin-top: 2mm !important }
-.pr .cn-firma { margin-top: 10mm; display: flex; justify-content: center } .pr .cn-firma span { border-top: 1px solid #000; padding-top: 2mm; min-width: 70mm; font-size: 10pt; text-align: center }
+.pr .cn-firma { margin-top: 22mm; display: flex; justify-content: center } .pr .cn-firma span { border-top: 1px solid #000; padding-top: 2mm; min-width: 70mm; font-size: 10pt; text-align: center }
 .pr.po-pr { font-size: 10.5pt; line-height: 1.4 } .pr .po-head { display: flex; gap: 6mm; align-items: center; border-bottom: 2px solid #0e5e5a; padding-bottom: 4mm; margin-bottom: 4mm } .pr .po-head svg { width: 16mm; height: 16mm; flex: none }
 .pr.po-pr h1 { font-size: 20pt; margin: 0 } .pr.po-pr h2 { font-size: 13pt; color: #0e5e5a; margin: 5mm 0 2mm } .pr.po-pr h3 { font-size: 11pt; margin: 3mm 0 1mm } .pr.po-pr ul { margin: 1mm 0; padding-left: 6mm } .pr.po-pr p { margin: 1mm 0 }
 .pr .po-fotos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm } .pr .po-fotos figure { margin: 0; page-break-inside: avoid } .pr .po-fotos img { width: 100%; height: 45mm; object-fit: cover; border-radius: 2mm } .pr .po-fotos figcaption { font-size: 8pt; color: #444 }
@@ -1380,7 +1380,7 @@ details.ini-mas[open] > summary::before { content: '▾ ' }
 
 /* v1.26 · normas, tu tiempo, clases, resultados y solidez */
 .pr .pbreak { break-after: page; page-break-after: always; height: 0 }
-.pr .firmas { display: flex; justify-content: space-around; gap: 20mm; margin-top: 18mm } .pr .firmas div { border-top: 1px solid #000; padding-top: 3px; min-width: 60mm; text-align: center; font-size: 8.5pt }
+.pr .firmas { display: flex; justify-content: space-around; gap: 20mm; margin-top: 24mm; break-inside: avoid; page-break-inside: avoid } .pr .firmas div { border-top: 1px solid #000; padding-top: 3px; min-width: 60mm; text-align: center; font-size: 8.5pt }
 .pr .tira { border: 1px dashed #000; padding: 3mm 4mm; margin: 0 0 4mm; break-inside: avoid; page-break-inside: avoid } .pr .tira p { margin: 1.5mm 0 }
 .pr .nr-pf { break-inside: avoid; page-break-inside: avoid; border-bottom: 1px solid #999; padding: 2mm 0 } .pr .nr-pf h4 { margin: 0 0 1mm; font-size: 10pt } .pr .nr-pf p, .pr .nr-pf ul { margin: 1mm 0 } .pr .nr-pf ul { padding-left: 5mm }
 .pr .n3-q { margin: 0 0 5mm }
@@ -1494,3 +1494,19 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 
 /* v1.29.1: aviso de sonido en la pantalla del proyector */
 .pj-sonido { position: fixed; right: 3vw; bottom: 4vh; z-index: 60; font-size: 1.6rem; padding: .7em 1.1em; border-radius: 999px; border: 0; background: #f5b800; color: #111; font-weight: 700; box-shadow: 0 6px 24px rgba(0,0,0,.4); cursor: pointer }
+
+/* v1.29.2: frase del día al abrir */
+.fd { position: fixed; inset: 0; z-index: 9999; background: radial-gradient(120% 80% at 50% 30%, #0f2a3a 0%, #0a1a2a 45%, #050b16 100%); color: #eaf3fb; display: flex; flex-direction: column; padding: max(18vh, 90px) 9vw 6vh; box-sizing: border-box; cursor: pointer; transition: opacity .35s }
+.fd.fuera { opacity: 0 }
+.fd-in { flex: 1; max-width: 760px; width: 100%; margin: 0 auto }
+/* el «»: comillas en naranja */ .fd-q { font: 800 clamp(26px, 7.4vw, 46px)/1.28 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin: 0; letter-spacing: -.01em }
+.fd-a { text-align: right; margin: 1.1em 0 0; font: 400 clamp(19px, 5vw, 30px)/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #5fc4c0 }
+.fd-bar { position: relative; max-width: 760px; width: 100%; margin: 0 auto 6vh; padding-top: 44px }
+.fd-tr { height: 16px; border-radius: 999px; background: #1a2c3f; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(95,196,192,.18) }
+.fd-fill { height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #e8801a, #f5a623); box-shadow: 0 0 14px rgba(245,166,35,.55) }
+.fd-eng { position: absolute; top: 0; left: 0; font-size: 34px; line-height: 1; transform: translateX(-50%); filter: drop-shadow(0 0 8px rgba(95,196,192,.6)) }
+.fd-logo { text-align: center } .fd-logo img { display: block; margin: 0 auto; filter: drop-shadow(0 0 22px rgba(56,150,230,.35)) } .fd-logo small { display: block; margin-top: 10px; color: #7d93a8; font-size: 13px }
+
+/* v1.29.2: en las hojas donde se firma en la tabla, renglones altos para firmar cómodo */
+.pr table.firmar td { height: 9mm; vertical-align: middle }
+.fd-c { color: #f5a623 }
