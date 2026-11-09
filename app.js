@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.29.3';
+  E.VERSION = '1.29.4';
   E.CHANGELOG = [
+            { v: '1.29.4', f: '2026-11-09', t: 'El acta, las listas de asistencia y participación, la lista de cotejo y la rúbrica salen siempre en una sola hoja con la firma: si con el espacio para firmar no caben, se reducen lo justo.' },
             { v: '1.29.3', f: '2026-11-08', t: 'La frase del día ahora es en modo oscuro: azul marino con toques de verde de la app, comillas y barra en naranja, y el logo con un brillo azul.' },
             { v: '1.29.2', f: '2026-11-08', t: 'Logo nuevo (ícono, arranque y encabezado). Frase del día para mecatrónicos al abrir la app la primera vez del día, con barra de avance y engrane (se apaga en Ajustes). En todo lo que se imprime, las firmas dejan 2 cm para firmar y las hojas de firmas tienen renglones más altos.' },
             { v: '1.29.1', f: '2026-11-08', t: 'Evento en asueto (desfile): pasas lista ese día, eliges si cuenta para asistencia y das puntos de participación a quienes fueron. Videos de YouTube con sonido en el proyector (basta tocar la pantalla una vez). Cuestionarios diagnósticos listos para imprimir (uno por alumno o en blanco), proyectar y con su clave; el del 3er parcial trae 15 preguntas de fluidos, Pascal y circuitos. El informe para padres ocupa una hoja con las firmas hasta abajo.' },
