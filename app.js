@@ -2,8 +2,10 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.29.1';
+  E.VERSION = '1.29.3';
   E.CHANGELOG = [
+            { v: '1.29.3', f: '2026-11-08', t: 'La frase del día ahora es en modo oscuro: azul marino con toques de verde de la app, comillas y barra en naranja, y el logo con un brillo azul.' },
+            { v: '1.29.2', f: '2026-11-08', t: 'Logo nuevo (ícono, arranque y encabezado). Frase del día para mecatrónicos al abrir la app la primera vez del día, con barra de avance y engrane (se apaga en Ajustes). En todo lo que se imprime, las firmas dejan 2 cm para firmar y las hojas de firmas tienen renglones más altos.' },
             { v: '1.29.1', f: '2026-11-08', t: 'Evento en asueto (desfile): pasas lista ese día, eliges si cuenta para asistencia y das puntos de participación a quienes fueron. Videos de YouTube con sonido en el proyector (basta tocar la pantalla una vez). Cuestionarios diagnósticos listos para imprimir (uno por alumno o en blanco), proyectar y con su clave; el del 3er parcial trae 15 preguntas de fluidos, Pascal y circuitos. El informe para padres ocupa una hoja con las firmas hasta abajo.' },
             { v: '1.29.0', f: '2026-11-07', t: 'Reglas de control escolar. Toda la app califica de 5 a 10 sin decimales (7.5 → 8, 7.4 → 7; nunca menos de 5 ni 0). Nuevo «📤 Para subir a la plataforma» en Final y acta: copia solo calificación y asistencias por día del parcial que toca, con su fecha y aviso de blancos o ceros; las faltas van solo en el Excel para Norma. Los dados de baja salen con asistencia 2 y calificación 5. La captura a mano y la autoevaluación también van de 5 a 10.' },
             { v: '1.28.9', f: '2026-11-07', t: 'Proyecto del 3er parcial: ya no es una grúa, es su mismo mecanismo del 2º parcial (garra o brazo) con todos sus movimientos por hidráulica y 1 motor obligatorio; así quedaron el proyecto, las clases, los temas, las ideas, el banco y la planeación. Cada equipo hereda el nombre y el tipo de su mecanismo del 2º parcial. La rúbrica impresa trae al pie el plan de mejora hacia el 3er parcial (y en el 3er parcial, esas mejoras para palomear si las hicieron).' },
@@ -183,6 +185,7 @@
       if (ult) { history.replaceState(null, '', location.pathname + '#/' + ult); setTimeout(() => u.toast('Seguimos donde quedaste', 'ok', 1800), 900); }
       if (!dest && !ult && !location.hash) history.replaceState(null, '', '#/inicio');
       E.render(); E.sync.init(); registerSW();
+      if (E.frase) setTimeout(() => { try { E.frase.alAbrir(); } catch (e) { console.error(e); } }, 60);
       setTimeout(() => E.notify.check(), 1500);
       if (E.entregas) setTimeout(() => { try { E.entregas.autoTodos(); } catch (e) { console.error(e); } }, 1200);
     };
