@@ -64,8 +64,24 @@
   const bt = (...a) => E.h.btn(...a);
   A['pr-go'] = () => { E.modal.close(); imprime(); };
   A['pr-cancel'] = () => { pend = null; E.modal.close(); const r = document.getElementById('print-root'); if (r) r.innerHTML = ''; };
+  // v1.29.4: formatos de una sola hoja (acta, listas, cotejo, rúbrica): si con la firma no cabe, se reduce lo justo para que quepa
+  function unaHoja(html, o) {
+    let f = null;
+    try {
+      const mm = 96 / 25.4, m = margen(o), land = !!o.landscape;
+      const wPx = ((land ? 279.4 : 215.9) - 2 * m) * mm, hPx = ((land ? 215.9 : 279.4) - m - Math.max(m, LOGO_MIN) - LOGO_MM - 3) * mm;
+      const css = [...document.styleSheets].map(x => { try { return [...x.cssRules].map(r => r.cssText).join('\n'); } catch (e) { return ''; } }).join('\n');
+      f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.style.cssText = 'position:absolute;left:-10000px;top:0;border:0;visibility:hidden;width:' + wPx + 'px;height:' + hPx + 'px';
+      document.body.appendChild(f); const d = f.contentDocument; d.open();
+      d.write('<!doctype html><html><head><meta charset="utf-8"><style>' + css + '</style><style>body{margin:0}#print-root{display:block}</style></head><body><div id="print-root">' + html + '</div></body></html>'); d.close();
+      const h = d.getElementById('print-root').scrollHeight; if (h <= hPx) return html;
+      const z = Math.floor(hPx / h * 1000) / 1000; if (z < 0.6) return html;   // demasiado largo (muchos alumnos): mejor en 2 hojas legibles
+      return '<div class="una-hoja" style="zoom:' + z + ';width:' + (wPx / z).toFixed(1) + 'px">' + html + '</div>';
+    } catch (e) { return html; } finally { if (f) f.remove(); }
+  }
+  P.unaHoja = unaHoja;
   P.run = (html, o) => {
-    o = o || {};
+    o = o || {}; if (o.unaHoja) html = unaHoja(html, o);
     // el logo va fijo en cada hoja (se repite en cada página impresa, también en las que se parten)
     // el logo nunca queda a menos de LOGO_MIN de la orilla (con margen 0, como las constancias, la impresora lo cortaría)
     const m = margen(o), lm = Math.max(m, LOGO_MIN), cuerpo = html, rv = revisa(cuerpo, o), n = rv.n;
@@ -125,7 +141,7 @@
     P.run('<div class="pr pr-compacto">' + head(g, 'LISTA DE ASISTENCIA · ' + p.nombre.toUpperCase(), 'DOCENTE: ' + D.cfg().docente) + '<p class="tiny c">' + esc(smTxt(g, p)) + '</p>' +
       '<style>.att td,.att th{padding:0!important}.att td.nm{padding:0 2px!important;white-space:nowrap;overflow:hidden;font-size:8pt}</style>' +
       bl.map((b, i) => tabla(b, i === bl.length - 1, i)).join('') +
-      '<p class="tiny">' + (pc ? 'Cada columna es una clase de 50 min: arriba el día y abajo la hora de inicio. • Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos. A y F cuentan clases, no días.' : 'Cada columna es un día de clase. • Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos. A y F cuentan días: si faltó a todas las clases del día es F; si fue al menos a una, cuenta como asistencia.') + '</p>' + firma() + '</div>', { landscape: true, title: 'Lista ' + g.grupo + ' ' + p.nombre });
+      '<p class="tiny">' + (pc ? 'Cada columna es una clase de 50 min: arriba el día y abajo la hora de inicio. • Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos. A y F cuentan clases, no días.' : 'Cada columna es un día de clase. • Asistencia · F Falta · R Retardo · J Justificada. Fechas según el horario, sin asuetos. A y F cuentan días: si faltó a todas las clases del día es F; si fue al menos a una, cuenta como asistencia.') + '</p>' + firma() + '</div>', { unaHoja: true, landscape: true, title: 'Lista ' + g.grupo + ' ' + p.nombre });
   };
   P.participacion = (g, p, o) => {
     o = o || {}; const al = D.alumnos(g), fechas = C.fechasLista(g, p);
@@ -137,7 +153,7 @@
     }).join('');
     P.run('<div class="pr pr-compacto">' + head(g, 'REGISTRO DE PARTICIPACIÓN · ' + p.nombre.toUpperCase(), 'DOCENTE: ' + D.cfg().docente) + '<p class="tiny c">' + esc(smTxt(g, p)) + '</p>' +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">NOMBRE</th>' + th + '<th>Total</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<p class="tiny">Anota una marca por participación. ' + (D.cfg().partModo === 'meta' ? 'Meta del parcial: ' + D.cfg().metaPart + ' participaciones = 100' : 'El alumno con más participaciones en el parcial = 100 y los demás en proporción') + ' (vale ' + D.cfg().pond.participacion + '% de la calificación).</p>' + firma() + '</div>', { landscape: true, title: 'Participación ' + g.grupo + ' ' + p.nombre });
+      '<p class="tiny">Anota una marca por participación. ' + (D.cfg().partModo === 'meta' ? 'Meta del parcial: ' + D.cfg().metaPart + ' participaciones = 100' : 'El alumno con más participaciones en el parcial = 100 y los demás en proporción') + ' (vale ' + D.cfg().pond.participacion + '% de la calificación).</p>' + firma() + '</div>', { unaHoja: true, landscape: true, title: 'Participación ' + g.grupo + ' ' + p.nombre });
   };
   function filas(g, o) {
     if (o && o.modo === 'equipos') return Array.from({ length: Math.max(1, Number(o.equipos) || 6) }, (_, k) => ({ num: k + 1, nombre: 'Equipo ' + (k + 1) + ': ' }));
@@ -153,7 +169,7 @@
       '<table class="grid"><tr><td><b>Actividad clave:</b> ' + esc(ac.titulo) + '<br><b>' + (ac.ev === 'D' ? 'Desempeño' : 'Producto') + ':</b> ' + esc(ac.producto || '') + '<br><span class="tiny">' + esc(smTxt(g, p)) + ' · Programa 2024, p. ' + esc(ac.pag || '') + '</span></td></tr></table>' +
       '<p class="tiny"><b>Instrucciones:</b> marca ✓ si cumple y ✗ si no. Calificación = criterios cumplidos ÷ ' + cr.length + ' × 100.</p>' + leg +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">' + (eq ? 'EQUIPO E INTEGRANTES' : 'NOMBRE') + '</th>' + th + '<th style="width:12mm">Cumple</th><th style="width:12mm">Calif.</th><th style="width:40mm">Observaciones</th></tr></thead><tbody>' + rows + '</tbody></table>' + firma() + '</div>',
-      { landscape: true, title: 'Cotejo ' + g.grupo });
+      { unaHoja: true, landscape: true, title: 'Cotejo ' + g.grupo });
   };
   const NIV = [['Excelente', 4, 'Lo hace completo, correcto y de forma autónoma.'], ['Bueno', 3, 'Lo hace correctamente con apoyo mínimo.'], ['Suficiente', 2, 'Lo hace en parte o con errores que corrige con apoyo.'], ['Insuficiente', 1, 'No lo hace o tiene errores graves.']];
   P.rubrica = (g, p, i) => {
@@ -164,7 +180,7 @@
       '<table class="grid"><tr><td><b>Nombre / equipo:</b> ______________________________________________ <b>Fecha:</b> ____________</td></tr><tr><td><b>Actividad clave:</b> ' + esc(ac.titulo) + '<br><b>' + (ac.ev === 'D' ? 'Desempeño' : 'Producto') + ':</b> ' + esc(ac.producto || '') + '<br><span class="tiny">' + esc(smTxt(g, p)) + ' · Programa 2024, p. ' + esc(ac.pag || '') + '</span></td></tr></table><br>' +
       '<table class="grid"><thead><tr><th class="l" style="width:30%">Criterio</th>' + NIV.map(n => '<th>' + n[0] + ' (' + n[1] + ')</th>').join('') + '<th style="width:14mm">Puntos</th></tr></thead><tbody>' + rows +
       '<tr><td colspan="5" style="text-align:right"><b>Total (máximo ' + max + ')</b></td><td></td></tr><tr><td colspan="5" style="text-align:right"><b>Calificación = total ÷ ' + max + ' × 100</b></td><td></td></tr></tbody></table>' +
-      '<p class="tiny"><b>Retroalimentación:</b></p><div class="box"></div>' + firma() + '</div>', { landscape: false, title: 'Rúbrica ' + g.grupo });
+      '<p class="tiny"><b>Retroalimentación:</b></p><div class="box"></div>' + firma() + '</div>', { unaHoja: true, landscape: false, title: 'Rúbrica ' + g.grupo });
   };
 
   /* ---------- acta ---------- */
@@ -174,7 +190,7 @@
     const rows = al.map(a => { const r = C.actaFila(g, a.id); return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + r.slice(0, 9).map(v => '<td class="c">' + esc(v) + '</td>').join('') + '<td class="c"><b>' + esc(r[9]) + '</b></td></tr>'; }).join('');
     P.run('<div class="pr">' + head(g, 'ACTA PARA ENVÍO DE CALIFICACIONES', 'DOCENTE: ' + D.cfg().docente) +
       '<table class="grid"><thead><tr><th>No.</th><th class="l">NOMBRE</th><th>1 PAR</th><th>ASIS</th><th>FAL</th><th>2 PAR</th><th>ASIS</th><th>FAL</th><th>3 PAR</th><th>ASIS</th><th>FAL</th><th>CALIF. FINAL</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<p class="tiny">Calificación de 5 a 10, sin decimales · ASIS/FAL por ' + (C.porClase() ? 'clase de 50 min' : 'día de clase') + ' · alumnos dados de baja: asistencia 2 y calificación 5. Generado con Escuadra el ' + u.fFecha(u.today()) + '.</p>' + firma() + '</div>', { landscape: true, title: 'Acta ' + g.grupo });
+      '<p class="tiny">Calificación de 5 a 10, sin decimales · ASIS/FAL por ' + (C.porClase() ? 'clase de 50 min' : 'día de clase') + ' · alumnos dados de baja: asistencia 2 y calificación 5. Generado con Escuadra el ' + u.fFecha(u.today()) + '.</p>' + firma() + '</div>', { unaHoja: true, landscape: true, title: 'Acta ' + g.grupo });
   };
   P.actaCopy = async g => {
     const t = C.actaAlumnos(g).map(a => C.actaFila(g, a.id).slice(0, 9).join('\t')).join('\n');
