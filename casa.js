@@ -30,10 +30,10 @@
 
   /* ---------- 1) consulta ---------- */
   CA.consultaDatos = (g, a, pid) => {
-    const p = C.parcial(pid), cf = D.cfg(), k = C.cal(g, pid, a.id), as = C.asis(g, p, a.id), r = E.aprobar ? E.aprobar.analiza(g, pid, a.id) : null, w = cf.pond;
+    const p = C.parcial(pid), cf = D.cfg(), k = C.cal(g, pid, a.id), as = C.asis(g, p, a.id), r = E.aprobar ? E.aprobar.analiza(g, pid, a.id) : null, w = C.pond(pid);
     return {
       v: 1, g: g.nombre, pl: cf.plantel || '', p: p.nombre, f: u.today(), n: a.num, i: CA.iniciales(a.nombre), c: k.final, ec: !!k.enCurso, ap: minA(),
-      r: [['Examen', w.examen, k.comp.examen], ['Libreta, proyecto y bitácora', w.trabajos, k.comp.trabajos], ['Asistencia', w.asistencia, k.comp.asistencia], ['Participación', w.participacion, k.comp.participacion]].map(x => [x[0], Number(x[1] || 0), x[2] == null ? null : Math.round(x[2])]),
+      r: C.KEYS.filter(x => w[x] > 0).map(x => [C.catLbl(x, pid), w[x], k.comp[x]]).map(x => [x[0], Number(x[1] || 0), x[2] == null ? null : Math.round(x[2])]),
       as: [as.a, as.ses, as.fechasF.map(f => u.fCorta(f))],
       pe: r ? r.pend.slice(0, 6).map(x => [x.tipo, corto(x.t, 90), corto(x.det, 160), x.gain == null ? null : Math.round(x.gain * 10) / 10]) : [],
       to: r && r.todo != null ? Math.round(r.todo) : null, ne: r && r.nec != null ? r.nec : null, td: Math.round(C.tardeVale() * 100), cap: p.captura, d: cf.docente || ''

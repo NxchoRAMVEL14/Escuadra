@@ -14,33 +14,32 @@
   const pct = f => Math.round(f * 100) + ' %';
   const corto = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
   const R1 = v => Math.round(v * 10) / 10;
-  const KEYS = ['examen', 'trabajos', 'asistencia', 'participacion'];
-  const LBL = { examen: 'Examen', trabajos: 'Libreta, proyecto y bitácora', asistencia: 'Asistencia', participacion: 'Participación' };
+  const KEYS = C.KEYS;   // v1.30.0: con proyecto; cada parcial con sus porcentajes (C.pond)
 
   /* ---------- cálculo con valores supuestos (misma fórmula que Calificaciones) ---------- */
   const promCat = (g, pid, cat, aid, ov) => {
-    const c = D.cfg(), as = C.acts(g, pid).filter(a => a.categoria === cat && a.cuenta !== false && !C.sinCal(a)); if (!as.length) return null;
+    const c = D.cfg(), as = C.acts(g, pid).filter(a => C.enCat(a, cat, pid) && a.cuenta !== false && !C.sinCal(a)); if (!as.length) return null;
     let sw = 0, s = 0; const hoy = u.today();
     as.forEach(a => { const w = Number(a.peso || 1); let v = ov && ov[a.id] != null ? ov[a.id] : C.nota(a, aid); if (v == null) { if (!c.vaciasCero || !a.fecha || a.fecha >= hoy) return; v = 0; } s += v * w; sw += w; });
     return sw ? s / sw : null;
   };
-  AP.comps = (g, pid, aid, ov) => { const k = C.cal(g, pid, aid); return { examen: promCat(g, pid, 'examen', aid, ov), trabajos: promCat(g, pid, 'trabajos', aid, ov), asistencia: k.comp.asistencia, participacion: k.comp.participacion }; };
-  AP.final = cp => { const w = D.cfg().pond; let s = 0, sw = 0; KEYS.forEach(k => { const x = Number(w[k] || 0); if (!x || cp[k] == null) return; s += cp[k] * x; sw += x; }); return sw ? s / sw : null; };
+  AP.comps = (g, pid, aid, ov) => { const k = C.cal(g, pid, aid); return { examen: promCat(g, pid, 'examen', aid, ov), proyecto: C.separa(pid) ? promCat(g, pid, 'proyecto', aid, ov) : null, trabajos: promCat(g, pid, 'trabajos', aid, ov), asistencia: k.comp.asistencia, participacion: k.comp.participacion }; };
+  AP.final = (cp, pid) => { const w = C.pond(pid || C.parcialActual().id); let s = 0, sw = 0; KEYS.forEach(k => { const x = Number(w[k] || 0); if (!x || cp[k] == null) return; s += cp[k] * x; sw += x; }); return sw ? s / sw : null; };
   // calificación mínima de examen para llegar al aprobatorio con lo demás como va
-  AP.necesita = cp => { const w = D.cfg().pond, we = Number(w.examen || 0); if (!we || cp.examen != null) return null; let s = 0, sw = 0; KEYS.forEach(k => { if (k === 'examen') return; const x = Number(w[k] || 0); if (!x || cp[k] == null) return; s += cp[k] * x; sw += x; }); return Math.max(0, Math.ceil(((minA() - 5) * (we + sw) - s) / we)); };   // 5.5 ya redondea a 6
+  AP.necesita = (cp, pid) => { const w = C.pond(pid || C.parcialActual().id), we = Number(w.examen || 0); if (!we || cp.examen != null) return null; let s = 0, sw = 0; KEYS.forEach(k => { if (k === 'examen') return; const x = Number(w[k] || 0); if (!x || cp[k] == null) return; s += cp[k] * x; sw += x; }); return Math.max(0, Math.ceil(((minA() - 5) * (we + sw) - s) / we)); };   // 5.5 ya redondea a 6
 
   AP.analiza = (g, pid, aid) => {
     const k = C.cal(g, pid, aid); if (k.manual) return null;
     const hoy = u.today(), f = fac(), out = [], todo = {}, cp0 = AP.comps(g, pid, aid, {});
     // si el examen aún no se aplica, lo que sube cada pendiente se calcula ya con el examen contando (su valor no cambia la diferencia)
-    const exPend = cp0.examen == null && Number(D.cfg().pond.examen || 0) > 0, fill = cp => exPend ? Object.assign({}, cp, { examen: 70 }) : cp;
-    const base = AP.final(fill(cp0)), gan = ov => { const v = AP.final(fill(AP.comps(g, pid, aid, ov))); return v == null || base == null ? null : v - base; };
+    const exPend = cp0.examen == null && C.pond(pid).examen > 0, fill = cp => exPend ? Object.assign({}, cp, { examen: 70 }) : cp;
+    const base = AP.final(fill(cp0), pid), gan = ov => { const v = AP.final(fill(AP.comps(g, pid, aid, ov)), pid); return v == null || base == null ? null : v - base; };
     const lib = E.libreta ? E.libreta.doc(g, pid) : {}, fcd = E.fc && E.fc.rev ? E.fc.rev(g, pid) : {};
     // actividades vencidas sin calificación o con cero
-    C.acts(g, pid).filter(a => (a.categoria === 'examen' || a.categoria === 'trabajos') && a.cuenta !== false && !C.sinCal(a) && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
+    C.acts(g, pid).filter(a => (a.categoria === 'examen' || C.esTrab(a)) && a.cuenta !== false && !C.sinCal(a) && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
       const v = C.nota(a, aid), venc = a.fecha && a.fecha < hoy; if (!((v == null && venc) || v === 0)) return;
       const nv = 100 * f; todo[a.id] = nv;
-      out.push({ k: 'act', id: a.id, tipo: a.categoria === 'examen' ? 'Examen' : 'Trabajo', t: a.nombre + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : ''), det: v === 0 ? 'Calificado con 0: entrégalo o preséntalo de nuevo.' : 'No está entregado.', gain: gan({ [a.id]: nv }) });
+      out.push({ k: 'act', id: a.id, tipo: a.categoria === 'examen' ? 'Examen' : a.categoria === 'proyecto' ? 'Proyecto' : 'Trabajo', t: a.nombre + (a.fecha ? ' (' + u.fCorta(a.fecha) + ')' : ''), det: v === 0 ? 'Calificado con 0: entrégalo o preséntalo de nuevo.' : 'No está entregado.', gain: gan({ [a.id]: nv }) });
     });
     // tareas de libreta incompletas o no entregadas
     if (lib.actId && S.get('act:' + g.id + ':' + lib.actId)) {
@@ -65,7 +64,7 @@
     }
     out.sort((a, b) => (b.gain || 0) - (a.gain || 0));
     const cpTodo = AP.comps(g, pid, aid, todo), cpHoy = AP.comps(g, pid, aid, {});
-    return { k: k, base: base, final: k.final, pend: out, exPend: exPend, todo: Object.keys(todo).length && !exPend ? AP.final(cpTodo) : null, nec: AP.necesita(cpHoy), necTodo: Object.keys(todo).length ? AP.necesita(cpTodo) : null, aprueba: k.final != null && k.final >= minA(), cp: cpHoy };
+    return { k: k, base: base, final: k.final, pend: out, exPend: exPend, todo: Object.keys(todo).length && !exPend ? AP.final(cpTodo, pid) : null, nec: AP.necesita(cpHoy, pid), necTodo: Object.keys(todo).length ? AP.necesita(cpTodo, pid) : null, aprueba: k.final != null && k.final >= minA(), cp: cpHoy };
   };
   const chipCal = v => v == null ? '<span class="g na">—</span>' : '<span class="g ' + H.gclass(C.of100(v)) + '">' + C.c10(v) + '</span>';
   const necTu = n => n > 100 ? 'Aunque saques 100 en el examen no te alcanza con lo que llevas: entrega lo pendiente.' : n <= 0 ? 'Con lo que llevas ya apruebas, pero presenta el examen.' : 'En el examen necesitas al menos <b>' + n + ' de 100</b>.';
@@ -165,7 +164,7 @@
 
   /* ---------- hoja para padres ---------- */
   AP.padres = (g, a, pid) => {
-    const p = C.parcial(pid), cf = D.cfg(), r = AP.analiza(g, pid, a.id), k = C.cal(g, pid, a.id), as = C.asis(g, p, a.id), w = cf.pond;
+    const p = C.parcial(pid), cf = D.cfg(), r = AP.analiza(g, pid, a.id), k = C.cal(g, pid, a.id), as = C.asis(g, p, a.id), w = C.pond(pid);
     const pf = E.perfil ? E.perfil.calc(g, a) : null, nv = E.fc && E.fc.nivelAlumno ? E.fc.nivelAlumno(g, a.id) : null;
     const fort = pf && pf.fort.length ? pf.fort : ['Está construyendo su base en el módulo; pregúntenle qué aprendió esta semana.'];
     const casa = [];
@@ -181,7 +180,7 @@
     const nota = baseT > 0 && baseT < totT ? '<p class="tiny">Mientras falten rubros por calificar, la calificación se saca sobre lo ya calificado: lleva ' + apT + ' % de ' + baseT + ' %.</p>' : '';
     return '<div class="pr padres"><div class="p-title">INFORME PARA MADRE, PADRE O TUTOR(A)</div><p class="tiny c">' + esc(cf.plantel || '') + ' · ' + esc(g.carrera || '') + ' · Grupo ' + esc(g.nombre) + ' · ' + esc(p.nombre) + ' · Docente: ' + esc(cf.docente || '') + ' · ' + u.fFecha(u.today()) + '</p>' +
       '<h2>' + esc(a.nombre) + '</h2>' +
-      '<table class="grid pd-cal"><thead><tr><th class="l">Rubro</th><th>Vale</th><th>Lleva</th></tr></thead><tbody>' + KEYS.map(x => '<tr><td class="l">' + LBL[x] + '</td><td class="c">' + Number(w[x] || 0) + ' %</td><td class="c">' + (k.comp && k.comp[x] != null ? Math.round(k.comp[x] * Number(w[x] || 0) / 100) + ' %' : '—') + '</td></tr>').join('') +
+      '<table class="grid pd-cal"><thead><tr><th class="l">Rubro</th><th>Vale</th><th>Lleva</th></tr></thead><tbody>' + KEYS.filter(x => Number(w[x] || 0) > 0).map(x => '<tr><td class="l">' + C.catLbl(x, pid) + '</td><td class="c">' + Number(w[x] || 0) + ' %</td><td class="c">' + (k.comp && k.comp[x] != null ? Math.round(k.comp[x] * Number(w[x] || 0) / 100) + ' %' : '—') + '</td></tr>').join('') +
       '<tr><td class="l"><b>Calificación del parcial' + (k.enCurso ? ' (en curso)' : '') + '</b></td><td></td><td class="c"><b>' + C.c10(k.final) + '</b></td></tr></tbody></table>' + nota +
       '<p><b>Asistencia:</b> ' + (as.ses ? as.a + ' de ' + as.ses + (as.ses === 1 ? ' clase' : ' clases') + (as.fechasF.length ? ' · faltó: ' + as.fechasF.map(f => u.fCorta(f)).join(', ') : ' · sin faltas') : 'sin registros todavía') + '.' + (nv && nv.hay ? ' <b>FreeCAD:</b> ' + (nv.n ? 'nivel ' + nv.n + ' de 3' : 'empezando') + ' (' + [1, 2, 3].reduce((s, n) => s + nv.cnt[n].ok, 0) + ' prácticas completas).' : '') + '</p>' +
       '<div class="pd-cols"><div><h3>Fortalezas</h3><ul>' + fort.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div><div><h3>Lo que le falta</h3>' + (r && r.pend.length ? '<ul>' + r.pend.slice(0, 5).map(x => '<li>' + esc(x.tipo + ': ' + x.t) + '</li>').join('') + '</ul>' : '<p>No tiene pendientes registrados.</p>') + (r && r.nec != null && r.nec > 0 && r.nec <= 100 ? '<p>Para aprobar necesita al menos ' + r.nec + ' de 100 en el examen.</p>' : '') + '</div></div>' +
