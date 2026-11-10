@@ -292,7 +292,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
   const D = E.data = {
     // v1.28: se arma una vez por cada cambio de datos (antes se armaba miles de veces al dibujar Inicio: ~90 ms en un celular de gama media).
     // No modifiques el objeto que regresa: para cambiar un ajuste usa S.update('config', …).
-    cfg() { if (cfgC && cfgV === S._kv) return cfgC; const raw = S.get('config') || {}; const d = E.DEFAULTS.config; cfgC = Object.assign({}, d, raw, { pond: Object.assign({}, d.pond, raw.pond || {}) }); cfgV = S._kv; return cfgC; },
+    cfg() { if (cfgC && cfgV === S._kv) return cfgC; const raw = S.get('config') || {}; const d = E.DEFAULTS.config; cfgC = Object.assign({}, d, raw, { pond: Object.assign({}, d.pond, raw.pond || {}), pondP: (() => { const o = Object.assign({}, d.pondP || {}); Object.keys(raw.pondP || {}).forEach(k => { o[k] = Object.assign({}, o[k] || {}, raw.pondP[k] || {}); }); return o; })() }); cfgV = S._kv; return cfgC; },
     // fechas de parciales: las del semestre (Ajustes); un grupo archivado conserva las suyas
     parciales() { const g = D.grupoActual(); return (g && g.archivado && Array.isArray(g.parciales) && g.parciales.length ? g.parciales : null) || S.get('parciales') || E.DEFAULTS.parciales; },
     grupos() { return S.list('grupo:').sort((a, b) => String(a.id).localeCompare(String(b.id))); },
@@ -324,6 +324,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
   let partCache = {}; S.on(() => { partCache = {}; });
   E.TARDE_OPC = [1, 0.9, 0.8, 0.75, 0.7, 0.6, 0.5];   // cuánto puede valer lo entregado tarde
   const C = E.calc = {
+    KEYS: ['examen', 'proyecto', 'trabajos', 'asistencia', 'participacion'],
     parcial(pid) { return D.parciales().find(p => p.id === pid); },
     parcialActual(f) { f = f || u.today(); const ps = D.parciales(); return ps.find(p => f >= p.inicio && f <= p.fin) || ps.find(p => f < p.inicio) || ps[ps.length - 1]; },
     bloquesDia(g, f) { const d = u.dow(f); return ((g && g.horario) || []).filter(b => Number(b.dia) === d).sort((a, b) => String(a.inicio).localeCompare(String(b.inicio))); },
@@ -444,8 +445,17 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       let cap = 0, s = 0; al.forEach(x => { const v = C.nota(a, x.id); if (v != null) { cap++; s += v; } });
       return { capturadas: cap, faltan: al.length - cap, prom: cap ? s / cap : null };
     },
+    // v1.30.0: porcentajes del parcial. Si el parcial tiene los suyos (Ajustes → Calificación) se usan esos; si no, los de siempre.
+    // «proyecto» es un rubro propio solo donde pesa más de 0; donde no, sus actividades cuentan dentro de «trabajos» (como antes).
+    pond(pid) { const c = D.cfg(), o = (c.pondP || {})[pid]; const w = Object.assign({ proyecto: 0 }, o && o.activo !== false ? o : c.pond); C.KEYS.forEach(k => { w[k] = Number(w[k] || 0); }); return w; },
+    propio(pid) { const o = (D.cfg().pondP || {})[pid]; return !!(o && o.activo !== false); },
+    separa(pid) { return C.pond(pid).proyecto > 0; },
+    enCat(a, cat, pid) { return a.categoria === cat || (cat === 'trabajos' && a.categoria === 'proyecto' && !C.separa(pid)); },
+    esTrab(a) { return a && (a.categoria === 'trabajos' || a.categoria === 'proyecto'); },
+    catLbl(cat, pid) { return cat === 'proyecto' ? 'Proyecto' : cat === 'trabajos' ? (pid && C.separa(pid) ? 'Tareas y ejercicios' : 'Libreta, proyecto y bitácora') : cat === 'examen' ? 'Examen' : cat === 'asistencia' ? 'Asistencia' : cat === 'participacion' ? 'Participación' : cat === 'diagnostico' ? 'Diagnóstico' : cat; },
+    pondTxt(pid) { const w = C.pond(pid); return C.KEYS.filter(k => w[k] > 0).map(k => C.catLbl(k, pid) + ' ' + w[k] + ' %').join(' · '); },
     promCat(g, pid, cat, aid) {
-      const c = D.cfg(); const as = C.acts(g, pid).filter(a => a.categoria === cat && a.cuenta !== false && !C.sinCal(a));
+      const c = D.cfg(); const as = C.acts(g, pid).filter(a => C.enCat(a, cat, pid) && a.cuenta !== false && !C.sinCal(a));
       if (!as.length) return null; let sw = 0, s = 0;
       const hoy = u.today();
       as.forEach(a => {
@@ -462,11 +472,11 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
         const r = (man.alumnos || {})[aid] || {};
         return { manual: true, final: (r.cal === '' || r.cal == null) ? null : C.of100(Number(r.cal)), asis: r.asis, fal: r.fal, enCurso: false, comp: {} };
       }
-      const comp = { examen: C.promCat(g, pid, 'examen', aid), trabajos: C.promCat(g, pid, 'trabajos', aid) };
+      const comp = { examen: C.promCat(g, pid, 'examen', aid), proyecto: C.separa(pid) ? C.promCat(g, pid, 'proyecto', aid) : null, trabajos: C.promCat(g, pid, 'trabajos', aid) };
       const as = C.asis(g, p, aid); comp.asistencia = as.pct;
       const np = C.part(g, p, aid); comp.participacion = C.partPct(g, p, np);
       let sw = 0, s = 0; const falta = [];
-      ['examen', 'trabajos', 'asistencia', 'participacion'].forEach(k => { const w = Number(c.pond[k] || 0); if (!w) return; if (comp[k] == null) { falta.push(k); return; } s += comp[k] * w; sw += w; });
+      const pw = C.pond(pid); C.KEYS.forEach(k => { const w = pw[k]; if (!w) return; if (comp[k] == null) { falta.push(k); return; } s += comp[k] * w; sw += w; });
       // v1.29.0: calificación oficial: base 10, entera (7.5 → 8) y mínima 5; se guarda ×10 para que los umbrales (60, 80) sigan igual
       const bruta = sw ? s / sw : null, final = C.of100(bruta);
       return { manual: false, comp: comp, bruta: bruta, final: final, enCurso: falta.length > 0, falta: falta, np: np, as: as };
@@ -609,8 +619,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       if (!(tv.fund || []).length) out.push({ n: 'warn', t: 'Marca al menos un recurso del Currículum fundamental.' });
       if (!pl.paec) out.push({ n: 'warn', t: 'Falta el nombre de la evidencia articuladora o PAEC.' });
       if (!(pl.ident || {}).fechas) out.push({ n: 'warn', t: 'Faltan las fechas de inicio y cierre.' });
-      const cp = D.cfg().pond;
-      out.push({ n: 'info', t: 'Tu calificación real es Examen ' + cp.examen + ' · Libreta/Proyecto/Bitácora ' + cp.trabajos + ' · Asistencia ' + cp.asistencia + ' · Participación ' + cp.participacion + '. La planeación pondera por momento didáctico; si coordinación pide que coincidan, ajústalo aquí.' });
+      out.push({ n: 'info', t: 'Tu calificación real del parcial es ' + C.pondTxt(pl.parcial || (pl.ident || {}).parcial || C.parcialActual().id) + '. La planeación pondera por momento didáctico; si coordinación pide que coincidan, ajústalo aquí.' });
       return out;
     }
   };

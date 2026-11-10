@@ -34,7 +34,7 @@
   SG.act = g => {
     const d = SG.doc(g); if (d.actId === false) return null;
     const a = d.actId && S.get('act:' + g.id + ':' + d.actId); if (a) return a;
-    const L = S.list('act:' + g.id + ':').filter(x => x.categoria === 'trabajos' && /REGLAMENT/.test(u.norm(x.nombre || '')));
+    const L = S.list('act:' + g.id + ':').filter(x => C.esTrab(x) && /REGLAMENT/.test(u.norm(x.nombre || '')));
     return L.find(x => x.parcial === C.parcialActual().id) || L[0] || null;
   };
   // firma → tarea: pone la calificación completa (solo si estaba vacía) o la quita si era justo esa
@@ -85,7 +85,7 @@
   if (V.lista) { const vl = V.lista; V.lista = function (f) { const o = vl.apply(null, arguments), g = D.grupoActual(); if (o && g && !/Algo falló|Primero importa/.test(o.h)) { const fe = f || C.fechaListaDefault(g, u.today()); if (SG.riesgoDia(g, fe).length) { const sin = SG.sinFirma(g, fe); if (sin.length) o.h += '<p class="note warn small">🦺 Hoy hay práctica con herramienta o corriente y ' + sin.length + (sin.length === 1 ? ' alumno presente no ha' : ' alumnos presentes no han') + ' firmado el reglamento. ' + link('Ver', 'clase/' + fe, 'small') + '</p>'; } } return o; }; }
 
   /* ---------- pantalla ---------- */
-  const actSel = g => { const cur = SG.act(g), L = S.list('act:' + g.id + ':').filter(x => x.categoria === 'trabajos').sort((a, b) => String(a.fecha || '').localeCompare(String(b.fecha || '')));
+  const actSel = g => { const cur = SG.act(g), L = S.list('act:' + g.id + ':').filter(x => C.esTrab(x)).sort((a, b) => String(a.fecha || '').localeCompare(String(b.fecha || '')));
     return '<label class="fld"><span>Tarea en Calificaciones donde cuenta el reglamento firmado</span><select data-ch="sg-act">' + L.map(a => '<option value="' + a.id + '"' + (cur && cur.id === a.id ? ' selected' : '') + '>' + esc(a.nombre) + '</option>').join('') + '<option value="none"' + (cur ? '' : ' selected') + '>Ninguna (no ligar)</option></select></label>' + (cur ? '<p class="muted small">Al marcar «Alumno» queda su calificación completa en esa tarea, y quien ya tiene calificación en ella aparece firmado aquí.</p>' : '<p class="muted small">Elige tu tarea del reglamento para que una sola captura llene los dos lados.</p>'); };
   V.seguridad = (sub, id) => {
     const g = D.grupoActual(); if (!g) return H.noGroup(); const al = D.alumnos(g); if (!al.length) return { t: 'Seguridad', h: card('<h3>🦺 Reglamento del taller</h3><p class="small">Todavía no importas la lista de ' + esc(g.nombre) + ': puedes imprimir el reglamento con la hoja de firmas en blanco (30 renglones) y marcar quién firmó cuando tengas la lista.</p><div class="row gap wrap">' + btn('🖨 Reglamento con hoja de firmas', 'sg-print', '', 'primary small') + btn('🖨 Una copia para casa', 'sg-print-ind', '', 'small') + link('Importar lista', 'alumnos', 'small ghost') + '</div>') };

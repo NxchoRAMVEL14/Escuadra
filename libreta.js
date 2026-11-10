@@ -45,8 +45,8 @@
         const enLib = x => /libreta|bitácora/i.test(x) && !/libreta\s*\//i.test(x); // "Libreta/Proyecto/Bitácora" es el encuadre, no un trabajo
         const lib = (it.pasos || []).map(x => x[1]).find(enLib) || (enLib(it.ev || '') ? it.ev : '');
         // la bitácora del proyecto se ve aquí, pero no cuenta a menos que la marques
-        if (lib) { const bit = !/libreta/i.test(lib), txt = lib.replace(/\.$/, ''); dst.push({ key: 'lib:' + it.id, f: b.fecha, tipo: bit ? 'bitacora' : 'libreta', t: txt.length < 28 ? txt + ' · ' + it.t : txt, act: it.t, material: bit }); }
-        if (it.tarea) dst.push({ key: 'tar:' + it.id, f: b.fecha, tipo: 'tarea', t: it.tarea, act: it.t, material: esMaterial(it.tarea) });
+        if (lib) { const bit = !/libreta/i.test(lib), txt = lib.replace(/\.$/, ''); dst.push({ key: 'lib:' + it.id, f: b.fecha, tipo: bit ? 'bitacora' : 'libreta', t: txt.length < 28 ? txt + ' · ' + it.t : txt, act: it.t, material: bit, obj: it.obj || '', pasosClase: (it.pasos || []).map(x => x[1]) }); }
+        if (it.tarea) dst.push({ key: 'tar:' + it.id, f: b.fecha, tipo: 'tarea', t: it.tarea, act: it.t, material: esMaterial(it.tarea), obj: it.obj || '' });
       });
     });
     (doc.extra || []).forEach(x => out.push({ key: 'ex:' + x.id, f: x.f, tipo: 'propia', t: x.t, act: '', propia: true }));
@@ -88,7 +88,7 @@
       return '<div class="lb-sec" data-sec="' + k + '"><div class="row between gap wrap lb-sech"><h4>' + ico + ' ' + nom + ' <span class="chip">' + xs.length + '</span></h4><div class="row gap wrap">' +
         btn('📲 Enviar', 'lb-envia', 'data-pid="' + pid + '" data-sec="' + k + '"', 'small') + btn(icon('copy') + ' Copiar', 'lb-copia', 'data-pid="' + pid + '" data-sec="' + k + '"', 'small ghost') + '</div></div>' +
         '<ul class="lb-list">' + xs.map(t => '<li class="' + (t.cuenta ? '' : 'off') + '"><label class="lb-chk"><input type="checkbox" data-ch="lb-cuenta" data-pid="' + pid + '" data-key="' + esc(t.key) + '" ' + (t.cuenta ? 'checked' : '') + ' aria-label="Cuenta para la libreta"></label><div class="lb-t"><b>' + (t.cuenta ? num[t.key] + ' · ' : '') + esc(t.t) + '</b><small class="muted">' + (t.f ? u.fCorta(t.f) + ' · ' : '') + tipoTxt(t) + (t.act ? ' · ' + esc(corto(t.act, 50)) : '') + '</small></div><div class="lb-acc">' +
-          btn('📲', 'lb-envia', 'data-pid="' + pid + '" data-key="' + esc(t.key) + '" aria-label="Enviar esta tarea por WhatsApp" title="Enviar por WhatsApp"', 'small ghost') + (t.propia ? btn(icon('trash'), 'lb-del', 'data-pid="' + pid + '" data-key="' + esc(t.key) + '" aria-label="Borrar"', 'small ghost') : '') + '</div></li>').join('') + '</ul></div>';
+          link('🖼', 'tarjeta/' + pid + '/' + encodeURIComponent(t.key), 'small ghost btn" aria-label="Tarjeta con rúbrica para WhatsApp" title="Tarjeta con rúbrica') + btn('📲', 'lb-envia', 'data-pid="' + pid + '" data-key="' + esc(t.key) + '" aria-label="Enviar esta tarea por WhatsApp" title="Enviar por WhatsApp"', 'small ghost') + (t.propia ? btn(icon('trash'), 'lb-del', 'data-pid="' + pid + '" data-key="' + esc(t.key) + '" aria-label="Borrar"', 'small ghost') : '') + '</div></li>').join('') + '</ul></div>';
     }).join('');
     h += card('<h3>📒 Tareas y trabajos de libreta · ' + esc(p.nombre) + '</h3><p class="muted small">Salen de las clases que ya diste y de las que agregues, separadas por tipo. Desmarca lo que no vas a revisar; los encargos de material y la bitácora del proyecto no cuentan a menos que los marques. 📲 manda una tarea a WhatsApp con su fecha y sus indicaciones; «Enviar» de cada sección las manda todas, cada una en su bloque.</p>' +
       (T.todas.length ? secs : '<p class="muted small">Todavía no hay tareas de clases ya dadas en este parcial.</p>') +
@@ -109,7 +109,7 @@
       '<p class="muted small">Completa = 2 · incompleta = 1 · no la hizo = 0 · ⏰ entregada tarde: vale ' + Math.round(C.tardeVale() * 100) + ' % de lo que marques. Lo que no marques cuenta como no entregado; un alumno sin ninguna marca queda sin calificación. En la compu: ↑ ↓ eliges la tarea, 1 ✓ · 2 ½ · 3 ✗ · T tarde y ← → cambias de alumno.</p>');
     // 3) calificaciones
     const a = doc.actId && S.get('act:' + g.id + ':' + doc.actId);
-    h += card('<h3>📊 A Calificaciones</h3>' + (a ? '<p class="small">Ligada a <a href="#/actividad/' + a.id + '">' + esc(a.nombre) + '</a> (Libreta / Proyecto / Bitácora). Se actualiza sola cada vez que marcas.</p>' : '<p class="small">Crea la actividad de libreta para que la calificación entre al rubro Libreta / Proyecto / Bitácora (' + D.cfg().pond.trabajos + '%).</p>' + btn('Crear actividad de libreta', 'lb-act', 'data-pid="' + pid + '"', 'primary')) +
+    h += card('<h3>📊 A Calificaciones</h3>' + (a ? '<p class="small">Ligada a <a href="#/actividad/' + a.id + '">' + esc(a.nombre) + '</a> (' + C.catLbl('trabajos', pid) + '). Se actualiza sola cada vez que marcas.</p>' : '<p class="small">Crea la actividad de libreta para que la calificación entre al rubro Libreta / Proyecto / Bitácora (' + D.cfg().pond.trabajos + '%).</p>' + btn('Crear actividad de libreta', 'lb-act', 'data-pid="' + pid + '"', 'primary')) +
       '<details class="sub" id="lb-tabla"><summary>Tabla del grupo</summary><div class="tbl-wrap"><table class="tbl lb-tbl"><thead><tr><th>#</th><th class="l">Alumno</th>' + ts.map(t => '<th title="' + esc(t.t) + '">' + num[t.key] + '</th>').join('') + '<th>Calif.</th></tr></thead><tbody>' +
       al.map(x => { const mm = ((doc.marcas || {})[x.id]) || {}, rr = LB.calif(g, pid, x.id, ts); return '<tr><td>' + x.num + '</td><td class="l"><a href="#/libreta/' + pid + '/' + x.id + '">' + esc(x.nombre) + '</a></td>' + ts.map(t => { const v = mm[t.key], tf = LB.factor(doc, x.id, t.key) < 1; return '<td class="' + (v == null ? 'muted' : MARCA[v][2] + 'c') + '"' + (tf ? ' title="Entregada tarde"' : '') + '>' + (v == null ? (tf ? '⏰' : '·') : MARCA[v][0] + (tf ? '⏰' : '')) + '</td>'; }).join('') + '<td><b>' + (rr.v == null ? '—' : rr.v) + '</b></td></tr>'; }).join('') + '</tbody></table></div></details>' +
       '<div class="row gap wrap mt">' + btn(icon('print') + ' Imprimir lista de cotejo', 'lb-print', 'data-pid="' + pid + '"', 'small') + '</div>');
@@ -172,4 +172,104 @@
       al.map(a => { const m = ((doc.marcas || {})[a.id]) || {}, r = LB.calif(g, pid, a.id, ts); return '<tr><td class="c">' + a.num + '</td><td class="nm">' + esc(a.nombre) + '</td>' + ts.map(t => '<td class="c">' + (m[t.key] == null ? '' : MARCA[m[t.key]][0] + (LB.factor(doc, a.id, t.key) < 1 ? '*' : '')) + '</td>').join('') + '<td class="c">' + (r.v == null ? '' : r.v) + '</td></tr>'; }).join('') + '</tbody></table>' +
       '<ol class="tiny">' + ts.map(t => '<li><b>' + (t.f ? u.fCorta(t.f) + ':' : '') + '</b> ' + esc(t.t) + '</li>').join('') + '</ol><p class="tiny">✓ completa (2) · ½ incompleta (1) · ✗ no la hizo (0) · * entregada tarde (vale el % indicado al recibirla; ahora ' + Math.round(C.tardeVale() * 100) + ' %). Calificación = puntos obtenidos / puntos posibles × 100.</p></div>', { landscape: true, title: 'Libreta ' + g.grupo + ' ' + p.nombre, margin: '8mm' });
   };
+
+  /* ---------- v1.30.0: tarjeta visual de una tarea o ejercicio (para WhatsApp) ---------- */
+  // Qué hacer paso a paso, cuándo y cómo se entrega, y la rúbrica con la que se revisa. Todo editable; se guarda por tarea.
+  const TJ = LB.tj = {};
+  TJ.item = (g, pid, key) => LB.tareas(g, pid).todas.concat(LB.tareas(g, pid).prox).find(x => x.key === key);
+  const oraciones = t => String(t || '').split(/(?<=[.;:])\s+(?=[A-ZÁÉÍÓÚÑ¿¡0-9])|\s*\n\s*/).map(x => x.trim().replace(/[.;]$/, '')).filter(Boolean);
+  TJ.pasosDef = x => {
+    const ps = oraciones(x.t);
+    if (x.tipo === 'libreta') return ['Escribe la fecha y el título: «' + (x.act || x.t) + '».'].concat(ps.map(p => p + '.'), ['Al terminar, revisa que no te falte nada de la lista de abajo.']);
+    if (x.tipo === 'bitacora') return ['Reúnete con tu equipo y escriban la fecha de hoy.'].concat(ps.map(p => p + '.'), ['Cada quien anota lo que hizo en la sesión.']);
+    if (x.material) return ps.map(p => p + '.').concat(['Márcalo con tu nombre y tráelo en una bolsa o caja.']);
+    return ps.map(p => p + '.').concat(['Hazlo en tu libreta con fecha y título.', 'Tráelo la siguiente clase para revisión.']);
+  };
+  TJ.rubDef = x => {
+    const t = u.norm(x.t + ' ' + (x.act || '')), r = [];
+    if (x.material) return [['Trae todo lo que se pidió', 2], ['Viene marcado con su nombre', 1], ['Lo trae el día indicado', 1]];
+    r.push(['Fecha y título', 1]);
+    if (/DIBUJ|CROQUIS|PLANO|VISTA|ISOMETRIC|TRAZ|BOCETO/.test(t)) r.push(['Dibujo con regla y escuadra, limpio', 2], ['Medidas o cotas completas', 2]);
+    if (/DIAGRAMA|ESQUEMA|CIRCUITO|SIMBOL|ISO 1219|ESCALERA/.test(t)) r.push(['Simbología correcta (como en clase)', 2], ['Conexiones completas y ordenadas', 2]);
+    if (/INVESTIG|BUSCA|CONSULTA|EJEMPLO/.test(t)) r.push(['Responde lo que se pide con sus palabras', 2], ['Anota de dónde lo sacó (fuente)', 1]);
+    if (/CALCUL|FORMULA|PASCAL|PRESION|FUERZA|AREA|MIDE|MEDIC/.test(t)) r.push(['Escribe la fórmula y los datos', 2], ['Resultado con unidades', 2]);
+    if (/FREECAD|CAD|PIEZA|ENSAMBLE/.test(t)) r.push(['Captura o archivo de FreeCAD', 2], ['Medidas como en el plano', 2]);
+    if (x.tipo === 'bitacora') r.push(['Lo que hizo el equipo y lo que hizo cada quien', 3], ['Problema y cómo lo resolvieron', 2]);
+    if (r.length < 3) r.push(['Completo: todo lo que se pide', 3], ['Limpio y se entiende', 1]);
+    r.push(['Entregado a tiempo', 1]);
+    return r;
+  };
+  TJ.datos = (g, pid, x) => {
+    const doc = LB.doc(g, pid), sv = ((doc.tarjetas || {})[x.key]) || {}, f = fechaDe(g, x);
+    const tipoTxt = x.material ? 'Material para traer' : x.tipo === 'tarea' ? 'Tarea' : x.tipo === 'libreta' ? 'Ejercicio en libreta' : x.tipo === 'bitacora' ? 'Bitácora del proyecto' : 'Actividad';
+    return { titulo: sv.titulo || (x.tipo === 'libreta' && x.act ? x.act : String(x.t).split(/[.:]/)[0].slice(0, 70)), tipo: tipoTxt, para: sv.para != null ? sv.para : (x.obj || ''), pasos: sv.pasos || TJ.pasosDef(x), rub: sv.rub || TJ.rubDef(x), entrega: sv.entrega || (f ? u.fLarga(f) : ''), como: sv.como != null ? sv.como : (x.material ? 'En clase, al inicio' : x.tipo === 'bitacora' ? 'En la bitácora del equipo' : 'En tu libreta: se revisa en clase'), grupo: g.nombre || '', parcial: C.parcial(pid).nombre };
+  };
+  TJ.texto = d => '*' + d.tipo.toUpperCase() + ': ' + d.titulo + '*\n' + (d.para ? '_Para qué:_ ' + d.para + '\n' : '') + '\n*Qué hacer*\n' + d.pasos.map((p, i) => (i + 1) + '. ' + p).join('\n') + '\n\n📅 *Entrega:* ' + d.entrega + '\n📍 ' + d.como + '\n\n*Cómo se revisa* (' + d.rub.reduce((s, r) => s + Number(r[1] || 0), 0) + ' pts)\n' + d.rub.map(r => '☐ ' + r[0] + ' (' + r[1] + ')').join('\n');
+  // dibuja la tarjeta (1080 px de ancho, tan alta como haga falta)
+  TJ.canvas = async d => {
+    const W = 1080, P = 64, cv = document.createElement('canvas'), x = cv.getContext('2d'), F = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    const wrap = (t, font, w) => { x.font = font; const out = []; String(t).split('\n').forEach(par => { let ln = ''; par.split(/\s+/).forEach(wd => { const tt = ln ? ln + ' ' + wd : wd; if (x.measureText(tt).width > w && ln) { out.push(ln); ln = wd; } else ln = tt; }); out.push(ln); }); return out; };
+    const logo = await new Promise(r => { const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = E.print && E.print.LOGO ? E.print.LOGO : ''; });
+    // medir
+    const fT = 'bold 54px ' + F, fH = 'bold 36px ' + F, fB = '32px ' + F, fS = '28px ' + F;
+    const lT = wrap(d.titulo, fT, W - 2 * P - 150), lPara = d.para ? wrap('Para qué: ' + d.para, fS, W - 2 * P) : [];
+    const lPasos = d.pasos.map(p => wrap(p, fB, W - 2 * P - 70)), lRub = d.rub.map(r => wrap(r[0], fB, W - 2 * P - 190));
+    let H = 230 + lT.length * 64 + (lPara.length ? lPara.length * 38 + 24 : 0) + 70 + lPasos.reduce((s, l) => s + l.length * 42 + 18, 0) + 190 + 80 + lRub.reduce((s, l) => s + Math.max(1, l.length) * 42 + 22, 0) + 70 + 70;
+    cv.width = W; cv.height = H;
+    x.fillStyle = '#f4f8f8'; x.fillRect(0, 0, W, H);
+    x.fillStyle = '#0e5e5a'; x.fillRect(0, 0, W, 150);
+    x.fillStyle = '#f0a500'; x.fillRect(0, 150, W, 8);
+    x.fillStyle = '#fff'; x.font = 'bold 30px ' + F; x.fillText(d.tipo.toUpperCase(), P, 70);
+    x.font = '26px ' + F; x.fillStyle = '#cfe7e4'; x.fillText(d.grupo + ' · ' + d.parcial, P, 112);
+    if (logo) { x.fillStyle = '#fff'; x.beginPath(); x.arc(W - P - 58, 75, 62, 0, 7); x.fill(); x.save(); x.beginPath(); x.arc(W - P - 58, 75, 56, 0, 7); x.clip(); x.drawImage(logo, W - P - 114, 19, 112, 112); x.restore(); }
+    let y = 230; x.fillStyle = '#0b2a2a'; x.font = fT; lT.forEach(l => { x.fillText(l, P, y); y += 64; });
+    if (lPara.length) { y += 4; x.fillStyle = '#41615f'; x.font = fS; lPara.forEach(l => { x.fillText(l, P, y); y += 38; }); y += 20; }
+    // pasos
+    y += 20; x.fillStyle = '#0e5e5a'; x.font = fH; x.fillText('QUÉ HACER', P, y); y += 50;
+    lPasos.forEach((l, i) => { x.fillStyle = '#0e5e5a'; x.beginPath(); x.arc(P + 22, y - 11, 22, 0, 7); x.fill(); x.fillStyle = '#fff'; x.font = 'bold 26px ' + F; x.textAlign = 'center'; x.fillText(String(i + 1), P + 22, y - 2); x.textAlign = 'left'; x.fillStyle = '#152626'; x.font = fB; l.forEach(t => { x.fillText(t, P + 70, y); y += 42; }); y += 18; });
+    // entrega
+    y += 10; x.fillStyle = '#fff3d6'; x.fillRect(P, y, W - 2 * P, 150); x.fillStyle = '#f0a500'; x.fillRect(P, y, 10, 150);
+    x.fillStyle = '#6a4a00'; x.font = 'bold 34px ' + F; x.fillText('📅 Entrega: ' + d.entrega, P + 34, y + 60); x.font = fS; x.fillText('📍 ' + d.como, P + 34, y + 110); y += 190;
+    // rúbrica
+    const tot = d.rub.reduce((s, r) => s + Number(r[1] || 0), 0);
+    x.fillStyle = '#0e5e5a'; x.font = fH; x.fillText('CÓMO SE REVISA', P, y); x.textAlign = 'right'; x.font = 'bold 30px ' + F; x.fillText(tot + ' pts', W - P, y); x.textAlign = 'left'; y += 30;
+    d.rub.forEach((r, i) => { const l = lRub[i], h = Math.max(1, l.length) * 42 + 22; x.fillStyle = i % 2 ? '#ffffff' : '#e7f1f0'; x.fillRect(P, y, W - 2 * P, h); x.strokeStyle = '#0e5e5a'; x.lineWidth = 3; x.strokeRect(P + 20, y + 16, 30, 30);
+      x.fillStyle = '#152626'; x.font = fB; l.forEach((t, j) => x.fillText(t, P + 70, y + 42 + j * 42)); x.textAlign = 'right'; x.font = 'bold 32px ' + F; x.fillStyle = '#0e5e5a'; x.fillText(r[1] + ' pt' + (Number(r[1]) === 1 ? '' : 's'), W - P - 20, y + 42); x.textAlign = 'left'; y += h; });
+    y += 50; x.fillStyle = '#5b7472'; x.font = fS; x.fillText('Se revisa en clase · entregado tarde vale ' + Math.round(C.tardeVale() * 100) + ' %', P, y);
+    return cv;
+  };
+  TJ.blob = async d => { const cv = await TJ.canvas(d); return new Promise(r => cv.toBlob(r, 'image/png')); };
+  const tjCur = () => { const r = location.hash.replace(/^#\/?/, '').split('/'); return { pid: r[1], key: decodeURIComponent(r[2] || '') }; };
+  V.tarjeta = (pid, key) => {
+    const g = D.grupoActual(); if (!g) return H.noGroup(); const x = TJ.item(g, pid, key);
+    if (!x) return { t: 'Tarjeta', h: card('<p>No encontré esa tarea.</p>' + link('Volver a la libreta', 'libreta/' + (pid || ''), 'primary')) };
+    const d = TJ.datos(g, pid, x), tot = d.rub.reduce((s, r) => s + Number(r[1] || 0), 0);
+    const fld = (k, label, val, rows) => '<label class="fld"><span>' + label + '</span>' + (rows ? '<textarea rows="' + rows + '" data-ch="tj" data-k="' + k + '">' + esc(val) + '</textarea>' : '<input class="inp" data-ch="tj" data-k="' + k + '" value="' + esc(val) + '">') + '</label>';
+    let h = '<p><a href="#/libreta/' + pid + '">‹ Libreta</a></p>';
+    h += card('<h3>🖼 Tarjeta para WhatsApp</h3><p class="muted small">Revisa y ajusta: lo que cambies aquí se guarda para esta tarea. Luego compártela como imagen al grupo.</p><div class="tj-prev"><img id="tj-img" alt="Vista previa de la tarjeta"></div>' +
+      '<div class="row gap wrap mt">' + btn('📲 Compartir imagen', 'tj-share', '', 'primary') + btn('⬇ Descargar', 'tj-dl', '', '') + btn(icon('copy') + ' Copiar texto', 'tj-copy', '', 'ghost') + '</div>');
+    h += card('<h3>✏️ Contenido</h3>' + fld('titulo', 'Título', d.titulo) + fld('para', 'Para qué sirve (opcional)', d.para, 2) + fld('pasos', 'Qué hacer (un paso por renglón)', d.pasos.join('\n'), Math.max(4, d.pasos.length + 1)) +
+      '<div class="fgrid">' + fld('entrega', 'Entrega', d.entrega) + fld('como', 'Dónde o cómo se entrega', d.como) + '</div>' +
+      fld('rub', 'Rúbrica: un criterio por renglón con sus puntos al final (ej. «Medidas completas | 2»)', d.rub.map(r => r[0] + ' | ' + r[1]).join('\n'), Math.max(4, d.rub.length + 1)) + '<p class="muted small">Total: <b>' + tot + '</b> pts. ' + btn('Volver a lo sugerido', 'tj-reset', '', 'small ghost') + '</p>');
+    setTimeout(TJ.prev, 0);
+    return { t: 'Tarjeta', h: h };
+  };
+  TJ.prev = async () => { const img = document.getElementById('tj-img'); if (!img) return; const c = tjCur(), g = D.grupoActual(), x = TJ.item(g, c.pid, c.key); if (!x) return; const cv = await TJ.canvas(TJ.datos(g, c.pid, x)); img.src = cv.toDataURL('image/png'); };
+  CH.tj = el => {
+    const c = tjCur(), g = D.grupoActual(), x = TJ.item(g, c.pid, c.key); if (!x) return; const k = el.dataset.k, v = el.value;
+    S.update(KL(g, c.pid), doc => { doc.tarjetas = doc.tarjetas || {}; const cur = Object.assign({}, TJ.datos(g, c.pid, x)); const t = doc.tarjetas[c.key] = doc.tarjetas[c.key] || {};
+      ['titulo', 'para', 'pasos', 'rub', 'entrega', 'como'].forEach(q => { if (t[q] == null) t[q] = cur[q]; });
+      if (k === 'pasos') t.pasos = v.split('\n').map(s => s.trim()).filter(Boolean);
+      else if (k === 'rub') t.rub = v.split('\n').map(s => s.trim()).filter(Boolean).map(s => { const m = s.match(/^(.*?)\s*[|·-]\s*(\d+(?:\.\d+)?)\s*(pts?|puntos?)?$/i); return m ? [m[1].trim(), Number(m[2])] : [s, 1]; });
+      else t[k] = v; }, {});
+  };
+  A['tj-reset'] = () => { const c = tjCur(), g = D.grupoActual(); S.update(KL(g, c.pid), doc => { if (doc.tarjetas) delete doc.tarjetas[c.key]; }, {}); u.toast('Volvió a lo sugerido', 'ok'); };
+  const tjNombre = d => 'tarea-' + u.norm(d.titulo).toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.png';
+  A['tj-share'] = async () => {
+    const c = tjCur(), g = D.grupoActual(), x = TJ.item(g, c.pid, c.key); if (!x) return; const d = TJ.datos(g, c.pid, x), bl = await TJ.blob(d), f = new File([bl], tjNombre(d), { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { try { await navigator.share({ files: [f], text: TJ.texto(d) }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+    A['tj-dl'](); u.toast('Tu navegador no comparte imágenes directo: se descargó. Adjúntala en WhatsApp.', 'ok', 4500);
+  };
+  A['tj-dl'] = async () => { const c = tjCur(), g = D.grupoActual(), x = TJ.item(g, c.pid, c.key); if (!x) return; const d = TJ.datos(g, c.pid, x), bl = await TJ.blob(d), a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = tjNombre(d); document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
+  A['tj-copy'] = async () => { const c = tjCur(), g = D.grupoActual(), x = TJ.item(g, c.pid, c.key); if (!x) return; const ok = await u.copy(TJ.texto(TJ.datos(g, c.pid, x))); u.toast(ok ? 'Copiado: pégalo en WhatsApp' : 'No se pudo copiar', ok ? 'ok' : 'err'); };
 })();

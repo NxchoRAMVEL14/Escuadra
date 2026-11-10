@@ -53,7 +53,7 @@
 
   // la calificación va a una actividad de Libreta, Proyecto y Bitácora (trabajos), en base 100
   // v1.28.6: los puntos pueden ir a una actividad que ya tengas (ej. «Proyecto vs 2 pruebas») o a una nueva
-  PF.destinos = (g, pid) => { const ids = {}, L = []; [pid, C.parcialActual().id].forEach(q => C.acts(g, q).forEach(a => { if (a.categoria === 'trabajos' && !ids[a.id]) { ids[a.id] = 1; L.push(a); } })); return L; };
+  PF.destinos = (g, pid) => { const ids = {}, L = []; [pid, C.parcialActual().id].forEach(q => C.acts(g, q).forEach(a => { if (C.esTrab(a) && !ids[a.id]) { ids[a.id] = 1; L.push(a); } })); return L; };
   PF.destino = (g, pid) => { const dd = PF.doc(g, pid), id = dd.actId; if (id && S.get('act:' + g.id + ':' + id)) return id; if (dd.nueva) return null; const a = PF.destinos(g, pid).find(x => /PRUEBA/.test(u.norm(x.nombre || '')) && !/REGLAMENTO|LIBRETA/.test(u.norm(x.nombre || ''))); return a ? a.id : null; };
   PF.sync = (g, pid, eqId) => {
     const eq = equipos(g, pid).find(e => e.id === eqId); if (!eq) return; const tot = PF.total(g, pid, eq), t = PF.tipo(g, pid, eq); if (tot == null || !t) return;
@@ -62,7 +62,7 @@
     if (a && PF.doc(g, pid).actId !== id) upd(pid, d => { d.actId = id; });
     if (!a) {
       id = u.uid('act'); const pa = C.parcialActual(fecha);
-      S.put('act:' + g.id + ':' + id, { id: id, parcial: pa.id, categoria: 'trabajos', nombre: 'Prueba física del proyecto · ' + def(g, pid).nombre, peso: 1, max: 100, fecha: fecha, instrumento: 'R', cuenta: true, notas: {}, prueba: pid }, { silent: true });
+      S.put('act:' + g.id + ':' + id, { id: id, parcial: pa.id, categoria: C.separa(pa.id) ? 'proyecto' : 'trabajos', nombre: 'Prueba física del proyecto · ' + def(g, pid).nombre, peso: 1, max: 100, fecha: fecha, instrumento: 'R', cuenta: true, notas: {}, prueba: pid }, { silent: true });
       upd(pid, d => { d.actId = id; });
     }
     // se guarda en la escala de esa actividad (si vale 20 puntos, 90 % = 18)

@@ -635,7 +635,9 @@ window.E = window.E || {};
       ciclo: '2026 - 2027',
       periodo: '1',
       semestreTexto: 'Agosto 2026 – Enero 2027',
-      pond: { examen: 50, trabajos: 40, asistencia: 5, participacion: 5 },
+      pond: { examen: 50, proyecto: 0, trabajos: 40, asistencia: 5, participacion: 5 },
+      // v1.30.0: un parcial puede tener sus propios porcentajes (el 3º: proyecto 60, examen 20, tareas y ejercicios 10)
+      pondP: { P3: { examen: 20, proyecto: 60, trabajos: 10, asistencia: 5, participacion: 5 } },
       metaPart: 10,
       partModo: 'max',
       vaciasCero: true,
@@ -717,7 +719,7 @@ window.E = window.E || {};
         notas: 'Correcciones respecto a tu .docx: nombre del módulo según el programa 2024 ("Construye sistemas mecatrónicos"), resultado del módulo, "Desarrollo de la competencia" llenado con el programa, ponderaciones del inciso D alineadas con la secuencia (10/40/50), horas ajustadas a 71 y se agregó la actividad clave de vista explosionada en FreeCAD.'
       },
       {
-        id: 'plan_3AMEC_P3', grupoId: '3AMEC', parcial: 'P3', modulo: 'II', sm: '3', estado: 'Borrador',
+        id: 'plan_3AMEC_P3', grupoId: '3AMEC', parcial: 'P3', modulo: 'II', sm: '3', estado: 'Borrador', criterios: 'Examen 20 % · Proyecto 60 % · Tareas y ejercicios 10 % · Asistencia 5 % · Participación 5 %',
         origen: 'Basada en tu "3er parcial 3ro.docx", corregida al programa 2024 y a las 92 h reales del calendario.',
         ident: { parcialTxt: '3er', elaboracion: 'Individual', docente: E.DEFAULTS.config.docente, fechas: '09 de noviembre al 18 de diciembre de 2026', grupoTxt: '3°A', horasMD: 92, horasEI: 23, horasTot: 115 },
         resModulo: II.resultados.slice(),
@@ -731,7 +733,7 @@ window.E = window.E || {};
         estrategia: {
           diag: 'Cuestionario inicial sobre propiedades de los fluidos, Principio de Pascal y nociones básicas de circuitos eléctricos',
           form: 'Supervisión directa durante el ensamblaje, sellado de mangueras, purgado y conexión segura de motores DC; asesoría en la resolución de fugas o fallas eléctricas',
-          sum: 'Evaluación práctica y defensa final del mecanismo hidráulico operando integradamente (tomando y moviendo carga con hidráulica y el motor), bitácora técnica de fallas y examen del parcial'
+          sum: 'Evaluación práctica y defensa final del mecanismo hidráulico operando integradamente (tomando y moviendo carga con hidráulica y el motor), bitácora técnica de fallas y examen del parcial. Proyecto 60 % (instalación hidráulica y eléctrica, pruebas físicas con carga, bitácora semanal del equipo y planos de FreeCAD del proyecto); examen teórico 20 %; tareas y ejercicios 10 % (libreta, ejercicios y prácticas de FreeCAD); participación 5 %; asistencia 5 %.'
         },
         practicas: [
           'Demostrativa: trazado en libreta del circuito hidráulico (simbología ISO 1219) y del diagrama de escalera del motor.',
@@ -740,8 +742,8 @@ window.E = window.E || {};
           'Autónoma: integración electrohidráulica en el mecanismo del 2º parcial (todo con hidráulica y 1 motor).'
         ],
         secuencia: {
-          apertura: { periodo: '10 y 11 de noviembre', horas: 9, ei: 2, desc: 'Exposición sobre el Principio de Pascal, fuerza y fluidos. Lluvia de ideas sobre usos industriales (retroexcavadoras, frenos, prensas). Cuestionario diagnóstico. Asignación de materiales a comprar.', tecnicas: ['Exposición magistral', 'Lluvia de ideas', 'Cuestionario diagnóstico'], evidencias: ['Cuestionario diagnóstico contestado (Desempeño)', 'Participación en clase (Desempeño)'], eval: { H: true }, instr: { GO: true, Exa: true }, otro: '', pond: 10 },
-          desarrollo: { periodo: '12 de noviembre al 4 de diciembre', horas: 51, ei: 13, desc: 'Taller de diagramas en libreta (hidráulico con simbología ISO 1219 y eléctrico de escalera). Instalación física: jeringas y mangueras purgadas con agua, empalme de cables del motor DC con pilas e interruptor, adaptando todo al mecanismo del 2º parcial.', tecnicas: ['Aprendizaje basado en proyectos (ABP)', 'Taller de conexión: diagramas en la libreta', 'Instalación hidráulica y eléctrica'], evidencias: ['Diagramas en libreta (Producto)', 'Instalación hidráulica purgada sin fugas (Desempeño)', 'Circuito eléctrico funcionando sin cortos (Desempeño)'], eval: { C: true, H: true }, instr: { LC: true }, otro: '', pond: 40 },
+          apertura: { periodo: '10 y 11 de noviembre', horas: 9, ei: 2, desc: 'Encuadre: criterios de evaluación del parcial (Examen 20 % · Proyecto 60 % · Tareas y ejercicios 10 % · Asistencia 5 % · Participación 5 %). Exposición sobre el Principio de Pascal, fuerza y fluidos. Lluvia de ideas sobre usos industriales (retroexcavadoras, frenos, prensas). Cuestionario diagnóstico. Asignación de materiales a comprar.', tecnicas: ['Exposición magistral', 'Lluvia de ideas', 'Cuestionario diagnóstico'], evidencias: ['Cuestionario diagnóstico contestado (Desempeño)', 'Participación en clase (Desempeño)'], eval: { H: true }, instr: { GO: true, Exa: true }, otro: '', pond: 5 },
+          desarrollo: { periodo: '12 de noviembre al 4 de diciembre', horas: 51, ei: 13, desc: 'Taller de diagramas en libreta (hidráulico con simbología ISO 1219 y eléctrico de escalera). Instalación física: jeringas y mangueras purgadas con agua, empalme de cables del motor DC con pilas e interruptor, adaptando todo al mecanismo del 2º parcial.', tecnicas: ['Aprendizaje basado en proyectos (ABP)', 'Taller de conexión: diagramas en la libreta', 'Instalación hidráulica y eléctrica'], evidencias: ['Diagramas en libreta (Producto)', 'Instalación hidráulica purgada sin fugas (Desempeño)', 'Circuito eléctrico funcionando sin cortos (Desempeño)'], eval: { C: true, H: true }, instr: { LC: true }, otro: '', pond: 45 },
           cierre: { periodo: '7 al 18 de diciembre', horas: 32, ei: 8, desc: 'Feria de proyectos: pruebas de funcionamiento del mecanismo hidráulico tomando y moviendo carga, detección y corrección de fallas en tiempo real, examen del parcial y plenaria final.', tecnicas: ['Exposición de proyectos (feria)', 'Pruebas de funcionamiento con carga', 'Detección y corrección de fallas en tiempo real', 'Plenaria final de aprendizajes'], evidencias: ['Mecanismo hidráulico y motorizado operando correctamente (Producto)', 'Defensa oral del proyecto (Desempeño)', 'Bitácora técnica de fallas y soluciones (Producto)'], eval: { A: true, H: true }, instr: { R: true, B: true, Exa: true }, otro: '', pond: 50 }
         },
         recursos: {

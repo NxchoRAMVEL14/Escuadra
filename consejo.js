@@ -67,7 +67,7 @@
 
     /* calificaciones de los parciales del periodo */
     R.cal = ps.map(p => {
-      const rows = al.map(a => ({ a: a, k: C.cal(g, p.id, a.id) })), con = rows.filter(r => r.k.final != null && (r.k.manual || (r.k.comp || {}).examen != null || (r.k.comp || {}).trabajos != null));
+      const rows = al.map(a => ({ a: a, k: C.cal(g, p.id, a.id) })), con = rows.filter(r => r.k.final != null && (r.k.manual || (r.k.comp || {}).examen != null || (r.k.comp || {}).trabajos != null || (r.k.comp || {}).proyecto != null));
       return { p: p, n: con.length, prom: con.length ? Math.round(con.reduce((s, r) => s + r.k.final, 0) / con.length) / 10 : null, aprob: con.filter(r => r.k.final >= minA).length,
         reprob: con.filter(r => r.k.final < minA), sin: rows.length - con.length, enCurso: p.fin >= per.corte || con.some(r => r.k.enCurso), cerrado: p.fin < per.corte };
     }).filter(x => x.p.inicio <= per.corte);
@@ -92,7 +92,7 @@
 
     /* entregas: actividades calificables del periodo, tareas de libreta y prácticas de FreeCAD */
     const acts = [].concat.apply([], ps.map(p => C.acts(g, p.id))).filter(a => a.cuenta !== false && enRango(a.fecha, per.desde, per.corte));
-    const trab = acts.filter(a => a.categoria === 'trabajos'), venc = trab.filter(a => a.fecha < hoy), pend = {}; let ent = 0, esp = 0, tarde = 0;
+    const trab = acts.filter(a => C.esTrab(a)), venc = trab.filter(a => a.fecha < hoy), pend = {}; let ent = 0, esp = 0, tarde = 0;
     venc.forEach(a => al.forEach(x => { esp++; if (C.nota(a, x.id) != null) ent++; else pend[x.id] = (pend[x.id] || 0) + 1; }));
     acts.forEach(a => { tarde += Object.keys(a.tarde || {}).length; });
     const promA = arr => { const v = []; arr.forEach(a => al.forEach(x => { const n = C.nota(a, x.id); if (n != null) v.push(n); })); return v.length ? Math.round(v.reduce((s, y) => s + y, 0) / v.length) : null; };

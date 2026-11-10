@@ -24,25 +24,25 @@
     C.clases(g, p).forEach(x => { if (x.fecha > hasta || (x.fecha === hoy && hoy <= p.fin && C.bloquesDia(g, hoy).map(b => b.fin).sort().slice(-1)[0] > ahora()) || S.get('asis:' + g.id + ':' + x.fecha)) return; let d = null; try { d = E.clases.dia(g, x.fecha); } catch (e) { } if (d && d.bloques.length && d.bloques.every(b => b.perdida)) return; sinLista.push(x.fecha); });
     add(!sinLista.length, sinLista.length ? sinLista.length + (sinLista.length === 1 ? ' día sin lista' : ' días sin lista') : 'Todas las listas pasadas', sinLista.length ? sinLista.slice(0, 6).map(f => u.fCorta(f)).join(' · ') + (sinLista.length > 6 ? '…' : '') + ' · si no hubo clase, márcalo en el guion como «No se dio»' : '', sinLista.length ? 'lista/' + sinLista[0] : '', sinLista.length ? 'bad' : 'ok');
     // 2) actividades que cuentan con calificaciones vacías
-    const acts = C.acts(g, p.id).filter(a => (a.categoria === 'examen' || a.categoria === 'trabajos') && a.cuenta !== false && (!a.fecha || a.fecha <= hasta || hoy > p.fin));
+    const acts = C.acts(g, p.id).filter(a => (a.categoria === 'examen' || C.esTrab(a)) && a.cuenta !== false && (!a.fecha || a.fecha <= hasta || hoy > p.fin));
     const vac = acts.map(a => ({ a: a, f: N - C.actStats(a, al).capturadas })).filter(x => x.f > 0);
     add(!vac.length, vac.length ? vac.length + (vac.length === 1 ? ' actividad con calificaciones vacías' : ' actividades con calificaciones vacías') : 'Todas las actividades calificadas', vac.slice(0, 5).map(x => x.a.nombre + ' (' + x.f + ')').join(' · ') + (vac.length > 5 ? '…' : '') + (vac.some(x => C.sinCal(x.a)) ? ' · las del guion sin ninguna calificación aún no cuentan: califícalas o bórralas si no las vas a pedir' : '') + (c.vaciasCero && vac.some(x => !C.sinCal(x.a)) ? ' · en las demás, lo vacío cuenta como 0' : ''), vac.length ? 'actividad/' + vac[0].a.id : '');
     // 3) examen del parcial
     const hayEx = C.acts(g, p.id).some(a => a.categoria === 'examen' && a.cuenta !== false && C.actStats(a, al).capturadas > 0);
     const fx = E.examen && E.examen.fechaExamen ? E.examen.fechaExamen(g, p.id).f : p.fin;
-    add(hayEx, hayEx ? 'Examen capturado' : fx > hoy ? 'El examen es el ' + u.fLarga(fx) : 'Falta capturar el examen del parcial', hayEx ? '' : 'Vale ' + c.pond.examen + ' % de la calificación.', hayEx ? '' : 'examen', hayEx ? 'ok' : fx > hoy ? 'info' : 'bad');
+    add(hayEx, hayEx ? 'Examen capturado' : fx > hoy ? 'El examen es el ' + u.fLarga(fx) : 'Falta capturar el examen del parcial', hayEx ? '' : 'Vale ' + C.pond(p.id).examen + ' % de la calificación.', hayEx ? '' : 'examen', hayEx ? 'ok' : fx > hoy ? 'info' : 'bad');
     // 4) libreta y FreeCAD (lo que ya se tenía que revisar)
     if (E.libreta) {
       let T = null; try { T = E.libreta.tareas(g, p.id); } catch (e) { }
       if (T && T.cuentan.length) {
         const doc = E.libreta.doc(g, p.id), mk = doc.marcas || {}, sinRev = T.cuentan.filter(t => t.f <= hasta && !al.some(a => (mk[a.id] || {})[t.key] != null));
-        if (!doc.actId) add(false, 'La libreta aún no entra a Calificaciones', 'Crea la actividad de libreta para que cuente en Libreta/Proyecto/Bitácora.', 'libreta/' + p.id, 'bad');
+        if (!doc.actId) add(false, 'La libreta aún no entra a Calificaciones', 'Crea la actividad de libreta para que cuente en ' + C.catLbl('trabajos', p.id) + '.', 'libreta/' + p.id, 'bad');
         add(!sinRev.length, sinRev.length ? sinRev.length + (sinRev.length === 1 ? ' tarea sin revisar' : ' tareas sin revisar') : 'Tareas de libreta revisadas', sinRev.slice(0, 4).map(t => corto(t.t, 50)).join(' · '), 'libreta/' + p.id);
       }
     }
     if (E.pend) { const fc = E.pend.lista(g, hoy).filter(x => x.tipo === 'fc' && x.k.indexOf('@' + p.id + '@') > 0); if (fc.length) add(false, fc.length + (fc.length === 1 ? ' práctica de FreeCAD sin revisar' : ' prácticas de FreeCAD sin revisar'), fc.slice(0, 3).map(x => x.t).join(' · '), fc[0].to); }
     // 5) participación
-    const pr = C.partRegistrada(g, p); add(pr, pr ? 'Participación registrada' : 'Sin participación registrada', pr ? '' : 'Sin registros, ese ' + c.pond.participacion + ' % no cuenta y la calificación se calcula sin él.', pr ? '' : 'lista', pr ? 'ok' : 'warn');
+    const pr = C.partRegistrada(g, p); add(pr, pr ? 'Participación registrada' : 'Sin participación registrada', pr ? '' : 'Sin registros, ese ' + C.pond(p.id).participacion + ' % no cuenta y la calificación se calcula sin él.', pr ? '' : 'lista', pr ? 'ok' : 'warn');
     // 6) alumnos sin calificación o en curso
     const sinCal = al.filter(a => C.cal(g, p.id, a.id).final == null), curso = al.filter(a => { const k = C.cal(g, p.id, a.id); return k.final != null && k.enCurso; });
     add(!sinCal.length && !curso.length, sinCal.length ? sinCal.length + ' alumnos sin calificación' : curso.length ? curso.length + ' alumnos con calificación en curso' : 'Todos tienen calificación completa', sinCal.length ? sinCal.slice(0, 5).map(a => a.num + '. ' + u.corto(a.nombre)).join(' · ') : curso.length ? 'Les falta algún rubro (examen, trabajos, asistencia o participación).' : '', 'calificaciones/' + p.id, sinCal.length ? 'bad' : 'warn');

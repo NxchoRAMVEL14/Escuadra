@@ -21,21 +21,21 @@
     let ne = 0;
     const cat = k => {
       let s = 0, w = 0;
-      acts.filter(a => a.categoria === k && a.cuenta !== false && !C.sinCal(a)).forEach(a => {
+      acts.filter(a => C.enCat(a, k, pid) && a.cuenta !== false && !C.sinCal(a)).forEach(a => {
         let v = C.nota(a, aid);
         if (v == null) { if (!c.vaciasCero || !a.fecha || a.fecha >= f) return; v = 0; ne++; }
         const p = Number(a.peso || 1); s += v * p; w += p;
       });
       return w ? s / w : null;
     };
-    const ex = cat('examen'), tr = cat('trabajos');
-    if (ex == null && tr == null) {
+    const ex = cat('examen'), tr = cat('trabajos'), pr = C.separa(pid) ? cat('proyecto') : null, pw = C.pond(pid);
+    if (ex == null && tr == null && pr == null) {
       const dg = acts.filter(a => a.categoria === 'diagnostico').map(a => C.nota(a, aid)).filter(v => v != null);
       return dg.length ? { v: dg.reduce((a, b) => a + b, 0) / dg.length, partida: true } : null;
     }
-    const pe = ex != null ? Number(c.pond.examen) || 0 : 0, pt = tr != null ? Number(c.pond.trabajos) || 0 : 0;
-    if (!pe && !pt) return null;
-    return { v: ((ex || 0) * pe + (tr || 0) * pt) / (pe + pt), partida: false, ex: ex, tr: tr, ne: ne };
+    const pe = ex != null ? pw.examen : 0, pt = tr != null ? pw.trabajos : 0, pp = pr != null ? pw.proyecto : 0;
+    if (!pe && !pt && !pp) return null;
+    return { v: ((ex || 0) * pe + (tr || 0) * pt + (pr || 0) * pp) / (pe + pt + pp), partida: false, ex: ex, tr: tr, pr: pr, ne: ne };
   };
   // por qué va mal, en pocas palabras
   SF.razon = x => {

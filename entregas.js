@@ -29,7 +29,7 @@
     }
     // trabajos calificados en Calificaciones (sin la libreta ni FreeCAD, que ya salen arriba y abajo)
     const lib = E.libreta ? E.libreta.doc(g, pid) : {}, fcd = E.fc && E.fc.rev ? E.fc.rev(g, pid) : {};
-    C.acts(g, pid).filter(a => a.categoria === 'trabajos' && a.cuenta !== false && !a.libreta && !a.freecad && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
+    C.acts(g, pid).filter(a => C.esTrab(a) && a.cuenta !== false && !a.libreta && !a.freecad && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
       out.push({ k: 'act:' + a.id, tipo: 'act', t: a.nombre, f: a.fecha || p.fin, due: a.fecha || p.fin, to: 'actividad/' + a.id, auto: !!a.auto,
         est: aid => { const n = C.nota(a, aid); return { v: n == null ? null : n === 0 ? 0 : n < (Number(D.cfg().minAprob) || 60) ? 1 : 2, n: n == null ? null : Math.round(n), tarde: !!(a.tarde && a.tarde[aid]) }; } });
     });

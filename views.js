@@ -61,7 +61,7 @@
   E.logo = () => '<svg viewBox="0 0 64 64" aria-hidden="true"><image href="logo-marca.png" x="0" y="0" width="64" height="64"/></svg>';
   const icon = E.icon;
 
-  const CAT_LBL = { examen: 'Examen', trabajos: 'Libreta/Proyecto/Bitácora', diagnostico: 'Diagnóstico' };
+  const CAT_LBL = { examen: 'Examen', proyecto: 'Proyecto', trabajos: 'Libreta/Proyecto/Bitácora', diagnostico: 'Diagnóstico' };
   const TEMAS_EVAL = ['Dibujo técnico y FreeCAD (Submódulo 1)', 'Mecanismos y pares cinemáticos', 'Grados de libertad y cuatro barras', 'Transmisiones: engranes, poleas y tornillo', 'Modelado y ensamble en FreeCAD', 'Construcción del mecanismo', 'Neumática e hidráulica: principios', 'Simbología y circuitos ISO 1219', 'Electroneumática y motores DC'];
   E.CAT_LBL = CAT_LBL; E.TEMAS_EVAL = TEMAS_EVAL;
   // temas para el perfil: los del módulo del grupo (el Módulo II conserva su lista)
@@ -378,7 +378,7 @@
   /* =================== CALIFICACIONES =================== */
   // quién tiene su porcentaje completo de participación
   function partHTML(g, p, al) {
-    const c = D.cfg(), w = Number(c.pond.participacion || 0); if (!C.partRegistrada(g, p)) return '<p class="muted small">Todavía no hay participaciones registradas en este parcial.</p>';
+    const c = D.cfg(), w = C.pond(p.id).participacion; if (!C.partRegistrada(g, p)) return '<p class="muted small">Todavía no hay participaciones registradas en este parcial.</p>';
     const rows = al.map(a => { const n = C.part(g, p, a.id), x = C.partExtra(g, p, a.id), pc = C.partPct(g, p, n); return { a: a, n: n, x: x, pc: pc }; }).sort((q, r) => r.n - q.n || q.a.num - r.a.num);
     const mx = c.partModo === 'meta' ? (Number(c.metaPart) || 10) : C.partMax(g, p), compl = rows.filter(r => r.pc != null && r.pc >= 99.5).length;
     return '<details class="sub" id="part-det"><summary>⭐ Quién tiene su ' + w + '% (' + compl + ' de ' + al.length + ' completo)</summary><p class="muted small">' + (c.partModo === 'meta' ? 'Meta: ' + mx + ' participaciones.' : 'Máximo del grupo: <b>' + mx + '</b> participaciones = ' + w + ' puntos.') + ' Los ⭐ son puntos extra que pusiste en actividades.</p>' +
@@ -418,21 +418,26 @@
       return { t: 'Calificaciones', h: h };
     }
     const acts = C.acts(g, p.id);
+    const pw = C.pond(p.id), sep = pw.proyecto > 0;
+    // v1.30.0: en un parcial sin rubro de proyecto, lo marcado como proyecto se ve (y cuenta) dentro de trabajos
+    const ES_PROY = /PROYECT|PRUEBA FISICA|BITACORA DEL (PROYECTO|EQUIPO)|BITACORA SEMANAL|MECANISMO|PROTOTIPO|DEFENSA|FERIA|EXPOSICION DEL PROYECTO/;
     const catBlock = (cat, label) => {
-      const list = acts.filter(a => a.categoria === cat);
+      const list = acts.filter(a => cat === 'trabajos' ? C.enCat(a, 'trabajos', p.id) : a.categoria === cat);
+      const sug = cat === 'proyecto' ? acts.filter(a => a.categoria === 'trabajos' && ES_PROY.test(u.norm(a.nombre || ''))) : [];
       if (cat === 'diagnostico' && !list.length) return '';
       const extra = cat === 'trabajos' ? '<p class="small">' + link('📒 Tareas y revisión de libreta', 'libreta/' + p.id, 'small') + '</p>' : cat === 'examen' ? '<p class="small">' + link('📝 Examen recomendado', 'examen', 'small') + '</p>' : '';
-      return '<div class="cat"><div class="cat-h"><h4>' + label + (c.pond[cat] != null ? ' <span class="chip brand">' + c.pond[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + (cat !== 'diagnostico' && ultimaDeTipo(g, cat) ? btn('Basada en la última', 'act-basada', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small ghost') : '') + '</div>' + extra +
-        (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (C.maxPts(a) !== 100 ? ' · de ' + C.maxPts(a) + ' pts' : '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (a.cuenta === false && cat !== 'diagnostico' ? ' · no cuenta' : '') + (C.sinCal(a) ? ' · del guion, aún no cuenta' : '') + (st.prom != null ? ' · prom. ' + Math.round(st.prom) : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') + '</div>';
+      return '<div class="cat"><div class="cat-h"><h4>' + label + (cat !== 'diagnostico' ? ' <span class="chip brand">' + pw[cat] + '%</span>' : ' <span class="chip">no cuenta</span>') + '</h4>' + btn(icon('plus') + ' Agregar', 'act-nueva', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small') + (cat !== 'diagnostico' && ultimaDeTipo(g, cat) ? btn('Basada en la última', 'act-basada', 'data-cat="' + cat + '" data-pid="' + p.id + '"', 'small ghost') : '') + '</div>' + extra +
+        (list.length ? '<ul class="acts">' + list.map(a => { const st = C.actStats(a, al); return '<li><a href="#/actividad/' + a.id + '"><b>' + esc(a.nombre) + '</b><span class="muted small">' + (a.fecha ? u.fCorta(a.fecha) + ' · ' : '') + esc(E.INSTR[a.instrumento] || a.instrumento || '') + (C.maxPts(a) !== 100 ? ' · de ' + C.maxPts(a) + ' pts' : '') + (Number(a.peso || 1) !== 1 ? ' · peso ' + a.peso : '') + (!sep && a.categoria === 'proyecto' ? ' · 🧩 proyecto' : '') + (a.cuenta === false && cat !== 'diagnostico' ? ' · no cuenta' : '') + (C.sinCal(a) ? ' · del guion, aún no cuenta' : '') + (st.prom != null ? ' · prom. ' + Math.round(st.prom) : '') + '</span></a><span class="chip ' + (st.faltan ? 'warn' : 'ok') + '">' + st.capturadas + '/' + al.length + '</span></li>'; }).join('') + '</ul>' : '<p class="muted small">Sin actividades todavía.</p>') +
+        (sug.length ? '<div class="note info"><p class="small"><b>¿Estas van en Proyecto?</b> Hoy cuentan en tareas y ejercicios.</p><ul class="plain">' + sug.map(a => '<li class="row between gap"><span class="small">' + esc(a.nombre) + '</span>' + btn('Pasar a Proyecto', 'act-aproy', 'data-id="' + a.id + '"', 'small') + '</li>').join('') + '</ul>' + (sug.length > 1 ? btn('Pasar las ' + sug.length, 'act-aproy', 'data-ids="' + sug.map(a => a.id).join(',') + '"', 'small primary') : '') + '</div>' : '') + '</div>';
     };
-    h += card('<h3>' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + catBlock('examen', 'Examen') + catBlock('trabajos', 'Libreta / Proyecto / Bitácora') + catBlock('diagnostico', 'Diagnóstico') +
-      '<div class="cat"><h4>Asistencia <span class="chip brand">' + c.pond.asistencia + '%</span></h4><p class="muted small">Se calcula sola con tu pase de lista.</p></div>' +
-      '<div class="cat"><h4>Participación <span class="chip brand">' + c.pond.participacion + '%</span></h4><p class="muted small">' + (c.partModo === 'meta' ? c.metaPart + ' participaciones en el parcial = 100.' : 'Pase de lista + puntos extra ⭐ de las actividades. El que más participa en el parcial = 100 y los demás en proporción.') + '</p>' + partHTML(g, p, al) + '</div>' +
+    h += card('<h3>' + esc(p.nombre) + (sm ? ' · Submódulo ' + sm.num : '') + '</h3>' + (sep ? '<p class="small muted">Este parcial tiene sus propios porcentajes: ' + esc(C.pondTxt(p.id)) + '. ' + link('Cambiar', 'ajustes/cal', 'small ghost') + '</p>' + catBlock('proyecto', '🧩 Proyecto') : '') + catBlock('examen', sep ? 'Examen teórico' : 'Examen') + catBlock('trabajos', sep ? 'Tareas y ejercicios' : 'Libreta / Proyecto / Bitácora') + catBlock('diagnostico', 'Diagnóstico') +
+      '<div class="cat"><h4>Asistencia <span class="chip brand">' + pw.asistencia + '%</span></h4><p class="muted small">Se calcula sola con tu pase de lista.</p></div>' +
+      '<div class="cat"><h4>Participación <span class="chip brand">' + pw.participacion + '%</span></h4><p class="muted small">' + (c.partModo === 'meta' ? c.metaPart + ' participaciones en el parcial = 100.' : 'Pase de lista + puntos extra ⭐ de las actividades. El que más participa en el parcial = 100 y los demás en proporción.') + '</p>' + partHTML(g, p, al) + '</div>' +
       '<div class="row gap wrap mt">' + (!acts.some(a => a.categoria !== 'diagnostico') && sm && sm.ac.some(a => a.producto) ? btn(icon('sparkle') + ' Agregar actividades sugeridas del submódulo', 'act-sugeridas', 'data-pid="' + p.id + '"') : '') +
       (!acts.some(a => a.categoria === 'diagnostico') ? btn(icon('plus') + ' Examen diagnóstico (no cuenta)', 'act-nueva', 'data-cat="diagnostico" data-pid="' + p.id + '"', 'small ghost') : '') + '</div>');
-    h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Calif.</th><th>Exa</th><th>Trab</th><th>Asis</th><th>Part</th></tr></thead><tbody>' + al.map(a => {
+    h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>#</th><th class="l">Alumno</th><th>Calif.</th>' + (sep ? '<th>Proy</th>' : '') + '<th>Exa</th><th>' + (sep ? 'Tareas' : 'Trab') + '</th><th>Asis</th><th>Part</th></tr></thead><tbody>' + al.map(a => {
       const k = C.cal(g, p.id, a.id), cp = k.comp;
-      return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td><td><span class="g ' + gclass(k.final) + '">' + C.c10(k.final) + (k.enCurso && k.final != null ? '*' : '') + '</span></td><td>' + gfmt(cp.examen) + '</td><td>' + gfmt(cp.trabajos) + '</td><td>' + gfmt(cp.asistencia) + '</td><td>' + gfmt(cp.participacion) + '</td></tr>';
+      return '<tr><td>' + a.num + '</td><td class="l"><a href="#/alumno/' + a.id + '">' + esc(a.nombre) + '</a></td><td><span class="g ' + gclass(k.final) + '">' + C.c10(k.final) + (k.enCurso && k.final != null ? '*' : '') + '</span></td>' + (sep ? '<td>' + gfmt(cp.proyecto) + '</td>' : '') + '<td>' + gfmt(cp.examen) + '</td><td>' + gfmt(cp.trabajos) + '</td><td>' + gfmt(cp.asistencia) + '</td><td>' + gfmt(cp.participacion) + '</td></tr>';
     }).join('') + '</tbody></table></div><p class="muted small">* En curso: se calcula con los rubros que ya tienen datos. ' + (c.vaciasCero ? 'Una actividad sin calificación cuenta como 0 cuando ya pasó su fecha de entrega.' : 'Las actividades sin calificación no cuentan.') + '</p>';
     return { t: 'Calificaciones', h: h };
   };
@@ -459,10 +464,12 @@
     location.hash = '#/actividad/' + id;
     u.toast('Creada con los datos de «' + src.nombre + '»', 'ok', 3000);
   };
+  A['act-aproy'] = el => { const g = D.grupoActual(), ids = el.dataset.ids ? el.dataset.ids.split(',') : [el.dataset.id]; ids.forEach(id => S.update('act:' + g.id + ':' + id, a => { a.categoria = 'proyecto'; })); u.toast(ids.length === 1 ? 'Pasada a Proyecto' : ids.length + ' actividades pasadas a Proyecto', 'ok'); };
   A['act-sugeridas'] = el => {
     const g = D.grupoActual(), pid = el.dataset.pid, sm = D.submodulo(g, pid), p = C.parcial(pid);
     const list = [{ categoria: 'examen', nombre: 'Examen del ' + p.nombre, instrumento: 'Exa' }];
-    (sm ? sm.ac : []).forEach(ac => { if (ac.producto) list.push({ categoria: 'trabajos', nombre: ac.producto, instrumento: ac.instr || 'LC' }); if (ac.desempeno) list.push({ categoria: 'trabajos', nombre: ac.desempeno, instrumento: ac.instrD || 'GO' }); });
+    const cp = C.separa(pid) ? 'proyecto' : 'trabajos';
+    (sm ? sm.ac : []).forEach(ac => { if (ac.producto) list.push({ categoria: cp, nombre: ac.producto, instrumento: ac.instr || 'LC' }); if (ac.desempeno) list.push({ categoria: cp, nombre: ac.desempeno, instrumento: ac.instrD || 'GO' }); });
     list.push({ categoria: 'trabajos', nombre: 'Libreta y bitácora técnica', instrumento: 'B' });
     list.forEach(x => { const id = u.uid('act'); S.put('act:' + g.id + ':' + id, Object.assign({ id: id, parcial: pid, peso: 1, fecha: '', cuenta: true, notas: {} }, x), { silent: true }); });
     S.emit('acts'); u.toast(list.length + ' actividades agregadas', 'ok');
@@ -488,7 +495,7 @@
     const al = D.alumnos(g), st = C.actStats(a, al), k = 'act:' + g.id + ':' + id, mx = C.maxPts(a), conv = mx !== 100;
     let h = '<p><a href="#/calificaciones/' + a.parcial + '">‹ Volver a calificaciones</a></p>';
     h += card('<div class="fgrid">' + fieldIn('Nombre', 'data-ch="act-field" data-path="nombre" id="af-nombre"', a.nombre) +
-      '<label class="fld"><span>Rubro</span><select data-ch="act-field" data-path="categoria" id="af-cat"><option value="examen" ' + (a.categoria === 'examen' ? 'selected' : '') + '>Examen</option><option value="trabajos" ' + (a.categoria === 'trabajos' ? 'selected' : '') + '>Libreta / Proyecto / Bitácora</option><option value="diagnostico" ' + (a.categoria === 'diagnostico' ? 'selected' : '') + '>Diagnóstico (no cuenta, alimenta el perfil)</option></select></label>' +
+      '<label class="fld"><span>Rubro</span><select data-ch="act-field" data-path="categoria" id="af-cat"><option value="examen" ' + (a.categoria === 'examen' ? 'selected' : '') + '>Examen</option><option value="proyecto" ' + (a.categoria === 'proyecto' ? 'selected' : '') + '>Proyecto' + (C.separa(a.parcial) ? '' : ' (en este parcial cuenta dentro de trabajos)') + '</option><option value="trabajos" ' + (a.categoria === 'trabajos' ? 'selected' : '') + '>' + (C.separa(a.parcial) ? 'Tareas y ejercicios (libreta, prácticas de FreeCAD, ejercicios)' : 'Libreta / Proyecto / Bitácora') + '</option><option value="diagnostico" ' + (a.categoria === 'diagnostico' ? 'selected' : '') + '>Diagnóstico (no cuenta, alimenta el perfil)</option></select></label>' +
       fieldIn('Puntos máximos', 'data-ch="act-field" data-path="max" id="af-max" inputmode="decimal" min="1" step="1"', mx, 'number') +
       '<label class="fld"><span>Tema que evalúa (para el perfil)</span><input list="temas-dl" data-ch="act-field" data-path="tema" id="af-tema" value="' + esc(a.tema || '') + '" placeholder="Ej. ' + esc(temasEval(g)[0] || 'Ley de Ohm') + '"><datalist id="temas-dl">' + temasEval(g).map(x => '<option value="' + esc(x) + '">').join('') + '</datalist></label>' +
       fieldIn('Fecha', 'data-ch="act-field" data-path="fecha" id="af-fecha"', a.fecha, 'date') +
@@ -592,6 +599,19 @@
   A['plan-print'] = el => { const pl = planGet(el.dataset.id); if (pl) E.print.planeacion(pl); };
   A['plan-word'] = el => { const pl = planGet(el.dataset.id); if (pl) E.print.planWord(pl); };
 
+  // v1.30.0: lleva los porcentajes propios del parcial a la planeación (sumativa, encuadre y ponderación por momento)
+  E.planCriterios = (pl, pid) => {
+    const w = C.pond(pid), sep = w.proyecto > 0, txt = C.pondTxt(pid);
+    const sum = sep ? 'Proyecto ' + w.proyecto + ' % (instalación hidráulica y eléctrica, pruebas físicas con carga, bitácora semanal del equipo y planos de FreeCAD del proyecto); examen teórico ' + w.examen + ' %; tareas y ejercicios ' + w.trabajos + ' % (libreta, ejercicios y prácticas de FreeCAD); participación ' + w.participacion + ' %; asistencia ' + w.asistencia + ' %.' : 'Ponderación: ' + txt + '.';
+    const es = pl.estrategia = pl.estrategia || {}; es.sum = String(es.sum || '').replace(/\s*Ponderación:[^]*$|\s*Proyecto \d+ % \([^]*$/, '').trim(); es.sum = (es.sum ? es.sum.replace(/\.?$/, '. ') : '') + sum;
+    const sq = pl.secuencia = pl.secuencia || {}; ['apertura', 'desarrollo', 'cierre'].forEach(k => { sq[k] = sq[k] || {}; });
+    if (sep) { sq.apertura.pond = 5; sq.desarrollo.pond = 45; sq.cierre.pond = 50; }
+    const enc = 'Encuadre: criterios de evaluación del parcial (' + txt + ').';
+    sq.apertura.desc = String(sq.apertura.desc || '').replace(/\s*Encuadre: criterios de evaluación del parcial \([^)]*\)\./, '').trim(); sq.apertura.desc = enc + (sq.apertura.desc ? ' ' + sq.apertura.desc : '');
+    pl.criterios = txt; return pl;
+  };
+  A['plan-crit'] = el => { const pl = planGet(el.dataset.id); if (!pl) return; S.update('plan:' + pl.id, x => { E.planCriterios(x, x.parcial); }); u.toast('Listo: la planeación ya trae los porcentajes del parcial', 'ok'); };
+
   V.plan = id => {
     const pl = planGet(id); if (!pl) return { t: 'Planeación', h: card('<p>No encontré esta planeación.</p>' + link('Volver', 'planeacion', 'primary')) };
     const g = D.grupo(pl.grupoId) || D.grupoActual(), p = C.parcial(pl.parcial), m = E.PROGRAMA.modulos[pl.modulo], sm = m && m.sub[pl.sm];
@@ -612,6 +632,7 @@
     };
     const bad = val.filter(x => x.n === 'bad').length;
     let h = '<p><a href="#/planeacion">‹ Planeaciones</a></p>';
+    if (p && C.propio(p.id) && pl.criterios !== C.pondTxt(p.id)) h += card('<h3>📊 Este parcial tiene sus propios porcentajes</h3><p class="small">' + esc(C.pondTxt(p.id)) + '.</p><p class="muted small">Pásalos a la planeación: la evaluación sumativa dice qué entra en cada rubro, el encuadre de la apertura los presenta y la ponderación por momento da más peso a la práctica (apertura 5 · desarrollo 45 · cierre 50). Puedes cambiar lo que quieras después.</p>' + btn('Pasarlos a la planeación', 'plan-crit', 'data-id="' + esc(pl.id) + '"', 'primary small'));
     h += card('<div class="row between gap wrap"><div><h3>' + esc(p ? p.nombre : '') + ' · Submódulo ' + esc(pl.sm) + '</h3><p class="muted small">' + esc(sm ? sm.nombre : '') + '</p></div><div class="row gap wrap">' +
       btn(icon('print') + ' Imprimir / PDF', 'plan-print', 'data-id="' + id + '"', 'primary') + btn(icon('download') + ' Word', 'plan-word', 'data-id="' + id + '"') + '</div></div>' +
       (hr ? '<p class="small">Horas reales en tu calendario: <b>' + hr.disp + ' h</b>' + (sm ? ' · programa: ' + sm.horas + ' h' : '') + '.</p>' : '') +
@@ -1053,7 +1074,11 @@
     const sel = (path, label, opts, val) => '<label class="fld"><span>' + label + '</span><select data-ch="cfg" data-path="' + path + '" id="cf-' + path + '">' + opts.map(o => '<option value="' + o[0] + '" ' + (String(val) === String(o[0]) ? 'selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label>';
     const tog = (path, label, val) => '<label class="switch"><input type="checkbox" data-ch="cfg" data-path="' + path + '" ' + (val ? 'checked' : '') + '><span>' + label + '</span></label>';
     const sec = (k, t, inner) => '<details class="sec" ' + (sub === k ? 'open' : '') + ' id="aj-' + k + '"><summary>' + t + '</summary><div class="in">' + inner + '</div></details>';
-    const sumP = ['examen', 'trabajos', 'asistencia', 'participacion'].reduce((a, k) => a + Number(c.pond[k] || 0), 0);
+    const sumP = C.KEYS.reduce((a, k) => a + Number(c.pond[k] || 0), 0);
+    // v1.30.0: porcentajes por parcial
+    const ppHTML = ps.map(p => { const on = C.propio(p.id), w = C.pond(p.id), su = C.KEYS.reduce((a, k) => a + w[k], 0);
+      return '<div class="momento"><label class="switch"><input type="checkbox" data-ch="cfg-pp" data-pid="' + p.id + '" ' + (on ? 'checked' : '') + '><span><b>' + esc(p.nombre) + '</b>: ' + (on ? 'sus propios porcentajes' : 'los de siempre') + '</span></label>' +
+        (on ? '<p class="small">Suma: <b class="' + (su === 100 ? 'okc' : 'badc') + '">' + su + '</b></p><div class="fgrid c4">' + C.KEYS.map(k => cf('pondP.' + p.id + '.' + k, C.catLbl(k, p.id) + ' %', w[k], 'number')).join('') + '</div>' : '') + '</div>'; }).join('');
     let h = '';
     const guia = !(sy.client && sy.user);
     h += '<p class="muted small">Escuadra v' + E.VERSION + ' · ' + btn('Buscar actualización', 'app-update', '', 'small ghost') + '</p>';
@@ -1073,7 +1098,8 @@
         : '<div class="mt">' + fieldIn('Correo', 'id="sy-email" autocomplete="username"', '', 'email') + fieldIn('Contraseña', 'id="sy-pw" autocomplete="current-password"', '', 'password') + btn('Iniciar sesión', 'sync-login', '', 'primary') + '</div>') : '') +
       (m.lastSyncAt ? '<p class="muted small mt">Última sincronización: ' + new Date(m.lastSyncAt).toLocaleString('es-MX') + '</p>' : ''));
     h += sec('docente', '👤 Docente y escuela', '<div class="fgrid">' + cf('docente', 'Nombre completo', c.docente) + cf('docenteCorto', 'Cómo te saludo', c.docenteCorto) + cf('plantel', 'Plantel', c.plantel) + cf('cct', 'C.C.T.', c.cct) + cf('entidad', 'Entidad', c.entidad) + cf('turno', 'Turno', c.turno) + cf('ciclo', 'Ciclo escolar', c.ciclo) + cf('periodo', 'Periodo', c.periodo) + '</div>' + cf('semestreTexto', 'Semestre (encabezado de planeaciones)', c.semestreTexto));
-    h += sec('cal', '📊 Calificación', '<p class="small">Ponderación del parcial (debe sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.trabajos', 'Libreta/Proyecto/Bitácora %', c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
+    h += sec('cal', '📊 Calificación', '<p class="small"><b>Porcentajes de siempre</b> (los usa cada parcial que no tenga los suyos; deben sumar 100): <b class="' + (sumP === 100 ? 'okc' : 'badc') + '">' + sumP + '</b></p><div class="fgrid c4">' + cf('pond.examen', 'Examen %', c.pond.examen, 'number') + cf('pond.proyecto', 'Proyecto % (0 = va dentro de trabajos)', c.pond.proyecto || 0, 'number') + cf('pond.trabajos', (Number(c.pond.proyecto) > 0 ? 'Tareas y ejercicios %' : 'Libreta/Proyecto/Bitácora %'), c.pond.trabajos, 'number') + cf('pond.asistencia', 'Asistencia %', c.pond.asistencia, 'number') + cf('pond.participacion', 'Participación %', c.pond.participacion, 'number') + '</div>' +
+      '<p class="small mt"><b>Por parcial</b>: si un parcial califica distinto (por ejemplo, el 3º con proyecto 60 %), dale sus propios porcentajes. Los parciales ya cerrados no cambian si no los tocas.</p>' + ppHTML +
       '<div class="fgrid">' + sel('partModo', 'Participación', [['max', 'El que más participa = 100 (los demás en proporción)'], ['meta', 'Meta fija de participaciones = 100']], c.partModo || 'max') + (c.partModo === 'meta' ? cf('metaPart', 'Participaciones para 100', c.metaPart, 'number') : '') + cf('minAsis', 'Asistencia mínima %', c.minAsis, 'number') + cf('avisoRetardos', 'Aviso a casa cada N retardos (0 = no avisar)', c.avisoRetardos, 'number') + cf('minAprob', 'Mínimo aprobatorio en base 100 (60 = 6; debajo = 🔴 va mal)', c.minAprob, 'number') + cf('umbralBien', '🟢 Va bien desde (base 100: 80 = 8)', c.umbralBien, 'number') +
       '<p class="muted small" style="align-self:end">Calificaciones de 5 a 10, sin decimales (como pide control escolar).</p></div>' +
       '<div class="fgrid">' + sel('tardeValor', 'Lo entregado tarde vale (al marcar ⏰)', E.TARDE_OPC.map(x => [x, Math.round(x * 100) + ' %' + (x === 1 ? ' (sin descuento)' : '')]), C.tardeVale()) + '</div><p class="muted small">Cuando un alumno te entrega tarde, márcalo con ⏰ en la actividad, la libreta o la práctica (o «📥 Recibir tarde» en su ficha): su calificación se multiplica por este porcentaje. Con 75 %, un trabajo perfecto entregado tarde queda en 75 y uno de 80 queda en 60. Si después cambias el porcentaje, lo que ya marcaste conserva el que tenía.</p>' +
@@ -1106,6 +1132,7 @@
     S.update('config', cfg => { u.set(cfg, path, v); }, {});
     if (path === 'tema' || path === 'letra') E.applyTheme();
   };
+  CH['cfg-pp'] = el => { const pid = el.dataset.pid, c = D.cfg(); S.update('config', cfg => { cfg.pondP = Object.assign({}, c.pondP || {}, cfg.pondP || {}); const cur = cfg.pondP[pid]; if (el.checked) cfg.pondP[pid] = Object.assign({}, c.pond, { proyecto: 0 }, cur || {}, { activo: true }); else cfg.pondP[pid] = Object.assign({}, cur || {}, { activo: false }); }, {}); };
   CH.grupo = el => {
     const g = D.grupoActual(), path = el.dataset.path;
     S.update('grupo:' + g.id, gr => { u.set(gr, path, el.value); if (path === 'modulo') { gr.submodulos = E.mods ? E.mods.subSugeridos(el.value, D.parciales()) : {}; gr.flujo = E.mods ? E.mods.flujoDef(el.value) : false; } });

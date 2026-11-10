@@ -1510,3 +1510,30 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 /* v1.29.2: en las hojas donde se firma en la tabla, renglones altos para firmar cómodo */
 .pr table.firmar td { height: 9mm; vertical-align: middle }
 .fd-c { color: #f5a623 }
+.note ul.plain{list-style:none;padding:0;margin:4px 0 6px}.note ul.plain li{padding:3px 0;align-items:center}
+.tj-prev{background:var(--bg2,#0b1424);border-radius:12px;padding:8px;text-align:center}.tj-prev img{max-width:100%;max-height:70vh;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+/* v1.30.0 · bitácora técnica semanal (una carta por alumno) */
+.bt-pg { page-break-after: always; break-after: page } .bt-pg:last-child { page-break-after: auto; break-after: auto }
+.pr.bth { height: 236mm; display: flex; flex-direction: column; font-size: 9.2pt; line-height: 1.25; color: #111; overflow: hidden; box-sizing: border-box }
+.pr.bth.medir { height: auto } .pr.bth.medir .bt-mid { min-height: 44mm }
+.pr .bt-ti { font-weight: 700; font-size: 13.5pt; letter-spacing: .3px }
+.pr .bt-sub { font-size: 8.2pt; color: #333; margin: .5mm 0 2mm }
+.pr .bt-hd { display: grid; grid-template-columns: 1fr 1fr; gap: 0 5mm; margin-bottom: 2mm; font-size: 8.8pt }
+.pr .bt-hd > div { border-bottom: 1px solid #444; padding: 1.1mm 0 .5mm; min-height: 5mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.pr .bt-hd b { font-size: 7.8pt; color: #333 }
+.pr .bt-box { border: 1.2px solid #222; border-radius: 2mm; margin-bottom: 2mm; display: flex; flex-direction: column; overflow: hidden }
+.pr .bt-bt { font-weight: 700; font-size: 9pt; background: #e7f1f0; padding: .9mm 2.2mm; border-bottom: 1px solid #222; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+.pr .bt-bt small { font-weight: 400; color: #333 }
+.pr .bt-in { padding: 1.4mm 2.2mm; flex: 1; display: flex; flex-direction: column; min-height: 0 }
+.pr .bt-t { width: 100%; border-collapse: collapse } .pr .bt-t td, .pr .bt-t th { border: 1px solid #333; padding: .7mm 1.3mm; font-size: 8.4pt; vertical-align: middle }
+.pr .bt-t th { background: #f1f1f1; font-size: 8pt } .pr .bt-t th.l, .pr .bt-t td.l { text-align: left } .pr .bt-t .w { width: 15% } .pr .bt-t .c { text-align: center } .pr .bt-t .r { text-align: right }
+.pr .bt-ck { display: inline-block; width: 3.2mm; height: 3.2mm; border: 1px solid #222; margin: 0 1mm 0 .5mm; vertical-align: -.6mm }
+.pr .bt-v { width: 32%; text-align: right; color: #555 } .pr .bt-un { font-size: 8pt }
+.pr .bt-lb { display: block; margin-top: 1.4mm; font-size: 8.6pt }
+.pr .bt-ln { border-bottom: 1px solid #999; height: 5.6mm; flex: none }
+.pr .bt-mid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.4mm; flex: 1; min-height: 0; margin-bottom: 2mm } .pr .bt-mid .bt-box { margin: 0 }
+.pr .bt-cro .bt-in { padding: 1.4mm } .pr .bt-grid { display: block; flex: 1; width: 100%; min-height: 22mm; border: 1px solid #555; box-sizing: border-box }
+.pr .bt-ses th.d { width: 15% } .pr .bt-ses td { height: 8mm } .pr .bt-ses td small { color: #555; font-size: 7.4pt }
+.pr .bt-rub td, .pr .bt-rub th { padding: .5mm 1.3mm }
+.pr .bt-firmas { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; margin-top: auto; padding-top: 12mm; text-align: center; font-size: 8pt; flex: none }
+.pr .bt-firmas div { border-top: 1px solid #222; padding-top: 1mm }
