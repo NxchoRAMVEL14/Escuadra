@@ -47,8 +47,8 @@ ok('la tabla trae columna Proy', /Proy/.test(v));
 // Ajustes: P3 con propios, P1/P2 con los de siempre; apagar y prender
 await p.evaluate(() => { location.hash = '#/ajustes/cal'; }); await p.waitForTimeout(600);
 v = await p.evaluate(() => document.getElementById('view').innerText);
-ok('Ajustes muestra 3er parcial con sus propios porcentajes y 2º con los de siempre', /3er parcial: sus propios porcentajes/.test(v) && /2º parcial: los de siempre/.test(v));
-await p.evaluate(() => { const i = document.querySelector('[data-path="pondP.P3.examen"]'); i.value = '25'; i.dispatchEvent(new Event('change', { bubbles: true })); const j = document.querySelector('[data-path="pondP.P3.proyecto"]'); j.value = '55'; j.dispatchEvent(new Event('change', { bubbles: true })); }); await p.waitForTimeout(400);
+ok('Ajustes muestra 3er parcial con sus propios porcentajes y 2º con los de siempre', /3er parcial: los del 3er parcial/.test(v) && /2º parcial: los de siempre/.test(v));
+await p.evaluate(() => { const i = document.querySelector('[data-path="pondP.tercero.examen"]'); i.value = '25'; i.dispatchEvent(new Event('change', { bubbles: true })); const j = document.querySelector('[data-path="pondP.tercero.proyecto"]'); j.value = '55'; j.dispatchEvent(new Event('change', { bubbles: true })); }); await p.waitForTimeout(400);
 const w3 = await p.evaluate(() => window.E.calc.pond('P3'));
 ok('cambiar un porcentaje del 3º conserva los demás', w3.examen === 25 && w3.proyecto === 55 && w3.trabajos === 10 && w3.asistencia === 5, JSON.stringify(w3));
 await p.evaluate(() => { const i = document.querySelector('[data-ch=cfg-pp][data-pid=P2]'); i.checked = true; i.dispatchEvent(new Event('change', { bubbles: true })); }); await p.waitForTimeout(400);

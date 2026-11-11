@@ -9,6 +9,8 @@ const ok = (nombre, cond, extra) => console.log((cond ? 'OK   ' : 'FALLA') + ' '
 
 
 await p.goto('http://localhost:' + PORT + '/#/inicio'); await p.waitForTimeout(1500);
+// v1.31.0: estas revisiones son del redondeo «normal» y mínimo 6 (opción en Ajustes); lo de 7 y hacia abajo lo revisa t170
+await p.evaluate(() => window.E.store.update('config', c => { c.redondeo = 'normal'; c.minAprob = 60; c.minAprobFijo = true; }, {}));
 await p.evaluate(() => { location.hash = '#/alumnos'; }); await p.waitForTimeout(600);
 const nombres = ['Ana Pérez Lara', 'Beto Soto Mena', 'Carla Díaz Ortiz', 'Dani Luna Vera', 'Eli Rojas Paz', 'Fer Ruiz Gil'];
 await p.evaluate(n => { document.getElementById('imp-paste').value = n.join('\n'); document.querySelector('[data-act=import-paste]').click(); }, nombres); await p.waitForTimeout(400);

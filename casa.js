@@ -14,7 +14,7 @@
   const card = H.card, btn = H.btn, link = H.link;
   const CA = E.casa = {};
   const corto = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
-  const minA = () => Number(D.cfg().minAprob) || 60;
+  const minA = () => Number(D.cfg().minAprob) || 70;
 
   /* ---------- empaquetar datos en el enlace (deflate + base64url) ---------- */
   const b64 = bytes => { let s = ''; for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
@@ -32,7 +32,7 @@
   CA.consultaDatos = (g, a, pid) => {
     const p = C.parcial(pid), cf = D.cfg(), k = C.cal(g, pid, a.id), as = C.asis(g, p, a.id), r = E.aprobar ? E.aprobar.analiza(g, pid, a.id) : null, w = C.pond(pid);
     return {
-      v: 1, g: g.nombre, pl: cf.plantel || '', p: p.nombre, f: u.today(), n: a.num, i: CA.iniciales(a.nombre), c: k.final, ec: !!k.enCurso, ap: minA(),
+      v: 1, g: g.nombre, pl: cf.plantel || '', p: p.nombre, f: u.today(), n: a.num, i: CA.iniciales(a.nombre), c: k.final, ec: !!k.enCurso, ap: minA(), rd: C.abajo() ? 'a' : 'n',
       r: C.KEYS.filter(x => w[x] > 0).map(x => [C.catLbl(x, pid), w[x], k.comp[x]]).map(x => [x[0], Number(x[1] || 0), x[2] == null ? null : Math.round(x[2])]),
       as: [as.a, as.ses, as.fechasF.map(f => u.fCorta(f))],
       pe: r ? r.pend.slice(0, 6).map(x => [x.tipo, corto(x.t, 90), corto(x.det, 160), x.gain == null ? null : Math.round(x.gain * 10) / 10]) : [],

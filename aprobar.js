@@ -9,7 +9,7 @@
   const V = E.views, A = E.actions, CH = E.changes, H = E.h;
   const card = H.card, btn = H.btn, link = H.link;
   const AP = E.aprobar = {};
-  const minA = () => Number(D.cfg().minAprob) || 60;
+  const minA = () => Number(D.cfg().minAprob) || 70;
   const fac = () => C.tardeVale();
   const pct = f => Math.round(f * 100) + ' %';
   const corto = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
@@ -92,13 +92,20 @@
     const orden = (a, b) => (b.r.exPend ? b.r.nec : -b.r.final) - (a.r.exPend ? a.r.nec : -a.r.final);
     const abajo = rs.filter(x => nivel(x.r) === 'abajo').sort(orden), cerca = rs.filter(x => nivel(x.r) === 'orilla').sort(orden), exP = rs.some(x => x.r.exPend);
     let h = '<div class="filters">' + ps.map(x => '<a class="tab ' + (x.id === pid ? 'on' : '') + '" href="#/aprobar/' + x.id + '">' + esc(x.nombre) + '</a>').join('') + '</div>';
-    h += card('<h3>🎯 Para aprobar · ' + esc(p.nombre) + '</h3><p class="muted small">Quién va abajo de ' + mn + ', qué le falta y cuánto sube si lo entrega, con tus ponderaciones. Dale a cada uno su plan impreso en privado: saber exactamente qué hacer motiva más que «échale ganas».</p>' +
+    h += card('<h3>🎯 Para aprobar · ' + esc(p.nombre) + '</h3><p class="muted small">Quién va abajo de ' + C.min10() + ' (' + (C.abajo() ? 'sin redondear hacia arriba: 6.9 es 6' : 'redondeo normal') + '), qué le falta y cuánto sube si lo entrega, con tus ponderaciones. Dale a cada uno su plan impreso en privado: saber exactamente qué hacer motiva más que «échale ganas».</p>' +
       '<div class="row gap wrap"><label class="fld"><span>Lo entregado tarde vale</span><select data-ch="ap-fac">' + E.TARDE_OPC.map(o => '<option value="' + o + '"' + (fac() === o ? ' selected' : '') + '>' + pct(o) + (o === 1 ? ' (sin descuento)' : '') + '</option>').join('') + '</select></label></div>' +
       '<p class="small"><b>' + abajo.length + '</b> abajo · <b>' + cerca.length + '</b> en la orilla · ' + (rs.length - abajo.length - cerca.length) + ' bien</p>' + (exP ? '<p class="note small">El examen aún no se aplica: «abajo» = necesita más de 80 en el examen (o no le alcanza); «en la orilla» = necesita de ' + (mn + 1) + ' a 80.</p>' : '') +
       '<div class="row gap wrap">' + (abajo.length ? btn('🖨 Planes de los que van abajo', 'ap-plan-todos', 'data-pid="' + pid + '"', 'primary') : '') + btn('🖨 Hojas para padres (todo el grupo)', 'ap-padres-todos', 'data-pid="' + pid + '"') + '</div>');
     const fila = x => { const r = x.r; return '<li><div><a href="#/alumno/' + x.a.id + '"><b>' + x.a.num + '. ' + esc(x.a.nombre) + '</b></a><br><small class="muted">' + (r.pend.length ? r.pend.slice(0, 3).map(y => esc(y.tipo + ': ' + y.t) + (y.gain != null ? ' (+' + R1(y.gain / 10) + ')' : '')).join(' · ') : 'Sin pendientes registrados') + (r.nec != null ? ' · examen: ' + (r.nec > 100 ? 'no le alcanza solo con examen' : 'necesita ' + Math.max(0, r.nec) + ' de 100') : '') + '</small></div><div class="ap-r">' + chipCal(r.final) + (r.todo != null ? '<small>→ ' + C.c10(r.todo) + '</small>' : '') + btn('🖨', 'ap-plan', 'data-aid="' + x.a.id + '" data-pid="' + pid + '" aria-label="Imprimir plan"', 'small ghost') + '</div></li>'; };
-    h += card('<h3>🔴 ' + (exP ? 'Abajo' : 'Abajo de ' + mn) + '</h3>' + (abajo.length ? '<ul class="ap-list">' + abajo.map(fila).join('') + '</ul>' : '<p class="small">Nadie va abajo por ahora. 👏</p>'));
+    h += card('<h3>🔴 ' + (exP ? 'Abajo' : 'Abajo de ' + C.min10()) + '</h3>' + (abajo.length ? '<ul class="ap-list">' + abajo.map(fila).join('') + '</ul>' : '<p class="small">Nadie va abajo por ahora. 👏</p>'));
     if (cerca.length) h += card('<h3>🟡 En la orilla</h3><ul class="ap-list">' + cerca.map(fila).join('') + '</ul>');
+    // v1.31.0: en el último parcial, cuánto necesita cada quien para juntar los puntos del semestre (21 con mínimo 7)
+    if (ps.length > 1 && ps[ps.length - 1].id === pid) {
+      const meta = C.min10() * ps.length, prev = ps.slice(0, -1);
+      const sem = al.map(a => { let sum = 0, n = 0; prev.forEach(q => { const o = C.oficial(C.cal(g, q.id, a.id).final); if (o != null) { sum += o; n++; } }); if (n < prev.length) return null; const nec = meta - sum, k = C.cal(g, pid, a.id), hoy = k.final == null ? null : C.oficial(k.final); return { a: a, sum: sum, nec: nec, hoy: hoy }; }).filter(x => x && (x.nec > 10 || x.hoy == null || x.hoy < x.nec)).sort((x, y) => y.nec - x.nec);
+      h += card('<h3>🧮 Para el semestre: ' + meta + ' puntos</h3><p class="muted small">Suma de las calificaciones oficiales de los ' + ps.length + ' parciales. Aquí salen los que todavía no la juntan con lo que llevan en este parcial.</p>' +
+        (sem.length ? '<ul class="ap-list">' + sem.map(x => '<li><div><a href="#/alumno/' + x.a.id + '"><b>' + x.a.num + '. ' + esc(x.a.nombre) + '</b></a><br><small class="muted">Lleva ' + x.sum + ' de ' + meta + ' en los parciales anteriores · ' + (x.nec > 10 ? '<b>ya no le alcanza</b> (necesitaría ' + x.nec + ')' : 'necesita <b>' + Math.max(5, x.nec) + '</b> en este parcial' + (x.hoy != null ? ' (va en ' + x.hoy + ')' : '')) + '</small></div></li>').join('') + '</ul>' : '<p class="small">Con lo que llevan, todos juntan los ' + meta + '. 👏</p>'));
+    }
     h += '<p class="muted small">«→» = calificación si entrega todo lo pendiente. Cuenta como Calificaciones: vacío = 0 cuando ya pasó la fecha de entrega (si así lo tienes en Ajustes).</p>';
     return { t: 'Para aprobar', h: h };
   };
