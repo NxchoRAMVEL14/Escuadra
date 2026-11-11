@@ -15,7 +15,7 @@
   const val = id => ((document.getElementById(id) || {}).value || '').trim();
   const corto = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
   const con = (g, fn) => { const cur = D.grupoActual(); if (!cur || cur.id === g.id) return fn(); D.setGrupo(g.id); try { return fn(); } finally { D.setGrupo(cur.id); } };
-  const minA = () => Number(D.cfg().minAprob) || 60;
+  const minA = () => Number(D.cfg().minAprob) || 70;
   const tTit = id => { const t = (E.TEMAS || []).find(x => x.id === id); return t ? t.titulo : id.replace(/^m\d-/, '').replace(/-/g, ' '); };
 
   /* ================= 13) TEMAS QUE SIEMPRE CUESTAN ================= */

@@ -1537,3 +1537,20 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .pr .bt-rub td, .pr .bt-rub th { padding: .5mm 1.3mm }
 .pr .bt-firmas { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; margin-top: auto; padding-top: 12mm; text-align: center; font-size: 8pt; flex: none }
 .pr .bt-firmas div { border-top: 1px solid #222; padding-top: 1mm }
+/* v1.32.0 · Expo de la carrera: ideas en el proyector, fichas y letreros */
+.pjx { text-align: left; width: 100%; max-width: 1200px; margin: 0 auto }
+.pjx-h { display: flex; gap: .6em; align-items: center; margin-bottom: .4em } .pjx-h h2 { margin: 0 }
+.pjx-ico { font-size: clamp(2.4rem, 6vw, 4.6rem); line-height: 1 }
+.pjx-tag { margin: .1em 0 0; opacity: .8; font-size: clamp(1rem, 2vw, 1.5rem) }
+.pjx-p { font-size: clamp(1rem, 2.2vw, 1.7rem); margin: .25em 0; line-height: 1.3 }
+.pjx-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4em; margin-top: .5em; font-size: clamp(.85rem, 1.7vw, 1.3rem); line-height: 1.3 }
+.pjx-cols ul, .pjx-cols ol { margin: .3em 0 0; padding-left: 1.2em } .pjx-cols li { margin: .15em 0 }
+.pjx-dem { margin-top: .6em; font-weight: 600 }
+@media (max-width: 700px) { .pjx-cols { grid-template-columns: 1fr } }
+.pr.exf { font-size: 12.5pt; line-height: 1.4 } .pr.exf h1 { font-size: 24pt; margin: 0 } .pr.exf h3 { font-size: 13.5pt; margin: 5mm 0 2mm; color: #0e5e5a; border-bottom: 1px solid #0e5e5a }
+.pr .exf-h { display: flex; gap: 4mm; align-items: center; margin-bottom: 3mm } .pr .exf-h p { margin: 0; color: #444 } .pr .exf-ico { font-size: 30pt }
+.pr .exf-ck { list-style: none; padding: 0; margin: 0 } .pr .exf-ck li { margin: 1mm 0 }
+.pr .exf-gu p { border-bottom: 1px dashed #888; padding-bottom: 1.5mm; margin: 2.5mm 0 }
+.pr .exf-eq { margin-top: 10mm; font-size: 11.5pt }
+.pr.exl { text-align: center; padding-top: 18mm } .pr .exl-ico { font-size: 60pt } .pr.exl h1 { font-size: 46pt; margin: 2mm 0 4mm; color: #0e5e5a }
+.pr .exl-vis { font-size: 22pt; margin: 0 12mm 8mm } .pr .exl-eq { font-size: 17pt } .pr .exl-pie { margin-top: 10mm; font-size: 14pt; color: #444 }

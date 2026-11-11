@@ -31,7 +31,7 @@
     const lib = E.libreta ? E.libreta.doc(g, pid) : {}, fcd = E.fc && E.fc.rev ? E.fc.rev(g, pid) : {};
     C.acts(g, pid).filter(a => C.esTrab(a) && a.cuenta !== false && !a.libreta && !a.freecad && a.id !== lib.actId && a.id !== fcd.actId).forEach(a => {
       out.push({ k: 'act:' + a.id, tipo: 'act', t: a.nombre, f: a.fecha || p.fin, due: a.fecha || p.fin, to: 'actividad/' + a.id, auto: !!a.auto,
-        est: aid => { const n = C.nota(a, aid); return { v: n == null ? null : n === 0 ? 0 : n < (Number(D.cfg().minAprob) || 60) ? 1 : 2, n: n == null ? null : Math.round(n), tarde: !!(a.tarde && a.tarde[aid]) }; } });
+        est: aid => { const n = C.nota(a, aid); return { v: n == null ? null : n === 0 ? 0 : n < (Number(D.cfg().minAprob) || 70) ? 1 : 2, n: n == null ? null : Math.round(n), tarde: !!(a.tarde && a.tarde[aid]) }; } });
     });
     // prácticas de FreeCAD que ya se revisan en este parcial
     if (E.fc && E.fc.rev) {

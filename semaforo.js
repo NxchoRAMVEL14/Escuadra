@@ -8,9 +8,9 @@
   const SF = E.semaforo = {};
   SF.NIV = { mal: { t: 'Va mal', ico: '🔴', cls: 'bad', o: 0 }, reg: { t: 'Regular', ico: '🟡', cls: 'warn', o: 1 }, bien: { t: 'Va bien', ico: '🟢', cls: 'ok', o: 2 } };
   const ORDEN = ['mal', 'reg', 'bien'];
-  SF.umbral = () => { const c = D.cfg(); return { reg: Number(c.minAprob) || 60, bien: Number(c.umbralBien) || 80 }; };
+  SF.umbral = () => { const c = D.cfg(); return { reg: Number(c.minAprob) || 70, bien: Number(c.umbralBien) || 80 }; };
   // se clasifica con el promedio redondeado, el mismo número que ves en pantalla
-  SF.nivel = v => { if (v == null) return null; const t = SF.umbral(), r = Math.round(v); return r >= t.bien ? 'bien' : r >= t.reg ? 'reg' : 'mal'; };
+  SF.nivel = v => { if (v == null) return null; const t = SF.umbral(), r = C.abajo() ? Math.floor(v + 1e-9) : Math.round(v); return r >= t.bien ? 'bien' : r >= t.reg ? 'reg' : 'mal'; };
   const chip = (n, corto) => n ? '<span class="chip ' + SF.NIV[n].cls + '">' + SF.NIV[n].ico + ' ' + (corto ? '' : SF.NIV[n].t) + '</span>' : '<span class="chip">Sin datos</span>';
 
   /* ---------- promedio de un alumno a una fecha ---------- */
@@ -127,7 +127,7 @@
     const cnt = { mal: 0, reg: 0, bien: 0, sin: 0 }; d.filas.forEach(r => cnt[r.n || 'sin']++);
     const pct = x => Math.round(x / tot * 100) + '%';
     let h = '<div class="filters">' + pers.map(p => '<a class="tab ' + (p.id === pid ? 'on' : '') + '" href="#/semaforo/' + p.id + '">' + esc(p.nombre) + '</a>').join('') + '</div>';
-    h += card('<h3>🚦 Semáforo de ' + esc(g.nombre) + '</h3><p class="muted small">Promedio de examen y libreta/proyecto/bitácora con tus ponderaciones. Va mal: menos de ' + t.reg + ' · Regular: ' + t.reg + ' a ' + (t.bien - 1) + ' · Va bien: ' + t.bien + ' o más. Mientras no haya calificaciones, cuenta el diagnóstico como punto de partida.</p>' +
+    h += card('<h3>🚦 Semáforo de ' + esc(g.nombre) + '</h3><p class="muted small">Promedio de examen y libreta/proyecto/bitácora con tus ponderaciones. Va mal: menos de ' + t.reg / 10 + ' · Regular: ' + t.reg / 10 + (t.bien - t.reg > 10 ? ' a ' + (t.bien / 10 - 1) : '') + ' · Va bien: ' + t.bien / 10 + ' o más (' + (C.abajo() ? 'sin redondear hacia arriba: 6.9 cuenta como 6' : 'redondeo normal') + '). Mientras no haya calificaciones, cuenta el diagnóstico como punto de partida.</p>' +
       '<div class="sf-tiles">' + ORDEN.map(nv => '<button type="button" class="sf-tile ' + SF.NIV[nv].cls + (ui.f === nv ? ' on' : '') + '" data-act="sf-f" data-f="' + nv + '"><span class="sf-k">' + SF.NIV[nv].ico + ' ' + SF.NIV[nv].t + '</span><b>' + cnt[nv] + '</b><span class="muted small">' + pct(cnt[nv]) + ' del grupo</span></button>').join('') + '</div>' +
       (cnt.sin ? '<p class="muted small">' + cnt.sin + ' sin datos todavía.</p>' : '') +
       (d.filas.some(r => r.partida) ? '<p class="note">Por ahora es el <b>punto de partida</b> (diagnóstico): cambiará en cuanto captures exámenes o trabajos.</p>' : ''));

@@ -366,8 +366,8 @@
     // alumnos
     if (r.modo === 'alumno') {
       const fil = al.filter(a => r.alumnos[a.id]).map(a => ({ a: a, x: r.alumnos[a.id] })).sort((p, q) => p.x.pts - q.x.pts);
-      const bajosA = fil.filter(f => f.x.pts / ex.total < (Number(D.cfg().minAprob) || 60) / 100);
-      h += card('<h3>👥 Por alumno</h3>' + (bajosA.length ? '<p class="small"><b>' + bajosA.length + ' por debajo de ' + (D.cfg().minAprob || 60) + ':</b> conviene segunda oportunidad con lo que más les costó.</p>' + btn('Registrar segunda oportunidad para ellos', 'est-reg', 'data-est="segunda" data-aids="' + bajosA.map(f => f.a.id).join(',') + '"', 'small primary') : '') +
+      const bajosA = fil.filter(f => f.x.pts / ex.total < (Number(D.cfg().minAprob) || 70) / 100);
+      h += card('<h3>👥 Por alumno</h3>' + (bajosA.length ? '<p class="small"><b>' + bajosA.length + ' por debajo de ' + C.min10() + ':</b> conviene segunda oportunidad con lo que más les costó.</p>' + btn('Registrar segunda oportunidad para ellos', 'est-reg', 'data-est="segunda" data-aids="' + bajosA.map(f => f.a.id).join(',') + '"', 'small primary') : '') +
         '<ul class="risk">' + fil.map(f => { const peores = Object.keys(f.x.temas).filter(t => f.x.temas[t] < 0.5).sort((a, b) => f.x.temas[a] - f.x.temas[b]).slice(0, 2); return '<li><span><a href="#/alumno/' + f.a.id + '">' + esc(f.a.nombre) + '</a>' + (peores.length ? '<br><small class="muted">Le costó: ' + peores.map(t => esc(tTit(t)) + ' (' + pct(f.x.temas[t]) + '%)').join(', ') + '</small>' : '') + '</span><span class="g ' + H.gclass(f.x.pts / ex.total * 100) + '">' + u.round(f.x.pts / ex.total * 100, 0) + '</span></li>'; }).join('') + '</ul>');
     }
     return h;

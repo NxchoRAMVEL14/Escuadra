@@ -13,7 +13,7 @@
   const PO = E.portafolio = {};
   const NIV = { 1: 'Básico', 2: 'Intermedio', 3: 'Avanzado' };
   const KL = g => 'logros:' + g.id;
-  const minA = () => Number(D.cfg().minAprob) || 60;
+  const minA = () => Number(D.cfg().minAprob) || 70;
   // calcula con las fechas de parciales de ese grupo (los archivados guardan las suyas)
   const con = (g, fn) => { const cur = D.grupoActual(); if (!cur || cur.id === g.id) return fn(); D.setGrupo(g.id); try { return fn(); } finally { D.setGrupo(cur.id); } };
   PO.grupos = g => [g].concat(E.semestre ? E.semestre.cadena(g) : []);

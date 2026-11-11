@@ -292,7 +292,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
   const D = E.data = {
     // v1.28: se arma una vez por cada cambio de datos (antes se armaba miles de veces al dibujar Inicio: ~90 ms en un celular de gama media).
     // No modifiques el objeto que regresa: para cambiar un ajuste usa S.update('config', …).
-    cfg() { if (cfgC && cfgV === S._kv) return cfgC; const raw = S.get('config') || {}; const d = E.DEFAULTS.config; cfgC = Object.assign({}, d, raw, { pond: Object.assign({}, d.pond, raw.pond || {}), pondP: (() => { const o = Object.assign({}, d.pondP || {}); Object.keys(raw.pondP || {}).forEach(k => { o[k] = Object.assign({}, o[k] || {}, raw.pondP[k] || {}); }); return o; })() }); cfgV = S._kv; return cfgC; },
+    cfg() { if (cfgC && cfgV === S._kv) return cfgC; const raw = S.get('config') || {}; const d = E.DEFAULTS.config; cfgC = Object.assign({}, d, raw, (raw.minAprob == null || (Number(raw.minAprob) === 60 && !raw.minAprobFijo)) ? { minAprob: 70 } : {}, { pond: Object.assign({}, d.pond, raw.pond || {}), pondP: (() => { const o = Object.assign({}, d.pondP || {}); Object.keys(raw.pondP || {}).forEach(k => { o[k] = Object.assign({}, o[k] || {}, raw.pondP[k] || {}); }); return o; })() }); cfgV = S._kv; return cfgC; },
     // fechas de parciales: las del semestre (Ajustes); un grupo archivado conserva las suyas
     parciales() { const g = D.grupoActual(); return (g && g.archivado && Array.isArray(g.parciales) && g.parciales.length ? g.parciales : null) || S.get('parciales') || E.DEFAULTS.parciales; },
     grupos() { return S.list('grupo:').sort((a, b) => String(a.id).localeCompare(String(b.id))); },
@@ -447,8 +447,11 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
     },
     // v1.30.0: porcentajes del parcial. Si el parcial tiene los suyos (Ajustes → Calificación) se usan esos; si no, los de siempre.
     // «proyecto» es un rubro propio solo donde pesa más de 0; donde no, sus actividades cuentan dentro de «trabajos» (como antes).
-    pond(pid) { const c = D.cfg(), o = (c.pondP || {})[pid]; const w = Object.assign({ proyecto: 0 }, o && o.activo !== false ? o : c.pond); C.KEYS.forEach(k => { w[k] = Number(w[k] || 0); }); return w; },
-    propio(pid) { const o = (D.cfg().pondP || {})[pid]; return !!(o && o.activo !== false); },
+    // el 3er parcial de cada semestre usa «tercero» si no tiene los suyos
+    esTercero(pid) { const ps = D.parciales(); return ps.length >= 3 && ps.findIndex(p => p.id === pid) === 2; },
+    pondDe(pid) { const pp = D.cfg().pondP || {}; return pp[pid] && pp[pid].activo !== false ? pp[pid] : (pp[pid] && pp[pid].activo === false) ? null : (C.esTercero(pid) && pp.tercero && pp.tercero.activo !== false ? pp.tercero : null); },
+    pond(pid) { const c = D.cfg(), o = C.pondDe(pid); const w = Object.assign({ proyecto: 0 }, o || c.pond); C.KEYS.forEach(k => { w[k] = Number(w[k] || 0); }); return w; },
+    propio(pid) { return !!C.pondDe(pid); },
     separa(pid) { return C.pond(pid).proyecto > 0; },
     enCat(a, cat, pid) { return a.categoria === cat || (cat === 'trabajos' && a.categoria === 'proyecto' && !C.separa(pid)); },
     esTrab(a) { return a && (a.categoria === 'trabajos' || a.categoria === 'proyecto'); },
@@ -475,18 +478,27 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
       const comp = { examen: C.promCat(g, pid, 'examen', aid), proyecto: C.separa(pid) ? C.promCat(g, pid, 'proyecto', aid) : null, trabajos: C.promCat(g, pid, 'trabajos', aid) };
       const as = C.asis(g, p, aid); comp.asistencia = as.pct;
       const np = C.part(g, p, aid); comp.participacion = C.partPct(g, p, np);
+      // v1.32.0: bonos de eventos (p. ej. la Expo): completar participación o puntos extra, solo si el docente lo decide
+      const bono = (C.bonos || []).reduce((acc, f) => { try { const r = f(g, pid, aid); if (r) { acc.extra += Number(r.extra || 0); acc.part = acc.part || !!r.part; acc.t.push(r.t); } } catch (e) { } return acc; }, { extra: 0, part: false, t: [] });
+      if (bono.part) comp.participacion = 100;
       let sw = 0, s = 0; const falta = [];
       const pw = C.pond(pid); C.KEYS.forEach(k => { const w = pw[k]; if (!w) return; if (comp[k] == null) { falta.push(k); return; } s += comp[k] * w; sw += w; });
       // v1.29.0: calificación oficial: base 10, entera (7.5 → 8) y mínima 5; se guarda ×10 para que los umbrales (60, 80) sigan igual
-      const bruta = sw ? s / sw : null, final = C.of100(bruta);
-      return { manual: false, comp: comp, bruta: bruta, final: final, enCurso: falta.length > 0, falta: falta, np: np, as: as };
+      const bruta = sw ? Math.min(100, s / sw + (bono.extra ? bono.extra * 10 : 0)) : null, final = C.of100(bruta);
+      return { manual: false, comp: comp, bruta: bruta, final: final, bono: bono.t.length ? bono : null, enCurso: falta.length > 0, falta: falta, np: np, as: as };
     },
+    // v1.31.0: la final del semestre sale de las calificaciones oficiales de cada parcial (5 a 10): con 3 parciales se aprueba
+    // juntando al menos 3 × el mínimo (21 con mínimo 7); la final es su promedio, sin decimales y con el mismo redondeo
     finalSem(g, aid) {
-      const v = D.parciales().map(p => C.cal(g, p.id, aid).final); const ok = v.filter(x => x != null);
-      return { parciales: v, final: ok.length ? C.of100(ok.reduce((a, b) => a + b, 0) / ok.length) : null, completo: ok.length === v.length };
+      const v = D.parciales().map(p => C.cal(g, p.id, aid).final), ok = v.filter(x => x != null), of = ok.map(x => C.oficial(x));
+      const suma = of.reduce((a, b) => a + b, 0), meta = C.min10() * v.length;
+      return { parciales: v, final: ok.length ? C.of100(suma / of.length * 10) : null, completo: ok.length === v.length, suma: suma, meta: meta, faltan: Math.max(0, meta - suma), aprobado: ok.length === v.length ? suma >= meta : null };
     },
-    // v1.29.0 (reglas de control escolar): calificación de 5 a 10, sin decimales (7.5 → 8, 7.4 → 7), nunca 0
-    oficial(v) { if (v == null || v === '' || isNaN(Number(v))) return null; return Math.max(5, Math.min(10, u.round(Number(v) / 10, 0))); },
+    bonos: [],
+    min10() { return Math.round((Number(D.cfg().minAprob) || 70) / 10); },
+    abajo() { return D.cfg().redondeo !== 'normal'; },
+    // v1.29.0: calificación de 5 a 10, sin decimales, nunca 0. v1.31.0: hacia abajo por omisión (6.9 → 6); en Ajustes puede ser normal (7.5 → 8)
+    oficial(v) { if (v == null || v === '' || isNaN(Number(v))) return null; const x = Number(v) / 10; return Math.max(5, Math.min(10, C.abajo() ? Math.floor(x + 1e-9) : u.round(x, 0))); },
     of100(v) { const o = C.oficial(v); return o == null ? null : o * 10; },
     c10(v) { const o = C.oficial(v); return o == null ? '—' : String(o); },
     escala(v) { return C.oficial(v); },
@@ -506,7 +518,7 @@ create policy "escuadra: borrar lo mío" on public.escuadra_docs for delete usin
         const o = C.oficial(k.final); if (o != null) { suma += o; n++; }
         row.push(o == null ? '' : o, as, fa);
       });
-      row.push(n ? Math.max(5, u.round(suma / n, 0)) : '');
+      row.push(n ? Math.max(5, C.abajo() ? Math.floor(suma / n + 1e-9) : u.round(suma / n, 0)) : '');
       return row;
     },
     riesgos(g, p) {

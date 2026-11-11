@@ -637,7 +637,8 @@ window.E = window.E || {};
       semestreTexto: 'Agosto 2026 – Enero 2027',
       pond: { examen: 50, proyecto: 0, trabajos: 40, asistencia: 5, participacion: 5 },
       // v1.30.0: un parcial puede tener sus propios porcentajes (el 3º: proyecto 60, examen 20, tareas y ejercicios 10)
-      pondP: { P3: { examen: 20, proyecto: 60, trabajos: 10, asistencia: 5, participacion: 5 } },
+      // v1.31.0: «tercero» = el 3er parcial de cualquier semestre, módulo o submódulo (salvo que ese parcial tenga los suyos)
+      pondP: { tercero: { examen: 20, proyecto: 60, trabajos: 10, asistencia: 5, participacion: 5 } },
       metaPart: 10,
       partModo: 'max',
       vaciasCero: true,
@@ -647,7 +648,8 @@ window.E = window.E || {};
       conteoActa: 'horas',
       escalaActa: 100,
       minAsis: 80, avisoRetardos: 3,
-      minAprob: 60, umbralBien: 80,
+      // v1.31.0: módulos y submódulos se aprueban con 7 (y 21 puntos entre los 3 parciales); sin decimales, siempre hacia abajo (6.9 → 6)
+      minAprob: 70, umbralBien: 80, redondeo: 'abajo',
       grupoActivo: '3AMEC',
       tema: 'auto',
       letra: '1',
