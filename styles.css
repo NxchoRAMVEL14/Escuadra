@@ -1588,8 +1588,11 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .pr .exi-t { border-collapse: collapse; margin: 3mm 0 4mm } .pr .exi-t td { padding: 1.5mm 3mm; vertical-align: bottom } .pr .exi-t td:first-child { color: #0e5e5a; font-weight: 700 }
 .pr .exi-at { margin-top: 8mm; text-align: center } .pr .exi-firmas, .pr .exr-firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 20mm; margin-top: 22mm; text-align: center }
 .pr .exi-fl { border-top: 1px solid #222; margin-bottom: 1.5mm }
-.pr.exr { text-align: center } .pr .exr-mar { border: 2.5mm double #0e5e5a; outline: .6mm solid #f0a500; outline-offset: -5mm; padding: 11mm 18mm 9mm; min-height: 172mm; box-sizing: border-box }
+.pr.exr { text-align: center } .pr .exr-mar { border: 2.5mm double #0e5e5a; outline: .6mm solid #f0a500; outline-offset: -5mm; padding: 11mm 18mm 9mm; min-height: 188mm; position: relative; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box }
 .pr .exr-pl { font-size: 13pt; font-weight: 700; margin: 0 } .pr .exr-car { margin: 1mm 0 5mm; color: #0e5e5a }
 .pr .exr-ot { font-style: italic; margin: 0 } .pr.exr h1 { font-size: 40pt; letter-spacing: 4px; color: #0e5e5a; margin: 2mm 0 } .pr .exr-a { font-style: italic; margin: 0 }
 .pr .exr-nom { font-size: 26pt; font-weight: 700; margin: 4mm 0 1mm; font-family: Georgia, 'Times New Roman', serif } .pr .exr-cg { margin: 0; color: #444 }
 .pr .exr-fr { font-size: 12.5pt; margin: 6mm 12mm 3mm; line-height: 1.45 } .pr .exr-fe { margin: 2mm 0 0 } .pr .exr-firmas { margin-top: 16mm; gap: 30mm; padding: 0 10mm }
+
+/* v1.33.1 · el logo del CETAC va dentro del marco del reconocimiento */
+.pr .exr-logo { position: absolute; top: 9mm; right: 11mm; width: 22mm; height: 22mm }

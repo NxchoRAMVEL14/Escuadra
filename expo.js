@@ -179,17 +179,17 @@
       '<p>Por medio de la presente, la carrera de <b>Técnico en Mecatrónica</b> del ' + esc(c.plantelNombre || c.plantel || '') + ' le invita cordialmente a compartir su experiencia con nuestros alumnos de 1er grado, que están por elegir su carrera técnica.</p>' +
       '<table class="exi-t"><tr><td>Fecha</td><td><b>' + esc(u.fLarga(d.charla)) + '</b></td></tr><tr><td>Hora</td><td>' + linea(v.hora, 40) + '</td></tr><tr><td>Duración</td><td>' + linea(v.duracion, 40) + '</td></tr><tr><td>Lugar</td><td>' + linea(v.lugar, 60) + '</td></tr><tr><td>Tema</td><td>' + linea(v.tema, 100) + '</td></tr></table>' +
       '<p><b>Lo que nos gustaría que platicara:</b></p>' + (pts.length ? '<ul>' + pts.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '<div class="exi-lns">' + '<span class="exi-ln"></span>'.repeat(4) + '</div>') +
-      '<p>Al día siguiente, ' + esc(u.fLarga(d.fecha)) + ', nuestros alumnos de 3er semestre mostrarán sus proyectos; será un gusto que nos acompañe también.</p>' +
+      '<p>Al día siguiente, ' + esc(u.fLarga(d.fecha)) + ', nuestros alumnos de 3er y 5º semestre, trabajando en equipo, presentarán varios proyectos para invitar a los de 1er grado a elegir su carrera técnica; será un gusto que nos acompañe también.</p>' +
       '<p>Agradecemos de antemano su apoyo para que más jóvenes conozcan la Mecatrónica.</p><p class="exi-at">Atentamente</p>' +
       '<div class="exi-firmas">' + [[v.firma1, v.puesto1], [v.firma2, v.puesto2]].map(f => '<div><div class="exi-fl"></div><b>' + (f[0] ? esc(f[0]) : '&nbsp;') + '</b><br><small>' + (f[1] ? esc(f[1]) : 'Nombre y puesto') + '</small></div>').join('') + '</div></div>';
   };
   X.reconocimiento = (g, d) => {
     const v = X.inv(d), c = D.cfg(), fr = v.frase || ('Por su valiosa participación en la charla ' + (v.tema ? '«' + v.tema + '» ' : '') + 'dirigida a los alumnos de 1er grado, compartiendo su experiencia para que conozcan la carrera de Técnico en Mecatrónica.');
-    return '<div class="pr exr"><div class="exr-mar"><p class="exr-pl">' + esc(c.plantelNombre || c.plantel || '') + '</p><p class="exr-car">Carrera de Técnico en Mecatrónica</p><p class="exr-ot">otorga el presente</p><h1>RECONOCIMIENTO</h1><p class="exr-a">a</p>' +
+    return '<div class="pr exr"><div class="exr-mar"><img class="exr-logo" src="' + LOGO() + '" alt="CETAC"><p class="exr-pl">' + esc(c.plantelNombre || c.plantel || '') + '</p><p class="exr-car">Carrera de Técnico en Mecatrónica</p><p class="exr-ot">otorga el presente</p><h1>RECONOCIMIENTO</h1><p class="exr-a">a</p>' +
       '<p class="exr-nom">' + (nomInv(v) ? esc(nomInv(v)) : '<span class="exi-ln" style="width:150mm"></span>') + '</p>' + (v.cargo || v.empresa ? '<p class="exr-cg">' + esc([v.cargo, v.empresa].filter(Boolean).join(' · ')) + '</p>' : '') +
       '<p class="exr-fr">' + esc(fr) + '</p><p class="exr-fe">' + esc(c.municipio || '') + ', Gto., a ' + esc(fDoc(d.charla)) + '</p>' +
       '<div class="exr-firmas">' + [[v.firma1, v.puesto1], [v.firma2, v.puesto2]].map(f => '<div><div class="exi-fl"></div><b>' + (f[0] ? esc(f[0]) : '&nbsp;') + '</b><br><small>' + (f[1] ? esc(f[1]) : 'Nombre y puesto') + '</small></div>').join('') + '</div></div></div>';
   };
   A['ex-invitacion'] = () => { const g = D.grupoActual(), d = X.doc(g); E.print.run(X.invitacion(g, d), { title: 'Invitación · ' + (nomInv(X.inv(d)) || 'invitado'), unaHoja: true }); };
-  A['ex-reconocimiento'] = () => { const g = D.grupoActual(), d = X.doc(g); E.print.run(X.reconocimiento(g, d), { title: 'Reconocimiento · ' + (nomInv(X.inv(d)) || 'invitado'), landscape: true, unaHoja: true }); };
+  A['ex-reconocimiento'] = () => { const g = D.grupoActual(), d = X.doc(g); E.print.run(X.reconocimiento(g, d), { title: 'Reconocimiento · ' + (nomInv(X.inv(d)) || 'invitado'), landscape: true, unaHoja: true, propioLogo: true }); };
 })();
