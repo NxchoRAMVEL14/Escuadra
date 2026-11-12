@@ -27,7 +27,7 @@ const imp = async nombre => { await p.emulateMedia({ media: 'print' }); await p.
 const txt = (nombre, pg) => execFileSync('pdftotext', ['-f', String(pg || 1), '-l', String(pg || 1), OUT + '/' + nombre + '.pdf', '-']).toString();
 const clic = async a => { await p.evaluate(() => { location.hash = '#/expo'; }); await p.waitForTimeout(500); await p.evaluate(a => document.querySelector('[data-act=' + a + ']').click(), a); await p.waitForTimeout(1200); };
 await clic('ex-fichas'); let n = await imp('fichas');
-ok('fichas con guion de ejemplo: 6 hojas', n === 6 && /ejemplo: díganlo con sus palabras/.test(txt('fichas')) && /circuito eléctrico/.test(txt('fichas')), n);
+ok('fichas con guion de ejemplo: 5 hojas', n === 5 && /ejemplo: díganlo con sus palabras/.test(txt('fichas')) && /circuito eléctrico/.test(txt('fichas')), n);
 await clic('ex-letreros'); n = await imp('letrero');
 ok('el letrero pone los nombres de pila (no apellidos)', /Juan, Ana, Luis, Eva/i.test(txt('letrero')), txt('letrero').match(/Equipo 1[^\n]*/));
 await p.evaluate(() => { location.hash = '#/expo'; }); await p.waitForTimeout(500);
@@ -35,10 +35,10 @@ await p.evaluate(() => { const i = document.getElementById('ex-npas'); i.value =
 n = await imp('pasaportes');
 ok('10 pasaportes = 5 hojas (2 por hoja)', n === 5, n);
 const t1 = txt('pasaportes');
-ok('el pasaporte trae nombre, grupo, los 6 proyectos, cuál le gustó y qué carrera', (t1.match(/Pasaporte mecatrónico/g) || []).length === 2 && /Nombre:/.test(t1) && /Grupo:/.test(t1) && /¿Cuál te gustó más\?/.test(t1) && /¿Qué carrera piensas elegir\?/.test(t1) && /Mano robótica con hilos/.test(t1));
+ok('el pasaporte trae nombre, grupo, los 5 proyectos, premio, firma, cuál le gustó y qué carrera', (t1.match(/Pasaporte mecatrónico/g) || []).length === 2 && /Nombre:/.test(t1) && /Grupo:/.test(t1) && /¿Cuál te gustó más\?/.test(t1) && /¿Qué carrera piensas elegir\?/.test(t1) && /Mano robótica con hilos/.test(t1) && !/Pluma de estacionamiento/.test(t1) && /premio especial/.test(t1) && /firma del encargado del equipo/.test(t1) && /salida del tejabán/.test(t1));
 execFileSync('pdftoppm', ['-r', '50', '-png', '-f', '1', '-l', '1', OUT + '/pasaportes.pdf', OUT + '/pas']);
 await clic('ex-etiquetas'); n = await imp('etiquetas');
-ok('etiquetas: una hoja por proyecto (6)', n === 6, n);
+ok('etiquetas: una hoja por proyecto (5)', n === 5, n);
 ok('48 etiquetas por hoja', (txt('etiquetas', 1).match(/Juego de pulso/g) || []).length === 48);
 execFileSync('pdftoppm', ['-r', '50', '-png', '-f', '1', '-l', '1', OUT + '/etiquetas.pdf', OUT + '/eti']);
 // invitado en blanco

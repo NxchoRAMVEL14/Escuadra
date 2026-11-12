@@ -61,7 +61,7 @@ const ev = (fn, x) => p.evaluate(fn, x);
 await ev(() => { window.print = () => { }; window.E.store.update('config', c => { c.vistaImpresion = false; }, {}); });
 // nombres largos como los de una lista real
 await ev(() => {
-  const E = window.E, g = E.data.grupoActual(), N = ['DIMAS FLORES LUIS ANGEL', 'GUERRERO ALDANA NATALIA GUADALUPE', 'BARRIENTOS CORONADO MICHEL ARMANDO', 'HERNANDEZ VILLALOBOS MARIA FERNANDA', 'RODRIGUEZ DE LA CRUZ JOSE EMMANUEL', 'MARTINEZ ZERMEÑO JUAN PABLO'];
+  const E = window.E, g = E.data.grupoActual(), N = ['DUARTE FIERRO SAUL ANDRES', 'IBARRA ALCALA SOFIA GUADALUPE', 'ACOSTA BELTRAN MARIO ARTURO', 'LEDESMA VILLEGAS MARIA FERNANDA', 'SALAS DE LA ROSA JOSE EMILIANO', 'NAVA ORDUÑA JUAN PABLO'];
   E.store.update('grupo:' + g.id, gg => { gg.alumnos.forEach((a, i) => { a.nombre = N[i % N.length] + ' ' + (i + 1); }); });
 });
 await ev(() => { location.hash = '#/proyecto'; }); await esp(400);
