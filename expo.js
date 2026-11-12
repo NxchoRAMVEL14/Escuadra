@@ -1,5 +1,5 @@
 /* Escuadra · Expo de la carrera (v1.32.0). Evento aparte del proyecto del 3er parcial: los equipos (los mismos del proyecto
-   o nuevos) eligen una de 6 ideas fáciles (menos de 2 semanas, material comprado por ellos), se proyectan para elegir, se
+   o nuevos) eligen una de las ideas fáciles (menos de 2 semanas, material comprado por ellos), se proyectan para elegir, se
    imprimen fichas con material, pasos y guion de 1 minuto, letreros para el stand y el avance de cada equipo.
    Participar es opcional: quien no entra no pierde nada. La calificación es decisión del docente: no cuenta, completa su
    participación (5 %) o da puntos extra en el parcial del evento, solo a los equipos que presentaron. */
@@ -30,7 +30,7 @@
       pasos: ['Armar la torre con una guía para que la cabina no se ladee.', 'Montar el motor arriba con el carrete y amarrar el hilo a la cabina.', 'Conectar el interruptor como inversor y cada final de carrera con su diodo para que corte solo en su sentido.', 'Probar con cuidado y marcar los pisos.'],
       dem: 'Seguridad y control: límites de carrera que protegen la máquina, igual que en elevadores y grúas reales.',
       guion: '¡Hola! Somos el equipo ___. Estás en el primer piso: llama al elevador con este botón. El motor de arriba enrolla el hilo y sube la cabina. ¿Por qué se detiene sola? Porque arriba y abajo hay finales de carrera: cuando la cabina llega, cortan la corriente para que no se pase y no se rompa nada. Eso es seguridad en una máquina, igual que en los elevadores y las grúas de verdad. En Mecatrónica aprendes a controlar motores y a protegerlos con sensores. ¿Lo mandas de regreso?' },
-    { id: 'pluma', ico: '🚧', n: 'Pluma de estacionamiento', dif: 2, costo: 'Bajo', hace: 'Una pluma que se levanta y se baja con un motor, con luz roja y verde.', vis: 'Aprieta el botón para dejar pasar el carro y mira cómo cambia la luz.',
+    { id: 'pluma', off: 1, ico: '🚧', n: 'Pluma de estacionamiento', dif: 2, costo: 'Bajo', hace: 'Una pluma que se levanta y se baja con un motor, con luz roja y verde.', vis: 'Aprieta el botón para dejar pasar el carro y mira cómo cambia la luz.',
       mat: ['Base de MDF y un poste de madera', 'Brazo ligero (abatelenguas o palito de madera de 25 cm)', '1 motorreductor amarillo (TT)', '2 finales de carrera (arriba y abajo) y 2 diodos 1N4007', '1 interruptor de palanca de 3 posiciones, 1 LED rojo y 1 verde con resistencias', 'Portapilas de 4 AA, cable y un carrito de juguete para la demostración'],
       pasos: ['Montar el motor en el poste y fijar el brazo al eje.', 'Colocar los finales de carrera donde la pluma debe parar (arriba y abajo).', 'Conectar el inversor, los diodos y los LED (verde arriba, rojo abajo).', 'Probar, pintar la pluma y armar la entrada del estacionamiento.'],
       dem: 'Control de acceso: motor, sensores e indicadores trabajando juntos, como en las plumas de las plazas.',
@@ -48,6 +48,9 @@
   X.rol = id => X.ROLES.find(r => r[0] === id);
   X.ETAPAS = ['Idea elegida', 'Material comprado', 'Armado', 'Funciona', 'Letrero y explicación ensayada'];
   X.idea = id => X.IDEAS.find(x => x.id === id);
+  // v1.34: la pluma quedó fuera (nadie la hará): en la expo hay 5 proyectos
+  X.ACT = () => X.IDEAS.filter(x => !x.off);
+  X.PREMIO = { personas: 20, piezas: 8, txt: 'chocolates chicos y baratos (Carlos V, Bocadín o parecidos)' };
   X.doc = g => Object.assign({ nombre: 'Expo de Mecatrónica', fecha: '2026-11-26', charla: '2026-11-25', equipos: [], destino: 'no', puntos: 1 }, S.get(K(g)) || {});
   const put = (g, f) => S.update(K(g), d => { const b = X.doc(g); Object.keys(b).forEach(k => { if (d[k] == null) d[k] = b[k]; }); f(d); }, {});
   X.parcialDe = g => { const f = X.doc(g).fecha, ps = D.parciales(); return (ps.find(p => f >= p.inicio && f <= p.fin) || ps[ps.length - 1] || {}).id; };
@@ -71,12 +74,13 @@
       '<div class="pjx-cols"><div><b>Material</b><ul>' + x.mat.map(m => '<li>' + esc(m) + '</li>').join('') + '</ul></div><div><b>Cómo se arma</b><ol>' + x.pasos.map(m => '<li>' + esc(m) + '</li>').join('') + '</ol><p class="pjx-dem">🎓 ' + esc(x.dem) + '</p></div></div></div>';
     return [{ k: 'cover', sub: 'Mecatrónica · ' + (g.nombre || ''), h: d.nombre, p: 'Charlas: ' + fl(d.charla) + ' · Expo: ' + fl(d.fecha) + ' · ¡Que los de 1º quieran ser mecatrónicos!' },
       { k: 'list', h: '¿Cómo va a ser?', items: ['Cada equipo arma un proyecto que los de 1º puedan PROBAR, no solo ver.', 'Mismos equipos del proyecto (o se acomodan distinto): una idea por equipo, sin repetir.', 'Ustedes compran su material: todo es barato y se consigue en electrónica o papelería.', 'Va aparte del proyecto hidráulico del 3er parcial: no lo descuiden.', destTxt(d)] },
-      { k: 'html', h: 'Las 6 ideas', html: '<div class="pjx-grid">' + X.IDEAS.map((x, i) => '<div class="pjx-cell">' + (X.IMG[x.id] || '') + '<b>' + (i + 1) + '. ' + esc(x.n) + '</b><small>' + estrellas(x.dif) + ' ' + DIF[x.dif] + '</small></div>').join('') + '</div>' }]
-      .concat(X.IDEAS.map(x => ({ k: 'html', h: '', html: ideaHTML(x) })))
+      { k: 'html', h: 'Los ' + X.ACT().length + ' proyectos', html: '<div class="pjx-grid">' + X.ACT().map((x, i) => '<div class="pjx-cell">' + (X.IMG[x.id] || '') + '<b>' + (i + 1) + '. ' + esc(x.n) + '</b><small>' + estrellas(x.dif) + ' ' + DIF[x.dif] + '</small></div>').join('') + '</div>' }]
+      .concat(X.ACT().map(x => ({ k: 'html', h: '', html: ideaHTML(x) })))
       .concat([{ k: 'list', h: 'Calendario', items: ['Hoy: elijan equipo e idea y hagan su lista de material.', 'Antes de la siguiente semana: material comprado.', 'Semana del 17: armado.', 'Semana del 23: que funcione, letrero y ensayar la explicación de 1 minuto.', u.fLarga(d.charla) + ': charlas.', u.fLarga(d.fecha) + ': ¡Expo!'] },
         { k: 'list', h: 'Cómo explicar (1 minuto)', items: ['Primero que lo prueben: «¿Quieres probarlo?»', 'Qué es, en una frase y sin palabras técnicas', 'Cómo funciona en 2 o 3 pasos, señalando cada pieza', 'Dónde se usa en la vida real', 'Qué se aprende en Mecatrónica', 'Cierra con un reto: «¿Te animas a otra vuelta?»'], foot: 'Todo el equipo se aprende el guion. Ensáyenlo con cronómetro antes de la expo.' },
         { k: 'list', h: 'Un rol para cada quien', items: X.ROLES.map(r => r[1] + ': ' + r[2]), foot: 'Se turnan cada 15 minutos para que todos expliquen.' },
-        { k: 'list', h: 'Pasaporte mecatrónico', items: ['Cada visitante de 1º recibe un pasaporte con su nombre y su grupo.', 'En cada stand, al probar el proyecto, le pegan la etiqueta de ese proyecto.', 'Quien junta las 6 etiquetas completa su pasaporte.', 'Al final escribe cuál le gustó más y qué carrera piensa elegir.'] },
+        { k: 'list', h: 'Pasaporte mecatrónico', items: ['Cada visitante de 1º recibe un pasaporte con su nombre y su grupo.', 'En cada stand, al probar el proyecto, le pegan la etiqueta de ese proyecto.', 'Quien junta las ' + X.ACT().length + ' etiquetas completa su pasaporte.', 'Al final escribe cuál le gustó más y qué carrera piensa elegir.'] },
+        { k: 'list', h: '🎁 Premio especial', items: X.premioItems() },
         { k: 'cover', sub: 'Ahora sí', h: '¿Qué idea eligen?', p: 'Dígale a su profe el nombre del equipo, quiénes lo forman y qué idea van a hacer.' }]);
   };
 
@@ -97,12 +101,14 @@
     const d = X.doc(g), usadas = {}; d.equipos.forEach(e => { if (e.idea) usadas[e.idea] = (usadas[e.idea] || 0) + 1; });
     const enEq = {}; d.equipos.forEach(e => (e.al || []).forEach(a => { enEq[a] = e.id; })); const libres = al.filter(a => !enEq[a.id]);
     let h = card('<h3>🎪 ' + esc(d.nombre) + '</h3><p class="small">Charlas: <b>' + esc(u.fLarga(d.charla)) + '</b> · Expo: <b>' + esc(u.fLarga(d.fecha)) + '</b></p><p class="muted small">Va aparte del proyecto del 3er parcial: equipos, avance y calificación propios. Participar es opcional.</p>' +
-      '<div class="row gap wrap">' + btn('📽 Proyectar las 6 ideas', 'ex-proj', '', 'primary') + btn('🖨 Fichas de las ideas', 'ex-fichas', '', '') + (d.equipos.length ? btn('🖨 Letreros del stand', 'ex-letreros', '', '') : '') + '</div>' +
+      '<div class="row gap wrap">' + btn('📽 Proyectar los ' + X.ACT().length + ' proyectos', 'ex-proj', '', 'primary') + btn('🖨 Fichas de las ideas', 'ex-fichas', '', '') + (d.equipos.length ? btn('🖨 Letreros del stand', 'ex-letreros', '', '') : '') + '</div>' +
       '<div class="row gap wrap mt">' + btn('🖨 Pasaportes', 'ex-pasaportes', '', '') + '<input class="inp" style="width:5.5em" type="number" min="2" step="2" id="ex-npas" value="' + esc(d.npas || 60) + '" data-ch="ex-f" data-k="npas" aria-label="Cuántos pasaportes"><span class="small muted">pasaportes (2 por hoja)</span>' + btn('🖨 Etiquetas de los stands', 'ex-etiquetas', '', '') + '</div>' +
       '<details class="sub"><summary>Nombre y fechas</summary><div class="fgrid"><label class="fld"><span>Nombre</span><input class="inp" data-ch="ex-f" data-k="nombre" value="' + esc(d.nombre) + '"></label><label class="fld"><span>Charlas</span><input class="inp" type="date" data-ch="ex-f" data-k="charla" value="' + esc(d.charla) + '"></label><label class="fld"><span>Expo</span><input class="inp" type="date" data-ch="ex-f" data-k="fecha" value="' + esc(d.fecha) + '"></label></div></details>');
-    h += card('<h3>💡 Las ideas</h3><div class="ex-ideas">' + X.IDEAS.map(x => '<div class="ex-idea">' + (X.IMG[x.id] || '') + '<div class="row between gap"><span><b>' + esc(x.n) + '</b><br><small class="muted">' + estrellas(x.dif) + ' · costo ' + x.costo.toLowerCase() + '</small></span>' + (usadas[x.id] ? '<span class="chip ' + (usadas[x.id] > 1 ? 'warn' : 'brand') + '">' + (usadas[x.id] > 1 ? usadas[x.id] + ' equipos' : 'elegida') + '</span>' : '<span class="chip">libre</span>') + '</div></div>').join('') + '</div><p class="muted small">Dibujos de ejemplo: cada equipo lo puede hacer a su manera.</p>');
+    h += card('<h3>💡 Las ideas</h3><div class="ex-ideas">' + X.ACT().map(x => '<div class="ex-idea">' + (X.IMG[x.id] || '') + '<div class="row between gap"><span><b>' + esc(x.n) + '</b><br><small class="muted">' + estrellas(x.dif) + ' · costo ' + x.costo.toLowerCase() + '</small></span>' + (usadas[x.id] ? '<span class="chip ' + (usadas[x.id] > 1 ? 'warn' : 'brand') + '">' + (usadas[x.id] > 1 ? usadas[x.id] + ' equipos' : 'elegida') + '</span>' : '<span class="chip">libre</span>') + '</div></div>').join('') + '</div><p class="muted small">Dibujos de ejemplo: cada equipo lo puede hacer a su manera.</p>');
+    const P = X.PREMIO;
+    h += card('<h3>🎁 Premio del pasaporte</h3><ul class="small">' + X.premioItems().map(t => '<li>' + esc(t) + '</li>').join('') + '</ul><p class="muted small">Total: <b>' + (P.personas * P.piezas) + ' piezas</b> (' + P.personas + ' personas × ' + P.piezas + ').</p>');
     // equipos
-    const optIdea = e => '<select class="inp" data-ch="ex-eq" data-id="' + e.id + '" data-k="idea"><option value="">— Idea —</option>' + X.IDEAS.map(x => '<option value="' + x.id + '"' + (e.idea === x.id ? ' selected' : '') + '>' + x.ico + ' ' + esc(x.n) + (usadas[x.id] && e.idea !== x.id ? ' (ya la tiene otro)' : '') + '</option>').join('') + '</select>';
+    const optIdea = e => '<select class="inp" data-ch="ex-eq" data-id="' + e.id + '" data-k="idea"><option value="">— Idea —</option>' + X.IDEAS.filter(x => !x.off || e.idea === x.id).map(x => '<option value="' + x.id + '"' + (e.idea === x.id ? ' selected' : '') + '>' + x.ico + ' ' + esc(x.n) + (usadas[x.id] && e.idea !== x.id ? ' (ya la tiene otro)' : '') + '</option>').join('') + '</select>';
     const eqHTML = e => { const mi = al.filter(a => enEq[a.id] === e.id), av = e.avance || {}, n = X.ETAPAS.filter((t, i) => av[i]).length;
       return '<div class="momento"><div class="row between gap wrap"><input class="inp" style="max-width:60%" data-ch="ex-eq" data-id="' + e.id + '" data-k="nombre" value="' + esc(e.nombre || '') + '" aria-label="Nombre del equipo"><span class="chip ' + (n === X.ETAPAS.length ? 'ok' : n >= 3 ? 'brand' : 'warn') + '">' + n + '/' + X.ETAPAS.length + '</span></div>' + optIdea(e) +
         (mi.length ? '<ul class="plain ex-mi">' + mi.map(a => { const r = (e.roles || {})[a.id] || ''; return '<li class="row between gap"><span class="small">' + esc(u.corto(a.nombre)) + '</span><span class="row gap"><select class="inp ex-rol" data-ch="ex-rol" data-id="' + e.id + '" data-aid="' + a.id + '" aria-label="Rol en el stand"><option value="">— Rol —</option>' + X.ROLES.map(x => '<option value="' + x[0] + '"' + (r === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select><button type="button" class="linkbtn" data-act="ex-quita" data-id="' + e.id + '" data-aid="' + a.id + '" aria-label="Quitar">✕</button></span></li>'; }).join('') + '</ul>' : '<p class="small muted mt">Sin integrantes</p>') +
@@ -136,24 +142,32 @@
     u.toast('Copiados ' + src.length + ' equipos. Mueve a quien quiera cambiarse.', 'ok');
   };
   A['ex-proj'] = () => { const g = D.grupoActual(); E.proj.abrir({ id: 'expo', titulo: X.doc(g).nombre }, X.slides(g)); };
-  A['ex-fichas'] = () => E.print.run(X.IDEAS.map(ficha).join(''), { title: 'Fichas de las ideas · ' + X.doc(D.grupoActual()).nombre });
+  A['ex-fichas'] = () => E.print.run(X.ACT().map(ficha).join(''), { title: 'Fichas de las ideas · ' + X.doc(D.grupoActual()).nombre });
   CH['ex-rol'] = el => { const g = D.grupoActual(); put(g, d => { const e = d.equipos.find(x => x.id === el.dataset.id); if (!e) return; e.roles = e.roles || {}; if (el.value) e.roles[el.dataset.aid] = el.value; else delete e.roles[el.dataset.aid]; }); };
   A['ex-letreros'] = () => { const g = D.grupoActual(), eqs = X.doc(g).equipos.filter(e => e.idea); if (!eqs.length) { u.toast('Primero elige la idea de cada equipo', 'err'); return; } E.print.run(eqs.map(e => letrero(g, e)).join(''), { title: 'Letreros del stand', landscape: true }); };
 
   /* ---------- v1.33.0: pasaporte mecatrónico y etiquetas de cada stand ---------- */
-  // El visitante de 1º junta la etiqueta de los 6 stands; al final dice cuál le gustó más y qué carrera piensa elegir.
+  // El visitante de 1º junta la etiqueta de cada stand; al final dice cuál le gustó más y qué carrera piensa elegir.
   const LOGO = () => (E.print && E.print.LOGO) || '';
-  const pasaporte = d => '<div class="expas"><div class="expas-h"><img src="' + LOGO() + '" alt="CETAC"><div><h2>Pasaporte mecatrónico</h2><p>' + esc(d.nombre) + ' · ' + esc(u.fLarga(d.fecha)) + '</p></div></div>' +
-    '<div class="expas-dat"><span><b>Nombre:</b></span><span><b>Grupo:</b></span></div>' +
-    '<p class="expas-ins">Prueba cada proyecto y pide su etiqueta. ¡Junta las 6!</p>' +
-    '<div class="expas-grid">' + X.IDEAS.map((x, i) => '<div class="expas-c"><div class="expas-sello"><span>' + (i + 1) + '</span></div><small>' + esc(x.n) + '</small></div>').join('') + '</div>' +
-    '<div class="expas-q"><p><b>¿Cuál te gustó más?</b> ' + X.IDEAS.map((x, i) => '<span class="expas-op"><span class="bt-ck"></span>' + (i + 1) + '. ' + esc(x.n) + '</span>').join('') + '</p>' +
-    '<p><b>¿Qué carrera piensas elegir?</b> <span class="expas-ln"></span></p><p><b>¿Por qué?</b> <span class="expas-ln"></span></p></div></div>';
-  X.pasaportes = (d, n) => { n = Math.max(2, Math.min(400, Number(n) || 60)); const hojas = Math.ceil(n / 2); let h = ''; for (let i = 0; i < hojas; i++) h += '<div class="bt-pg"><div class="pr expas-hoja">' + pasaporte(d) + '<div class="expas-corte">✂</div>' + pasaporte(d) + '</div></div>'; return h; };
+  // v1.34: 5 proyectos, premio especial y firma de quien lo entrega; con nombre, grupo y turno si vienen de las listas de 1º
+  const pasaporte = (d, p) => { p = p || {}; const I = X.ACT();
+    return '<div class="expas"><div class="expas-h"><img src="' + LOGO() + '" alt="CETAC"><div><h2>Pasaporte mecatrónico</h2><p>' + esc(p.sub || (d.nombre + ' · ' + u.fLarga(d.fecha))) + '</p></div></div>' +
+    '<div class="expas-dat"><span><b>Nombre:</b> ' + esc(p.nombre || '') + '</span><span><b>Grupo:</b> ' + esc(p.grupo || '') + (p.num ? ' <small>(núm. ' + esc(p.num) + ')</small>' : '') + '</span></div>' +
+    '<p class="expas-ins">Prueba cada proyecto y pide su etiqueta.' + (p.turno ? ' <span class="expas-tm">Tu turno en Mecatrónica: ' + esc(p.turno) + '</span>' : ' ¡Junta las ' + I.length + '!') + '</p>' +
+    '<div class="expas-grid" style="grid-template-columns:repeat(' + I.length + ',1fr)">' + I.map((x, i) => '<div class="expas-c"><div class="expas-sello"><span>' + (i + 1) + '</span></div><small>' + esc(x.n) + '</small></div>').join('') + '</div>' +
+    '<div class="expas-premio">🎁 <b>¡Junta las ' + I.length + ' etiquetas y llévate un premio especial!</b><br><span>Al terminar, enseña tu pasaporte completo a la salida del tejabán.</span><div class="expas-firma">Entregado por (firma del encargado del equipo): <span class="expas-fl"></span></div></div>' +
+    '<div class="expas-q"><p><b>¿Cuál te gustó más?</b> ' + I.map((x, i) => '<span class="expas-op"><span class="bt-ck"></span>' + (i + 1) + '. ' + esc(x.n) + '</span>').join('') + '</p>' +
+    '<p><b>¿Qué carrera piensas elegir?</b> <span class="expas-ln"></span></p><p><b>¿Por qué?</b> <span class="expas-ln"></span></p></div></div>'; };
+  X.pasaporte = pasaporte;
+  X.hojasPas = (d, lista) => { let h = ''; for (let i = 0; i < lista.length; i += 2) h += '<div class="bt-pg"><div class="pr expas-hoja">' + pasaporte(d, lista[i]) + '<div class="expas-corte">✂</div>' + (lista[i + 1] ? pasaporte(d, lista[i + 1]) : '<div class="expas" style="visibility:hidden"></div>') + '</div></div>'; return h; };
+  // instrucciones del premio (para el equipo de la expo)
+  X.premioItems = () => { const P = X.PREMIO, tot = P.personas * P.piezas;
+    return ['Cada quien trae ' + P.piezas + ' piezas: ' + P.txt + '.', P.personas + ' personas (los alumnos que participan y el profe) × ' + P.piezas + ' = ' + tot + ' piezas.', 'El premio se entrega a la salida del tejabán, solo a quien enseña su pasaporte con las ' + X.ACT().length + ' etiquetas.', 'El encargado del equipo firma el pasaporte al entregar el premio, para que nadie lo cobre dos veces.']; };
+  X.pasaportes = (d, n) => { n = Math.max(2, Math.min(400, Number(n) || 60)); n += n % 2; return X.hojasPas(d, Array.from({ length: n }, () => ({}))); };
   // etiquetas: una hoja carta por proyecto, 6 × 8 = 48 etiquetas de 3 cm con su dibujo y su nombre
-  X.etiquetas = () => X.IDEAS.map(x => '<div class="bt-pg"><div class="pr exet-hoja"><div class="exet-grid">' + Array.from({ length: 48 }, () => '<div class="exet">' + (X.IMG[x.id] || '') + '<b>' + esc(x.n) + '</b></div>').join('') + '</div></div></div>').join('');
+  X.etiquetas = () => X.ACT().map(x => '<div class="bt-pg"><div class="pr exet-hoja"><div class="exet-grid">' + Array.from({ length: 48 }, () => '<div class="exet">' + (X.IMG[x.id] || '') + '<b>' + esc(x.n) + '</b></div>').join('') + '</div></div></div>').join('');
   A['ex-pasaportes'] = () => { const g = D.grupoActual(), d = X.doc(g), i = document.getElementById('ex-npas'), n = i ? i.value : d.npas; E.print.run(X.pasaportes(d, n), { title: 'Pasaportes · ' + d.nombre, propioLogo: true, margin: '8mm' }); };
-  A['ex-etiquetas'] = () => E.print.run(X.etiquetas(), { title: 'Etiquetas de los 6 stands', propioLogo: true, margin: '8mm' });
+  A['ex-etiquetas'] = () => E.print.run(X.etiquetas(), { title: 'Etiquetas de los ' + X.ACT().length + ' stands', propioLogo: true, margin: '8mm' });
 
   /* ---------- v1.33.0: invitado de las charlas: datos, invitación y reconocimiento ---------- */
   const INV = { titulo: '', nombre: '', cargo: '', empresa: '', tema: '', puntos: '', hora: '', lugar: '', duracion: '', firma1: '', puesto1: '', firma2: '', puesto2: '', frase: '' };

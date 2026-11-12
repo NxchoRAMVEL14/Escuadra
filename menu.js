@@ -28,6 +28,7 @@
       ['proyecto', 'team', 'Proyecto por equipo', 'Etapas y semáforo de cada equipo'],
       ['bitsem', 'book', 'Bitácora semanal', 'Hoja técnica por alumno, cada semana'],
       ['expo', 'star', 'Expo de la carrera', 'Ideas, equipos y letreros para los de 1º'],
+      ['muestra', 'team', 'Muestra Profesiográfica', 'Rotación del 26, listas por mitad y pasaportes'],
       ['industria', 'factory', 'Industria', 'Ejemplos del Bajío, visitas y charlas'],
       ['mapa', 'grid', 'Mapa del salón', 'Dónde se sienta cada quien'],
       ['ruleta', 'dice', 'Ruleta equitativa', 'Participación pareja'],

@@ -1596,3 +1596,24 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 
 /* v1.33.1 · el logo del CETAC va dentro del marco del reconocimiento */
 .pr .exr-logo { position: absolute; top: 9mm; right: 11mm; width: 22mm; height: 22mm }
+/* v1.34.0 · pasaporte con premio, Muestra Profesiográfica */
+.pr .expas-sello { width: 34mm; height: 34mm }
+.pr .expas-tm { float: right; color: #152626; font-size: 8.6pt; background: #fbe7d3; padding: .4mm 2mm; border-radius: 2mm }
+.pr .expas-dat small { font-weight: normal; color: #666 }
+.pr .expas-premio { margin: 2.5mm 0 0; padding: 2mm 3mm; border-radius: 2.5mm; background: linear-gradient(90deg, #fde68a, #fbcfe8); font-size: 10.5pt; text-align: center; line-height: 1.35; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+.pr .expas-premio b { color: #7a1d4f } .pr .expas-premio span { font-size: 8.6pt; color: #333 }
+.pr .expas-firma { margin-top: 1.8mm; font-size: 8.6pt; text-align: left } .pr .expas-fl { display: inline-block; width: 70mm; border-bottom: 1px solid #333; height: 3.5mm; vertical-align: bottom }
+.mu-scroll { overflow-x: auto }
+.mu-t { border-collapse: collapse; width: 100%; font-size: .85rem; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact }
+.mu-t th, .mu-t td { border: 1px solid #b5c8c6; padding: .3rem .35rem } .mu-t thead th { background: #0e5e5a; color: #fff } .mu-t th small { font-weight: normal; opacity: .85 }
+.mu-t th.mu-m { background: #d7ebe9; color: #0e5e5a } .mu-t td.mu-h { white-space: nowrap; font-weight: 700 } .mu-t tr.mu-2 td { border-top-style: dashed }
+.pr.mu-p .mu-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3mm } .pr.mu-p .mu-top img { width: 15mm; height: 15mm }
+.pr.mu-p h1 { color: #0e5e5a; font-size: 16pt; margin: 0 } .pr.mu-p .mu-top p { margin: .5mm 0 0; font-size: 9.5pt; font-weight: 700 }
+.pr.mu-p .mu-t { font-size: 10.5pt } .pr.mu-p .mu-t td { padding: 2.2mm 1.5mm }
+.pr .mu-nota { font-size: 9pt; margin: 3mm 0 } .pr .mu-car { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; font-size: 9pt }
+.pr .mu-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm }
+.pr .mu-col h2 { font-size: 11pt; margin: 0 0 1.5mm; padding: 1.5mm 2mm; border-radius: 1.5mm; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .mu-col h2 small { font-weight: normal; font-size: 8.5pt }
+.pr .mu-col h3 { font-size: 9.5pt; color: #0e5e5a; margin: 3mm 0 1mm }
+.pr .mu-l, .pr .mu-r { border-collapse: collapse; width: 100% } .pr .mu-l td, .pr .mu-l th, .pr .mu-r td { border: 1px solid #b5c8c6; padding: .7mm 1.3mm; font-size: 8.2pt }
+.pr .mu-l th { background: #0e5e5a; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .mu-l td.n { text-align: center; width: 7mm } .pr .mu-l td.ck { width: 12mm }
+.pr .mu-r td { font-size: 7.8pt } .pr .mu-r td.h { white-space: nowrap; width: 20mm; font-weight: 700 } .pr .mu-r small { color: #555 }
