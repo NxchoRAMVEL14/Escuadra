@@ -14,6 +14,8 @@
   // image-set(… LOGO_X x) hace que mida 17 mm: el JPEG tiene 240 px y 17 mm = 64.25 px CSS
   const LOGO_MIN = 8;   // distancia mínima del logo a la orilla de la hoja (mm)
   const LOGO_X = +(240 / (17 * 96 / 25.4)).toFixed(4);
+  // v1.33.0: o.propioLogo = la hoja trae sus propios logos (p. ej. 2 pasaportes por hoja): no se reserva el espacio de arriba
+  const LMM = o => (o && o.propioLogo) ? 0 : LOGO_MM, LMIN = (o, m) => (o && o.propioLogo) ? m : Math.max(m, LOGO_MIN);
   // margen lateral e inferior (mm); '0' cuenta como 0 (las constancias van a sangre)
   const margen = o => { const v = parseFloat(o.margin == null ? '9mm' : o.margin); return isNaN(v) ? 9 : v; };
   // cuántas hojas ocupa (aprox.): se mide en un marco oculto con los mismos estilos; sirve para numerar solo los de más de 2 hojas
@@ -22,7 +24,7 @@
     let f = null;
     try {
       const mm = 96 / 25.4, m = margen(o), land = !!o.landscape;
-      const wPx = ((land ? 279.4 : 215.9) - 2 * m) * mm, hPx = ((land ? 215.9 : 279.4) - m - Math.max(m, LOGO_MIN) - LOGO_MM) * mm;
+      const wPx = ((land ? 279.4 : 215.9) - 2 * m) * mm, hPx = ((land ? 215.9 : 279.4) - m - LMIN(o, m) - LMM(o)) * mm;
       const css = [...document.styleSheets].map(x => { try { return [...x.cssRules].map(r => r.cssText).join('\n'); } catch (e) { return ''; } }).join('\n');
       f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true');
       f.style.cssText = 'position:absolute;left:-10000px;top:0;border:0;visibility:hidden;width:' + wPx + 'px;height:' + hPx + 'px';
@@ -45,13 +47,13 @@
   function miniatura(html, o, m, lm) {
     try {
       const mm = 96 / 25.4, land = !!o.landscape, W = (land ? 279.4 : 215.9) * mm, Hh = (land ? 215.9 : 279.4) * mm;
-      const wPx = W - 2 * m * mm, hPx = Hh - (m + lm + LOGO_MM) * mm, sc = Math.min(330 / W, 360 / Hh);
+      const wPx = W - 2 * m * mm, hPx = Hh - (m + lm + LMM(o)) * mm, sc = Math.min(330 / W, 360 / Hh);
       // con muchas hojas sueltas (40 informes) basta la primera: estilos + el primer bloque
       const t = document.createElement('template'); t.innerHTML = html; const nodos = [...t.content.childNodes], prim = nodos.find(x => x.nodeType === 1 && x.tagName !== 'STYLE');
       const cuerpo = nodos.filter(x => x.nodeType === 1 && (x.tagName === 'STYLE' || x === prim)).map(x => x.outerHTML).join('');
       return '<div class="pv-mini" aria-hidden="true" style="width:' + Math.round(W * sc) + 'px;height:' + Math.round(Hh * sc) + 'px"><div class="pv-pag" style="width:' + W + 'px;height:' + Hh + 'px;transform:scale(' + sc.toFixed(4) + ')">' +
-        '<img src="' + LOGO + '" alt="" style="position:absolute;top:' + lm + 'mm;right:' + lm + 'mm;width:17mm;height:17mm">' +
-        '<div style="position:absolute;top:' + (lm + LOGO_MM) + 'mm;left:' + m + 'mm;width:' + wPx + 'px;height:' + hPx + 'px;overflow:hidden">' + cuerpo + '</div></div></div>';
+        (o.propioLogo ? '' : '<img src="' + LOGO + '" alt="" style="position:absolute;top:' + lm + 'mm;right:' + lm + 'mm;width:17mm;height:17mm">') +
+        '<div style="position:absolute;top:' + (lm + LMM(o)) + 'mm;left:' + m + 'mm;width:' + wPx + 'px;height:' + hPx + 'px;overflow:hidden">' + cuerpo + '</div></div></div>';
     } catch (e) { return ''; }
   }
   let pend = null;
@@ -69,7 +71,7 @@
     let f = null;
     try {
       const mm = 96 / 25.4, m = margen(o), land = !!o.landscape;
-      const wPx = ((land ? 279.4 : 215.9) - 2 * m) * mm, hPx = ((land ? 215.9 : 279.4) - m - Math.max(m, LOGO_MIN) - LOGO_MM - 3) * mm;
+      const wPx = ((land ? 279.4 : 215.9) - 2 * m) * mm, hPx = ((land ? 215.9 : 279.4) - m - LMIN(o, m) - LMM(o) - 3) * mm;
       const css = [...document.styleSheets].map(x => { try { return [...x.cssRules].map(r => r.cssText).join('\n'); } catch (e) { return ''; } }).join('\n');
       f = document.createElement('iframe'); f.setAttribute('aria-hidden', 'true'); f.style.cssText = 'position:absolute;left:-10000px;top:0;border:0;visibility:hidden;width:' + wPx + 'px;height:' + hPx + 'px';
       document.body.appendChild(f); const d = f.contentDocument; d.open();
@@ -84,10 +86,10 @@
     o = o || {}; if (o.unaHoja) html = unaHoja(html, o);
     // el logo va fijo en cada hoja (se repite en cada página impresa, también en las que se parten)
     // el logo nunca queda a menos de LOGO_MIN de la orilla (con margen 0, como las constancias, la impresora lo cortaría)
-    const m = margen(o), lm = Math.max(m, LOGO_MIN), cuerpo = html, rv = revisa(cuerpo, o), n = rv.n;
+    const m = margen(o), lm = LMIN(o, m), cuerpo = html, rv = revisa(cuerpo, o), n = rv.n;
     const root = document.getElementById('print-root'); root.innerHTML = cuerpo;
     let st = document.getElementById('page-style'); if (!st) { st = document.createElement('style'); st.id = 'page-style'; document.head.appendChild(st); }
-    st.textContent = '@page{size:letter ' + (o.landscape ? 'landscape' : 'portrait') + ';margin:' + (lm + LOGO_MM) + 'mm ' + m + 'mm ' + m + 'mm ' + m + 'mm;@top-right{content:image-set(url("' + LOGO + '") ' + LOGO_X + 'x);vertical-align:top;text-align:right;padding-top:' + lm + 'mm;padding-right:' + (lm - m) + 'mm}' + (n > 2 ? ';@bottom-right{content:"Página " counter(page) " de " counter(pages);font:7.5pt Arial,Helvetica,sans-serif;color:#444}' : '') + '}';
+    st.textContent = o.propioLogo ? '@page{size:letter ' + (o.landscape ? 'landscape' : 'portrait') + ';margin:' + m + 'mm' + (n > 2 ? ';@bottom-right{content:"Página " counter(page) " de " counter(pages);font:7.5pt Arial,Helvetica,sans-serif;color:#444}' : '') + '}' : '@page{size:letter ' + (o.landscape ? 'landscape' : 'portrait') + ';margin:' + (lm + LOGO_MM) + 'mm ' + m + 'mm ' + m + 'mm ' + m + 'mm;@top-right{content:image-set(url("' + LOGO + '") ' + LOGO_X + 'x);vertical-align:top;text-align:right;padding-top:' + lm + 'mm;padding-right:' + (lm - m) + 'mm}' + (n > 2 ? ';@bottom-right{content:"Página " counter(page) " de " counter(pages);font:7.5pt Arial,Helvetica,sans-serif;color:#444}' : '') + '}';
     const t = document.title; pend = { t: t, title: o.title || t };
     // v1.28.1: lo que se imprime queda registrado (para Cobros): hojas y cuántos bloques por alumno trae
     try { const tp = document.createElement('template'); tp.innerHTML = cuerpo; pend.info = { t: pend.title, n: n, land: !!o.landscape, blq: [...tp.content.children].filter(x => x.classList && x.classList.contains('pr')).length }; } catch (e) { }

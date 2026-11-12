@@ -1564,3 +1564,32 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .ex-ideas { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px }
 .ex-idea svg { width: 100%; height: auto; display: block; margin-bottom: 4px; border-radius: 10px }
 .pr .exf-top { display: grid; grid-template-columns: 1.5fr 1fr; gap: 5mm; align-items: center } .pr .exf-img svg { width: 100%; height: auto; display: block }
+/* v1.33.0 · Expo: guion de ejemplo, roles, pasaporte, etiquetas, invitación y reconocimiento */
+.pr p.exf-gu { font-style: italic; background: #f3f7f6; border-left: 3px solid #0e5e5a; padding: 2mm 3mm; margin: 0; line-height: 1.35 }
+.ex-mi li { padding: 3px 0; align-items: center } .ex-rol { max-width: 11em; padding: 4px 6px; font-size: .85rem }
+.pr.expas-hoja { height: 262mm; display: flex; flex-direction: column; justify-content: space-between }
+.pr .expas { height: 124mm; border: 1.4px solid #0e5e5a; border-radius: 4mm; padding: 4mm 5mm; box-sizing: border-box; display: flex; flex-direction: column; font-size: 9.5pt }
+.pr .expas-corte { text-align: center; color: #888; font-size: 10pt; border-top: 1px dashed #999; line-height: 0; margin: 3mm 0 }
+.pr .expas-h { display: flex; gap: 4mm; align-items: center } .pr .expas-h img { width: 15mm; height: 15mm }
+.pr .expas-h h2 { margin: 0; font-size: 17pt; color: #0e5e5a } .pr .expas-h p { margin: 0; color: #444 }
+.pr .expas-dat { display: grid; grid-template-columns: 2.2fr 1fr; gap: 5mm; margin: 3mm 0 1mm } .pr .expas-dat span { border-bottom: 1px solid #333; padding: 2mm 0 .5mm }
+.pr .expas-ins { margin: 1.5mm 0; font-weight: 700; color: #0e5e5a }
+.pr .expas-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2mm } .pr .expas-c { text-align: center; font-size: 7.4pt; line-height: 1.15 }
+.pr .expas-sello { width: 30mm; height: 30mm; max-width: 100%; margin: 0 auto 1mm; border: 1.2px dashed #0e5e5a; border-radius: 3mm; display: flex; align-items: flex-start; justify-content: flex-start }
+.pr .expas-sello span { font-size: 8pt; color: #0e5e5a; padding: 1mm 1.5mm }
+.pr .expas-q { margin-top: auto } .pr .expas-q p { margin: 1.5mm 0 } .pr .expas-op { display: inline-block; margin: 0 3mm .5mm 0; font-size: 8.4pt; white-space: nowrap }
+.pr .expas-ln { display: inline-block; width: 125mm; border-bottom: 1px solid #333; height: 4mm; vertical-align: bottom }
+.pr .exet-grid { display: grid; grid-template-columns: repeat(6, 30mm); grid-auto-rows: 30mm; gap: 2.6mm 2.4mm; justify-content: center }
+.pr .exet { border: .4px dashed #bbb; border-radius: 3mm; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 1mm; box-sizing: border-box }
+.pr .exet svg { width: 27mm; height: auto; display: block } .pr .exet b { font-size: 6.2pt; text-align: center; line-height: 1.05; margin-top: .6mm }
+.pr.exi { font-size: 11pt; line-height: 1.45 } .pr .exi-fecha { text-align: right } .pr .exi-a { margin: 6mm 0 }
+.pr .exi-ln { display: inline-block; min-width: 40mm; border-bottom: 1px solid #333; height: 5mm; vertical-align: bottom }
+.pr .exi-lns .exi-ln { display: block; width: 100%; margin: 3mm 0 }
+.pr .exi-t { border-collapse: collapse; margin: 3mm 0 4mm } .pr .exi-t td { padding: 1.5mm 3mm; vertical-align: bottom } .pr .exi-t td:first-child { color: #0e5e5a; font-weight: 700 }
+.pr .exi-at { margin-top: 8mm; text-align: center } .pr .exi-firmas, .pr .exr-firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 20mm; margin-top: 22mm; text-align: center }
+.pr .exi-fl { border-top: 1px solid #222; margin-bottom: 1.5mm }
+.pr.exr { text-align: center } .pr .exr-mar { border: 2.5mm double #0e5e5a; outline: .6mm solid #f0a500; outline-offset: -5mm; padding: 11mm 18mm 9mm; min-height: 172mm; box-sizing: border-box }
+.pr .exr-pl { font-size: 13pt; font-weight: 700; margin: 0 } .pr .exr-car { margin: 1mm 0 5mm; color: #0e5e5a }
+.pr .exr-ot { font-style: italic; margin: 0 } .pr.exr h1 { font-size: 40pt; letter-spacing: 4px; color: #0e5e5a; margin: 2mm 0 } .pr .exr-a { font-style: italic; margin: 0 }
+.pr .exr-nom { font-size: 26pt; font-weight: 700; margin: 4mm 0 1mm; font-family: Georgia, 'Times New Roman', serif } .pr .exr-cg { margin: 0; color: #444 }
+.pr .exr-fr { font-size: 12.5pt; margin: 6mm 12mm 3mm; line-height: 1.45 } .pr .exr-fe { margin: 2mm 0 0 } .pr .exr-firmas { margin-top: 16mm; gap: 30mm; padding: 0 10mm }
