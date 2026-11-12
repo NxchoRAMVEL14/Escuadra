@@ -31,10 +31,11 @@ await p.evaluate(() => { const s = document.querySelectorAll('[data-ch=ex-mete]'
 const n2 = await p.evaluate(() => window.E.expo.doc(window.E.data.grupoActual()).equipos[1].al.length);
 ok('agregar integrante a un equipo', n2 === 3, n2);
 // proyectar
+await p.setViewportSize({ width: 1280, height: 720 }); await p.waitForTimeout(200);
 await p.click('[data-act=ex-proj]'); await p.waitForTimeout(500);
 const sl = await p.evaluate(() => [window.E.proj.s.length, document.querySelector('#proj .pj-count').textContent]);
-ok('proyecta portada, reglas, lista, 6 ideas, calendario, guion y cierre (12)', sl[0] === 12, JSON.stringify(sl));
-await p.setViewportSize({ width: 1280, height: 720 });
+ok('proyecta portada, reglas, lista, 6 ideas, calendario, cómo explicar, roles, pasaporte y cierre (14)', sl[0] === 14, JSON.stringify(sl));
+await p.setViewportSize({ width: 1280, height: 720 }).catch(() => { });
 for (let i = 0; i < 2; i++) await p.evaluate(() => document.querySelector('[data-act=proj-next]').click());
 await p.waitForTimeout(300); await p.screenshot({ path: OUT + '/las-6.png' });
 ok('la diapositiva «Las 6 ideas» muestra los 6 dibujos', await p.evaluate(() => document.querySelectorAll('#proj .pjx-cell svg').length) === 6);
@@ -44,7 +45,7 @@ ok('la idea con su dibujo cabe en la pantalla del proyector', desb <= 2 && !!(aw
 await p.screenshot({ path: OUT + '/idea-pulso.png' });
 const tx = await p.evaluate(() => document.querySelector('#proj').innerText);
 ok('la diapositiva de una idea trae material, pasos y lo que demuestra', /Juego de pulso/.test(tx) && /Material/.test(tx) && /Cómo se arma/.test(tx) && /Circuitos eléctricos/.test(tx));
-await p.keyboard.press('Escape'); await p.evaluate(() => { const el = document.getElementById('proj'); if (el) el.hidden = true; }); await p.setViewportSize({ width: 420, height: 880 });
+await p.keyboard.press('Escape'); await p.evaluate(() => { const el = document.getElementById('proj'); if (el) el.hidden = true; }); await p.setViewportSize({ width: 420, height: 880 }).catch(() => { });
 const imp = async nombre => { await p.emulateMedia({ media: 'print' }); await p.pdf({ path: OUT + '/' + nombre + '.pdf', preferCSSPageSize: true, printBackground: true }); await p.emulateMedia({ media: 'screen' }); return Number((execFileSync('pdfinfo', [OUT + '/' + nombre + '.pdf']).toString().match(/Pages:\s+(\d+)/) || [])[1]); };
 await p.evaluate(() => document.querySelector('[data-act=ex-fichas]').click()); await p.waitForTimeout(1000);
 let n = await imp('fichas');
