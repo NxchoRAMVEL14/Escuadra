@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.34.2';
+  E.VERSION = '1.35.0';
   E.CHANGELOG = [
+            { v: '1.35.0', f: '2026-11-12', t: 'Muestra Profesiográfica: invitados de las charlas de Recursos Humanos y de Laboratorio, con su invitación y su reconocimiento (las mismas cartas de Mecatrónica, con el nombre de su carrera). Cada invitado lleva las preguntas que pasen los compañeros de esa carrera; se pueden agregar varios invitados por carrera. Si dejas las firmas vacías, usa las de la invitación de Mecatrónica.' },
             { v: '1.34.2', f: '2026-11-12', t: 'Muestra Profesiográfica y formatos de la escuela: ya se leen los alumnos cuando el Excel trae el número de lista como 1.0, 2.0… (por ejemplo, si pasó por Google Sheets o el celular); antes las listas salían en 0. Si el Excel no trae alumnos de 1º, lo avisa en lugar de guardar listas vacías. Al subir el Excel desde la Muestra también queda listo para el acta y las listas. En modo oscuro, las letras de la tabla de rotación ya se leen.' },
             { v: '1.34.1', f: '2026-11-12', t: 'Acta de la escuela: la calificación final ahora es el promedio de los 3 parciales, (1 PAR + 2 PAR + 3 PAR) / 3; la fórmula del formato solo dividía el 3er parcial entre 3. Queda en blanco mientras falte algún parcial. Las pruebas automáticas ya no traen nombres reales de alumnos.' },
             { v: '1.34.0', f: '2026-11-12', t: 'Formatos de la escuela: en Imprimir subes el Excel de listas y actas tal como lo manda control escolar y Escuadra llena tu acta (solo los parciales concluidos; los demás quedan en blanco) y la lista de asistencia de cada parcial (fechas con el día arriba y el mes abajo en letra chica, con o sin asistencia) sin cambiar nada del formato. Muestra Profesiográfica Interna: rotación del 26 de noviembre con maestros y lugares, listas de 1º por mitad con su ruta y pasaportes con nombre. Expo: queda en 5 proyectos (sin la pluma); el pasaporte trae el premio especial y la firma del encargado del equipo; instrucciones del premio (20 personas × 8 chocolates = 160).' },
