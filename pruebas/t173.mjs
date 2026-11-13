@@ -38,6 +38,14 @@ hoja('ACTA CAL.3A RH', 'TÉCNICO EN ADMINISTRACIÓN DE RECURSOS HUMANOS 2025', '
 hoja('LISTA DE ASISTENCIA 3A MEC', 'TÉCNICO EN MECATRÓNICA 2025', '3', '3A', 'lista', mec)
 hoja('ACTA CAL.3A MEC', 'TÉCNICO EN MECATRÓNICA 2025', '3', '3A', 'acta', mec)
 wb.save(sys.argv[1])
+# como lo guarda Google Sheets: el número de lista queda «1.0», «2.0»…
+import zipfile, re, shutil
+src = sys.argv[1] + '.tmp'; shutil.move(sys.argv[1], src)
+with zipfile.ZipFile(src) as zi, zipfile.ZipFile(sys.argv[1], 'w', zipfile.ZIP_DEFLATED) as zo:
+    for it in zi.infolist():
+        d = zi.read(it.filename)
+        if it.filename.startswith('xl/worksheets/'): d = re.sub(rb'(<c r="A(?:9|[1-9][0-9])"[^>]*><v>)([0-9]+)(</v>)', rb'\\1\\2.0\\3', d)
+        zo.writestr(it, d)
 `;
 writeFileSync(OUT + '/hacer.py', PY);
 const XLS = OUT + '/escuela.xlsx';
@@ -108,6 +116,7 @@ ok('«con asistencia» pone F a quien faltó y • a quien vino, solo en los dí
 await p.evaluate(() => { location.hash = '#/muestra'; }); await p.waitForTimeout(800);
 const vt = await p.evaluate(() => document.body.innerText);
 ok('la pantalla trae la rotación con maestros y lugares', /Muestra Profesiográfica Interna/.test(vt) && /Zendy/.test(vt) && /Nacho/.test(vt) && /Tejabán/.test(vt) && (vt.match(/10:30–10:55/) || []).length === 1, '');
+ok('en modo oscuro las letras de la rotación se leen (oscuras sobre el color)', await p.evaluate(() => getComputedStyle(document.querySelector('.mu-t tbody td[style]')).color) === 'rgb(21, 38, 38)');
 ok('celdas de la rotación: 8 turnos × 6 maestros', await p.evaluate(() => document.querySelectorAll('.mu-t tbody td[style]').length) === 8 * 6 + 4);
 await p.click('[data-act=mu-leer]'); await p.waitForTimeout(1200);
 const L = await p.evaluate(() => { const L = window.E.muestra.listas(); return L && Object.keys(L.g).sort().map(g => g + L.g[g].length).join(','); });

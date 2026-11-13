@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.34.1';
+  E.VERSION = '1.34.2';
   E.CHANGELOG = [
+            { v: '1.34.2', f: '2026-11-12', t: 'Muestra Profesiográfica y formatos de la escuela: ya se leen los alumnos cuando el Excel trae el número de lista como 1.0, 2.0… (por ejemplo, si pasó por Google Sheets o el celular); antes las listas salían en 0. Si el Excel no trae alumnos de 1º, lo avisa en lugar de guardar listas vacías. Al subir el Excel desde la Muestra también queda listo para el acta y las listas. En modo oscuro, las letras de la tabla de rotación ya se leen.' },
             { v: '1.34.1', f: '2026-11-12', t: 'Acta de la escuela: la calificación final ahora es el promedio de los 3 parciales, (1 PAR + 2 PAR + 3 PAR) / 3; la fórmula del formato solo dividía el 3er parcial entre 3. Queda en blanco mientras falte algún parcial. Las pruebas automáticas ya no traen nombres reales de alumnos.' },
             { v: '1.34.0', f: '2026-11-12', t: 'Formatos de la escuela: en Imprimir subes el Excel de listas y actas tal como lo manda control escolar y Escuadra llena tu acta (solo los parciales concluidos; los demás quedan en blanco) y la lista de asistencia de cada parcial (fechas con el día arriba y el mes abajo en letra chica, con o sin asistencia) sin cambiar nada del formato. Muestra Profesiográfica Interna: rotación del 26 de noviembre con maestros y lugares, listas de 1º por mitad con su ruta y pasaportes con nombre. Expo: queda en 5 proyectos (sin la pluma); el pasaporte trae el premio especial y la firma del encargado del equipo; instrucciones del premio (20 personas × 8 chocolates = 160).' },
             { v: '1.33.1', f: '2026-11-12', t: 'Expo de la carrera: en el reconocimiento del invitado, el logo del CETAC va dentro del marco y el contenido queda centrado en la hoja. En la invitación, la expo la presentan los alumnos de 3er y 5º semestre en equipo.' },
