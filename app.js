@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.35.0';
+  E.VERSION = '1.36.0';
   E.CHANGELOG = [
+            { v: '1.36.0', f: '2026-11-13', t: 'Memorama de simbología ISO 1219 sin imprimir: 34 símbolos neumáticos (válvulas y vías, accionamientos, cilindros y alimentación, válvulas auxiliares) y 12 válvulas completas. Tres niveles: símbolo con su nombre, con su función y válvula completa. Se juega en el celular con un QR (solos o en pareja; al terminar da un código de 4 dígitos) o en el proyector por equipos y turnos. Registras los códigos y lo pasas a participación o a tareas y ejercicios. Fichas de estudio y cartas para imprimir si no hay celular. Botón directo en la clase del memorama.' },
             { v: '1.35.0', f: '2026-11-12', t: 'Muestra Profesiográfica: invitados de las charlas de Recursos Humanos y de Laboratorio, con su invitación y su reconocimiento (las mismas cartas de Mecatrónica, con el nombre de su carrera). Cada invitado lleva las preguntas que pasen los compañeros de esa carrera; se pueden agregar varios invitados por carrera. Si dejas las firmas vacías, usa las de la invitación de Mecatrónica.' },
             { v: '1.34.2', f: '2026-11-12', t: 'Muestra Profesiográfica y formatos de la escuela: ya se leen los alumnos cuando el Excel trae el número de lista como 1.0, 2.0… (por ejemplo, si pasó por Google Sheets o el celular); antes las listas salían en 0. Si el Excel no trae alumnos de 1º, lo avisa en lugar de guardar listas vacías. Al subir el Excel desde la Muestra también queda listo para el acta y las listas. En modo oscuro, las letras de la tabla de rotación ya se leen.' },
             { v: '1.34.1', f: '2026-11-12', t: 'Acta de la escuela: la calificación final ahora es el promedio de los 3 parciales, (1 PAR + 2 PAR + 3 PAR) / 3; la fórmula del formato solo dividía el 3er parcial entre 3. Queda en blanco mientras falte algún parcial. Las pruebas automáticas ya no traen nombres reales de alumnos.' },
