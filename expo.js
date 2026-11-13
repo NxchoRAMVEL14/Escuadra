@@ -174,7 +174,7 @@
   X.inv = d => Object.assign({}, INV, d.inv || {});
   const nomInv = v => ((v.titulo ? v.titulo.trim() + ' ' : '') + (v.nombre || '').trim()).trim();
   X.invHTML = d => {
-    const v = X.inv(d), f = (k, l, ph, t) => '<label class="fld"><span>' + l + '</span>' + (t === 'area' ? '<textarea class="inp" rows="4" data-ch="ex-inv" data-k="' + k + '" placeholder="' + esc(ph || '') + '">' + esc(v[k]) + '</textarea>' : '<input class="inp" data-ch="ex-inv" data-k="' + k + '" value="' + esc(v[k]) + '" placeholder="' + esc(ph || '') + '">') + '</label>';
+    const v = X.inv(d), f = (k, l, ph, t) => '<label class="fld"><span>' + l + '</span>' + (t === 'area' ? '<textarea id="ex-inv-' + k + '" class="inp" rows="4" data-ch="ex-inv" data-k="' + k + '" placeholder="' + esc(ph || '') + '">' + esc(v[k]) + '</textarea>' : '<input id="ex-inv-' + k + '" class="inp" data-ch="ex-inv" data-k="' + k + '" value="' + esc(v[k]) + '" placeholder="' + esc(ph || '') + '">') + '</label>';
     return card('<h3>🎤 Invitado de las charlas</h3><p class="muted small">Lo que dejes en blanco sale con una línea para llenarlo a mano. Se puede editar cuando quieras.</p>' +
       '<div class="fgrid">' + f('titulo', 'Título', 'Ing., Lic., Mtra.') + f('nombre', 'Nombre completo') + f('cargo', 'Cargo') + f('empresa', 'Empresa o institución') + '</div>' +
       f('tema', 'Tema de la charla', 'Por definir') + f('puntos', 'Qué esperamos que platique (un punto por renglón)', '¿Qué hace un mecatrónico en su trabajo?\n¿Cómo llegó a lo que hace hoy?\nUn consejo para los de 1º', 'area') +
@@ -186,23 +186,28 @@
   CH['ex-inv'] = el => { const g = D.grupoActual(); put(g, d => { d.inv = Object.assign({}, INV, d.inv || {}); d.inv[el.dataset.k] = el.value; }); };
   const fDoc = f => { const t = u.fLarga(f).replace(/^[a-záéíóúñ]+ /, ''); return /\d{4}/.test(t) ? t : t + ' de ' + String(f).slice(0, 4); };
   const linea = (v, w) => v ? '<b>' + esc(v) + '</b>' : '<span class="exi-ln" style="width:' + (w || 60) + 'mm"></span>';
-  X.invitacion = (g, d) => {
-    const v = X.inv(d), c = D.cfg(), pts = String(v.puntos || '').split('\n').map(x => x.trim()).filter(Boolean);
+  // v1.35: las mismas cartas sirven para las otras carreras de la Muestra (o = { v, carrera, conoce, dia, fecha, base })
+  X.INV = INV; X.nomInv = nomInv;
+  const firmas = (v, o) => { const m = X.inv(o.base || {}); return [[v.firma1 || m.firma1, v.puesto1 || m.puesto1], [v.firma2 || m.firma2, v.puesto2 || m.puesto2]]; };
+  X.invitacion = (g, d, o) => {
+    o = o || {}; const car = o.carrera || 'Técnico en Mecatrónica', conoce = o.conoce || 'la Mecatrónica', charla = o.fecha || d.charla;
+    const v = o.v ? Object.assign({}, INV, o.v) : X.inv(d), c = D.cfg(), pts = String(v.puntos || '').split('\n').map(x => x.trim()).filter(Boolean);
     return '<div class="pr exi"><p class="exi-fecha">' + esc(c.municipio || '') + ', Gto., a ' + esc(fDoc(u.today())) + '</p>' +
       '<p class="exi-a">' + linea(nomInv(v), 90) + '<br>' + (v.cargo || v.empresa ? esc([v.cargo, v.empresa].filter(Boolean).join(' · ')) : linea('', 90)) + '<br><b>P R E S E N T E</b></p>' +
-      '<p>Por medio de la presente, la carrera de <b>Técnico en Mecatrónica</b> del ' + esc(c.plantelNombre || c.plantel || '') + ' le invita cordialmente a compartir su experiencia con nuestros alumnos de 1er grado, que están por elegir su carrera técnica.</p>' +
-      '<table class="exi-t"><tr><td>Fecha</td><td><b>' + esc(u.fLarga(d.charla)) + '</b></td></tr><tr><td>Hora</td><td>' + linea(v.hora, 40) + '</td></tr><tr><td>Duración</td><td>' + linea(v.duracion, 40) + '</td></tr><tr><td>Lugar</td><td>' + linea(v.lugar, 60) + '</td></tr><tr><td>Tema</td><td>' + linea(v.tema, 100) + '</td></tr></table>' +
+      '<p>Por medio de la presente, la carrera de <b>' + esc(car) + '</b> del ' + esc(c.plantelNombre || c.plantel || '') + ' le invita cordialmente a compartir su experiencia con nuestros alumnos de 1er grado, que están por elegir su carrera técnica.</p>' +
+      '<table class="exi-t"><tr><td>Fecha</td><td><b>' + esc(u.fLarga(charla)) + '</b></td></tr><tr><td>Hora</td><td>' + linea(v.hora, 40) + '</td></tr><tr><td>Duración</td><td>' + linea(v.duracion, 40) + '</td></tr><tr><td>Lugar</td><td>' + linea(v.lugar, 60) + '</td></tr><tr><td>Tema</td><td>' + linea(v.tema, 100) + '</td></tr></table>' +
       '<p><b>Lo que nos gustaría que platicara:</b></p>' + (pts.length ? '<ul>' + pts.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '<div class="exi-lns">' + '<span class="exi-ln"></span>'.repeat(4) + '</div>') +
-      '<p>Al día siguiente, ' + esc(u.fLarga(d.fecha)) + ', nuestros alumnos de 3er y 5º semestre, trabajando en equipo, presentarán varios proyectos para invitar a los de 1er grado a elegir su carrera técnica; será un gusto que nos acompañe también.</p>' +
-      '<p>Agradecemos de antemano su apoyo para que más jóvenes conozcan la Mecatrónica.</p><p class="exi-at">Atentamente</p>' +
-      '<div class="exi-firmas">' + [[v.firma1, v.puesto1], [v.firma2, v.puesto2]].map(f => '<div><div class="exi-fl"></div><b>' + (f[0] ? esc(f[0]) : '&nbsp;') + '</b><br><small>' + (f[1] ? esc(f[1]) : 'Nombre y puesto') + '</small></div>').join('') + '</div></div>';
+      '<p>' + esc(o.dia || ('Al día siguiente, ' + u.fLarga(d.fecha) + ', nuestros alumnos de 3er y 5º semestre, trabajando en equipo, presentarán varios proyectos para invitar a los de 1er grado a elegir su carrera técnica; será un gusto que nos acompañe también.')) + '</p>' +
+      '<p>Agradecemos de antemano su apoyo para que más jóvenes conozcan ' + esc(conoce) + '.</p><p class="exi-at">Atentamente</p>' +
+      '<div class="exi-firmas">' + firmas(v, o).map(f => '<div><div class="exi-fl"></div><b>' + (f[0] ? esc(f[0]) : '&nbsp;') + '</b><br><small>' + (f[1] ? esc(f[1]) : 'Nombre y puesto') + '</small></div>').join('') + '</div></div>';
   };
-  X.reconocimiento = (g, d) => {
-    const v = X.inv(d), c = D.cfg(), fr = v.frase || ('Por su valiosa participación en la charla ' + (v.tema ? '«' + v.tema + '» ' : '') + 'dirigida a los alumnos de 1er grado, compartiendo su experiencia para que conozcan la carrera de Técnico en Mecatrónica.');
-    return '<div class="pr exr"><div class="exr-mar"><img class="exr-logo" src="' + LOGO() + '" alt="CETAC"><p class="exr-pl">' + esc(c.plantelNombre || c.plantel || '') + '</p><p class="exr-car">Carrera de Técnico en Mecatrónica</p><p class="exr-ot">otorga el presente</p><h1>RECONOCIMIENTO</h1><p class="exr-a">a</p>' +
+  X.reconocimiento = (g, d, o) => {
+    o = o || {}; const car = o.carrera || 'Técnico en Mecatrónica', charla = o.fecha || d.charla;
+    const v = o.v ? Object.assign({}, INV, o.v) : X.inv(d), c = D.cfg(), fr = v.frase || ('Por su valiosa participación en la charla ' + (v.tema ? '«' + v.tema + '» ' : '') + 'dirigida a los alumnos de 1er grado, compartiendo su experiencia para que conozcan la carrera de ' + car + '.');
+    return '<div class="pr exr"><div class="exr-mar"><img class="exr-logo" src="' + LOGO() + '" alt="CETAC"><p class="exr-pl">' + esc(c.plantelNombre || c.plantel || '') + '</p><p class="exr-car">Carrera de ' + esc(car) + '</p><p class="exr-ot">otorga el presente</p><h1>RECONOCIMIENTO</h1><p class="exr-a">a</p>' +
       '<p class="exr-nom">' + (nomInv(v) ? esc(nomInv(v)) : '<span class="exi-ln" style="width:150mm"></span>') + '</p>' + (v.cargo || v.empresa ? '<p class="exr-cg">' + esc([v.cargo, v.empresa].filter(Boolean).join(' · ')) + '</p>' : '') +
-      '<p class="exr-fr">' + esc(fr) + '</p><p class="exr-fe">' + esc(c.municipio || '') + ', Gto., a ' + esc(fDoc(d.charla)) + '</p>' +
-      '<div class="exr-firmas">' + [[v.firma1, v.puesto1], [v.firma2, v.puesto2]].map(f => '<div><div class="exi-fl"></div><b>' + (f[0] ? esc(f[0]) : '&nbsp;') + '</b><br><small>' + (f[1] ? esc(f[1]) : 'Nombre y puesto') + '</small></div>').join('') + '</div></div></div>';
+      '<p class="exr-fr">' + esc(fr) + '</p><p class="exr-fe">' + esc(c.municipio || '') + ', Gto., a ' + esc(fDoc(charla)) + '</p>' +
+      '<div class="exr-firmas">' + firmas(v, o).map(f => '<div><div class="exi-fl"></div><b>' + (f[0] ? esc(f[0]) : '&nbsp;') + '</b><br><small>' + (f[1] ? esc(f[1]) : 'Nombre y puesto') + '</small></div>').join('') + '</div></div></div>';
   };
   A['ex-invitacion'] = () => { const g = D.grupoActual(), d = X.doc(g); E.print.run(X.invitacion(g, d), { title: 'Invitación · ' + (nomInv(X.inv(d)) || 'invitado'), unaHoja: true }); };
   A['ex-reconocimiento'] = () => { const g = D.grupoActual(), d = X.doc(g); E.print.run(X.reconocimiento(g, d), { title: 'Reconocimiento · ' + (nomInv(X.inv(d)) || 'invitado'), landscape: true, unaHoja: true, propioLogo: true }); };

@@ -7,7 +7,7 @@
   const V = E.views, A = E.actions, CH = E.changes, H = E.h, card = H.card, btn = H.btn, link = H.link;
   const M = E.muestra = {}, KEY = 'muestra', KL = 'muestra:listas';
   M.BASE = {
-    nombre: 'Muestra Profesiográfica Interna', lema: 'Elige tu futuro', fecha: '2026-11-26',
+    nombre: 'Muestra Profesiográfica Interna', lema: 'Elige tu futuro', fecha: '2026-11-26', charla: '2026-11-25',
     bloques: [['10:30', '11:20'], ['11:20', '12:10'], ['12:10', '1:00'], ['1:00', '1:50']],
     // grupo de 1º por bloque: [Recursos Humanos, Laboratorio, Mecatrónica, en clase]
     rot: [['A', 'B', 'C', 'D'], ['D', 'A', 'B', 'C'], ['B', 'C', 'D', 'A'], ['C', 'D', 'A', 'B']],
@@ -67,6 +67,41 @@
     Object.keys(L.g).sort().forEach(G => M.mitades(L.g[G]).forEach((m, i) => { const gr = G + (i + 1); m.forEach(x => lista.push({ nombre: tc(x[1]), grupo: '1º' + G + ' · ' + gr, num: x[0], turno: M.turnoMec(d, gr), sub: d.nombre + ' · ' + u.fLarga(d.fecha) })); }));
     E.print.run(X.hojasPas(ed, lista), { title: 'Pasaportes de 1er semestre (' + lista.length + ')', propioLogo: true, margin: '8mm' }); };
 
+  /* ---------- v1.35: invitados de las charlas de las otras carreras (cartas de invitación y reconocimientos) ---------- */
+  const KI = 'muestra:inv';
+  M.CARS = [{ k: 'rh', a: 0, conoce: 'la carrera de Recursos Humanos', ej: '¿Qué hace alguien de Recursos Humanos en una empresa?\n¿Cómo llegó a lo que hace hoy?\nUn consejo para los de 1º' },
+    { k: 'lab', a: 1, conoce: 'la carrera de Laboratorista Ambiental', ej: '¿Qué hace un laboratorista ambiental en su trabajo?\n¿Cómo llegó a lo que hace hoy?\nUn consejo para los de 1º' }];
+  M.invs = k => { const o = S.get(KI) || {}; return (o[k] && o[k].length ? o[k] : [{}]); };
+  M.dia = d => 'Al día siguiente, ' + u.fLarga(d.fecha) + ', será nuestra ' + d.nombre + ', donde los alumnos de 1er grado conocerán de cerca las tres carreras técnicas del plantel; será un gusto que nos acompañe también.';
+  const optsInv = (car, v) => { const d = M.doc(), a = d.areas[car.a], X = E.expo, g = D.grupoActual();
+    return { v: v, carrera: a.largo, conoce: car.conoce, fecha: d.charla || '2026-11-25', dia: v.parrafo || M.dia(d), base: X && g ? X.doc(g) : {} }; };
+  const editInv = (k, f) => S.update(KI, o => { const l = (o[k] && o[k].length ? o[k] : [{}]).map(x => Object.assign({}, x)); f(l); o[k] = l; }, {});
+  CH['mu-inv'] = el => editInv(el.dataset.c, l => { const i = +el.dataset.i; l[i] = l[i] || {}; l[i][el.dataset.k] = el.value; });
+  A['mu-inv-mas'] = el => editInv(el.dataset.c, l => { const p = l[l.length - 1] || {}; l.push({ hora: '', duracion: p.duracion || '', lugar: p.lugar || '', puntos: p.puntos || '', firma1: p.firma1 || '', puesto1: p.puesto1 || '', firma2: p.firma2 || '', puesto2: p.puesto2 || '' }); });
+  A['mu-inv-borra'] = el => { if (!confirm('¿Quitar este invitado?')) return; editInv(el.dataset.c, l => { l.splice(+el.dataset.i, 1); }); };
+  const carta = (el, que) => { const car = M.CARS.find(c => c.k === el.dataset.c), v = M.invs(car.k)[+el.dataset.i] || {}, X = E.expo, g = D.grupoActual(), o = optsInv(car, v), nom = X.nomInv(Object.assign({}, X.INV, v)) || 'invitado';
+    if (que === 'inv') E.print.run(X.invitacion(g, X.doc(g), o), { title: 'Invitación · ' + nom, unaHoja: true });
+    else E.print.run(X.reconocimiento(g, X.doc(g), o), { title: 'Reconocimiento · ' + nom, landscape: true, unaHoja: true, propioLogo: true }); };
+  A['mu-invitacion'] = el => carta(el, 'inv');
+  A['mu-reconocimiento'] = el => carta(el, 'rec');
+  M.invHTML = () => {
+    const d = M.doc(), X = E.expo, g = D.grupoActual(), mec = X && g ? X.inv(X.doc(g)) : {};
+    const f = (c, i, v, k, l, ph, t) => '<label class="fld"><span>' + l + '</span>' + (t === 'area' ? '<textarea id="mu-inv-' + c + '-' + i + '-' + k + '" class="inp" rows="5" data-ch="mu-inv" data-c="' + c + '" data-i="' + i + '" data-k="' + k + '" placeholder="' + esc(ph || '') + '">' + esc(v[k] || '') + '</textarea>' : '<input id="mu-inv-' + c + '-' + i + '-' + k + '" class="inp" data-ch="mu-inv" data-c="' + c + '" data-i="' + i + '" data-k="' + k + '" value="' + esc(v[k] || '') + '" placeholder="' + esc(ph || '') + '">') + '</label>';
+    const uno = (car, v, i, n) => { const c = car.k, F = (k, l, ph, t) => f(c, i, v, k, l, ph, t);
+      return '<div class="momento"><b>Invitado ' + (i + 1) + (v.nombre ? ' · ' + esc(X.nomInv(Object.assign({}, X.INV, v))) : '') + '</b>' +
+        '<div class="fgrid">' + F('titulo', 'Título', 'Ing., Lic., Mtra.') + F('nombre', 'Nombre completo') + F('cargo', 'Cargo') + F('empresa', 'Empresa o institución') + '</div>' +
+        F('tema', 'Tema de la charla', 'Por definir') + F('puntos', 'Preguntas o puntos que les pasen los compañeros (uno por renglón)', car.ej, 'area') +
+        '<div class="fgrid">' + F('hora', 'Hora', '10:30') + F('duracion', 'Duración', '30 minutos x 4 grupos') + F('lugar', 'Lugar', 'Centro de cómputo') + '</div>' +
+        '<div class="fgrid">' + F('firma1', 'Firma 1: nombre', mec.firma1 || '') + F('puesto1', 'Firma 1: puesto', mec.puesto1 || '') + F('firma2', 'Firma 2: nombre', mec.firma2 || '') + F('puesto2', 'Firma 2: puesto', mec.puesto2 || '') + '</div>' +
+        F('parrafo', 'Párrafo del día siguiente (opcional)', M.dia(d)) + F('frase', 'Frase del reconocimiento (opcional)', 'Por su valiosa participación en la charla para los alumnos de 1er grado…') +
+        '<div class="row gap wrap">' + btn('🖨 Invitación', 'mu-invitacion', 'data-c="' + c + '" data-i="' + i + '"', 'primary') + btn('🖨 Reconocimiento', 'mu-reconocimiento', 'data-c="' + c + '" data-i="' + i + '"', '') + (n > 1 ? btn('Quitar', 'mu-inv-borra', 'data-c="' + c + '" data-i="' + i + '"', 'ghost') : '') + '</div></div>'; };
+    return card('<h3>🎤 Invitados de las charlas · otras carreras</h3><p class="muted small">Las mismas cartas de Mecatrónica, para los invitados de Recursos Humanos y de Laboratorio. Lo que dejes en blanco sale con una línea para llenarlo a mano; si dejas las firmas vacías, usa las de la invitación de Mecatrónica (en Expo).</p>' +
+      '<label class="fld"><span>Día de las charlas</span><input class="inp" type="date" data-ch="mu-f" data-k="charla" value="' + esc(d.charla || '2026-11-25') + '"></label>' +
+      M.CARS.map(car => { const l = M.invs(car.k); return '<details class="sub" open><summary>' + esc(d.areas[car.a].largo) + ' · ' + l.length + ' invitado' + (l.length > 1 ? 's' : '') + '</summary>' + l.map((v, i) => uno(car, v, i, l.length)).join('') +
+        '<div class="row gap wrap mt">' + btn('➕ Otro invitado', 'mu-inv-mas', 'data-c="' + car.k + '"', 'ghost') + '</div></details>'; }).join('') +
+      '<p class="muted small mt">El invitado de Mecatrónica se edita en ' + link('🎪 Expo', 'expo', 'ghost') + '.</p>');
+  };
+
   /* ---------- pantalla ---------- */
   V.muestra = () => {
     const d = M.doc(), L = M.listas(), FM = E.formatos, tieneXls = FM && FM.doc();
@@ -76,6 +111,7 @@
       '<div class="row gap wrap mt">' + btn('🖨 Rotación', 'mu-rot', '', 'primary') + btn('🖨 Listas por mitad', 'mu-listas', '', '') + btn('🖨 Pasaportes con nombre', 'mu-pas', '', '') + '<a class="btn ghost" href="muestra-flyer.jpg" target="_blank" rel="noopener">🖼 Flyer</a>' + link('🎪 Expo de Mecatrónica', 'expo', 'ghost') + '</div>');
     h += card('<h3>📋 Listas de 1º</h3>' + (L ? '<p class="small">' + Object.keys(L.g).sort().map(g => { const mm = M.mitades(L.g[g]); return '<b>1º' + g + '</b>: ' + L.g[g].length + ' (' + g + '1: ' + mm[0].length + ' · ' + g + '2: ' + mm[1].length + ')'; }).join(' · ') + '</p><p class="muted small">Leídas el ' + esc(u.fCorta(L.f)) + '. Se guardan solo en tu cuenta.</p>' : '<p class="small">Lee las listas de 1º del Excel de la escuela para imprimir las listas por mitad y los pasaportes con nombre.</p>') +
       '<div class="row gap wrap">' + (tieneXls ? btn('Leer del Excel que ya subiste', 'mu-leer', '', L ? '' : 'primary') : '') + '<label class="btn ' + (tieneXls || L ? '' : 'primary ') + 'filebtn">Subir Excel de listas<input type="file" accept=".xlsx" data-ch="mu-subir" hidden></label></div>');
+    if (E.expo) h += M.invHTML();
     h += card('<h3>👩‍🏫 Maestros y lugares</h3>' + d.areas.map((a, i) => '<div class="momento"><b>' + esc(a.largo) + '</b> <span class="small muted">· ' + esc(a.lugar) + '</span><div class="row gap wrap mt">' + a.m.map((m, j) => '<input class="inp" style="max-width:12em" data-ch="mu-m" data-a="' + i + '" data-m="' + j + '" value="' + esc(m) + '" aria-label="Maestro ' + (j + 1) + ' de ' + esc(a.n) + '">').join('') + '</div></div>').join('') +
       '<details class="sub"><summary>Fecha</summary><label class="fld"><span>Día de la muestra</span><input class="inp" type="date" data-ch="mu-f" data-k="fecha" value="' + esc(d.fecha) + '"></label></details>');
     return { t: 'Muestra Profesiográfica', h: h };
