@@ -1617,3 +1617,4 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .pr .mu-l, .pr .mu-r { border-collapse: collapse; width: 100% } .pr .mu-l td, .pr .mu-l th, .pr .mu-r td { border: 1px solid #b5c8c6; padding: .7mm 1.3mm; font-size: 8.2pt }
 .pr .mu-l th { background: #0e5e5a; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .mu-l td.n { text-align: center; width: 7mm } .pr .mu-l td.ck { width: 12mm }
 .pr .mu-r td { font-size: 7.8pt } .pr .mu-r td.h { white-space: nowrap; width: 20mm; font-weight: 700 } .pr .mu-r small { color: #555 }
+.mu-t td[style] { color: #152626 } /* v1.34.2: en modo oscuro las letras de la rotación se veían blancas sobre el color claro */

@@ -42,10 +42,10 @@
     const FM = E.formatos, ctx = await FM.abrir(bytes), out = {};
     ctx.hojas.forEach(h => { if (!h.info || h.info.tipo !== 'lista' || String(h.info.semestre).trim() !== '1') return; const g = (/1\s*([A-D])/i.exec(h.info.grupo) || [])[1]; if (!g) return;
       out[g.toUpperCase()] = FM.filas(ctx, ctx.docs[h.path]).map(f => [f.num, f.nombre]); });
-    if (!Object.keys(out).length) throw new Error('No encontré listas de 1er semestre en ese Excel');
+    if (!Object.keys(out).length || !Object.keys(out).some(g => out[g].length)) throw new Error('No encontré alumnos de 1er semestre en ese Excel (hojas «LISTA DE ASISTENCIA 1A», 1B…)');
     S.put(KL, { f: u.today(), g: out }); return out;
   };
-  CH['mu-subir'] = async el => { const f = el.files && el.files[0]; if (!f) return; try { const o = await M.leer(new Uint8Array(await f.arrayBuffer())); u.toast('Listas de 1º: ' + Object.keys(o).sort().map(g => '1º' + g + ' (' + o[g].length + ')').join(', '), 'ok', 5000); } catch (e) { u.toast(e.message, 'err', 5000); } };
+  CH['mu-subir'] = async el => { const f = el.files && el.files[0]; if (!f) return; try { const buf = await f.arrayBuffer(), o = await M.leer(new Uint8Array(buf)); if (E.formatos && !E.formatos.doc() && E.formatos.guardarPlantilla) E.formatos.guardarPlantilla(f.name, buf); u.toast('Listas de 1º: ' + Object.keys(o).sort().map(g => '1º' + g + ' (' + o[g].length + ')').join(', '), 'ok', 5000); } catch (e) { u.toast(e.message, 'err', 5000); } };
   A['mu-leer'] = async () => { try { const o = await M.leer(); u.toast('Listas de 1º: ' + Object.keys(o).sort().map(g => '1º' + g + ' (' + o[g].length + ')').join(', '), 'ok', 5000); } catch (e) { u.toast(e.message, 'err', 5000); } };
   CH['mu-m'] = el => { const i = +el.dataset.a, j = +el.dataset.m; S.update(KEY, d => { const b = M.doc(); d.areas = (d.areas && d.areas.length ? d.areas : b.areas.map(a => ({ m: a.m.slice() }))); d.areas[i] = d.areas[i] || { m: b.areas[i].m.slice() }; d.areas[i].m = (d.areas[i].m || b.areas[i].m).slice(); d.areas[i].m[j] = el.value.trim(); }, {}); };
   CH['mu-f'] = el => { S.update(KEY, d => { d[el.dataset.k] = el.value; }, {}); };

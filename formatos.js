@@ -80,7 +80,12 @@
     const t = doc.createElementNS(NS, 't'); t.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve'); t.textContent = String(s); r.appendChild(t); is.appendChild(r); c.appendChild(is);
   };
   // los alumnos del formato (desde el renglón 9 mientras haya número de lista)
-  FM.filas = (ctx, doc) => { const out = []; for (let r = 9; r < 200; r++) { const n = FM.leer(ctx, doc, 'A' + r), nom = FM.leer(ctx, doc, 'B' + r); if (!/^\d+$/.test(String(n).trim()) || !nom) break; out.push({ r: r, num: +n, nombre: nom }); } return out; };
+  // el número puede venir como 1, «1.0» (Excel guardado desde Google Sheets o el celular) o vacío; se lee hasta que se acaban los nombres
+  FM.filas = (ctx, doc) => { const out = []; let prev = 0;
+    for (let r = 9; r < 300; r++) { const n = String(FM.leer(ctx, doc, 'A' + r)).trim(), nom = String(FM.leer(ctx, doc, 'B' + r)).trim(); if (!nom) break;
+      let k = /^\d+(\.0+)?$/.test(n) ? Math.round(Number(n)) : n === '' ? prev + 1 : NaN; if (!(k > 0)) break;
+      out.push({ r: r, num: k, nombre: nom.replace(/\s+/g, ' ') }); prev = k; }
+    return out; };
   FM.empata = (filas, al) => { const porN = {}; al.forEach(a => { porN[u.norm(a.nombre)] = a; }); return filas.map(f => ({ f: f, a: porN[u.norm(f.nombre)] || al.find(a => +a.num === f.num && u.norm(a.nombre).split(' ')[0] === u.norm(f.nombre).split(' ')[0]) || null })); };
   FM.concluido = (g, p) => !!S.get('cerrado:' + g.id + ':' + p.id) || u.today() > p.fin;
   const recalcular = ctx => { const cp = ctx.wb.getElementsByTagName('calcPr')[0]; if (cp) cp.setAttribute('fullCalcOnLoad', '1'); else { const w = ctx.wb.documentElement, c = ctx.wb.createElementNS(NS, 'calcPr'); c.setAttribute('fullCalcOnLoad', '1'); w.appendChild(c); } };
@@ -153,12 +158,17 @@
         btn('📋 Lista con asistencia', 'fm-lista', 'data-m="1"', '') + btn('📋 Lista solo con fechas', 'fm-lista', 'data-m="0"', 'ghost') + '</div>' +
         '<p class="muted small">El acta solo trae los parciales cerrados o ya terminados; los que siguen quedan en blanco. La calificación final se corrige para que sea el promedio de los 3 parciales (sale cuando ya están los 3). En la lista, cada fecha va con el día arriba y el mes abajo, en letra chica para que se lea en la celda angosta.</p>' : ''));
   };
+  // guarda el Excel de la escuela como plantilla (también se usa desde la Muestra, si aún no habías subido uno)
+  FM.guardarPlantilla = async (nombre, buf) => {
+    const ctx = await FM.abrir(new Uint8Array(buf)), g = D.grupoActual(), mio = g ? FM.deGrupo(ctx, g) : {};
+    S.put(KEY, { nombre: nombre, fecha: u.today(), b64: aB64(buf), hojas: [mio.lista && mio.lista.nombre, mio.acta && mio.acta.nombre].filter(Boolean).join(' y ') });
+    return mio;
+  };
   CH['fm-subir'] = async el => {
     const f = el.files && el.files[0]; if (!f) return;
     try {
       const buf = await f.arrayBuffer(); if (buf.byteLength > 3 * 1024 * 1024) { u.toast('El archivo pesa más de 3 MB', 'err'); return; }
-      const ctx = await FM.abrir(new Uint8Array(buf)), g = D.grupoActual(), mio = g ? FM.deGrupo(ctx, g) : {};
-      S.put(KEY, { nombre: f.name, fecha: u.today(), b64: aB64(buf), hojas: [mio.lista && mio.lista.nombre, mio.acta && mio.acta.nombre].filter(Boolean).join(' y ') });
+      const mio = await FM.guardarPlantilla(f.name, buf);
       u.toast(mio.lista || mio.acta ? 'Listo: encontré ' + [mio.lista && 'tu lista', mio.acta && 'tu acta'].filter(Boolean).join(' y ') : 'Se guardó, pero no encontré hojas de tu grupo', mio.lista || mio.acta ? 'ok' : 'err', 4500);
     } catch (e) { u.toast('No pude leer el Excel: ' + e.message, 'err', 5000); }
   };
