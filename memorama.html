@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0e5e5a">
+<title>Memorama ISO 1219 · Escuadra</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<style>
+:root { --bg:#f2f5f4; --s:#fff; --s2:#eaf0ee; --ink:#12221f; --mut:#5a6c68; --line:#d9e3e0; --brand:#0e5e5a; --bink:#fff; --ok:#1c7c45; --oks:#dcf2e5; --bad:#bf342b; --bads:#fbe2df; --acc:#f0a500; color-scheme: light }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1312; --s:#13201e; --s2:#1a2b28; --ink:#e4eeec; --mut:#94a8a4; --line:#25403b; --brand:#3cb4a8; --bink:#04201d; --ok:#52c585; --oks:#143022; --bad:#ff7b71; --bads:#3d1c1a; color-scheme: dark } }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent } body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif }
+main { max-width:620px; margin:0 auto; padding:12px 12px 40px } body.proy main { max-width:none; padding:10px 18px }
+.top { display:flex; align-items:center; gap:10px; margin:2px 0 10px } .top svg.lg { width:34px; height:34px; flex:none } .top b { display:block } .top small { color:var(--mut) } .top .sp { flex:1 }
+.card { background:var(--s); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 12px }
+h1 { font-size:1.25rem; margin:0 0 6px } h2 { font-size:1.05rem; margin:0 0 8px } p { margin:.3em 0 .6em } .mut { color:var(--mut) } .sm { font-size:.86rem }
+.btn { display:inline-block; font:inherit; font-weight:700; border:0; border-radius:12px; padding:11px 16px; background:var(--brand); color:var(--bink); cursor:pointer; margin:4px 6px 4px 0 }
+.btn.gh { background:var(--s2); color:var(--ink) } .btn.sm { padding:7px 11px; font-size:.86rem }
+.opt { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 12px } .opt label { display:flex; align-items:center; gap:6px; background:var(--s2); border:1.5px solid var(--line); border-radius:10px; padding:8px 10px; cursor:pointer; font-size:.92rem }
+.opt input { accent-color:var(--brand) } .opt label:has(input:checked) { border-color:var(--brand); background:var(--oks) }
+.stat { display:flex; gap:14px; flex-wrap:wrap; font-size:.9rem; margin:0 0 8px; color:var(--mut) } .stat b { color:var(--ink) }
+.tab { display:grid; gap:7px; grid-template-columns:repeat(var(--cols),1fr) }
+.c { position:relative; aspect-ratio:3/3.3; border-radius:10px; cursor:pointer; perspective:600px; border:0; padding:0; background:none; font:inherit; color:inherit }
+.c .in { position:absolute; inset:0; transition:transform .35s; transform-style:preserve-3d }
+.c.up .in, .c.ok .in { transform:rotateY(180deg) }
+.c .fr, .c .bk { position:absolute; inset:0; border-radius:10px; backface-visibility:hidden; -webkit-backface-visibility:hidden; display:flex; align-items:center; justify-content:center; overflow:hidden }
+.c .bk { background:linear-gradient(135deg,#0e5e5a,#148479); color:#fff; font-weight:800; font-size:1.05rem; border:2px solid rgba(255,255,255,.15) }
+.c .bk i { position:absolute; inset:7px; border:1.5px dashed rgba(255,255,255,.35); border-radius:7px } .c .bk span { position:relative }
+.c .fr { transform:rotateY(180deg); background:#fff; color:#111; border:2px solid var(--line); padding:4px; text-align:center; font-size:.72rem; line-height:1.18; font-weight:600 }
+.c .fr svg { width:100%; height:100%; max-height:100% } .c.ok .fr { border-color:var(--ok); box-shadow:0 0 0 2px var(--ok) inset } .c.no .fr { border-color:var(--bad) }
+.c .fr.tx { background:#fffbe8 }
+body.proy .tab { height:calc(100vh - 168px); grid-template-rows:repeat(var(--rows),1fr) } body.proy .c { aspect-ratio:auto; min-height:0 } body.proy .c .fr { font-size:clamp(.7rem,1.25vw,1.3rem) } body.proy .c .bk { font-size:clamp(1rem,2.2vw,2.2rem) }
+.pan { position:fixed; left:50%; bottom:14px; transform:translateX(-50%); width:min(94vw,560px); background:var(--s); border:2px solid var(--ok); border-radius:16px; padding:12px 14px; box-shadow:0 10px 30px rgba(0,0,0,.25); z-index:5; display:flex; gap:12px; align-items:center }
+.pan .sv { width:120px; flex:none; background:#fff; color:#111; border-radius:10px; padding:4px } .pan .sv svg { width:100% } .pan b { display:block }
+body.proy .pan { width:min(80vw,900px); bottom:auto; top:50%; transform:translate(-50%,-50%); flex-direction:column; text-align:center; font-size:1.4rem; padding:24px } body.proy .pan .sv { width:min(46vw,460px) }
+.eqs { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 10px } .eq { background:var(--s2); border:2px solid var(--line); border-radius:12px; padding:6px 12px; font-weight:700 } .eq.t { border-color:var(--acc); background:#fff3cf; color:#111 }
+body.proy .eq { font-size:1.3rem; padding:8px 16px }
+.score { font-size:2.2rem; font-weight:800; color:var(--brand) }
+.fich { display:grid; grid-template-columns:96px 1fr; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line) } .fich .sv { background:#fff; color:#111; border-radius:8px; padding:3px } .fich svg { width:100% }
+.foot { color:var(--mut); font-size:.8rem; text-align:center; margin-top:14px }
+input.num { font:inherit; font-size:1.4rem; width:90px; text-align:center; padding:8px; border-radius:10px; border:1.5px solid var(--line); background:var(--s); color:var(--ink) }
+</style>
+</head>
+<body>
+<main id="m"><div class="card"><p>Cargando…</p></div></main>
+<script src="iso1219.js"></script>
+<script>
+(function () {
+  'use strict';
+  const m = document.getElementById('m'), I = window.ISO1219;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const logo = '<svg class="lg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
+  // datos del enlace que genera tu profe en Escuadra (grupo, nivel, pares, modo); sin enlace se juega libre
+  let d = {};
+  try { const h = location.hash.slice(1); if (h && h[0] === 'j') { const b = atob(h.slice(1).replace(/-/g, '+').replace(/_/g, '/')), by = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) by[i] = b.charCodeAt(i); d = JSON.parse(new TextDecoder().decode(by)); } } catch (e) { d = {}; }
+  const PROY = d.m === 'p'; if (PROY) document.body.classList.add('proy');
+  const cfg = { niv: [1, 2, 3].indexOf(d.n) >= 0 ? d.n : 1, cats: Array.isArray(d.cats) && d.cats.length ? d.cats : ['val', 'acc'], p: [6, 8, 10, 12].indexOf(d.p) >= 0 ? d.p : (PROY ? 12 : 8), eq: Math.max(2, Math.min(6, d.eq || 4)) };
+  // código para tu profe (4 dígitos): depende del enlace, tu número de lista, el nivel, los pares y qué tan bien te fue en tu PRIMER juego
+  const fnv = s => { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const codigo = (c, num, niv, p, b) => String(1000 + fnv('mem|' + c + '|' + num + '|' + niv + '|' + p + '|' + b) % 9000);
+  const banda = (int, p) => int <= Math.round(p * 1.5) ? 3 : int <= Math.round(p * 2.5) ? 2 : 1;
+  const BANDA = { 3: '¡Excelente memoria!', 2: '¡Bien hecho!', 1: '¡Lo terminaste!' };
+  const primero = (niv, p, b) => { const k = 'escuadra.mem.' + d.c + '.' + niv + '.' + p; try { const v = localStorage.getItem(k); if (v) return Number(v); localStorage.setItem(k, String(b)); } catch (e) { } return b; };
+  const NIV = { 1: ['Nivel 1', 'Símbolo con su nombre'], 2: ['Nivel 2', 'Símbolo con su función'], 3: ['Nivel 3', 'Válvula completa con su nombre'] };
+  const head = sub => '<div class="top">' + logo + '<div><b>Memorama ISO 1219</b><small>' + esc(d.g ? d.g + ' · ' : '') + esc(sub || 'Simbología neumática') + '</small></div><span class="sp"></span>' + (sub ? '<button class="btn gh sm" id="salir">Menú</button>' : '') + '</div>';
+  const mezcla = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  /* ---------- inicio: elegir nivel, temas y pares ---------- */
+  function inicio() {
+    m.innerHTML = head() + '<div class="card"><h1>' + (PROY ? '📽 Memorama por equipos' : '🃏 Memorama de simbología') + '</h1><p class="sm">Voltea dos cartas: si son pareja se quedan descubiertas y ves para qué sirve ese componente. ' + (PROY ? 'Los equipos pasan por turnos: si hacen pareja, ganan un punto y siguen; si no, pasa el turno.' : 'Puedes jugar solo o en pareja, turnándose el celular.') + '</p>' +
+      '<h2>Nivel</h2><div class="opt">' + [1, 2, 3].map(n => '<label><input type="radio" name="niv" value="' + n + '"' + (cfg.niv === n ? ' checked' : '') + '>' + NIV[n][0] + ': ' + NIV[n][1] + '</label>').join('') + '</div>' +
+      '<div id="tcats"><h2>Temas</h2><div class="opt">' + Object.keys(I.CAT).map(k => '<label><input type="checkbox" name="cat" value="' + k + '"' + (cfg.cats.indexOf(k) >= 0 ? ' checked' : '') + '>' + esc(I.CAT[k]) + '</label>').join('') + '</div></div>' +
+      '<h2>Pares</h2><div class="opt">' + [6, 8, 10, 12].map(n => '<label><input type="radio" name="par" value="' + n + '"' + (cfg.p === n ? ' checked' : '') + '>' + n + ' pares (' + (n * 2) + ' cartas)</label>').join('') + '</div>' +
+      (PROY ? '<h2>Equipos</h2><div class="opt">' + [2, 3, 4, 5, 6].map(n => '<label><input type="radio" name="eq" value="' + n + '"' + (cfg.eq === n ? ' checked' : '') + '>' + n + '</label>').join('') + '</div>' : '') +
+      '<button class="btn" id="go">¡Jugar!</button> <button class="btn gh" id="fichas">📖 Ver los símbolos</button></div>' +
+      '<p class="foot">' + (d.c ? 'Al terminar te doy un código para tu profe. ' : '') + 'No se manda nada a ningún lado: todo queda en este ' + (PROY ? 'equipo' : 'celular') + '.</p>';
+    const tc = () => { document.getElementById('tcats').style.display = m.querySelector('[name=niv]:checked').value === '3' ? 'none' : ''; };
+    m.querySelectorAll('[name=niv]').forEach(x => x.onchange = tc); tc();
+    document.getElementById('go').onclick = () => {
+      cfg.niv = Number(m.querySelector('[name=niv]:checked').value); cfg.p = Number(m.querySelector('[name=par]:checked').value);
+      const cs = Array.from(m.querySelectorAll('[name=cat]:checked')).map(x => x.value); if (cfg.niv < 3 && !cs.length) { alert('Elige al menos un tema'); return; } if (cs.length) cfg.cats = cs;
+      const q = m.querySelector('[name=eq]:checked'); if (q) cfg.eq = Number(q.value);
+      jugar();
+    };
+    document.getElementById('fichas').onclick = () => fichas(null);
+  }
+
+  /* ---------- fichas de estudio ---------- */
+  function fichas(lista) {
+    const L = lista || (cfg.niv === 3 ? I.COMPLETAS : I.SIM.filter(s => cfg.cats.indexOf(s.cat) >= 0));
+    m.innerHTML = head('Fichas de estudio') + '<div class="card"><h1>📖 ' + (lista ? 'Los símbolos de tu juego' : 'Símbolos') + '</h1>' + L.map(s => '<div class="fich"><div class="sv">' + s.svg + '</div><div><b>' + esc(s.n) + '</b><p class="sm mut">' + esc(s.f) + '</p></div></div>').join('') + '</div>' +
+      '<button class="btn" id="otra">Jugar</button>';
+    document.getElementById('salir').onclick = inicio; document.getElementById('otra').onclick = inicio; window.scrollTo(0, 0);
+  }
+
+  /* ---------- el juego ---------- */
+  let st = null;
+  function jugar() {
+    const pool = cfg.niv === 3 ? I.COMPLETAS : I.SIM.filter(s => cfg.cats.indexOf(s.cat) >= 0), sel = mezcla(pool).slice(0, cfg.p), P = sel.length;
+    const cartas = [];
+    sel.forEach((s, i) => { cartas.push({ k: i, t: 's', s: s }); cartas.push({ k: i, t: 'x', s: s, tx: cfg.niv === 2 ? s.f : s.n }); });
+    st = { sel: sel, P: P, cartas: mezcla(cartas), up: [], ok: 0, int: 0, t0: Date.now(), bloq: false, eq: PROY ? Array.from({ length: cfg.eq }, () => 0) : null, turno: 0 };
+    const n = st.cartas.length, cols = PROY ? ([3, 4, 5, 6, 7, 8].filter(c => n % c === 0).sort((x, y) => Math.abs(x / (n / x) - 1.6) - Math.abs(y / (n / y) - 1.6))[0] || Math.ceil(Math.sqrt(n * 1.6))) : (n > 16 ? 5 : 4);
+    m.innerHTML = head(NIV[cfg.niv][0] + ' · ' + NIV[cfg.niv][1]) + '<div id="eqs"></div><div class="stat" id="stat"></div><div class="tab" style="--cols:' + cols + ';--rows:' + Math.ceil(n / cols) + '">' +
+      st.cartas.map((c, i) => '<button class="c" data-i="' + i + '" aria-label="Carta ' + (i + 1) + '"><span class="in"><span class="bk"><i></i><span>' + (i + 1) + '</span></span><span class="fr' + (c.t === 'x' ? ' tx' : '') + '">' + (c.t === 's' ? c.s.svg : esc(c.tx)) + '</span></span></button>').join('') + '</div><div id="pan"></div>';
+    document.getElementById('salir').onclick = () => { if (st.ok < st.P && !confirm('¿Salir del juego?')) return; inicio(); };
+    m.querySelectorAll('.c').forEach(b => b.onclick = () => voltea(Number(b.dataset.i)));
+    marcador(); clearInterval(st.reloj); st.reloj = setInterval(marcador, 1000);
+  }
+  const seg = () => Math.round((Date.now() - st.t0) / 1000), mmss = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  function marcador() {
+    const e = document.getElementById('stat'); if (!e) { clearInterval(st.reloj); return; }
+    e.innerHTML = '<span>Pares: <b>' + st.ok + ' de ' + st.P + '</b></span><span>Intentos: <b>' + st.int + '</b></span>' + (PROY ? '' : '<span>Tiempo: <b>' + mmss(seg()) + '</b></span>');
+    if (PROY) document.getElementById('eqs').innerHTML = '<div class="eqs">' + st.eq.map((p, i) => '<span class="eq' + (i === st.turno ? ' t' : '') + '">Equipo ' + (i + 1) + ': ' + p + '</span>').join('') + '</div>';
+  }
+  function voltea(i) {
+    if (st.bloq) return; const c = st.cartas[i], el = m.querySelector('.c[data-i="' + i + '"]');
+    if (el.classList.contains('ok') || st.up.indexOf(i) >= 0) return;
+    el.classList.add('up'); st.up.push(i); if (st.up.length < 2) return;
+    st.int++; const a = st.cartas[st.up[0]], ea = m.querySelector('.c[data-i="' + st.up[0] + '"]');
+    if (a.k === c.k) {
+      ea.classList.add('ok'); el.classList.add('ok'); st.ok++; if (st.eq) st.eq[st.turno]++; st.up = []; marcador(); panel(c.s);
+    } else {
+      st.bloq = true; ea.classList.add('no'); el.classList.add('no');
+      setTimeout(() => { ea.classList.remove('up', 'no'); el.classList.remove('up', 'no'); st.up = []; st.bloq = false; if (st.eq) st.turno = (st.turno + 1) % st.eq.length; marcador(); }, PROY ? 1700 : 1100);
+      marcador();
+    }
+  }
+  // al hacer pareja: el símbolo en grande, su nombre y para qué sirve
+  function panel(s) {
+    const p = document.getElementById('pan'), fin = st.ok >= st.P;
+    if (PROY) {
+      st.bloq = true;
+      p.innerHTML = '<div class="pan"><div class="sv">' + s.svg + '</div><b>¡Pareja para el Equipo ' + (st.turno + 1) + '!</b><span>' + esc(s.n) + '</span><p class="mut" id="pf">¿Para qué sirve? Explíquenlo antes de ver la respuesta.</p><div><button class="btn gh" id="ver">Ver respuesta</button> <button class="btn" id="seg">' + (fin ? 'Ver resultados' : 'Seguir (mismo equipo)') + '</button></div></div>';
+      document.getElementById('ver').onclick = () => { document.getElementById('pf').innerHTML = '<b>' + esc(s.f) + '</b>'; };
+      document.getElementById('seg').onclick = () => { p.innerHTML = ''; st.bloq = false; if (fin) final(); };
+    } else {
+      p.innerHTML = '<div class="pan" id="pn"><div class="sv">' + s.svg + '</div><div><b>✓ ' + esc(s.n) + '</b><span class="sm">' + esc(s.f) + '</span></div></div>';
+      clearTimeout(st.tp); const quita = () => { p.innerHTML = ''; if (fin) final(); };
+      document.getElementById('pn').onclick = () => { clearTimeout(st.tp); quita(); };
+      st.tp = setTimeout(quita, fin ? 2600 : 3800);
+    }
+  }
+  /* ---------- resultados y código ---------- */
+  function final() {
+    clearInterval(st.reloj); const t = seg(), b = banda(st.int, st.P);
+    if (PROY) {
+      const max = Math.max.apply(null, st.eq), gan = st.eq.map((p, i) => p === max ? i + 1 : 0).filter(Boolean);
+      m.innerHTML = head('Resultados') + '<div class="card" style="text-align:center"><h1>🏆 ' + (gan.length > 1 ? 'Empate: equipos ' + gan.join(' y ') : 'Gana el Equipo ' + gan[0]) + '</h1>' +
+        '<div class="eqs" style="justify-content:center">' + st.eq.map((p, i) => '<span class="eq' + (p === max ? ' t' : '') + '">Equipo ' + (i + 1) + ': ' + p + '</span>').join('') + '</div><p class="mut">' + st.P + ' pares en ' + st.int + ' intentos.</p></div>' +
+        '<button class="btn" id="otra">Otra ronda</button> <button class="btn gh" id="fi">📖 Repasar los símbolos</button>';
+    } else {
+      const b1 = d.c ? primero(cfg.niv, st.P, b) : b;
+      const cod = num => '<div class="score" style="letter-spacing:.15em">' + codigo(d.c, num, cfg.niv, st.P, b1) + '</div><p class="sm mut">Código de No. ' + esc(num) + '</p>';
+      m.innerHTML = head('Resultados') + '<div class="card" style="text-align:center"><h1>🎉 ' + BANDA[b] + '</h1><p>' + st.P + ' pares en <b>' + st.int + ' intentos</b> y ' + mmss(t) + ' min.</p><p class="sm mut">' + (st.int === st.P ? '¡Sin un solo error!' : 'Lo mínimo posible eran ' + st.P + ' intentos.') + '</p></div>' +
+        (d.c ? '<div class="card" style="text-align:center" id="cod"><p class="sm"><b>¿Cuál es tu número de lista?</b> Te doy un código para tu profe. Si jugaron en pareja, cada quien pone su número.</p><input class="num" id="num" inputmode="numeric" maxlength="3"> <button class="btn" id="vcod">Ver código</button><div id="cods"></div><p class="sm mut">Cuenta tu primer juego de este nivel (' + BANDA[b1].replace(/[¡!]/g, '') + ').</p></div>' : '') +
+        '<button class="btn" id="otra">Jugar otra vez</button> <button class="btn gh" id="fi">📖 Repasar los símbolos</button>';
+      const vc = document.getElementById('vcod');
+      if (vc) vc.onclick = () => { const n = parseInt(document.getElementById('num').value, 10); if (!(n > 0 && n < 100)) return; document.getElementById('cods').innerHTML += cod(n); document.getElementById('num').value = ''; };
+    }
+    document.getElementById('salir').onclick = inicio; document.getElementById('otra').onclick = jugar; document.getElementById('fi').onclick = () => fichas(st.sel);
+    window.scrollTo(0, 0);
+  }
+  if (!I) { m.innerHTML = '<div class="card"><h1>No se pudo cargar el juego</h1><p>Revisa tu conexión y vuelve a abrir el enlace.</p></div>'; return; }
+  inicio();
+})();
+</script>
+</body>
+</html>

@@ -1618,3 +1618,11 @@ button.syncdot { padding: 0; cursor: pointer; font: inherit }
 .pr .mu-l th { background: #0e5e5a; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .mu-l td.n { text-align: center; width: 7mm } .pr .mu-l td.ck { width: 12mm }
 .pr .mu-r td { font-size: 7.8pt } .pr .mu-r td.h { white-space: nowrap; width: 20mm; font-weight: 700 } .pr .mu-r small { color: #555 }
 .mu-t td[style] { color: #152626 } /* v1.34.2: en modo oscuro las letras de la rotación se veían blancas sobre el color claro */
+/* v1.36.0 · memorama ISO 1219 */
+label.chk { display: inline-flex; align-items: center; gap: 6px; background: var(--s2, rgba(127,127,127,.08)); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: .88rem; cursor: pointer }
+label.chk input { accent-color: var(--brand, #0e5e5a) }
+.pr.mm-pf h1 { font-size: 16pt; color: #0e5e5a; margin: 0 0 2mm } .pr.mm-pf h2 { font-size: 12pt; color: #0e5e5a; margin: 4mm 0 2mm; border-bottom: 1px solid #b5c8c6 }
+.pr .mm-fg { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 5mm } .pr .mm-fi { display: grid; grid-template-columns: 34mm 1fr; gap: 3mm; align-items: center; break-inside: avoid; font-size: 9pt; padding: 1.5mm 0; border-bottom: 1px dashed #d5dfdd }
+.pr .mm-fs svg { width: 34mm; height: 20mm } .pr .mm-fi span { color: #333 }
+.pr.mm-cg { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 62mm; gap: 0 } .pr .mm-ct { border: 1px dashed #888; display: flex; align-items: center; justify-content: center; padding: 5mm; text-align: center; font: 700 13pt Arial, sans-serif }
+.pr .mm-ct.tx { background: #fffbe8; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .mm-cs svg { width: 52mm; max-height: 50mm }

@@ -159,9 +159,9 @@ window.E = window.E || {};
       evid: 'Conclusión escrita en la bitácora', tip: 'Así su proyecto hidráulico también cubre neumática, como pide el programa.'
     },
     {
-      id: 'memorama-iso', titulo: 'Memorama de simbología ISO 1219', sm: ['II-3'], tipo: 'Dinámica', dur: '25 min', costo: 'Impresión',
+      id: 'memorama-iso', titulo: 'Memorama de simbología ISO 1219', sm: ['II-3'], tipo: 'Dinámica', dur: '25 min', costo: '$0 (en el celular o el proyector)',
       obj: 'Aprender los símbolos de neumática e hidráulica jugando.',
-      mat: ['Tarjetas impresas: símbolo en una y nombre en otra (cilindro de simple y doble efecto, válvula 3/2 y 5/2, compresor, bomba, unidad de mantenimiento, regulador de caudal)'],
+      mat: ['Escuadra → Más → Memorama ISO 1219: QR para que lo jueguen en el celular (solos o en pareja) o tablero en el proyector por equipos; si no hay celular, imprime las cartas desde ahí'],
       pasos: ['En equipos de 4 juegan memorama.', 'Quien hace un par explica para qué sirve el componente.', 'Cierra con un diagrama sencillo que deban leer en voz alta.'],
       evid: 'Lectura correcta del diagrama (Guía de observación)', tip: 'Cubre la actividad clave "Interpreta planos…" (p. 40 del programa).'
     },
