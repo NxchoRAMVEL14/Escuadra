@@ -42,5 +42,14 @@ await p.evaluate(() => { window.E.actions['ex-invitacion'](); }); await p.waitFo
 await p.emulateMedia({ media: 'print' }); await p.pdf({ path: OUT + '/inv-mec.pdf', preferCSSPageSize: true }); await p.emulateMedia({ media: 'screen' });
 const tm = execFileSync('pdftotext', [OUT + '/inv-mec.pdf', '-']).toString().replace(/\s+/g, ' ');
 ok('la invitación de Mecatrónica sigue igual', /carrera de Técnico en Mecatrónica/.test(tm) && /conozcan la Mecatrónica/.test(tm) && /presentarán varios proyectos/.test(tm) && /Persona Mecatrónica/.test(tm), tm.slice(0, 200));
+await p.evaluate(() => { const E = window.E, g = E.data.grupoActual(); E.store.update('expo:' + g.id, d => { d.inv = { nombre: 'Persona Mecatrónica', firma1: 'Marco Vallecillo', puesto1: 'Director del plantel', firma2: 'Norma Aguilar', puesto2: 'Prefecta del plantel' }; }, {}); });
+await p.evaluate(() => { window.E.actions['ex-invitacion'](); }); await p.waitForTimeout(800);
+await p.emulateMedia({ media: 'print' }); await p.pdf({ path: OUT + '/inv-mec-1firma.pdf', preferCSSPageSize: true }); await p.emulateMedia({ media: 'screen' });
+const t1 = execFileSync('pdftotext', [OUT + '/inv-mec-1firma.pdf', '-']).toString().replace(/\s+/g, ' ');
+ok('una sola firma: la del director, Lic. Marcos Vallecillo Vázquez (sin la segunda ni «Nombre y puesto»)', /Lic\. Marcos Vallecillo Vázquez/.test(t1) && /Director del plantel/.test(t1) && !/Norma Aguilar/.test(t1) && !/Nombre y puesto/.test(t1) && !/Director Prueba/.test(t1), t1.slice(-160));
+execFileSync('pdftoppm', ['-r', '45', '-png', OUT + '/inv-mec-1firma.pdf', OUT + '/inv-mec-1firma']);
+[n, t] = await imp('[data-act=mu-reconocimiento][data-c=rh][data-i="0"]', 'rec-rh');
+ok('el reconocimiento de RH también lleva solo la del director', /Lic\. Marcos Vallecillo Vázquez/.test(t) && !/Norma Aguilar/.test(t) && !/Nombre y puesto/.test(t), t.slice(-200));
+ok('los formularios ya no piden una segunda firma', await p.evaluate(() => !document.querySelector('[data-k=firma2]')));
 ok('sin errores de JavaScript', errs.length === 0, errs.join(' | '));
 await b.close();
