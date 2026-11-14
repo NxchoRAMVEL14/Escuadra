@@ -1626,3 +1626,5 @@ label.chk input { accent-color: var(--brand, #0e5e5a) }
 .pr .mm-fs svg { width: 34mm; height: 20mm } .pr .mm-fi span { color: #333 }
 .pr.mm-cg { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 62mm; gap: 0 } .pr .mm-ct { border: 1px dashed #888; display: flex; align-items: center; justify-content: center; padding: 5mm; text-align: center; font: 700 13pt Arial, sans-serif }
 .pr .mm-ct.tx { background: #fffbe8; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .mm-cs svg { width: 52mm; max-height: 50mm }
+/* v1.36.1: una sola firma (director del plantel), centrada */
+.pr .exi-firmas, .pr .exr-firmas { grid-template-columns: minmax(0, 85mm); justify-content: center }

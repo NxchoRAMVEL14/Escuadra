@@ -171,7 +171,10 @@
 
   /* ---------- v1.33.0: invitado de las charlas: datos, invitación y reconocimiento ---------- */
   const INV = { titulo: '', nombre: '', cargo: '', empresa: '', tema: '', puntos: '', hora: '', lugar: '', duracion: '', firma1: '', puesto1: '', firma2: '', puesto2: '', frase: '' };
-  X.inv = d => Object.assign({}, INV, d.inv || {});
+  // v1.36.1: las cartas llevan una sola firma, la del director del plantel
+  X.DIRECTOR = ['Lic. Marcos Vallecillo Vázquez', 'Director del plantel'];
+  const director = (n, p) => { n = String(n || '').trim(); if (!n || (/vallecillo/i.test(n) && !/v[aá]zquez/i.test(n))) n = X.DIRECTOR[0]; return [n, String(p || '').trim() || X.DIRECTOR[1]]; };
+  X.inv = d => { const v = Object.assign({}, INV, d.inv || {}), f = director(v.firma1, v.puesto1); v.firma1 = f[0]; v.puesto1 = f[1]; return v; };
   const nomInv = v => ((v.titulo ? v.titulo.trim() + ' ' : '') + (v.nombre || '').trim()).trim();
   X.invHTML = d => {
     const v = X.inv(d), f = (k, l, ph, t) => '<label class="fld"><span>' + l + '</span>' + (t === 'area' ? '<textarea id="ex-inv-' + k + '" class="inp" rows="4" data-ch="ex-inv" data-k="' + k + '" placeholder="' + esc(ph || '') + '">' + esc(v[k]) + '</textarea>' : '<input id="ex-inv-' + k + '" class="inp" data-ch="ex-inv" data-k="' + k + '" value="' + esc(v[k]) + '" placeholder="' + esc(ph || '') + '">') + '</label>';
@@ -179,7 +182,7 @@
       '<div class="fgrid">' + f('titulo', 'Título', 'Ing., Lic., Mtra.') + f('nombre', 'Nombre completo') + f('cargo', 'Cargo') + f('empresa', 'Empresa o institución') + '</div>' +
       f('tema', 'Tema de la charla', 'Por definir') + f('puntos', 'Qué esperamos que platique (un punto por renglón)', '¿Qué hace un mecatrónico en su trabajo?\n¿Cómo llegó a lo que hace hoy?\nUn consejo para los de 1º', 'area') +
       '<div class="fgrid">' + f('hora', 'Hora', '10:00') + f('duracion', 'Duración', '30 minutos') + f('lugar', 'Lugar', 'Auditorio') + '</div>' +
-      '<div class="fgrid">' + f('firma1', 'Firma 1: nombre') + f('puesto1', 'Firma 1: puesto') + f('firma2', 'Firma 2: nombre') + f('puesto2', 'Firma 2: puesto') + '</div>' +
+      '<div class="fgrid">' + f('firma1', 'Firma: nombre') + f('puesto1', 'Firma: puesto') + '</div>' +
       f('frase', 'Frase del reconocimiento', 'Por su valiosa participación en la charla para los alumnos de 1er grado…') +
       '<div class="row gap wrap">' + btn('🖨 Invitación', 'ex-invitacion', '', 'primary') + btn('🖨 Reconocimiento', 'ex-reconocimiento', '', '') + '</div>');
   };
@@ -188,7 +191,7 @@
   const linea = (v, w) => v ? '<b>' + esc(v) + '</b>' : '<span class="exi-ln" style="width:' + (w || 60) + 'mm"></span>';
   // v1.35: las mismas cartas sirven para las otras carreras de la Muestra (o = { v, carrera, conoce, dia, fecha, base })
   X.INV = INV; X.nomInv = nomInv;
-  const firmas = (v, o) => { const m = X.inv(o.base || {}); return [[v.firma1 || m.firma1, v.puesto1 || m.puesto1], [v.firma2 || m.firma2, v.puesto2 || m.puesto2]]; };
+  const firmas = (v, o) => { const m = X.inv(o.base || {}); return [director(v.firma1 || m.firma1, v.puesto1 || m.puesto1)]; };
   X.invitacion = (g, d, o) => {
     o = o || {}; const car = o.carrera || 'Técnico en Mecatrónica', conoce = o.conoce || 'la Mecatrónica', charla = o.fecha || d.charla;
     const v = o.v ? Object.assign({}, INV, o.v) : X.inv(d), c = D.cfg(), pts = String(v.puntos || '').split('\n').map(x => x.trim()).filter(Boolean);

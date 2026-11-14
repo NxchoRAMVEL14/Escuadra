@@ -77,7 +77,7 @@
     return { v: v, carrera: a.largo, conoce: car.conoce, fecha: d.charla || '2026-11-25', dia: v.parrafo || M.dia(d), base: X && g ? X.doc(g) : {} }; };
   const editInv = (k, f) => S.update(KI, o => { const l = (o[k] && o[k].length ? o[k] : [{}]).map(x => Object.assign({}, x)); f(l); o[k] = l; }, {});
   CH['mu-inv'] = el => editInv(el.dataset.c, l => { const i = +el.dataset.i; l[i] = l[i] || {}; l[i][el.dataset.k] = el.value; });
-  A['mu-inv-mas'] = el => editInv(el.dataset.c, l => { const p = l[l.length - 1] || {}; l.push({ hora: '', duracion: p.duracion || '', lugar: p.lugar || '', puntos: p.puntos || '', firma1: p.firma1 || '', puesto1: p.puesto1 || '', firma2: p.firma2 || '', puesto2: p.puesto2 || '' }); });
+  A['mu-inv-mas'] = el => editInv(el.dataset.c, l => { const p = l[l.length - 1] || {}; l.push({ hora: '', duracion: p.duracion || '', lugar: p.lugar || '', puntos: p.puntos || '', firma1: p.firma1 || '', puesto1: p.puesto1 || '' }); });
   A['mu-inv-borra'] = el => { if (!confirm('¿Quitar este invitado?')) return; editInv(el.dataset.c, l => { l.splice(+el.dataset.i, 1); }); };
   const carta = (el, que) => { const car = M.CARS.find(c => c.k === el.dataset.c), v = M.invs(car.k)[+el.dataset.i] || {}, X = E.expo, g = D.grupoActual(), o = optsInv(car, v), nom = X.nomInv(Object.assign({}, X.INV, v)) || 'invitado';
     if (que === 'inv') E.print.run(X.invitacion(g, X.doc(g), o), { title: 'Invitación · ' + nom, unaHoja: true });
@@ -92,10 +92,10 @@
         '<div class="fgrid">' + F('titulo', 'Título', 'Ing., Lic., Mtra.') + F('nombre', 'Nombre completo') + F('cargo', 'Cargo') + F('empresa', 'Empresa o institución') + '</div>' +
         F('tema', 'Tema de la charla', 'Por definir') + F('puntos', 'Preguntas o puntos que les pasen los compañeros (uno por renglón)', car.ej, 'area') +
         '<div class="fgrid">' + F('hora', 'Hora', '10:30') + F('duracion', 'Duración', '30 minutos x 4 grupos') + F('lugar', 'Lugar', 'Centro de cómputo') + '</div>' +
-        '<div class="fgrid">' + F('firma1', 'Firma 1: nombre', mec.firma1 || '') + F('puesto1', 'Firma 1: puesto', mec.puesto1 || '') + F('firma2', 'Firma 2: nombre', mec.firma2 || '') + F('puesto2', 'Firma 2: puesto', mec.puesto2 || '') + '</div>' +
+        '<div class="fgrid">' + F('firma1', 'Firma: nombre', mec.firma1 || '') + F('puesto1', 'Firma: puesto', mec.puesto1 || '') + '</div>' +
         F('parrafo', 'Párrafo del día siguiente (opcional)', M.dia(d)) + F('frase', 'Frase del reconocimiento (opcional)', 'Por su valiosa participación en la charla para los alumnos de 1er grado…') +
         '<div class="row gap wrap">' + btn('🖨 Invitación', 'mu-invitacion', 'data-c="' + c + '" data-i="' + i + '"', 'primary') + btn('🖨 Reconocimiento', 'mu-reconocimiento', 'data-c="' + c + '" data-i="' + i + '"', '') + (n > 1 ? btn('Quitar', 'mu-inv-borra', 'data-c="' + c + '" data-i="' + i + '"', 'ghost') : '') + '</div></div>'; };
-    return card('<h3>🎤 Invitados de las charlas · otras carreras</h3><p class="muted small">Las mismas cartas de Mecatrónica, para los invitados de Recursos Humanos y de Laboratorio. Lo que dejes en blanco sale con una línea para llenarlo a mano; si dejas las firmas vacías, usa las de la invitación de Mecatrónica (en Expo).</p>' +
+    return card('<h3>🎤 Invitados de las charlas · otras carreras</h3><p class="muted small">Las mismas cartas de Mecatrónica, para los invitados de Recursos Humanos y de Laboratorio. Lo que dejes en blanco sale con una línea para llenarlo a mano; las cartas llevan una sola firma, la del director; si la dejas vacía, usa la de la invitación de Mecatrónica (en Expo).</p>' +
       '<label class="fld"><span>Día de las charlas</span><input class="inp" type="date" data-ch="mu-f" data-k="charla" value="' + esc(d.charla || '2026-11-25') + '"></label>' +
       M.CARS.map(car => { const l = M.invs(car.k); return '<details class="sub" open><summary>' + esc(d.areas[car.a].largo) + ' · ' + l.length + ' invitado' + (l.length > 1 ? 's' : '') + '</summary>' + l.map((v, i) => uno(car, v, i, l.length)).join('') +
         '<div class="row gap wrap mt">' + btn('➕ Otro invitado', 'mu-inv-mas', 'data-c="' + car.k + '"', 'ghost') + '</div></details>'; }).join('') +
