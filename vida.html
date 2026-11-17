@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0e5e5a">
+<title>Test de vida y carrera · Escuadra</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<style>
+:root { --bg:#f2f5f4; --s:#fff; --s2:#eaf0ee; --ink:#12221f; --mut:#5a6c68; --line:#d9e3e0; --brand:#0e5e5a; --bink:#fff; --ok:#1c7c45; --oks:#dcf2e5; --acc:#f0a500; color-scheme: light }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1312; --s:#13201e; --s2:#1a2b28; --ink:#e4eeec; --mut:#94a8a4; --line:#25403b; --brand:#3cb4a8; --bink:#04201d; --ok:#52c585; --oks:#143022; color-scheme: dark } }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent } body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif }
+main { max-width:640px; margin:0 auto; padding:12px 12px 48px }
+.top { display:flex; align-items:center; gap:10px; margin:2px 0 10px } .top svg { width:34px; height:34px; flex:none } .top b { display:block } .top small { color:var(--mut) }
+.card { background:var(--s); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 12px }
+h1 { font-size:1.25rem; margin:0 0 6px } h2 { font-size:1.05rem; margin:0 0 8px } p { margin:.3em 0 .6em } .mut { color:var(--mut) } .sm { font-size:.86rem }
+.btn { display:inline-block; font:inherit; font-weight:700; border:0; border-radius:12px; padding:11px 16px; background:var(--brand); color:var(--bink); cursor:pointer; margin:4px 6px 4px 0; text-decoration:none }
+.btn.gh { background:var(--s2); color:var(--ink) }
+.prog { display:flex; gap:4px; margin:0 0 12px } .prog span { flex:1; height:6px; border-radius:3px; background:var(--line) } .prog span.on { background:var(--brand) }
+.chk { display:flex; gap:10px; align-items:flex-start; padding:9px 4px; border-top:1px solid var(--line); cursor:pointer } .chk:first-child { border-top:0 }
+.chk input { width:22px; height:22px; flex:none; accent-color:var(--brand); margin-top:1px }
+.lk { padding:10px 0; border-top:1px solid var(--line) } .lk p { margin:0 0 6px; font-weight:600 } .lk .op { display:grid; grid-template-columns:repeat(5,1fr); gap:4px }
+.lk label { text-align:center; font-size:.7rem; color:var(--mut); cursor:pointer } .lk input { display:block; margin:0 auto 2px; width:20px; height:20px; accent-color:var(--brand) }
+.ar h3 { margin:12px 0 2px; font-size:1rem }
+.rueda { display:grid; grid-template-columns:1fr 64px; gap:6px 10px; align-items:center } .rueda input[type=range] { width:100%; accent-color:var(--brand) } .rueda output { font-weight:800; text-align:center }
+textarea { width:100%; font:inherit; padding:8px; border-radius:10px; border:1.5px solid var(--line); background:var(--s); color:var(--ink); min-height:64px }
+.bar { display:grid; grid-template-columns:118px 1fr 28px; gap:8px; align-items:center; margin:5px 0; font-size:.9rem } .bar i { display:block; height:14px; border-radius:7px; background:var(--brand) } .bar .t { background:var(--s2); border-radius:7px } .bar b { text-align:right }
+.hol { font-size:2.4rem; font-weight:900; letter-spacing:.2em; color:var(--brand); text-align:center } .pill { display:inline-block; background:var(--oks); border-radius:999px; padding:3px 10px; margin:2px; font-size:.85rem; font-weight:700 }
+.cod { font-size:1.8rem; font-weight:900; letter-spacing:.12em; text-align:center; color:var(--brand) }
+input.num { font:inherit; font-size:1.3rem; width:90px; text-align:center; padding:8px; border-radius:10px; border:1.5px solid var(--line); background:var(--s); color:var(--ink) }
+.foot { color:var(--mut); font-size:.78rem; text-align:center; margin-top:14px }
+.nav { display:flex; justify-content:space-between; gap:8px; position:sticky; bottom:0; background:var(--bg); padding:8px 0 }
+@media print { .nav, .btn, .noprint { display:none !important } body { background:#fff; color:#000 } .card { border:1px solid #bbb; break-inside:avoid } main { max-width:none } }
+</style>
+</head>
+<body>
+<main id="m"><div class="card"><p>Cargando…</p></div></main>
+<script src="vidadatos.js"></script>
+<script>
+(function () {
+  'use strict';
+  const m = document.getElementById('m'), V = window.VIDA;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const logo = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
+  let d = {}; try { const h = location.hash.slice(1); if (h && h[0] === 'j') { const b = atob(h.slice(1).replace(/-/g, '+').replace(/_/g, '/')), by = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) by[i] = b.charCodeAt(i); d = JSON.parse(new TextDecoder().decode(by)); } } catch (e) { d = {}; }
+  // las respuestas se quedan solo en este celular (para continuar después o volver a ver resultados)
+  const KEY = 'escuadra.vida.' + (d.c || 'libre');
+  let st = {}; try { st = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { st = {}; }
+  st.int = st.int || {}; st.hab = st.hab || {}; st.area = st.area || {}; st.rueda = st.rueda || {}; st.txt = st.txt || {}; st.paso = st.paso || 0;
+  const guarda = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { } };
+  const PASOS = ['Intereses', 'Habilidades', 'Mecatrónica', 'Proyecto de vida', 'Resultados'];
+  const head = () => '<div class="top">' + logo + '<div><b>Test de vida y carrera</b><small>' + esc(d.g ? d.g + ' · ' : '') + 'Conócete y descubre en qué eres bueno</small></div></div>' +
+    '<div class="prog">' + PASOS.map((p, i) => '<span class="' + (i <= st.paso ? 'on' : '') + '" title="' + p + '"></span>').join('') + '</div>';
+  const nav = (atras, sig) => '<div class="nav">' + (atras ? '<button class="btn gh" data-ir="-1">‹ Atrás</button>' : '<span></span>') + '<button class="btn" data-ir="1">' + (sig || 'Siguiente ›') + '</button></div>';
+  const ir = n => { st.paso = Math.max(0, Math.min(4, st.paso + n)); guarda(); pinta(); window.scrollTo(0, 0); };
+
+  /* ---------- puntajes ---------- */
+  const riasec = () => 'RIASEC'.split('').map(k => V.ACT[k].reduce((s, _, i) => s + (st.int[k + i] ? 1 : 0), 0));
+  const habs = () => V.HAB.map(h => { const v = h.it.map((_, i) => Number(st.hab[h.k + i] || 0)); const n = v.filter(Boolean).length; return n ? v.reduce((a, b) => a + b, 0) / n : 0; });
+  const areas = () => V.AREAS.map(a => a.it.reduce((s, _, i) => s + (st.area[a.k + i] ? 1 : 0), 0));
+
+  function pinta() {
+    let h = head();
+    if (st.paso === 0) {
+      h += '<div class="card"><h1>1. ¿Qué te gustaría hacer?</h1><p class="sm">Marca las actividades que te <b>gustaría</b> hacer como trabajo. No pienses en si sabes hacerlas, cuánto pagan o qué hay que estudiar. Solo si te gustaría.</p>' +
+        V.ORDEN.map(o => { const id = o[0] + o[1]; return '<label class="chk"><input type="checkbox" data-int="' + id + '"' + (st.int[id] ? ' checked' : '') + '><span>' + esc(V.ACT[o[0]][o[1]]) + '</span></label>'; }).join('') + '</div>' + nav(false);
+    } else if (st.paso === 1) {
+      h += '<div class="card"><h1>2. ¿En qué eres bueno?</h1><p class="sm">Qué tanto se parece cada frase a ti. Sé honesto: nadie te va a calificar por esto.</p>' +
+        V.HAB.map(hb => hb.it.map((t, i) => { const id = hb.k + i; return '<div class="lk"><p>' + esc(t) + '</p><div class="op">' + V.ESCALA.map((e, j) => '<label><input type="radio" name="' + id + '" data-hab="' + id + '" value="' + (j + 1) + '"' + (Number(st.hab[id]) === j + 1 ? ' checked' : '') + '>' + esc(e) + '</label>').join('') + '</div></div>'; }).join('')).join('') + '</div>' + nav(true);
+    } else if (st.paso === 2) {
+      h += '<div class="card ar"><h1>3. ¿Qué parte de la mecatrónica te llama?</h1><p class="sm">Marca lo que te gustaría hacer.</p>' +
+        V.AREAS.map(a => '<h3>' + a.ico + ' ' + esc(a.n) + '</h3>' + a.it.map((t, i) => { const id = a.k + i; return '<label class="chk"><input type="checkbox" data-area="' + id + '"' + (st.area[id] ? ' checked' : '') + '><span>' + esc(t) + '</span></label>'; }).join('')).join('') + '</div>' + nav(true);
+    } else if (st.paso === 3) {
+      const T = (k, l, ph) => '<p class="sm"><b>' + l + '</b></p><textarea data-txt="' + k + '" placeholder="' + esc(ph || '') + '">' + esc(st.txt[k] || '') + '</textarea>';
+      h += '<div class="card"><h1>4. Mi proyecto de vida</h1><p class="sm mut">Esto se queda solo en tu celular: no se lo manda a nadie. Al final lo puedes guardar como PDF o imprimir.</p>' +
+        '<h2>🎡 Mi rueda de la vida</h2><p class="sm">¿Qué tan satisfecho estás hoy con cada área? (1 = nada, 10 = mucho)</p><div class="rueda">' + V.RUEDA.map((r, i) => '<label for="ru' + i + '">' + esc(r) + '</label><output id="ro' + i + '">' + (st.rueda[i] || 5) + '</output><input id="ru' + i + '" type="range" min="1" max="10" data-rueda="' + i + '" value="' + (st.rueda[i] || 5) + '" style="grid-column:1/-1">').join('') + '</div></div>' +
+        '<div class="card"><h2>💪 Mi FODA personal</h2>' + T('f', 'Fortalezas: ¿qué hago bien?') + T('o', 'Oportunidades: ¿qué hay a mi alrededor que me puede ayudar?', 'Una beca, un familiar en la industria, el taller de la escuela…') + T('d', 'Debilidades: ¿qué me cuesta?') + T('a', 'Amenazas: ¿qué me puede frenar?') + '</div>' +
+        '<div class="card"><h2>🎯 Mis metas</h2>' + T('m1', 'En 1 año') + T('m3', 'En 3 años', 'Terminar la prepa, entrar a…') + T('m5', 'En 5 años') + T('sem', 'Lo que haré ESTA semana para acercarme') + '</div>' + nav(true, 'Ver mis resultados ›');
+    } else {
+      h += resultados();
+    }
+    m.innerHTML = h; enlaza();
+  }
+
+  function resultados() {
+    const r = riasec(), hb = habs(), ar = areas(), hol = V.codigoHolland(r), t3 = V.top(r, 3), th = V.top(hb, 2), ta = V.top(ar, 2), max = Math.max(1, Math.max.apply(null, r));
+    const sinInt = r.every(x => !x), sinHab = hb.every(x => !x), sinArea = ar.every(x => !x);
+    let h = '<div class="card"><h1>🧭 Tus resultados</h1><p class="sm mut">Son una guía para conocerte, no una etiqueta. Tus intereses cambian con lo que vives y aprendes.</p></div>';
+    h += '<div class="card"><h2>1. Tus intereses</h2>' + (sinInt ? '<p class="sm">No marcaste actividades. Regresa al paso 1.</p>' : '<div class="hol">' + hol + '</div><p class="sm mut" style="text-align:center">Tu código de intereses (de mayor a menor)</p>' +
+      'RIASEC'.split('').map((k, i) => '<div class="bar"><span>' + esc(V.RIASEC[i].n) + '</span><span class="t"><i style="width:' + (r[i] / 10 * 100) + '%"></i></span><b>' + r[i] + '</b></div>').join('') +
+      t3.map((i, n) => { const x = V.RIASEC[i]; return '<div style="margin-top:10px"><b>' + (n + 1) + '. ' + esc(x.n) + ' (' + x.k + ') · ' + esc(x.v) + '</b><p class="sm">' + esc(x.d) + '</p><p class="sm"><b>En mecatrónica:</b> ' + esc(x.mec) + '</p><p class="sm">' + x.job.map(j => '<span class="pill">' + esc(j) + '</span>').join(' ') + '</p></div>'; }).join('')) + '</div>';
+    h += '<div class="card"><h2>2. En qué eres bueno</h2>' + (sinHab ? '<p class="sm">Te faltó contestar el paso 2.</p>' : V.HAB.map((x, i) => '<div class="bar"><span>' + esc(x.n) + '</span><span class="t"><i style="width:' + (hb[i] / 5 * 100) + '%"></i></span><b>' + (hb[i] ? hb[i].toFixed(1) : '–') + '</b></div>').join('') +
+      '<p class="sm">Tus fortalezas: ' + th.map(i => '<span class="pill">' + esc(V.HAB[i].n) + '</span>').join(' ') + '</p><p class="sm"><b>En un equipo de proyecto, tu rol natural:</b> ' + esc(V.HAB[th[0]].rol) + '.</p>') + '</div>';
+    h += '<div class="card"><h2>3. Tu lado de la mecatrónica</h2>' + (sinArea ? '<p class="sm">No marcaste nada en el paso 3.</p>' : V.AREAS.map((x, i) => '<div class="bar"><span>' + x.ico + ' ' + esc(x.n) + '</span><span class="t"><i style="width:' + (ar[i] / 4 * 100) + '%"></i></span><b>' + ar[i] + '</b></div>').join('') +
+      '<p class="sm">Lo que más te llama: ' + ta.map(i => '<span class="pill">' + V.AREAS[i].ico + ' ' + esc(V.AREAS[i].n) + '</span>').join(' ') + '</p>') + '</div>';
+    const txt = k => st.txt[k] ? '<p class="sm"><b>' + { f: 'Fortalezas', o: 'Oportunidades', d: 'Debilidades', a: 'Amenazas', m1: 'En 1 año', m3: 'En 3 años', m5: 'En 5 años', sem: 'Esta semana' }[k] + ':</b> ' + esc(st.txt[k]) + '</p>' : '';
+    h += '<div class="card"><h2>4. Tu proyecto de vida</h2>' + V.RUEDA.map((x, i) => '<div class="bar"><span>' + esc(x) + '</span><span class="t"><i style="width:' + ((st.rueda[i] || 5) * 10) + '%"></i></span><b>' + (st.rueda[i] || 5) + '</b></div>').join('') +
+      ['f', 'o', 'd', 'a', 'm1', 'm3', 'm5', 'sem'].map(txt).join('') + '<p class="sm mut">Esta parte no se manda a nadie.</p></div>';
+    if (d.c && !sinInt && !sinHab && !sinArea) h += '<div class="card noprint" style="text-align:center"><h2>Código para tu profe</h2><p class="sm">Escribe tu número de lista y dale el código a tu profe. Solo lleva tus puntajes de intereses, tus 2 fortalezas y tus 2 áreas; tu proyecto de vida no va en el código.</p><input class="num" id="num" inputmode="numeric" maxlength="3" value="' + esc(st.num || '') + '"> <button class="btn" id="vcod">Ver código</button><div id="cod"></div></div>';
+    else if (d.c) h += '<div class="card noprint"><p class="sm">Para darte el código para tu profe, contesta los pasos 1, 2 y 3.</p></div>';
+    h += '<div class="nav"><button class="btn gh" data-ir="-1">‹ Atrás</button><button class="btn" id="imp">🖨 Guardar o imprimir</button></div>' +
+      '<p class="foot">' + esc(V.FUENTE) + ' Versión oficial gratuita en español: <a href="https://www.miproximopaso.org/explore/ip" target="_blank" rel="noopener">Mi Próximo Paso</a>.</p>';
+    return h;
+  }
+  function enlaza() {
+    m.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => ir(Number(b.dataset.ir)));
+    m.querySelectorAll('[data-int]').forEach(x => x.onchange = () => { st.int[x.dataset.int] = x.checked; guarda(); });
+    m.querySelectorAll('[data-hab]').forEach(x => x.onchange = () => { st.hab[x.dataset.hab] = Number(x.value); guarda(); });
+    m.querySelectorAll('[data-area]').forEach(x => x.onchange = () => { st.area[x.dataset.area] = x.checked; guarda(); });
+    m.querySelectorAll('[data-rueda]').forEach(x => x.oninput = () => { st.rueda[x.dataset.rueda] = Number(x.value); document.getElementById('ro' + x.dataset.rueda).textContent = x.value; guarda(); });
+    m.querySelectorAll('[data-txt]').forEach(x => x.oninput = () => { st.txt[x.dataset.txt] = x.value; guarda(); });
+    const ip = document.getElementById('imp'); if (ip) ip.onclick = () => window.print();
+    const vc = document.getElementById('vcod');
+    if (vc) vc.onclick = () => { const n = parseInt(document.getElementById('num').value, 10); if (!(n > 0 && n < 100)) return; st.num = n; guarda();
+      const c = V.codigo(d.c, n, riasec(), V.top(habs(), 2), V.top(areas(), 2)); document.getElementById('cod').innerHTML = '<div class="cod">' + c + '</div><p class="sm mut">Código de No. ' + n + '</p>'; };
+  }
+  if (!V) { m.innerHTML = '<div class="card"><h1>No se pudo cargar el test</h1><p>Revisa tu conexión y vuelve a abrir el enlace.</p></div>'; return; }
+  pinta();
+})();
+</script>
+</body>
+</html>

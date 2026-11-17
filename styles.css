@@ -1628,3 +1628,26 @@ label.chk input { accent-color: var(--brand, #0e5e5a) }
 .pr .mm-ct.tx { background: #fffbe8; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .mm-cs svg { width: 52mm; max-height: 50mm }
 /* v1.36.1: una sola firma (director del plantel), centrada */
 .pr .exi-firmas, .pr .exr-firmas { grid-template-columns: minmax(0, 85mm); justify-content: center }
+/* v1.37.0 · dinámica rápida en la clase, material de dinámicas, test de vida y carrera, para mí como profe */
+.dnr-top { margin: 0 0 10px } .btn.dnr-btn { background: linear-gradient(90deg, #f0a500, #e5677d); color: #1b1b1b; font-weight: 800 }
+.dnr-list .dn-it { display: block; padding: 10px 0; border-top: 1px solid var(--line) } .dnr-list .dn-it:first-child { border-top: 0 } .dnr-it { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 6px }
+.pr.dx-cards { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 44mm; gap: 0 } .pr .dx-card { border: 1px dashed #888; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4mm }
+.pr .dx-card b { font: 800 16pt Arial, sans-serif } .pr .dx-card small { font-size: 8pt; color: #777; margin-top: 2mm } .pr .dx-card.tb span { font-size: 11pt; color: #b3261e; margin-top: 1mm; line-height: 1.3 }
+.pr .dx-dom { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm } .pr .dx-ficha { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid #333; border-radius: 3mm; height: 32mm } .pr .dx-ficha div + div { border-left: 1.5px dashed #333 }
+.pr.dx-bol { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm } .pr .dx-b { border: 1px dashed #888; padding: 3mm 4mm; font-size: 9.5pt; break-inside: avoid } .pr .dx-b p { margin: 1.5mm 0 0 } .pr .dx-l, .pr .vd-l { border-bottom: 1px solid #999; height: 6.5mm }
+.pr.dx-sem { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm } .pr .dx-s { height: 70mm; border-radius: 4mm; display: flex; align-items: center; justify-content: center; color: #fff; font: 800 16pt Arial, sans-serif; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr.dx-sem p { grid-column: 1 / -1 }
+.pr .dx-gears { display: flex; flex-wrap: wrap; gap: 4mm; align-items: center; justify-content: center }
+.pr.dx-ficha-p h1 { font-size: 16pt; color: #0e5e5a; margin: 0 0 1mm } .pr.dx-ficha-p h2 { font-size: 11.5pt; color: #0e5e5a; margin: 4mm 0 1mm } .pr.dx-ficha-p { font-size: 10.5pt } .pr .dx-meta { font-size: 9pt; color: #555 }
+.vd-rin { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px } .vd-rin label { display: flex; flex-direction: column; font-size: .8rem }
+.vd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 8px } .vd-grid h4 { margin: 0 0 4px; font-size: .9rem }
+.vd-b { display: grid; grid-template-columns: 1fr 90px 22px; gap: 6px; align-items: center; font-size: .82rem; margin: 3px 0 } .vd-bt { background: var(--s2, #eef2f1); border-radius: 6px; height: 10px; display: block } .vd-bt i { display: block; height: 10px; border-radius: 6px; background: var(--brand, #0e5e5a) } .vd-b b { text-align: right }
+.vd-hol { font-size: 2rem; font-weight: 900; letter-spacing: .2em; color: var(--brand, #0e5e5a); margin: 0 }
+.pr.vd-p h1 { font-size: 16pt; color: #0e5e5a; margin: 0 0 1mm } .pr.vd-p h2 { font-size: 12pt; color: #0e5e5a; margin: 3mm 0 1mm } .pr.vd-p h3 { font-size: 10.5pt; margin: 3mm 0 1mm }
+.pr .vd-cols { columns: 2; column-gap: 6mm } .pr .vd-cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm } .pr .vd-sec { break-inside: avoid; border: 1px solid #b5c8c6; border-radius: 2mm; padding: 1.5mm 2.5mm; margin: 0 0 2.5mm; font-size: 8.6pt }
+.pr .vd-sh { display: flex; justify-content: space-between; background: #e6f0ee; margin: -1.5mm -2.5mm 1mm; padding: 1mm 2.5mm; -webkit-print-color-adjust: exact; print-color-adjust: exact } .pr .vd-it { padding: .5mm 0 }
+.pr .vd-t { width: 100%; border-collapse: collapse; font-size: 8.8pt } .pr .vd-t td, .pr .vd-t th { border: 1px solid #b5c8c6; padding: 1mm 2mm; text-align: left } .pr .vd-esc { white-space: nowrap; letter-spacing: .25em; text-align: center !important; width: 34mm }
+.pr .vd-res { border: 1.5px solid #0e5e5a; border-radius: 2mm; padding: 2mm 3mm; font-size: 9pt; margin-top: 3mm; line-height: 1.7 } .pr .vd-foda { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; font-size: 9pt } .pr .vd-src { color: #666; margin-top: 3mm }
+.pf-list li { margin: 0 0 10px } .pf-retos { list-style: none; padding: 0; margin: 0 } .pf-retos li { margin: 4px 0 } .btn.pf-rb { width: 100%; text-align: left; white-space: normal } .btn.pf-rb.on { opacity: .75 }
+.pr.pf-encs { display: grid; gap: 6mm } .pr .pf-enc { border: 1px dashed #888; padding: 4mm; font-size: 10pt } .pr .pf-enc table { width: 100%; border-collapse: collapse } .pr .pf-enc td { border-bottom: 1px solid #ddd; padding: 1.2mm 0 }
+.pr .vd-hi { display: flex; justify-content: space-between; gap: 2mm; padding: .6mm 0; border-bottom: 1px dotted #ccc } .pr .vd-hi .vd-esc { width: auto; flex: none }
+.pr .vd-tres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 3mm 0 } .pr .vd-mini td, .pr .vd-mini th { font-size: 8.4pt }
