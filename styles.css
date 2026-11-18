@@ -1651,3 +1651,6 @@ label.chk input { accent-color: var(--brand, #0e5e5a) }
 .pr.pf-encs { display: grid; gap: 6mm } .pr .pf-enc { border: 1px dashed #888; padding: 4mm; font-size: 10pt } .pr .pf-enc table { width: 100%; border-collapse: collapse } .pr .pf-enc td { border-bottom: 1px solid #ddd; padding: 1.2mm 0 }
 .pr .vd-hi { display: flex; justify-content: space-between; gap: 2mm; padding: .6mm 0; border-bottom: 1px dotted #ccc } .pr .vd-hi .vd-esc { width: auto; flex: none }
 .pr .vd-tres { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 3mm 0 } .pr .vd-mini td, .pr .vd-mini th { font-size: 8.4pt }
+/* v1.37.1 · letreros del stand en tabloide 12 × 18 in */
+.exl-prev { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff } .exl-prev svg { display: block; height: auto }
+.tb-pg { width: 18in; height: 12in; overflow: hidden; page-break-after: always; break-after: page } .tb-pg:last-child { page-break-after: auto; break-after: auto } .tb-pg svg { width: 18in; height: 12in; display: block }
