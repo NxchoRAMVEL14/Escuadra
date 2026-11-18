@@ -28,7 +28,7 @@ const txt = (nombre, pg) => execFileSync('pdftotext', ['-f', String(pg || 1), '-
 const clic = async a => { await p.evaluate(() => { location.hash = '#/expo'; }); await p.waitForTimeout(500); await p.evaluate(a => document.querySelector('[data-act=' + a + ']').click(), a); await p.waitForTimeout(1200); };
 await clic('ex-fichas'); let n = await imp('fichas');
 ok('fichas con guion de ejemplo: 5 hojas', n === 5 && /ejemplo: díganlo con sus palabras/.test(txt('fichas')) && /circuito eléctrico/.test(txt('fichas')), n);
-await clic('ex-letreros'); n = await imp('letrero');
+await clic('ex-letreros'); await p.evaluate(() => document.querySelector('[data-act=ex-let-pdf]').click()); await p.waitForTimeout(1200); n = await imp('letrero');
 ok('el letrero pone los nombres de pila (no apellidos)', /Juan, Ana, Luis, Eva/i.test(txt('letrero')), txt('letrero').match(/Equipo 1[^\n]*/));
 await p.evaluate(() => { location.hash = '#/expo'; }); await p.waitForTimeout(500);
 await p.evaluate(() => { const i = document.getElementById('ex-npas'); i.value = '10'; }); await p.evaluate(() => document.querySelector('[data-act=ex-pasaportes]').click()); await p.waitForTimeout(1200);
