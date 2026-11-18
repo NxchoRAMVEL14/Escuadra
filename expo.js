@@ -144,7 +144,52 @@
   A['ex-proj'] = () => { const g = D.grupoActual(); E.proj.abrir({ id: 'expo', titulo: X.doc(g).nombre }, X.slides(g)); };
   A['ex-fichas'] = () => E.print.run(X.ACT().map(ficha).join(''), { title: 'Fichas de las ideas · ' + X.doc(D.grupoActual()).nombre });
   CH['ex-rol'] = el => { const g = D.grupoActual(); put(g, d => { const e = d.equipos.find(x => x.id === el.dataset.id); if (!e) return; e.roles = e.roles || {}; if (el.value) e.roles[el.dataset.aid] = el.value; else delete e.roles[el.dataset.aid]; }); };
-  A['ex-letreros'] = () => { const g = D.grupoActual(), eqs = X.doc(g).equipos.filter(e => e.idea); if (!eqs.length) { u.toast('Primero elige la idea de cada equipo', 'err'); return; } E.print.run(eqs.map(e => letrero(g, e)).join(''), { title: 'Letreros del stand', landscape: true }); };
+  /* v1.37.1: letreros del stand en tabloide de 12 × 18 pulgadas (horizontal), con el logo de CETAC 19 y la imagen del proyecto
+     en grande. Salen como PDF (Guardar como PDF al imprimir) y como SVG para abrir y editar en CorelDRAW X7 (17). */
+  X.TAB = { w: 1800, h: 1200 };   // unidades = centésimas de pulgada (18 × 12 in)
+  let logoSVG = null;
+  X.logoCetac = async () => { if (logoSVG) return logoSVG; try { const r = await fetch('logo-cetac.svg'); const t = await r.text(); const m = /<g fill="#016fac">([\s\S]*)<\/g>/.exec(t); logoSVG = m ? m[1] : ''; } catch (e) { logoSVG = ''; } return logoSVG; };
+  const xe = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const parte = (t, n) => { const w = String(t || '').split(/\s+/), L = []; let l = ''; w.forEach(p => { if ((l + ' ' + p).trim().length > n && l) { L.push(l); l = p; } else l = (l + ' ' + p).trim(); }); if (l) L.push(l); return L; };
+  X.letreroSVG = (g, e, logo) => {
+    const x = X.idea(e.idea) || {}, al = D.alumnos(g).filter(a => (e.al || []).indexOf(a.id) >= 0), F = 'Arial, Helvetica, sans-serif', T = X.TAB;
+    const tit = x.n || 'Proyecto', fsT = Math.min(124, Math.floor(1290 / (tit.length * 0.56)));
+    const img = (X.IMG[e.idea] || '').replace(/^<svg /, '<svg x="60" y="420" width="1060" height="690" preserveAspectRatio="xMidYMid meet" ').replace(/ role="img"/, '');
+    const vis = parte(x.vis || '', 22).slice(0, 6), mem = parte(al.map(a => u.partesNombre(a.nombre).nom.split(' ')[0] || a.nombre).join(', '), 26).slice(0, 4);
+    let y = 640, txt = '';
+    vis.forEach(l => { txt += '<text x="1170" y="' + y + '" font-family="' + F + '" font-size="46" fill="#1d2b2a">' + xe(l) + '</text>'; y += 58; });
+    y += 40; txt += '<text x="1170" y="' + y + '" font-family="' + F + '" font-size="34" font-weight="700" fill="#5b6b69">EQUIPO</text>'; y += 62;
+    txt += '<text x="1170" y="' + y + '" font-family="' + F + '" font-size="54" font-weight="700" fill="#0e5e5a">' + xe(e.nombre || 'Equipo') + '</text>'; y += 54;
+    mem.forEach(l => { txt += '<text x="1170" y="' + y + '" font-family="' + F + '" font-size="36" fill="#1d2b2a">' + xe(l) + '</text>'; y += 44; });
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="18in" height="12in" viewBox="0 0 ' + T.w + ' ' + T.h + '">' +
+      '<rect width="' + T.w + '" height="' + T.h + '" fill="#ffffff"/><rect x="24" y="24" width="' + (T.w - 48) + '" height="' + (T.h - 48) + '" rx="36" fill="none" stroke="#0e5e5a" stroke-width="10"/>' +
+      '<svg x="56" y="52" width="340" height="340" viewBox="-20 -20 2256 2256"><g fill="#016fac">' + (logo || '') + '</g></svg>' +
+      '<text x="430" y="132" font-family="' + F + '" font-size="46" font-weight="700" letter-spacing="6" fill="#0e5e5a">TÉCNICO EN MECATRÓNICA</text>' +
+      '<text x="430" y="186" font-family="' + F + '" font-size="34" fill="#5b6b69">Expo de la carrera · CETAC 19 · ' + xe(g.nombre || '') + '</text>' +
+      '<text x="430" y="' + (250 + fsT * 0.75) + '" font-family="' + F + '" font-size="' + fsT + '" font-weight="700" fill="#0e5e5a">' + xe(tit) + '</text>' +
+      '<rect x="56" y="408" width="1084" height="714" rx="28" fill="#eef6f5"/>' + img +
+      '<text x="1170" y="540" font-family="' + F + '" font-size="96" font-weight="700" fill="#e0791b">¡Pruébalo!</text>' + txt +
+      '<text x="' + (T.w / 2) + '" y="1168" text-anchor="middle" font-family="' + F + '" font-size="28" fill="#5b6b69">Técnico en Mecatrónica · CETAC 19 Purísima del Rincón</text></svg>';
+  };
+  const letrerosOk = () => { const g = D.grupoActual(), eqs = X.doc(g).equipos.filter(e => e.idea); if (!eqs.length) { u.toast('Primero elige la idea de cada equipo', 'err'); return null; } return { g: g, eqs: eqs }; };
+  A['ex-letreros'] = async () => { const o = letrerosOk(); if (!o) return; const logo = await X.logoCetac();
+    E.modal.open('🪧 Letreros del stand · tabloide 12 × 18 in', '<p class="small">' + o.eqs.length + ' letrero' + (o.eqs.length > 1 ? 's' : '') + ' en horizontal, uno por equipo, con el logo de CETAC 19 y la imagen del proyecto en grande.</p>' +
+      '<div class="exl-prev">' + X.letreroSVG(o.g, o.eqs[0], logo).replace('width="18in" height="12in"', 'width="100%"') + '</div>' +
+      '<div class="row gap wrap mt">' + btn('🖨 PDF tabloide', 'ex-let-pdf', '', 'primary') + btn('⬇️ Archivos para Corel 17 (SVG)', 'ex-let-corel', '', '') + '</div>' +
+      '<p class="muted small">PDF: al imprimir elige «Guardar como PDF» y tamaño tabloide 12 × 18 in (si no aparece, «Tamaño personalizado»). Corel: descarga un ZIP con un SVG por letrero y el logo; en CorelDRAW X7 usa Archivo → Importar (Ctrl+I). El PDF también se puede abrir en Corel.</p>'); };
+  A['ex-let-pdf'] = async () => { const o = letrerosOk(); if (!o) return; const logo = await X.logoCetac(); if (E.modal) E.modal.close();
+    const root = document.getElementById('print-root'); root.innerHTML = o.eqs.map(e => '<div class="tb-pg">' + X.letreroSVG(o.g, e, logo) + '</div>').join('');
+    let st = document.getElementById('page-style'); if (!st) { st = document.createElement('style'); st.id = 'page-style'; document.head.appendChild(st); }
+    st.textContent = '@page{size:18in 12in;margin:0}'; const t = document.title; document.title = 'Letreros del stand (tabloide 12x18)';
+    setTimeout(() => { window.print(); setTimeout(() => { document.title = t; }, 1500); }, 80); };
+  A['ex-let-corel'] = async () => { const o = letrerosOk(); if (!o) return; const logo = await X.logoCetac();
+    try { if (!window.JSZip) await u.loadScript(E.formatos ? E.formatos.JSZIP : 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'); } catch (e) { u.toast('No pude cargar el compresor; revisa tu internet', 'err'); return; }
+    const z = new window.JSZip(), nom = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    o.eqs.forEach((e, i) => { const x = X.idea(e.idea) || {}; z.file('Letrero-' + (i + 1) + '-' + nom(x.n) + '.svg', '<?xml version="1.0" encoding="UTF-8"?>\n' + X.letreroSVG(o.g, e, logo)); });
+    try { z.file('logo-cetac19.svg', await (await fetch('logo-cetac.svg')).text()); } catch (e) { }
+    z.file('LEEME.txt', 'Letreros del stand · Expo de la carrera\r\nTamaño: tabloide 12 x 18 pulgadas, horizontal (18 de ancho x 12 de alto).\r\n\r\nCorelDRAW X7 (17): Archivo > Importar (Ctrl+I), elige el SVG y da Enter para colocarlo en su tamaño original.\r\nLa letra es Arial. Si quieres que no cambie en otra computadora: selecciona todo y Objeto > Convertir en curvas (Ctrl+Q).\r\nlogo-cetac19.svg es el logo en vectores (se puede agrandar sin perder calidad).\r\n');
+    const blob = await z.generateAsync({ type: 'blob' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Letreros-stand-Corel.zip'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    u.toast('ZIP listo: ' + o.eqs.length + ' letreros en SVG', 'ok'); };
 
   /* ---------- v1.33.0: pasaporte mecatrónico y etiquetas de cada stand ---------- */
   // El visitante de 1º junta la etiqueta de cada stand; al final dice cuál le gustó más y qué carrera piensa elegir.
