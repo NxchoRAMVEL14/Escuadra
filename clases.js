@@ -393,6 +393,7 @@
     const w0 = part.antes * 50, w1 = (part.antes + part.h) * 50; let acc = 0;
     if (it.pasos) h += '<ol class="cl-pasos">' + it.pasos.map(x => { const a = acc; acc += x[0]; const fuera = part.h !== it.h && (Math.min(acc, w1) - Math.max(a, w0) <= 0); return '<li class="' + (rp && rp.act === it.t && rp.t === x[1] ? 'now' : fuera ? 'fuera' : '') + '"><span class="min">' + x[0] + ' min</span>' + esc(x[1]) + (fuera ? ' <small>(' + (a < w0 ? 'clase anterior' : 'siguiente clase') + ')</small>' : '') + '</li>'; }).join('') + '</ol>' + (min ? '<p class="muted small">Guion pensado para ' + it.h + ' h de horario (' + it.h * 50 + ' min).</p>' : '');
     if (E.memo && E.memo.enClase(it)) h += E.memo.claseHTML();
+    if (E.elev && E.elev.enClase(it)) h += E.elev.claseHTML();
     if (it.mat) h += '<p class="small"><b>Material:</b> ' + esc(it.mat) + '</p>';
     if (it.nota) h += '<p class="small"><b>Tip:</b> ' + esc(it.nota) + '</p>';
     if (it.ev) h += '<p class="small"><b>Evidencia:</b> ' + esc(it.ev) + '</p>';

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elevador de 2 pisos · Diagrama escalera</title>
+<style>
+:root { --bg: #f5f8f7; --card: #ffffff; --ink: #12221f; --muted: #5a6c68; --line: #d6e0dd; --brand: #0e5e5a; --on: #16a34a; --on-soft: #dcfce7; --off: #8a9895; --red: #dc2626; --org: #f59e0b; --blue: #2563eb }
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif }
+header { background: var(--brand); color: #fff; padding: 18px 20px 14px }
+header h1 { margin: 0; font-size: 1.5rem; line-height: 1.2 } header p { margin: 4px 0 0; opacity: .9; font-size: .95rem }
+nav { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5 }
+nav a { text-decoration: none; color: var(--brand); font-weight: 600; font-size: .9rem; padding: 6px 10px; border-radius: 999px; background: #e6f2f0 }
+main { max-width: 1240px; margin: 0 auto; padding: 16px }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin: 0 0 16px }
+h2 { margin: 0 0 10px; font-size: 1.3rem; color: var(--brand) } h3 { margin: 14px 0 6px; font-size: 1.05rem }
+.muted { color: var(--muted) } .small { font-size: .88rem }
+.sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; align-items: start }
+@media (max-width: 900px) { .sim { grid-template-columns: 1fr } }
+.panel { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: #fbfdfc }
+svg { display: block; width: 100%; height: auto }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 }
+button { font: inherit; font-size: .88rem; border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 7px 10px; border-radius: 10px; cursor: pointer }
+button:hover { border-color: var(--brand) } button.pri { background: var(--brand); color: #fff; border-color: var(--brand) }
+.log { list-style: none; margin: 0; padding: 0; font-size: .88rem; max-height: 210px; overflow: auto }
+.log li { padding: 5px 8px; border-left: 4px solid var(--brand); background: #f1f7f6; margin: 0 0 4px; border-radius: 0 8px 8px 0 }
+.log li b { color: var(--brand) } .log li.warn { border-color: var(--red); background: #fdeeee }
+.leds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 }
+.led { font-size: .8rem; padding: 3px 8px; border-radius: 999px; background: #eef1f0; color: var(--muted); border: 1px solid var(--line); font-weight: 600 }
+.led.on { background: var(--on-soft); color: #11632f; border-color: #86efac }
+table { width: 100%; border-collapse: collapse; font-size: .92rem } th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top } th { background: #eef6f5 }
+.tag { font-weight: 700; font-family: ui-monospace, Menlo, Consolas, monospace; white-space: nowrap }
+.rung-x { display: grid; grid-template-columns: 2.4em 1fr; gap: 6px 10px; align-items: start }
+.rung-x .n { background: var(--brand); color: #fff; border-radius: 8px; text-align: center; font-weight: 700; padding: 2px 0 }
+.rung-x div.t { padding-bottom: 8px; border-bottom: 1px dashed var(--line) }
+.sel { background: #fff7d6 !important }
+.ladwrap { overflow-x: auto } #lad { min-width: 760px }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .85rem; margin: 6px 0 10px } .legend span { display: inline-flex; align-items: center; gap: 6px }
+.sw { display: inline-block; width: 26px; height: 4px; border-radius: 2px }
+.note { background: #fff8e6; border: 1px solid #f6d58b; border-radius: 12px; padding: 10px 14px }
+ol.q li { margin: 0 0 6px }
+.hint { font-size: .85rem; color: var(--muted); margin: 4px 0 0 }
+.pb { cursor: pointer } .pb:hover { filter: brightness(1.08) }
+@media print {
+  nav, .btns, .noprint, .log, .leds { display: none !important }
+  body { background: #fff; font-size: 12px } header { background: #fff; color: #000; border-bottom: 2px solid #000; padding: 0 0 6px } header p { color: #333 }
+  main { padding: 0; max-width: none } section { border: none; padding: 6px 0; margin: 0 0 8px; break-inside: auto } .sim { grid-template-columns: 1fr } #maqueta .panel { max-width: 125mm; margin: 0 auto; border: none }
+  #lad { min-width: 0; height: 212mm; width: auto; margin: 0 auto }
+  #elev { width: 150mm !important; margin: 0 auto } .brk { break-before: page } .avoid { break-inside: avoid }
+  h2 { font-size: 15px } .rung-x div.t { padding-bottom: 4px }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛗 Elevador de 2 pisos · Control en diagrama escalera</h1>
+  <p>Técnico en Mecatrónica · 3°A · CETAC 19 · Norma americana (NEMA): contactos, bobinas y temporizadores</p>
+</header>
+<nav class="noprint"><a href="index.html#/clases" id="b-volver" hidden style="background:#0e5e5a;color:#fff">‹ Escuadra</a><a href="#maqueta">1. Maqueta y simulador</a><a href="#io">2. Entradas y salidas</a><a href="#escalera">3. Diagrama escalera</a><a href="#renglones">4. Renglón por renglón</a><a href="#fuerza">5. Fuerza</a><a href="#tarea">6. Tarea</a></nav>
+<main>
+
+<section id="maqueta">
+  <h2>1. La maqueta y el simulador</h2>
+  <p class="small muted noprint">Toca los botones del dibujo (naranjas en cada piso y la botonera roja de la cabina) o usa los escenarios. En el diagrama escalera de la derecha, lo que lleva corriente se pinta de <b style="color:var(--on)">verde</b>.</p>
+  <div class="sim">
+    <div class="panel avoid">
+      <svg id="elev" viewBox="0 0 520 640" role="img" aria-label="Elevador de dos pisos con sensores y botones"></svg>
+      <div class="leds" id="leds"></div>
+    </div>
+    <div class="noprint">
+      <div class="btns noprint">
+        <button class="pri" data-esc="1">① Llamar en P1 (ya está en P1)</button>
+        <button class="pri" data-esc="2">② Subir con B3 desde P1</button>
+        <button class="pri" data-esc="3">③ Llamar en P1 (está en P2)</button>
+        <button class="pri" data-esc="4">④ Llamar en P2 (ya está en P2)</button>
+        <button class="pri" data-esc="5">⑤ Llamar en P2 (está en P1)</button>
+        <button class="pri" data-esc="6">⑥ Bajar con B4 desde P2</button>
+        <button class="pri" data-esc="7" style="background:var(--red);border-color:var(--red)">⑦ Paro de emergencia subiendo</button>
+        <button data-act="reset">↺ Reiniciar</button>
+        <button data-act="lento" id="lento">🐢 Cámara lenta: no</button>
+        <button data-act="imprimir" id="b-imp" hidden>🖨 Imprimir / PDF</button>
+      </div>
+      <div class="panel noprint"><b class="small">Qué está pasando</b><ul class="log" id="log"></ul></div>
+      <div class="panel ladwrap" style="margin-top:10px"><svg id="lad-mini"></svg></div>
+    </div>
+  </div>
+</section>
+
+<section id="io" class="avoid">
+  <h2>2. Entradas, salidas y relevadores</h2>
+  <table>
+    <tr><th>Símbolo</th><th>Qué es</th><th>Tipo</th><th>Dónde está</th></tr>
+    <tr><td class="tag">B1</td><td>Llamar el elevador al piso 1 (flecha ▲)</td><td>Botón NA</td><td>Piso 1, afuera</td></tr>
+    <tr><td class="tag">B2</td><td>Llamar el elevador al piso 2 (flecha ▼)</td><td>Botón NA</td><td>Piso 2, afuera</td></tr>
+    <tr><td class="tag">B3</td><td>Subir: ir al piso 2 (▲)</td><td>Botón NA</td><td>Botonera de la cabina</td></tr>
+    <tr><td class="tag">B4</td><td>Bajar: ir al piso 1 (▼)</td><td>Botón NA</td><td>Botonera de la cabina</td></tr>
+    <tr><td class="tag">PE (B5)</td><td>Paro de emergencia (botón de hongo, se queda presionado)</td><td>Botón NC</td><td>Botonera de la cabina</td></tr>
+    <tr><td class="tag">S1</td><td>Final de carrera: la cabina está en el piso 1</td><td>Interruptor de límite (NA y NC)</td><td>Abajo del piso 1</td></tr>
+    <tr><td class="tag">S2</td><td>Final de carrera: la cabina está en el piso 2</td><td>Interruptor de límite (NA y NC)</td><td>Arriba del piso 2</td></tr>
+    <tr><td class="tag">KM1S / KM1B</td><td>Motor 1 (sube y baja la cabina): S = subir, B = bajar</td><td>Contactor / relevador</td><td>Arriba del cubo</td></tr>
+    <tr><td class="tag">KM2A / KM2C</td><td>Motor 2 (puertas): A = abrir, C = cerrar</td><td>Contactor / relevador</td><td>Techo de la cabina</td></tr>
+    <tr><td class="tag">CRPE</td><td>Relevador de seguridad: energizado mientras el paro NO está presionado</td><td>Relevador de control</td><td>Tablero</td></tr>
+    <tr><td class="tag">CR1 / CR2</td><td>Memorias: «quieren ir al piso 1» / «quieren ir al piso 2»</td><td>Relevador de control</td><td>Tablero</td></tr>
+    <tr><td class="tag">CRP</td><td>Llegó al piso que pidieron: arranca el ciclo de puertas</td><td>Relevador de control</td><td>Tablero</td></tr>
+    <tr><td class="tag">TA · TE · TC</td><td>Tiempo para abrir (2 s) · puertas abiertas (5 s) · tiempo para cerrar (2 s)</td><td>Temporizador a la conexión (TON)</td><td>Tablero</td></tr>
+    <tr><td class="tag">TPE</td><td>Tiempo de cierre de puertas por paro (2 s)</td><td>Temporizador a la conexión (TON)</td><td>Tablero</td></tr>
+  </table>
+</section>
+
+<section id="escalera" class="brk">
+  <h2>3. Diagrama escalera (norma americana)</h2>
+  <div class="legend"><span class="noprint"><i class="sw" style="background:var(--on)"></i> lleva corriente</span><span class="noprint"><i class="sw" style="background:#33413e"></i> sin corriente</span><span><b>NA</b> = normalmente abierto <b>| |</b></span><span><b>NC</b> = normalmente cerrado <b>|/|</b></span><span>⌒ = contacto de temporizador</span><span>A la derecha: renglones donde se usan sus contactos (<u>subrayado</u> = NC)</span></div>
+  <div class="ladwrap"><svg id="lad"></svg></div>
+  <p class="hint noprint">Toca un renglón para ver su explicación abajo.</p>
+</section>
+
+<section id="renglones" class="brk">
+  <h2>4. Renglón por renglón</h2>
+  <div class="rung-x" id="rx"></div>
+  <h3>La secuencia completa (ejemplo: está en el piso 1 y alguien presiona B2)</h3>
+  <ol class="small">
+    <li><b>B2</b> cierra → <b>CR2</b> se energiza y se enclava con su propio contacto (renglón 3).</li>
+    <li>La cabina no está en S2, así que el contacto NC de <b>S2</b> deja pasar → <b>KM1S</b>: el motor 1 sube (renglón 6).</li>
+    <li>La cabina llega y pisa <b>S2</b>: su NC abre y <b>KM1S</b> se apaga; su NA cierra y energiza <b>CRP</b> (renglones 4 y 6).</li>
+    <li><b>CRP</b> arranca <b>TA</b> y <b>KM2A</b>: el motor 2 abre las puertas 2 s (renglones 7 y 8).</li>
+    <li>Termina <b>TA</b> → corta <b>KM2A</b> y arranca <b>TE</b>: puertas abiertas 5 s (renglón 9).</li>
+    <li>Termina <b>TE</b> → <b>KM2C</b> cierra las puertas y <b>TC</b> cuenta 2 s (renglones 10 y 11).</li>
+    <li>Termina <b>TC</b> → su contacto NC abre el sello de <b>CR2</b>: todo regresa a reposo, esperando la siguiente llamada.</li>
+  </ol>
+</section>
+
+<section id="fuerza" class="avoid">
+  <h2>5. Circuito de fuerza: inversión de giro de los motores</h2>
+  <p class="small">Cada motor de CD cambia de giro (con <b>KM1S</b> el + llega a la izquierda del motor; con <b>KM1B</b>, a la derecha) invirtiendo la polaridad con dos contactores (o dos relevadores de doble polo). Si se energizaran los dos a la vez habría un corto: por eso en el control cada uno lleva el contacto NC del otro (<b>enclavamiento</b>).</p>
+  <div class="sim" style="grid-template-columns:1fr 1fr"><div class="panel"><svg id="f1" viewBox="0 0 420 300"></svg></div><div class="panel"><svg id="f2" viewBox="0 0 420 300"></svg></div></div>
+</section>
+
+<section id="tarea" class="brk">
+  <h2>6. Tarea</h2>
+  <ol class="q">
+    <li>¿Por qué <b>S1</b> se usa como contacto NA en el renglón 4 y como NC en el renglón 5? Explica qué hace cada uno.</li>
+    <li>¿Qué pasaría si quitamos el contacto NC de <b>KM1S</b> del renglón 5? ¿Y el de <b>KM2C</b> del renglón 8?</li>
+    <li>¿Por qué el paro de emergencia es NC y por qué necesitamos el relevador <b>CRPE</b> en lugar de usar el botón directamente para cerrar las puertas?</li>
+    <li>La cabina está en el piso 2 y alguien presiona <b>B1</b>. Escribe en orden qué bobinas se energizan y se apagan hasta que todo regresa a reposo.</li>
+    <li>¿Qué hace el contacto NC de <b>TC</b> en los renglones 2 y 3? ¿Qué pasaría sin él?</li>
+    <li>Dibuja cómo quedaría el renglón 8 si agregamos un final de carrera <b>S3</b> que se activa cuando la puerta está totalmente abierta (para ya no depender del tiempo TA).</li>
+    <li><b>Reto:</b> hoy, mientras el elevador viaja, ignora otra llamada. ¿Qué cambiarías para que la recuerde y la atienda al terminar?</li>
+  </ol>
+  <div class="note small"><b>Cómo lo armamos (para confirmar en clase):</b> (1) Al paro de emergencia le pusimos <b>PE (B5)</b>, porque en la lista había dos B4. (2) La maqueta no tiene sensores en las puertas, así que abrir y cerrar se hace <b>por tiempo</b> (TA y TC, 2 s; se ajustan a lo que tarde su puerta). (3) Mientras atiende un viaje, ignora otra llamada. (4) El paro se queda presionado (hongo); al soltarlo, el elevador espera una nueva llamada. (5) Es lógica de relevadores: se pasa igual a un PLC (cada contacto es una instrucción NA o NC de la misma entrada).</div>
+</section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const P = { TA: 2, TE: 5, TC: 2, TPE: 2 }, TIM = Object.keys(P);
+  const DESC = { B1: 'Llamar al piso 1', B2: 'Llamar al piso 2', B3: 'Cabina: subir', B4: 'Cabina: bajar', PE: 'Paro de emergencia', S1: 'Cabina en piso 1', S2: 'Cabina en piso 2', CRPE: 'Seguridad (paro libre)', CR1: 'Memoria: ir al piso 1', CR2: 'Memoria: ir al piso 2', CRP: 'Llegó: ciclo de puertas', KM1S: 'Motor 1 sube', KM1B: 'Motor 1 baja', KM2A: 'Motor 2 abre puertas', KM2C: 'Motor 2 cierra puertas', TA: 'Tiempo para abrir', TE: 'Puertas abiertas', TC: 'Tiempo para cerrar', TPE: 'Cierre por paro' };
+  const kind = t => /^B\d|^PE$/.test(t) ? 'pb' : /^S\d/.test(t) ? 'ls' : TIM.indexOf(t) >= 0 ? 'tm' : 'cr';
+  const c = (tag, t) => ({ c: tag, t: t || 'NA', k: kind(tag) }), par = (...b) => ({ par: b });
+  const R = [
+    { coil: 'CRPE', s: [c('PE', 'NC')], x: 'El paro de emergencia es <b>NC</b>: mientras nadie lo presiona deja pasar corriente y <b>CRPE</b> queda energizado. Si alguien lo presiona, CRPE cae: sus contactos NA cortan las memorias y el motor 1 (renglones 2, 3, 5, 6 y 8) y su contacto NC arranca el cierre de puertas (renglones 11 y 12). Usamos un relevador porque un botón NC, al presionarlo, solo puede <i>abrir</i> un circuito, no <i>encender</i> otro.' },
+    { coil: 'CR1', s: [par([c('B1')], [c('B4')], [c('CR1')]), c('CRPE'), c('CR2', 'NC'), c('TC', 'NC')], x: 'Memoria <b>«ir al piso 1»</b>. La activan <b>B1</b> (llamada en el piso 1) o <b>B4</b> (bajar desde la cabina), y su propio contacto <b>CR1</b> la enclava (sello) aunque suelten el botón. Se borra cuando <b>TC</b> termina (fin del ciclo de puertas) o con el paro. El NC de <b>CR2</b> es un enclavamiento: si ya va al piso 2, ignora esta llamada.' },
+    { coil: 'CR2', s: [par([c('B2')], [c('B3')], [c('CR2')]), c('CRPE'), c('CR1', 'NC'), c('TC', 'NC')], x: 'Memoria <b>«ir al piso 2»</b>, igual que la anterior: la activan <b>B2</b> (llamada en el piso 2) o <b>B3</b> (subir desde la cabina), se enclava con <b>CR2</b> y se borra con <b>TC</b> o con el paro. El NC de <b>CR1</b> evita las dos memorias a la vez.' },
+    { coil: 'CRP', s: [par([c('CR1'), c('S1')], [c('CR2'), c('S2')])], x: '<b>Llegada.</b> Si quieren el piso 1 y la cabina pisa <b>S1</b>, o quieren el piso 2 y pisa <b>S2</b>, se energiza <b>CRP</b> y arranca el ciclo de puertas. Funciona igual si la cabina ya estaba ahí (solo abre) o si acaba de llegar.' },
+    { coil: 'KM1B', s: [c('CRPE'), c('CR1'), c('S1', 'NC'), c('KM1S', 'NC')], x: '<b>Bajar.</b> Con la memoria CR1, el motor 1 baja mientras la cabina no pise <b>S1</b> (contacto NC). Al llegar, S1 abre y el motor se detiene solo. El NC de <b>KM1S</b> impide subir y bajar al mismo tiempo (enclavamiento).' },
+    { coil: 'KM1S', s: [c('CRPE'), c('CR2'), c('S2', 'NC'), c('KM1B', 'NC')], x: '<b>Subir.</b> Con la memoria CR2, el motor 1 sube hasta que la cabina pisa <b>S2</b>, que abre su NC. El NC de <b>KM1B</b> es el enclavamiento.' },
+    { coil: 'TA', s: [c('CRP')], x: '<b>TA</b> cuenta <b>2 s</b> desde que llega: es el tiempo que tarda la puerta en abrir.' },
+    { coil: 'KM2A', s: [c('CRP'), c('TA', 'NC'), c('CRPE'), c('KM2C', 'NC')], x: '<b>Abrir puertas</b> mientras TA no termina (contacto NC temporizado: abre al cumplir el tiempo). CRPE corta la apertura si hay paro y el NC de <b>KM2C</b> impide abrir y cerrar a la vez.' },
+    { coil: 'TE', s: [c('CRP'), c('TA')], x: 'Cuando TA termina, su contacto NA temporizado cierra y <b>TE</b> cuenta <b>5 s</b> con las puertas abiertas para que la gente entre o salga.' },
+    { coil: 'TC', s: [c('CRP'), c('TE')], x: 'Cuando TE termina, <b>TC</b> cuenta <b>2 s</b>: el tiempo que tarda la puerta en cerrar. Al terminar, su NC borra la memoria (renglones 2 y 3) y todo regresa a reposo.' },
+    { coil: 'KM2C', s: [par([c('CRP'), c('TE'), c('TC', 'NC')], [c('CRPE', 'NC'), c('TPE', 'NC')]), c('KM2A', 'NC')], x: '<b>Cerrar puertas</b> en dos casos: (a) ciclo normal: después de TE y mientras TC no termine; (b) <b>paro</b>: CRPE cae, su NC cierra y el motor 2 cierra durante TPE. El NC de <b>KM2A</b> es el enclavamiento.' },
+    { coil: 'TPE', s: [c('CRPE', 'NC')], x: 'Con el paro presionado, <b>TPE</b> cuenta <b>2 s</b> de cierre y luego detiene el motor 2 para no forzarlo.' }
+  ];
+  // referencias cruzadas
+  const XREF = {}; const walk = (s, n) => s.forEach(e => { if (e.par) e.par.forEach(b => walk(b, n)); else { (XREF[e.c] = XREF[e.c] || []).push({ n: n, nc: e.t === 'NC' }); } });
+  R.forEach((r, i) => walk(r.s, i + 1));
+
+  // ---------- estado ----------
+  let st, en, acc, pos, door, held, pe, slow = false, prevSt = {}, t0 = 0, simT = 0;
+  const reset = (p) => { st = {}; en = {}; acc = {}; TIM.forEach(t => acc[t] = 0); pos = p == null ? 0 : p; door = 0; held = {}; pe = false; prevSt = null; logL = []; simT = 0; drawLog(); };
+  const pressed = t => { const h = held[t]; return !!h && (h.hold || simT < h.until); };
+  const cond = e => { if (e.par) return e.par.some(b => b.every(cond)); const v = !!st[e.c]; return e.t === 'NA' ? v : !v; };
+  function scan(dt) {
+    ['B1', 'B2', 'B3', 'B4'].forEach(b => { st[b] = pressed(b); });
+    st.PE = pe; st.S1 = pos <= 0.0005; st.S2 = pos >= 0.9995;
+    R.forEach(r => { const on = r.s.every(cond); en[r.coil] = on; if (TIM.indexOf(r.coil) >= 0) { acc[r.coil] = on ? Math.min(P[r.coil], acc[r.coil] + dt) : 0; st[r.coil] = on && acc[r.coil] >= P[r.coil] - 1e-9; } else st[r.coil] = on; });
+    const v = 0.25; if (st.KM1S && !st.KM1B) pos = Math.min(1, pos + v * dt); if (st.KM1B && !st.KM1S) pos = Math.max(0, pos - v * dt);
+    const dv = 1 / 1.6; if (st.KM2A && !st.KM2C) door = Math.min(1, door + dv * dt); if (st.KM2C && !st.KM2A) door = Math.max(0, door - dv * dt);
+  }
+  // ---------- narración ----------
+  let logL = [];
+  const MSG = {
+    CRPE: [null, '⛔ <b>Paro de emergencia</b>: CRPE cae, se borran las memorias y se detiene el motor 1.'],
+    CR1: ['<b>CR1</b> se enclava: pidieron ir al <b>piso 1</b> (B1 o B4).', '<b>CR1</b> se libera: terminó el viaje.'],
+    CR2: ['<b>CR2</b> se enclava: pidieron ir al <b>piso 2</b> (B2 o B3).', '<b>CR2</b> se libera: terminó el viaje.'],
+    CRP: ['<b>CRP</b>: la cabina está en el piso pedido → empieza el ciclo de puertas.', null],
+    KM1S: ['<b>KM1S</b>: el motor 1 <b>sube</b> la cabina.', '<b>KM1S</b> se apaga.'],
+    KM1B: ['<b>KM1B</b>: el motor 1 <b>baja</b> la cabina.', '<b>KM1B</b> se apaga.'],
+    KM2A: ['<b>KM2A</b>: el motor 2 <b>abre</b> las puertas (TA cuenta 2 s).', '<b>KM2A</b> se apaga: TA terminó; TE cuenta 5 s con las puertas abiertas.'],
+    KM2C: ['<b>KM2C</b>: el motor 2 <b>cierra</b> las puertas.', '<b>KM2C</b> se apaga: puertas cerradas.'],
+    S1: ['<b>S1</b> se activa: la cabina llegó al piso 1.', null], S2: ['<b>S2</b> se activa: la cabina llegó al piso 2.', null]
+  };
+  function narra() {
+    if (!prevSt) { prevSt = Object.assign({}, st); return; }
+    Object.keys(MSG).forEach(k => { const a = !!prevSt[k], b = !!st[k]; if (a === b) return; let m = MSG[k][b ? 0 : 1];
+      if (k === 'CRPE' && b && prevSt.PE) m = '✅ Paro liberado: CRPE se energiza otra vez. Esperando una llamada.';
+      if (k === 'KM1S' && !b && st.S2) m = '<b>KM1S</b> se apaga: S2 abrió su contacto NC, ¡llegó al piso 2!';
+      if (k === 'KM1B' && !b && st.S1) m = '<b>KM1B</b> se apaga: S1 abrió su contacto NC, ¡llegó al piso 1!';
+      if (k === 'KM2A' && !b && !st.CRPE) m = '<b>KM2A</b> se apaga por el paro.';
+      if (k === 'KM2C' && b && !st.CRPE) m = '<b>KM2C</b>: por seguridad el motor 2 <b>cierra</b> las puertas (TPE 2 s).';
+      if (m) logL.unshift({ t: simT, m: m, w: k === 'CRPE' && !b }); });
+    prevSt = Object.assign({}, st); if (logL.length > 40) logL.length = 40; drawLog();
+  }
+  function drawLog() { const el = document.getElementById('log'); if (!el) return; el.innerHTML = logL.length ? logL.map(x => '<li' + (x.w ? ' class="warn"' : '') + '><span class="muted">' + x.t.toFixed(1) + ' s · </span>' + x.m + '</li>').join('') : '<li>Esperando… toca un botón o elige un escenario.</li>'; }
+
+  // ---------- dibujo de la escalera ----------
+  const ON = '#16a34a', OFF = '#33413e', EW = 92, BH = 62, RL = 46, RR = 800, CX = 748, W = 985;
+  const ns = (s) => s.map(e => e.par ? { w: Math.max(...e.par.map(b => ns(b).w)), h: e.par.reduce((a, b) => a + ns(b).h, 0) } : { w: EW, h: BH }).reduce((a, x) => ({ w: a.w + x.w, h: Math.max(a.h, x.h) }), { w: 0, h: BH });
+  let PLAIN = false;
+  const ln = (x1, y1, x2, y2, on, w) => (on = on && !PLAIN, '') + '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + (on ? ON : OFF) + '" stroke-width="' + (w || (on ? 3.2 : 2)) + '" stroke-linecap="round"/>';
+  function sym(e, x, y, pin) {
+    const cl = cond(e), col = cl && !PLAIN ? ON : OFF, out = pin && cl, a = x + 30, b = x + 62, m = (a + b) / 2;
+    let s = ln(x, y, a, y, pin) + ln(b, y, x + EW, y, out);
+    const lab = '<text x="' + m + '" y="' + (y - 22) + '" text-anchor="middle" font-size="13" font-weight="700" fill="#12221f">' + e.c + '</text>';
+    const sw = cl ? 3.2 : 2.2;
+    if (e.k === 'pb') {
+      s += '<circle cx="' + (a + 3) + '" cy="' + y + '" r="3.2" fill="#fff" stroke="' + col + '" stroke-width="2"/><circle cx="' + (b - 3) + '" cy="' + y + '" r="3.2" fill="#fff" stroke="' + col + '" stroke-width="2"/>';
+      if (e.t === 'NA') s += ln(a - 1, y - 9, b + 1, y - 9, cl, sw) + ln(m, y - 9, m, y - 17, cl, 2);
+      else s += ln(a - 1, y + 5, b + 1, y + 5, cl, sw) + ln(m, y + 5, m, y - 14, cl, 2);
+    } else if (e.k === 'ls') {
+      s += '<circle cx="' + (a + 3) + '" cy="' + y + '" r="3.2" fill="#fff" stroke="' + col + '" stroke-width="2"/><circle cx="' + (b - 3) + '" cy="' + y + '" r="3.2" fill="#fff" stroke="' + col + '" stroke-width="2"/>';
+      if (e.t === 'NA') s += ln(a + 5, y, b - 2, y - 13, cl, sw) + '<path d="M' + (m - 1) + ' ' + (y - 6) + ' l6 6 l-9 2 z" fill="' + col + '"/>';
+      else s += ln(a + 5, y, b + 2, y + 9, cl, sw) + '<path d="M' + (m + 2) + ' ' + (y + 5) + ' l6 -7 l2 9 z" fill="' + col + '"/>';
+    } else {
+      s += ln(a + 6, y - 13, a + 6, y + 13, cl, sw) + ln(b - 6, y - 13, b - 6, y + 13, cl, sw) + ln(a, y, a + 6, y, pin) + ln(b - 6, y, b, y, out);
+      if (e.t === 'NC') s += ln(a + 1, y + 15, b - 1, y - 15, cl, sw);
+      if (e.k === 'tm') s += '<path d="M' + (m - 9) + ' ' + (y - 17) + ' A9 7 0 0 1 ' + (m + 9) + ' ' + (y - 17) + '" fill="none" stroke="' + col + '" stroke-width="1.8"/>' + ln(m, y - 24, m, y - 17, cl, 1.6);
+    }
+    const tip = '<title>' + e.c + ' (' + e.t + ') · ' + (DESC[e.c] || '') + '</title>';
+    return { svg: '<g>' + tip + s + (e.k === 'tm' ? lab.replace('y="' + (y - 22) + '"', 'y="' + (y - 28) + '"') : lab) + '</g>', out: out };
+  }
+  function series(s, x, y, pin) {
+    let svg = '', p = pin;
+    s.forEach(e => {
+      if (e.par) {
+        const w = Math.max(...e.par.map(b => ns(b).w)); let yy = y, outs = false, last = y;
+        e.par.forEach((b, i) => { const r = series(b, x, yy, p), bw = ns(b).w; svg += r.svg; if (bw < w) svg += ln(x + bw, yy, x + w, yy, r.out); outs = outs || r.out; last = yy; yy += ns(b).h; });
+        e.par.forEach((b, i) => { });
+        svg += ln(x, y, x, last, p) + ln(x + w, y, x + w, last, outs);
+        p = outs; x += w;
+      } else { const r = sym(e, x, y, p); svg += r.svg; p = r.out; x += EW; }
+    });
+    return { svg: svg, out: p, x: x };
+  }
+  function ladder(mini) {
+    let y = 30, svg = '', H = 0;
+    const tops = R.map(r => { const h = ns(r.s).h; const t = y; y += h + 14; return t; }); H = y + 4;
+    svg += '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+    svg += ln(RL, 22, RL, H - 6, true, 4) + '<text x="' + RL + '" y="14" font-size="12" font-weight="700" text-anchor="middle" fill="#12221f">L1 (+24 V)</text>' + ln(RR, 22, RR, H - 6, false, 4) + '<text x="' + RR + '" y="14" font-size="12" font-weight="700" text-anchor="middle" fill="#12221f">0 V</text><text x="' + (RR + 10) + '" y="14" font-size="10" fill="#8a9895">  contactos en</text>';
+    R.forEach((r, i) => {
+      const yy = tops[i] + 34, isT = TIM.indexOf(r.coil) >= 0, res = series(r.s, RL, yy, true), on = !!en[r.coil] && !PLAIN;
+      svg += '<g class="rg" data-n="' + (i + 1) + '" style="cursor:pointer"><rect x="2" y="' + (tops[i] + 2) + '" width="' + (W - 4) + '" height="' + (ns(r.s).h + 10) + '" fill="' + (sel === i + 1 ? '#fff7d6' : 'transparent') + '" rx="8"/>';
+      svg += '<text x="20" y="' + (yy + 5) + '" font-size="15" font-weight="800" text-anchor="middle" fill="#0e5e5a">' + (i + 1) + '</text>';
+      svg += res.svg + ln(res.x, yy, CX - 22, yy, res.out) + ln(CX + 22, yy, RR, yy, res.out);
+      svg += '<circle cx="' + CX + '" cy="' + yy + '" r="21" fill="' + (on ? '#dcfce7' : '#fff') + '" stroke="' + (on ? ON : OFF) + '" stroke-width="' + (on ? 3.2 : 2.2) + '"/><text x="' + CX + '" y="' + (yy + 4.5) + '" text-anchor="middle" font-size="' + (r.coil.length > 3 ? 11.5 : 13) + '" font-weight="800" fill="#12221f">' + r.coil + '</text>';
+      if (isT) { const pc = Math.round((acc[r.coil] || 0) * 10) / 10; svg += '<text x="' + CX + '" y="' + (yy + 36) + '" text-anchor="middle" font-size="11" fill="' + (on ? ON : '#5a6c68') + '" font-weight="700">TON ' + P[r.coil] + ' s' + (on ? ' · ' + pc.toFixed(1) : '') + '</text>'; }
+      const xr = (XREF[r.coil] || []).map(z => z.nc ? '<tspan text-decoration="underline">' + z.n + '</tspan>' : String(z.n)).join(', ');
+      svg += '<text x="' + (RR + 10) + '" y="' + (yy + 4) + '" font-size="12" fill="#5a6c68">' + xr + '</text><text x="' + (RR + 10) + '" y="' + (yy + 19) + '" font-size="9.5" fill="#8a9895">' + (DESC[r.coil] || '') + '</text></g>';
+    });
+    return { svg: svg, H: H };
+  }
+  let sel = 0;
+  // ---------- dibujo del elevador ----------
+  function elevador() {
+    const y1 = 388, y2 = 118, cy = y1 - pos * (y1 - y2), d = door, mv = st.KM1S ? 1 : st.KM1B ? -1 : 0;
+    const pb = (id, x, y, w, h, fill, inner, lab) => '<g class="pb" data-pb="' + id + '"><rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="7" fill="' + fill + '" stroke="#7c2d12" stroke-width="2"/>' + inner + '</g>' + (lab || '');
+    const lit = b => pressed(b) ? '#fde047' : '#fff';
+    let s = '<rect width="520" height="640" fill="#f8fbfa"/>';
+    s += '<rect x="150" y="60" width="210" height="548" fill="#e7eeec" stroke="#5a6c68" stroke-width="3"/>'; // cubo
+    s += '<rect x="20" y="326" width="340" height="10" fill="#9aa9a6"/><rect x="20" y="600" width="480" height="14" fill="#7f8f8b"/>';
+    s += '<text x="30" y="95" font-size="20" font-weight="800" fill="#0e5e5a">PISO 2</text><text x="30" y="368" font-size="20" font-weight="800" fill="#0e5e5a">PISO 1</text>';
+    // motor 1
+    s += '<rect x="214" y="14" width="82" height="40" rx="8" fill="' + (mv ? '#bbf7d0' : '#e5e7eb') + '" stroke="#12221f" stroke-width="2.5"/><text x="255" y="40" text-anchor="middle" font-size="16" font-weight="800">M1</text>';
+    s += '<circle cx="255" cy="64" r="11" fill="#fff" stroke="#12221f" stroke-width="2.5"/>' + (mv ? '<text x="312" y="42" font-size="22" font-weight="900" fill="#16a34a">' + (mv > 0 ? '⟲ ▲' : '⟳ ▼') + '</text>' : '');
+    s += '<line x1="255" y1="64" x2="255" y2="' + (cy - 30) + '" stroke="#12221f" stroke-width="2.5"/>';
+    // cabina
+    s += '<g><rect x="186" y="' + (cy - 30) + '" width="138" height="30" rx="4" fill="' + ((st.KM2A || st.KM2C) ? '#bbf7d0' : '#e5e7eb') + '" stroke="#12221f" stroke-width="2.5"/><text x="214" y="' + (cy - 10) + '" font-size="14" font-weight="800">M2</text>' + ((st.KM2A || st.KM2C) ? '<text x="244" y="' + (cy - 9) + '" font-size="14" font-weight="900" fill="#16a34a">' + (st.KM2A ? '◀ abre ▶' : '▶ cierra ◀') + '</text>' : '') + '</g>';
+    s += '<rect x="182" y="' + cy + '" width="146" height="200" rx="6" fill="#fff" stroke="#12221f" stroke-width="3"/>';
+    s += '<rect x="194" y="' + (cy + 14) + '" width="122" height="176" fill="#fef3c7"/><circle cx="255" cy="' + (cy + 70) + '" r="14" fill="#94a3b8"/><rect x="241" y="' + (cy + 86) + '" width="28" height="60" rx="10" fill="#94a3b8"/>';
+    const pw = 61 * (1 - d * 0.92);
+    s += '<rect x="194" y="' + (cy + 14) + '" width="' + pw + '" height="176" fill="#cbd5e1" stroke="#475569" stroke-width="2"/><rect x="' + (316 - pw) + '" y="' + (cy + 14) + '" width="' + pw + '" height="176" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>';
+    // sensores
+    const sen = (on, y, tag, txt) => '<rect x="152" y="' + (y - 11) + '" width="26" height="22" rx="5" fill="' + (on ? '#22c55e' : '#bbf7d0') + '" stroke="#166534" stroke-width="2.5"' + (on ? ' filter="url(#gl)"' : '') + '/><text x="122" y="' + (y + 5) + '" text-anchor="end" font-size="15" font-weight="800" fill="#166534">' + tag + '</text><text x="122" y="' + (y + 20) + '" text-anchor="end" font-size="10.5" fill="#166534">' + txt + '</text>';
+    s += '<defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+    s += sen(st.S2, 122, 'S2', st.S2 ? 'activado' : 'final de carrera') + sen(st.S1, 584, 'S1', st.S1 ? 'activado' : 'final de carrera');
+    // botones de piso
+    s += pb('B2', 66, 220, 52, 52, '#fdba74', '<path d="M78 236 h28 l-14 22 z" fill="' + (pressed('B2') ? '#dc2626' : '#ef4444') + '" stroke="#7f1d1d" stroke-width="2"/>' + (pressed('B2') ? '<rect x="66" y="220" width="52" height="52" rx="7" fill="#fde047" opacity=".45"/>' : ''), '<text x="92" y="290" text-anchor="middle" font-size="14" font-weight="800" fill="#9a3412">B2</text><text x="92" y="304" text-anchor="middle" font-size="10" fill="#9a3412">llamar ▼</text>');
+    s += pb('B1', 66, 480, 52, 52, '#fdba74', '<path d="M78 518 h28 l-14 -22 z" fill="' + (pressed('B1') ? '#dc2626' : '#ef4444') + '" stroke="#7f1d1d" stroke-width="2"/>' + (pressed('B1') ? '<rect x="66" y="480" width="52" height="52" rx="7" fill="#fde047" opacity=".45"/>' : ''), '<text x="92" y="550" text-anchor="middle" font-size="14" font-weight="800" fill="#9a3412">B1</text><text x="92" y="564" text-anchor="middle" font-size="10" fill="#9a3412">llamar ▲</text>');
+    // botonera de cabina
+    s += '<text x="436" y="196" text-anchor="middle" font-size="13" font-weight="800" fill="#991b1b">Botonera</text><text x="436" y="211" text-anchor="middle" font-size="13" font-weight="800" fill="#991b1b">de cabina</text>';
+    s += '<rect x="392" y="220" width="88" height="250" rx="14" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/>';
+    s += pb('B3', 410, 236, 52, 52, lit('B3'), '<path d="M422 278 h28 l-14 -30 z" fill="#fff" stroke="#12221f" stroke-width="2.5"/>', '<text x="472" y="268" font-size="13" font-weight="800">B3</text>');
+    s += '<g class="pb" data-pb="PE"><circle cx="436" cy="345" r="' + (pe ? 22 : 26) + '" fill="' + (pe ? '#991b1b' : '#dc2626') + '" stroke="#7f1d1d" stroke-width="3"/><circle cx="436" cy="345" r="' + (pe ? 13 : 16) + '" fill="#ef4444" opacity=".7"/></g><text x="436" y="384" text-anchor="middle" font-size="11" font-weight="800" fill="#991b1b">PE (B5) · NC</text><text x="436" y="397" text-anchor="middle" font-size="9.5" fill="#991b1b">' + (pe ? '¡PRESIONADO! toca para soltar' : 'paro de emergencia') + '</text>';
+    s += pb('B4', 410, 404, 52, 52, lit('B4'), '<path d="M422 414 h28 l-14 30 z" fill="#fff" stroke="#12221f" stroke-width="2.5"/>', '<text x="472" y="436" font-size="13" font-weight="800">B4</text>');
+    s += '<line x1="392" y1="470" x2="324" y2="' + (cy + 100) + '" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    return s;
+  }
+  function leds() { return ['B1', 'B2', 'B3', 'B4', 'S1', 'S2', 'CRPE', 'CR1', 'CR2', 'CRP', 'KM1S', 'KM1B', 'KM2A', 'KM2C', 'TA', 'TE', 'TC', 'TPE'].map(k => '<span class="led' + ((TIM.indexOf(k) >= 0 ? en[k] : st[k]) ? ' on' : '') + '" title="' + DESC[k] + '">' + k + '</span>').join('') + '<span class="led' + (pe ? ' on' : '') + '" style="' + (pe ? 'background:#fee2e2;color:#991b1b;border-color:#fca5a5' : '') + '">PE ' + (pe ? 'presionado' : 'libre') + '</span>'; }
+  // ---------- fuerza ----------
+  function fuerza(m, a, b, la, lb) {
+    const k = (x, y, t, vert) => { const on = !!st[t], col = on ? ON : OFF; return vert ? (ln(x, y - 26, x, y - 7, on) + ln(x - 12, y - 7, x + 12, y - 7, on, 2.6) + ln(x - 12, y + 7, x + 12, y + 7, on, 2.6) + ln(x, y + 7, x, y + 26, on) + '<text x="' + (x + 18) + '" y="' + (y + 5) + '" font-size="13" font-weight="800" fill="#12221f">' + t + '</text>') : ''; };
+    const on = st[a] || st[b];
+    let s = '<rect width="420" height="300" fill="#fff"/>';
+    s += ln(40, 30, 380, 30, true, 3) + '<text x="44" y="22" font-size="12" font-weight="700">+12 V</text>' + ln(40, 270, 380, 270, false, 3) + '<text x="44" y="292" font-size="12" font-weight="700">0 V</text>';
+    s += ln(120, 30, 120, 74, true) + k(120, 100, a, 1) + ln(120, 126, 120, 150, st[a]) + ln(300, 30, 300, 74, true) + k(300, 100, b, 1) + ln(300, 126, 300, 150, st[b]);
+    s += ln(120, 150, 300, 150, false, 0) + ln(120, 150, 170, 150, on) + ln(250, 150, 300, 150, on);
+    s += '<circle cx="210" cy="150" r="38" fill="' + (on ? '#dcfce7' : '#fff') + '" stroke="' + (on ? ON : OFF) + '" stroke-width="3"/><text x="210" y="156" text-anchor="middle" font-size="18" font-weight="800">' + m + '</text><text x="210" y="58" text-anchor="middle" font-size="13" font-weight="700" fill="' + (on ? '#16a34a' : '#5a6c68') + '">' + (st[a] ? la : st[b] ? lb : 'detenido') + '</text>';
+    s += ln(120, 150, 120, 174, st[b]) + k(120, 200, b, 1) + ln(120, 226, 120, 270, false) + ln(300, 150, 300, 174, st[a]) + k(300, 200, a, 1) + ln(300, 226, 300, 270, false);
+    return s;
+  }
+  // ---------- render ----------
+  function render() {
+    document.getElementById('elev').innerHTML = elevador();
+    document.getElementById('leds').innerHTML = leds();
+    const L = ladder(); ['lad', 'lad-mini'].forEach(id => { const el = document.getElementById(id); el.setAttribute('viewBox', '0 0 ' + W + ' ' + L.H); el.innerHTML = L.svg; });
+    document.getElementById('f1').innerHTML = fuerza('M1', 'KM1S', 'KM1B', 'sube', 'baja');
+    document.getElementById('f2').innerHTML = fuerza('M2', 'KM2A', 'KM2C', 'abre', 'cierra');
+  }
+  document.getElementById('rx').innerHTML = R.map((r, i) => '<div class="n" id="rn' + (i + 1) + '">' + (i + 1) + '</div><div class="t" id="rt' + (i + 1) + '"><span class="tag">' + r.coil + '</span> · ' + DESC[r.coil] + '<br>' + r.x + '</div>').join('');
+  // ---------- interacción ----------
+  const press = (b, ms) => { held[b] = { hold: false, until: simT + (ms || 0.35) }; };
+  document.addEventListener('pointerdown', ev => { const g = ev.target.closest('[data-pb]'); if (!g) return; const id = g.dataset.pb; ev.preventDefault();
+    if (id === 'PE') { pe = !pe; return; } held[id] = { hold: true, until: simT + 0.35 }; });
+  document.addEventListener('pointerup', () => { Object.keys(held).forEach(k => { held[k].hold = false; }); });
+  document.addEventListener('click', ev => {
+    const r = ev.target.closest('.rg'); if (r) { sel = Number(r.dataset.n); document.querySelectorAll('.rung-x .sel').forEach(x => x.classList.remove('sel')); const t = document.getElementById('rt' + sel); if (t) { t.classList.add('sel'); document.getElementById('rn' + sel).classList.add('sel'); if (r.closest('#lad')) t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return; }
+    const e = ev.target.closest('[data-esc]'); if (e) { escenario(Number(e.dataset.esc)); return; }
+    const a = ev.target.closest('[data-act]'); if (!a) return;
+    if (a.dataset.act === 'reset') reset(0);
+    if (a.dataset.act === 'imprimir') { reset(0); scan(0.02); PLAIN = true; render(); setTimeout(() => { window.print(); setTimeout(() => { PLAIN = false; }, 800); }, 120); return; }
+    if (a.dataset.act === 'lento') { slow = !slow; a.textContent = '🐢 Cámara lenta: ' + (slow ? 'sí' : 'no'); }
+  });
+  let plan = [];
+  function escenario(n) {
+    const ini = { 1: 0, 2: 0, 3: 1, 4: 1, 5: 0, 6: 1, 7: 0 }[n]; reset(ini); plan = [];
+    const b = { 1: 'B1', 2: 'B3', 3: 'B1', 4: 'B2', 5: 'B2', 6: 'B4', 7: 'B3' }[n];
+    logL.unshift({ t: 0, m: '▶ Escenario ' + n + ': la cabina está en el <b>piso ' + (ini ? 2 : 1) + '</b> y se presiona <b>' + b + '</b>.' }); drawLog();
+    plan.push({ at: 0.6, f: () => press(b) });
+    if (n === 7) { plan.push({ at: 2.2, f: () => { pe = true; } }); plan.push({ at: 6.5, f: () => { pe = false; } }); }
+  }
+  // ---------- ciclo ----------
+  let last = 0;
+  function loop(ts) {
+    if (!last) last = ts; let dt = Math.min(0.1, (ts - last) / 1000); last = ts; if (slow) dt *= 0.4;
+    let left = dt; while (left > 0) { const h = Math.min(0.02, left); simT += h; plan = plan.filter(p => { if (simT >= p.at) { p.f(); return false; } return true; }); scan(h); narra(); left -= h; }
+    render(); requestAnimationFrame(loop);
+  }
+  try { if (window.self === window.top && /elevador\.html$/.test(location.pathname)) { document.getElementById('b-imp').hidden = false; document.getElementById('b-volver').hidden = false; } } catch (e) { }
+  if (location.hash === '#imprimir') setTimeout(() => { const b = document.getElementById('b-imp'); if (b && !b.hidden) b.click(); }, 400);
+  reset(0); scan(0.02); narra(); render();
+  if (!window.__estatico) requestAnimationFrame(loop);
+  window.__sim = { plano: v => { PLAIN = v; render(); }, st: () => st, escenario: escenario, reset: reset, step: (s) => { const n = Math.round(s / 0.02); for (let i = 0; i < n; i++) { simT += 0.02; plan = plan.filter(p => { if (simT >= p.at) { p.f(); return false; } return true; }); scan(0.02); narra(); } render(); }, pos: () => pos, door: () => door };
+})();
+</script>
+</body>
+</html>
