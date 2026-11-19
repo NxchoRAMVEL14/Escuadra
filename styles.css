@@ -1671,3 +1671,11 @@ label.chk input { accent-color: var(--brand, #0e5e5a) }
 .jp-hojas { display: block } .jp-ha { height: 112mm; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between } .jp-ha h3 { margin: 0 !important; font-size: 15pt !important }
 .jp-ha-top { display: flex; gap: 10pt } .jp-ha-top > div:first-child { flex: 1 } .jp-qr { width: 34mm; text-align: center } .jp-qr svg { width: 34mm; height: 34mm } .jp-qr small { font-size: 8pt }
 .jp-mal { color: #b3261e } .jp-pend { font-size: 10pt; margin: 5pt 0 } .jp-obs { font-size: 10pt; margin: 8pt 0 } .jp-rec { font-size: 10.5pt; border-top: 1pt dashed #9aa9a7; padding-top: 6pt } .jp-corte { text-align: center; color: #9aa9a7; border-top: 1pt dashed #9aa9a7; line-height: 0; margin: 2mm 0 }
+/* v1.41.0 · Elevador de 2 pisos (proyección renglón por renglón) */
+.el-cl { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface2) }
+.el-rg { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 3vw; align-items: start }
+.el-rg svg.el-big { width: 100%; height: auto; max-height: 34vh; background: #fff; border-radius: 10px; box-shadow: 0 0 0 2px #f6d58b }
+.el-rg svg.el-mini { width: 100%; height: auto; max-height: 72vh; background: #fff; border-radius: 10px }
+.el-pts { font-size: clamp(1rem, 2.1vw, 1.7rem); line-height: 1.35; margin: 2.5vh 0 0; padding-left: 1.2em } .el-pts li { margin: .35em 0 }
+.el-maq { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 3vw; align-items: center } .el-maq svg { width: 100%; max-height: 72vh; height: auto; background: #fff; border-radius: 12px }
+@media (max-width: 700px) { .el-rg, .el-maq { grid-template-columns: 1fr } }
