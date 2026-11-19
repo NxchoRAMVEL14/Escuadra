@@ -37,7 +37,7 @@
     const top = con.slice().sort((x, y) => y.fin - x.fin).filter(x => x.of >= 9).slice(0, 5), faltas = fil.filter(x => x.f >= 3).sort((x, y) => y.f - x.f);
     return { p: p, fil: fil, n: al.length, con: con.length, apr: apr, rep: rep, prom: prom, pa: pa, top: top, faltas: faltas };
   };
-  const kpiHTML = R => '<div class="jp-kpi"><div><b>' + (R.prom == null ? '—' : R.prom) + '</b><span>Promedio</span></div><div><b>' + R.apr.length + '/' + R.con + '</b><span>Aprueban</span></div><div><b>' + R.rep.length + '</b><span>En riesgo</span></div><div><b>' + (R.pa == null ? '—' : R.pa + ' %') + '</b><span>Asistencia</span></div></div>';
+  const kpiHTML = R => '<div class="jp-kpi"><div><b>' + (R.prom == null ? '—' : R.prom) + '</b><span>Promedio</span></div><div class="ok"><b>' + R.apr.length + '/' + R.con + '</b><span>Aprueban</span></div><div class="bad"><b>' + R.rep.length + '</b><span>En riesgo</span></div><div><b>' + (R.pa == null ? '—' : R.pa + '%') + '</b><span>Asistencia</span></div></div>';
   const nomL = arr => arr.map(x => esc(x.a.num + '. ' + u.corto(x.a.nombre)) + (x.of != null && x.extra !== false ? ' (' + x.of + ')' : '')).join(' · ');
 
   /* ---------- pantalla ---------- */
@@ -50,7 +50,7 @@
     h += card('<h3>📊 Estatus del grupo · ' + esc(R.p.nombre || '') + '</h3>' + kpiHTML(R) +
       (R.top.length ? '<p class="small"><b>⭐ Destacados:</b> ' + nomL(R.top) + '</p>' : '') +
       '<p class="small"><b>⚠️ Van abajo de ' + (minA() / 10) + ':</b> ' + (R.rep.length ? nomL(R.rep) : 'nadie 🎉') + '</p>' +
-      (R.faltas.length ? '<p class="small"><b>📅 Con 3 o más faltas:</b> ' + R.faltas.map(x => esc(x.a.num + '. ' + u.corto(x.a.nombre)) + ' (' + x.f + ')').join(' · ') + '</p>' : '') +
+      (R.faltas.length ? '<p class="small"><b>📅 Con 3 o más faltas:</b> ' + R.faltas.map(x => esc(x.a.num + '. ' + u.corto(x.a.nombre)) + ' (' + x.f + ' faltas)').join(' · ') + '</p>' : '') +
       '<p class="muted small">Sale de tus calificaciones y pase de lista de ' + esc(R.p.nombre || 'el parcial') + '. En la proyección se puede ocultar los nombres.</p>');
     h += card('<h3>📝 Puntos a tratar (' + e.puntos.filter(p => p.visto).length + '/' + e.puntos.length + ' vistos)</h3>' + e.puntos.map((p, i) => '<div class="momento"><label class="ck"><input type="checkbox" data-ch="jp-p" data-id="' + p.id + '" data-k="visto"' + (p.visto ? ' checked' : '') + '><span><b>' + (i + 1) + '.</b> ' + esc(p.t) + '</span></label>' +
       (p.det ? '<details class="sub"><summary class="small">Detalle</summary><ol class="small">' + p.det.split('\n').filter(Boolean).map(x => '<li>' + esc(x) + '</li>').join('') + '</ol></details>' : '') +
