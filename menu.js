@@ -61,6 +61,7 @@
     ] },
     { k: 'padres', t: '🏠 Para padres y la cotutora', d: 'Lo que llevas a casa y lo que compartes con tu cotutora', it: [
       ['aprobar', 'grade', 'Para aprobar', 'Qué le falta a cada alumno y cuánto sube'],
+      ['entregacal', 'users', 'Entrega de calificaciones', 'Agenda del director, estatus, firmas y hojas con QR'],
       ['tutoria', 'team', 'Tutoría', 'Grupo, cooperaciones e ideas'],
       ['emergencia', 'alert', 'Emergencias', 'Teléfonos y seguro facultativo']
     ] },

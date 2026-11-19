@@ -50,19 +50,27 @@
   X.idea = id => X.IDEAS.find(x => x.id === id);
   // v1.34: la pluma quedó fuera (nadie la hará): en la expo hay 5 proyectos
   X.ACT = () => X.IDEAS.filter(x => !x.off);
-  X.PREMIO = { personas: 20, piezas: 8, txt: 'chocolates chicos y baratos (Carlos V, Bocadín o parecidos)' };
+  X.PREMIO = { personas: 20, piezas: 8, meta: 150, txt: 'chocolates chicos y baratos (Carlos V, Bocadín o parecidos)' };
+  /* v1.38.0: quien no tiene equipo puede ser «apoyo de logística» (reparte y recoge pasaportes, etiquetas y letreros, y trae
+     chocolates como todos) y gana lo mismo que un equipo que presentó; o se marca «no entra a la expo». Los chocolates se
+     reparten entre los que sí entran más el profe: unas 150 piezas en total (20 personas → 8 c/u, 21 → 7 c/u). */
+  X.APOYO = ['Repartir los pasaportes a los de 1º', 'Entregar a cada stand sus etiquetas', 'Colocar el letrero de cada stand', 'Al final, recoger letreros, etiquetas y pasaportes que sobren'];
+  X.sinEq = (d, aid) => (d.sinEq || {})[aid] || '';
+  X.esApoyo = (g, aid) => { const d = X.doc(g); return X.sinEq(d, aid) === 'apoyo' && !X.equipoDe(g, aid); };
+  X.premioCalc = (personas, fijo) => { const n = Math.max(1, Number(personas) || 1), pz = Number(fijo) > 0 ? Math.round(Number(fijo)) : Math.max(1, Math.round(X.PREMIO.meta / n)); return { personas: n, piezas: pz, total: n * pz }; };
+  X.premio = g => { if (!g) return X.premioCalc(X.PREMIO.personas); const d = X.doc(g), al = g ? D.alumnos(g) : [], dentro = al.length ? al.filter(a => X.sinEq(d, a.id) !== 'fuera' || X.equipoDe(g, a.id)).length + 1 : X.PREMIO.personas; return X.premioCalc(dentro, d.piezas); };
   X.doc = g => Object.assign({ nombre: 'Expo de Mecatrónica', fecha: '2026-11-26', charla: '2026-11-25', equipos: [], destino: 'no', puntos: 1 }, S.get(K(g)) || {});
   const put = (g, f) => S.update(K(g), d => { const b = X.doc(g); Object.keys(b).forEach(k => { if (d[k] == null) d[k] = b[k]; }); f(d); }, {});
   X.parcialDe = g => { const f = X.doc(g).fecha, ps = D.parciales(); return (ps.find(p => f >= p.inicio && f <= p.fin) || ps[ps.length - 1] || {}).id; };
   X.equipoDe = (g, aid) => X.doc(g).equipos.find(e => (e.al || []).indexOf(aid) >= 0);
   const estrellas = n => '★'.repeat(n) + '☆'.repeat(3 - n);
   const DIF = ['', 'Fácil', 'Media', 'Retadora'];
-  const destTxt = d => d.destino === 'part' ? 'A quienes presenten, se les completa la participación (5 %) del parcial.' : d.destino === 'extra' ? 'A quienes presenten: ' + d.puntos + (Number(d.puntos) === 1 ? ' punto extra' : ' puntos extra') + ' en el parcial.' : 'Participar es voluntario. Si no participas, no te baja nada.';
+  const destTxt = d => d.destino === 'part' ? 'A quienes presenten (o ayuden en logística), se les completa la participación (5 %) del parcial.' : d.destino === 'extra' ? 'A quienes presenten (o ayuden en logística): ' + d.puntos + (Number(d.puntos) === 1 ? ' punto extra' : ' puntos extra') + ' en el parcial.' : 'Participar es voluntario. Si no participas, no te baja nada.';
 
   // el bono a la calificación (solo si el docente lo decide y el equipo presentó)
   C.bonos.push((g, pid, aid) => {
     const d = X.doc(g); if (d.destino !== 'part' && d.destino !== 'extra') return null; if (X.parcialDe(g) !== pid) return null;
-    const e = X.equipoDe(g, aid); if (!e || !e.presento) return null;
+    const e = X.equipoDe(g, aid), ap = !e && X.esApoyo(g, aid) && (d.apoyoOk || {})[aid]; if (!ap && (!e || !e.presento)) return null;
     return d.destino === 'part' ? { part: true, t: d.nombre } : { extra: Math.max(0, Math.min(2, Number(d.puntos) || 0)), t: d.nombre };
   });
 
@@ -80,7 +88,7 @@
         { k: 'list', h: 'Cómo explicar (1 minuto)', items: ['Primero que lo prueben: «¿Quieres probarlo?»', 'Qué es, en una frase y sin palabras técnicas', 'Cómo funciona en 2 o 3 pasos, señalando cada pieza', 'Dónde se usa en la vida real', 'Qué se aprende en Mecatrónica', 'Cierra con un reto: «¿Te animas a otra vuelta?»'], foot: 'Todo el equipo se aprende el guion. Ensáyenlo con cronómetro antes de la expo.' },
         { k: 'list', h: 'Un rol para cada quien', items: X.ROLES.map(r => r[1] + ': ' + r[2]), foot: 'Se turnan cada 15 minutos para que todos expliquen.' },
         { k: 'list', h: 'Pasaporte mecatrónico', items: ['Cada visitante de 1º recibe un pasaporte con su nombre y su grupo.', 'En cada stand, al probar el proyecto, le pegan la etiqueta de ese proyecto.', 'Quien junta las ' + X.ACT().length + ' etiquetas completa su pasaporte.', 'Al final escribe cuál le gustó más y qué carrera piensa elegir.'] },
-        { k: 'list', h: '🎁 Premio especial', items: X.premioItems() },
+        { k: 'list', h: '🎁 Premio especial', items: X.premioItems(g) },
         { k: 'cover', sub: 'Ahora sí', h: '¿Qué idea eligen?', p: 'Dígale a su profe el nombre del equipo, quiénes lo forman y qué idea van a hacer.' }]);
   };
 
@@ -105,8 +113,9 @@
       '<div class="row gap wrap mt">' + btn('🖨 Pasaportes', 'ex-pasaportes', '', '') + '<input class="inp" style="width:5.5em" type="number" min="2" step="2" id="ex-npas" value="' + esc(d.npas || 60) + '" data-ch="ex-f" data-k="npas" aria-label="Cuántos pasaportes"><span class="small muted">pasaportes (2 por hoja)</span>' + btn('🖨 Etiquetas de los stands', 'ex-etiquetas', '', '') + '</div>' +
       '<details class="sub"><summary>Nombre y fechas</summary><div class="fgrid"><label class="fld"><span>Nombre</span><input class="inp" data-ch="ex-f" data-k="nombre" value="' + esc(d.nombre) + '"></label><label class="fld"><span>Charlas</span><input class="inp" type="date" data-ch="ex-f" data-k="charla" value="' + esc(d.charla) + '"></label><label class="fld"><span>Expo</span><input class="inp" type="date" data-ch="ex-f" data-k="fecha" value="' + esc(d.fecha) + '"></label></div></details>');
     h += card('<h3>💡 Las ideas</h3><div class="ex-ideas">' + X.ACT().map(x => '<div class="ex-idea">' + (X.IMG[x.id] || '') + '<div class="row between gap"><span><b>' + esc(x.n) + '</b><br><small class="muted">' + estrellas(x.dif) + ' · costo ' + x.costo.toLowerCase() + '</small></span>' + (usadas[x.id] ? '<span class="chip ' + (usadas[x.id] > 1 ? 'warn' : 'brand') + '">' + (usadas[x.id] > 1 ? usadas[x.id] + ' equipos' : 'elegida') + '</span>' : '<span class="chip">libre</span>') + '</div></div>').join('') + '</div><p class="muted small">Dibujos de ejemplo: cada equipo lo puede hacer a su manera.</p>');
-    const P = X.PREMIO;
-    h += card('<h3>🎁 Premio del pasaporte</h3><ul class="small">' + X.premioItems().map(t => '<li>' + esc(t) + '</li>').join('') + '</ul><p class="muted small">Total: <b>' + (P.personas * P.piezas) + ' piezas</b> (' + P.personas + ' personas × ' + P.piezas + ').</p>');
+    const P = X.premio(g), nF = al.filter(a => X.sinEq(d, a.id) === 'fuera' && !enEq[a.id]).length;
+    h += card('<h3>🎁 Premio del pasaporte</h3><ul class="small">' + X.premioItems(g).map(t => '<li>' + esc(t) + '</li>').join('') + '</ul><p class="muted small">Total: <b>' + P.total + ' piezas</b> (' + P.personas + ' personas × ' + P.piezas + ')' + (nF ? ' · ' + nF + ' no entra' + (nF > 1 ? 'n' : '') + ' a la expo' : '') + '.</p>' +
+      '<label class="fld"><span>Piezas por persona (vacío = automático, unas ' + X.PREMIO.meta + ' en total)</span><input class="inp" style="max-width:8em" type="number" min="1" max="30" data-ch="ex-f" data-k="piezas" value="' + esc(d.piezas || '') + '" placeholder="' + X.premioCalc(P.personas).piezas + '"></label>');
     // equipos
     const optIdea = e => '<select class="inp" data-ch="ex-eq" data-id="' + e.id + '" data-k="idea"><option value="">— Idea —</option>' + X.IDEAS.filter(x => !x.off || e.idea === x.id).map(x => '<option value="' + x.id + '"' + (e.idea === x.id ? ' selected' : '') + '>' + x.ico + ' ' + esc(x.n) + (usadas[x.id] && e.idea !== x.id ? ' (ya la tiene otro)' : '') + '</option>').join('') + '</select>';
     const eqHTML = e => { const mi = al.filter(a => enEq[a.id] === e.id), av = e.avance || {}, n = X.ETAPAS.filter((t, i) => av[i]).length;
@@ -118,18 +127,35 @@
     h += card('<h3>👥 Equipos (' + d.equipos.length + ')</h3>' + (d.equipos.length ? d.equipos.map(eqHTML).join('') : '<p class="small">Puedes copiar los equipos del proyecto y luego mover a quien quiera cambiarse, o armarlos desde cero.</p>') +
       '<div class="row gap wrap mt">' + btn('Copiar equipos del proyecto', 'ex-copia', '', d.equipos.length ? 'small' : 'primary') + btn('+ Equipo nuevo', 'ex-nuevo', '', 'small') + '</div>');
     h += X.invHTML(d);
-    h += card('<h3>🙋 Sin equipo (' + libres.length + ')</h3>' + (libres.length ? '<p class="small">' + libres.map(a => esc(a.num + '. ' + a.nombre)).join(' · ') + '</p>' : '<p class="small">Todos están en un equipo.</p>') + '<p class="muted small">Quien no participa se queda aquí. No le afecta en nada su calificación del 3er parcial.</p>');
+    const OPS = [['', 'Sin equipo'], ['apoyo', '🧰 Apoyo de logística'], ['fuera', '🚫 No entra a la expo']];
+    h += card('<h3>🙋 Sin equipo (' + libres.length + ')</h3>' + (libres.length ? '<ul class="plain">' + libres.map(a => { const r = X.sinEq(d, a.id); return '<li class="row between gap wrap"><span class="small">' + esc(a.num + '. ' + a.nombre) + '</span><select class="inp ex-rol" data-ch="ex-sin" data-aid="' + a.id + '" aria-label="Qué hace en la expo">' + OPS.map(o => '<option value="' + o[0] + '"' + (r === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></li>'; }).join('') + '</ul>' : '<p class="small">Todos están en un equipo.</p>') +
+      '<p class="muted small">Quien no participa se queda aquí. No le afecta en nada su calificación del 3er parcial. El «apoyo de logística» te ayuda a repartir y recoger, trae chocolates como todos y gana lo mismo que un equipo que presentó. Quien «no entra a la expo» no cuenta para los chocolates.</p>');
+    const aps = libres.filter(a => X.sinEq(d, a.id) === 'apoyo');
+    if (aps.length) h += card('<h3>🧰 Apoyo de logística (' + aps.length + ')</h3>' + aps.map(a => { const t = (d.apoyoT || {})[a.id] || {};
+      return '<div class="momento"><b class="small">' + esc(a.num + '. ' + a.nombre) + '</b><div class="mt">' + X.APOYO.concat(['Traer sus ' + P.piezas + ' chocolates para el premio']).map((x, i) => '<label class="ck small"><input type="checkbox" data-ch="ex-apt" data-aid="' + a.id + '" data-i="' + i + '"' + (t[i] ? ' checked' : '') + '><span>' + esc(x) + '</span></label>').join('') + '</div>' +
+        '<label class="ck mt"><input type="checkbox" data-ch="ex-apok" data-aid="' + a.id + '"' + ((d.apoyoOk || {})[a.id] ? ' checked' : '') + '><span>✅ Cumplió (cuenta igual que «Presentó en la expo»)</span></label></div>'; }).join('') +
+      '<div class="row gap wrap mt">' + btn('🖨 Hoja del apoyo', 'ex-apoyo-imp', '', 'small') + '</div><p class="muted small">La hoja trae sus tareas y una tabla de cada stand para palomear letrero, etiquetas y lo que recogió.</p>');
     const pid = X.parcialDe(g), pn = (C.parcial(pid) || {}).nombre || '';
     h += card('<h3>📊 ¿Cuenta para la calificación?</h3><label class="fld"><span>Para los equipos que presenten (' + esc(pn) + ')</span><select class="inp" data-ch="ex-f" data-k="destino">' +
       [['no', 'No cuenta (todavía lo estoy pensando)'], ['part', 'Completa su participación (5 %)'], ['extra', 'Puntos extra en la calificación del parcial']].map(o => '<option value="' + o[0] + '"' + (d.destino === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label>' +
       (d.destino === 'extra' ? '<label class="fld"><span>Puntos extra (de 0.5 a 2)</span><input class="inp" type="number" step="0.5" min="0.5" max="2" data-ch="ex-f" data-k="puntos" value="' + esc(d.puntos) + '"></label>' : '') +
-      '<p class="muted small">' + (d.destino === 'part' ? 'Completar el 5 % de participación vale hasta medio punto (si ya la tenía completa, no cambia). ' : d.destino === 'extra' ? 'Se suma a la calificación del parcial (sin pasar de 10) y sigue sin decimales. ' : '') + 'Solo cuenta para los equipos marcados con «Presentó en la expo». Quien no participa no pierde nada.</p>');
+      '<p class="muted small">' + (d.destino === 'part' ? 'Completar el 5 % de participación vale hasta medio punto (si ya la tenía completa, no cambia). ' : d.destino === 'extra' ? 'Se suma a la calificación del parcial (sin pasar de 10) y sigue sin decimales. ' : '') + 'Solo cuenta para los equipos marcados con «Presentó en la expo» y para el apoyo de logística marcado con «Cumplió». Quien no participa no pierde nada.</p>');
     return { t: 'Expo', h: h };
   };
-  CH['ex-f'] = el => { const g = D.grupoActual(), k = el.dataset.k; let v = el.value; if (k === 'puntos') { v = Number(v); if (!(v >= 0.5 && v <= 2)) { u.toast('De 0.5 a 2 puntos', 'err'); return; } } put(g, d => { d[k] = v; }); };
+  CH['ex-f'] = el => { const g = D.grupoActual(), k = el.dataset.k; let v = el.value; if (k === 'puntos') { v = Number(v); if (!(v >= 0.5 && v <= 2)) { u.toast('De 0.5 a 2 puntos', 'err'); return; } } if (k === 'piezas') { v = v === '' ? '' : Math.round(Number(v)); if (v !== '' && !(v >= 1 && v <= 30)) { u.toast('De 1 a 30 piezas', 'err'); return; } } put(g, d => { d[k] = v; }); };
   CH['ex-eq'] = el => { const g = D.grupoActual(), k = el.dataset.k; put(g, d => { const e = d.equipos.find(x => x.id === el.dataset.id); if (!e) return; e[k] = k === 'presento' ? el.checked : el.value; if (k === 'idea' && el.value) { e.avance = e.avance || {}; e.avance[0] = true; } }); };
+  CH['ex-sin'] = el => { const g = D.grupoActual(), aid = el.dataset.aid; put(g, d => { d.sinEq = d.sinEq || {}; if (el.value) d.sinEq[aid] = el.value; else delete d.sinEq[aid]; }); };
+  CH['ex-apt'] = el => { const g = D.grupoActual(), aid = el.dataset.aid; put(g, d => { d.apoyoT = d.apoyoT || {}; d.apoyoT[aid] = d.apoyoT[aid] || {}; d.apoyoT[aid][el.dataset.i] = el.checked; }); };
+  CH['ex-apok'] = el => { const g = D.grupoActual(), aid = el.dataset.aid; put(g, d => { d.apoyoOk = d.apoyoOk || {}; d.apoyoOk[aid] = el.checked; }); };
+  X.hojaApoyo = g => { const d = X.doc(g), al = D.alumnos(g), aps = al.filter(a => X.esApoyo(g, a.id)), eqs = d.equipos.filter(e => e.idea), P = X.premio(g), bx = '<span class="exap-bx"></span>';
+    return '<div class="pr exap"><h2>🧰 Apoyo de logística · ' + esc(d.nombre) + '</h2><p><b>' + esc(aps.map(a => a.nombre).join(', ') || '________________________') + '</b> · ' + esc(u.fLarga(d.fecha)) + '</p>' +
+      '<h3>Tus tareas</h3><ul class="exap-l">' + X.APOYO.concat(['Traer tus ' + P.piezas + ' chocolates para el premio']).map(x => '<li>' + bx + esc(x) + '</li>').join('') + '</ul>' +
+      '<h3>Stands</h3><table class="exap-t"><thead><tr><th>Equipo</th><th>Proyecto</th><th>Letrero</th><th>Etiquetas</th><th>Recogí al final</th></tr></thead><tbody>' + (eqs.length ? eqs : [{}, {}, {}, {}, {}]).map(e => '<tr><td>' + esc(e.nombre || '') + '</td><td>' + esc((X.idea(e.idea) || {}).n || '') + '</td><td>' + bx + '</td><td>' + bx + '</td><td>' + bx + '</td></tr>').join('') + '</tbody></table>' +
+      '<h3>Pasaportes</h3><p>Impresos: <b>' + esc(d.npas || 60) + '</b> · Repartidos: ______ · Sobraron: ______ · Premios entregados: ______</p>' +
+      '<p class="exap-pie">Al terminar, entrega esta hoja al profe con lo que recogiste.</p></div>'; };
+  A['ex-apoyo-imp'] = () => { const g = D.grupoActual(); E.print.run(X.hojaApoyo(g), { title: 'Hoja del apoyo de logística', unaHoja: true }); };
   CH['ex-av'] = el => { const g = D.grupoActual(); put(g, d => { const e = d.equipos.find(x => x.id === el.dataset.id); if (!e) return; e.avance = e.avance || {}; e.avance[el.dataset.i] = el.checked; }); };
-  CH['ex-mete'] = el => { const g = D.grupoActual(), aid = el.value; if (!aid) return; put(g, d => { d.equipos.forEach(e => { e.al = (e.al || []).filter(x => x !== aid); }); const e = d.equipos.find(x => x.id === el.dataset.id); if (e) e.al.push(aid); }); };
+  CH['ex-mete'] = el => { const g = D.grupoActual(), aid = el.value; if (!aid) return; put(g, d => { d.equipos.forEach(e => { e.al = (e.al || []).filter(x => x !== aid); }); const e = d.equipos.find(x => x.id === el.dataset.id); if (e) e.al.push(aid); if (d.sinEq) delete d.sinEq[aid]; }); };
   A['ex-quita'] = el => { const g = D.grupoActual(); put(g, d => { const e = d.equipos.find(x => x.id === el.dataset.id); if (e) e.al = (e.al || []).filter(x => x !== el.dataset.aid); }); };
   A['ex-nuevo'] = () => { const g = D.grupoActual(); put(g, d => { d.equipos.push({ id: u.uid('ex'), nombre: 'Equipo ' + (d.equipos.length + 1), idea: '', al: [], avance: {} }); }); };
   A['ex-borra'] = el => { if (!confirm('¿Borrar este equipo? Sus integrantes quedan sin equipo.')) return; const g = D.grupoActual(); put(g, d => { d.equipos = d.equipos.filter(x => x.id !== el.dataset.id); }); };
@@ -206,8 +232,8 @@
   X.pasaporte = pasaporte;
   X.hojasPas = (d, lista) => { let h = ''; for (let i = 0; i < lista.length; i += 2) h += '<div class="bt-pg"><div class="pr expas-hoja">' + pasaporte(d, lista[i]) + '<div class="expas-corte">✂</div>' + (lista[i + 1] ? pasaporte(d, lista[i + 1]) : '<div class="expas" style="visibility:hidden"></div>') + '</div></div>'; return h; };
   // instrucciones del premio (para el equipo de la expo)
-  X.premioItems = () => { const P = X.PREMIO, tot = P.personas * P.piezas;
-    return ['Cada quien trae ' + P.piezas + ' piezas: ' + P.txt + '.', P.personas + ' personas (los alumnos que participan y el profe) × ' + P.piezas + ' = ' + tot + ' piezas.', 'El premio se entrega a la salida del tejabán, solo a quien enseña su pasaporte con las ' + X.ACT().length + ' etiquetas.', 'El encargado del equipo firma el pasaporte al entregar el premio, para que nadie lo cobre dos veces.']; };
+  X.premioItems = g => { const P = X.premio(g), tot = P.total;
+    return ['Cada quien trae ' + P.piezas + ' piezas: ' + X.PREMIO.txt + '.', P.personas + ' personas (los alumnos que entran a la expo, el apoyo de logística y el profe) × ' + P.piezas + ' = ' + tot + ' piezas.', 'El premio se entrega a la salida del tejabán, solo a quien enseña su pasaporte con las ' + X.ACT().length + ' etiquetas.', 'El encargado del equipo firma el pasaporte al entregar el premio, para que nadie lo cobre dos veces.']; };
   X.pasaportes = (d, n) => { n = Math.max(2, Math.min(400, Number(n) || 60)); n += n % 2; return X.hojasPas(d, Array.from({ length: n }, () => ({}))); };
   // etiquetas: una hoja carta por proyecto, 6 × 8 = 48 etiquetas de 3 cm con su dibujo y su nombre
   X.etiquetas = () => X.ACT().map(x => '<div class="bt-pg"><div class="pr exet-hoja"><div class="exet-grid">' + Array.from({ length: 48 }, () => '<div class="exet">' + (X.IMG[x.id] || '') + '<b>' + esc(x.n) + '</b></div>').join('') + '</div></div></div>').join('');
