@@ -1654,3 +1654,20 @@ label.chk input { accent-color: var(--brand, #0e5e5a) }
 /* v1.37.1 · letreros del stand en tabloide 12 × 18 in */
 .exl-prev { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff } .exl-prev svg { display: block; height: auto }
 .tb-pg { width: 18in; height: 12in; overflow: hidden; page-break-after: always; break-after: page } .tb-pg:last-child { page-break-after: auto; break-after: auto } .tb-pg svg { width: 18in; height: 12in; display: block }
+/* v1.38.0 · hoja del apoyo de logística (Expo) */
+.pr.exap { font-size: 12pt; color: #152626 } .pr.exap h2 { font-size: 20pt; margin: 0 0 4pt } .pr.exap h3 { font-size: 14pt; margin: 14pt 0 6pt; color: #0e5e5a }
+.exap-l { list-style: none; padding: 0; margin: 0 } .exap-l li { margin: 6pt 0; display: flex; gap: 8pt; align-items: center }
+.exap-bx { display: inline-block; width: 13pt; height: 13pt; border: 1.5pt solid #152626; border-radius: 2pt; flex: none }
+.exap-t { width: 100%; border-collapse: collapse } .exap-t th, .exap-t td { border: 1pt solid #9aa9a7; padding: 7pt 6pt; text-align: left } .exap-t th { background: #eef6f5; font-size: 11pt } .exap-t td:nth-child(n+3) { text-align: center; width: 16% }
+.exap-pie { margin-top: 16pt; font-style: italic; color: #5b6b69 }
+/* v1.39.0 · Entrega de calificaciones a padres */
+.jp-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 10px } .jp-kpi div { background: var(--soft, #eef6f5); border-radius: 10px; padding: 8px; text-align: center } .jp-kpi b { display: block; font-size: 1.4em } .jp-kpi span { font-size: .78em; opacity: .8 }
+.pj-slide .jp-kpi b { font-size: 2.6em } .pj-slide .jp-kpi span { font-size: 1.1em } .jp-pl { font-size: 1.25em; line-height: 1.6 }
+.pr.jp-pr { font-size: 11pt; color: #152626 } .jp-h { font-size: 18pt; margin: 0 } .jp-sub { color: #5b6b69; margin: 2pt 0 8pt; font-size: 10pt } .pr.jp-pr h3 { color: #0e5e5a; font-size: 13pt; margin: 10pt 0 4pt }
+.jp-t { width: 100%; border-collapse: collapse; margin: 4pt 0 } .jp-t th, .jp-t td { border: 1pt solid #9aa9a7; padding: 4pt 5pt; text-align: center; font-size: 10pt } .jp-t th { background: #eef6f5 }
+.jp-fi td { height: 22pt; text-align: left } .jp-fi td:first-child { text-align: center; width: 6% } .jp-fi td:nth-child(2) { width: 30% }
+.jp-ol > li { margin: 4pt 0 } .jp-ol ol { margin: 2pt 0 2pt 4pt; font-size: 10pt } .jp-bx { display: inline-block; width: 11pt; height: 11pt; border: 1pt solid #152626; margin-right: 5pt; text-align: center; line-height: 11pt; font-size: 9pt; vertical-align: middle }
+.jp-nota { margin: 2pt 0; font-style: italic; color: #0e5e5a } .jp-lin { border-bottom: 1pt solid #9aa9a7; height: 20pt } .jp-firma { margin-top: 30pt; text-align: center; border-top: 1pt solid #152626; width: 60%; margin-left: auto; margin-right: auto; padding-top: 3pt } .jp-cel li { font-size: 10pt }
+.jp-hojas { display: block } .jp-ha { height: 112mm; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between } .jp-ha h3 { margin: 0 !important; font-size: 15pt !important }
+.jp-ha-top { display: flex; gap: 10pt } .jp-ha-top > div:first-child { flex: 1 } .jp-qr { width: 34mm; text-align: center } .jp-qr svg { width: 34mm; height: 34mm } .jp-qr small { font-size: 8pt }
+.jp-mal { color: #b3261e } .jp-pend { font-size: 10pt; margin: 5pt 0 } .jp-obs { font-size: 10pt; margin: 8pt 0 } .jp-rec { font-size: 10.5pt; border-top: 1pt dashed #9aa9a7; padding-top: 6pt } .jp-corte { text-align: center; color: #9aa9a7; border-top: 1pt dashed #9aa9a7; line-height: 0; margin: 2mm 0 }
