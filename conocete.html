@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0e5e5a">
+<title>Conócete · Escuadra</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<style>
+:root { --bg:#f2f5f4; --s:#fff; --s2:#eaf0ee; --ink:#12221f; --mut:#5a6c68; --line:#d9e3e0; --brand:#0e5e5a; --bink:#fff; --ok:#1c7c45; --oks:#dcf2e5; --acc:#f0a500; --bad:#b3261e; --bads:#fbe4e2; color-scheme: light }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1312; --s:#13201e; --s2:#1a2b28; --ink:#e4eeec; --mut:#94a8a4; --line:#25403b; --brand:#3cb4a8; --bink:#04201d; --ok:#52c585; --oks:#143022; --bad:#f28b82; --bads:#3a1d1b; color-scheme: dark } }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent } body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif }
+main { max-width:680px; margin:0 auto; padding:12px 12px 48px }
+.top { display:flex; align-items:center; gap:10px; margin:2px 0 10px } .top svg { width:34px; height:34px; flex:none } .top b { display:block } .top small { color:var(--mut) }
+.card { background:var(--s); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 12px }
+h1 { font-size:1.25rem; margin:0 0 6px } h2 { font-size:1.05rem; margin:0 0 8px } p { margin:.3em 0 .6em } .mut { color:var(--mut) } .sm { font-size:.86rem }
+.btn { display:inline-block; font:inherit; font-weight:700; border:0; border-radius:12px; padding:11px 16px; background:var(--brand); color:var(--bink); cursor:pointer; margin:4px 6px 4px 0; text-decoration:none }
+.btn.gh { background:var(--s2); color:var(--ink) }
+.menu { display:grid; gap:10px } .tst { display:flex; gap:12px; align-items:center; text-align:left; width:100%; font:inherit; color:var(--ink); background:var(--s); border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer }
+.tst .i { font-size:1.8rem } .tst b { display:block } .tst small { color:var(--mut) } .tst .st { margin-left:auto; font-weight:800; font-size:.85rem; white-space:nowrap } .tst.ok { border-color:var(--ok) } .tst.ok .st { color:var(--ok) }
+.lk { padding:10px 0; border-top:1px solid var(--line) } .lk:first-of-type { border-top:0 } .lk p { margin:0 0 6px; font-weight:600 } .lk .op { display:grid; grid-template-columns:repeat(5,1fr); gap:4px } .lk .op.c4 { grid-template-columns:repeat(4,1fr) }
+.lk label { text-align:center; font-size:.7rem; color:var(--mut); cursor:pointer; line-height:1.2 } .lk input { display:block; margin:0 auto 3px; width:22px; height:22px; accent-color:var(--brand) }
+.rz { padding:12px 0; border-top:1px solid var(--line) } .rz:first-of-type { border-top:0 } .rz .q { font-weight:700; margin:0 0 8px } .rz .q .n { color:var(--brand) }
+.rz .vis { display:flex; justify-content:center; margin:6px 0 10px } .rz .vis svg { width:min(240px, 70vw); height:auto; border-radius:10px }
+.rz .ops { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px } .rz .ops.txt { grid-template-columns:repeat(2, 1fr) }
+.rz .ops label { display:flex; flex-direction:column; align-items:center; gap:4px; border:2px solid var(--line); border-radius:12px; padding:6px; cursor:pointer; background:var(--s); font-weight:700 }
+.rz .ops label:has(input:checked) { border-color:var(--brand); background:var(--oks) } .rz .ops input { position:absolute; opacity:0; pointer-events:none } .rz .ops svg { width:100%; height:auto; max-width:90px; border-radius:8px; background:#fff }
+.rz .ops span.l { font-size:.8rem; color:var(--mut) }
+.bar { display:grid; grid-template-columns:132px 1fr 46px; gap:8px; align-items:center; margin:6px 0; font-size:.9rem } .bar i { display:block; height:14px; border-radius:7px; background:var(--brand) } .bar .t { background:var(--s2); border-radius:7px } .bar b { text-align:right }
+.bar i.bad { background:var(--acc) }
+.dim { margin:12px 0 0; padding:10px 12px; border-radius:12px; background:var(--s2) } .dim b { display:block } .dim .tip { margin-top:6px; font-size:.88rem } .lvl { display:inline-block; font-size:.75rem; font-weight:800; padding:1px 8px; border-radius:999px; background:var(--oks); color:var(--ok); margin-left:6px; vertical-align:middle } .lvl.b { background:var(--bads); color:var(--bad) } .lvl.m { background:var(--s); color:var(--mut) }
+.cod { font-size:1.4rem; font-weight:900; letter-spacing:.1em; text-align:center; color:var(--brand); margin:4px 0 } .qr { display:flex; justify-content:center; margin:8px 0 } .qr svg { width:min(240px, 70vw); height:auto; background:#fff; padding:6px; border-radius:10px }
+input.num { font:inherit; font-size:1.3rem; width:90px; text-align:center; padding:8px; border-radius:10px; border:1.5px solid var(--line); background:var(--s); color:var(--ink) }
+.foot { color:var(--mut); font-size:.78rem; text-align:center; margin-top:14px }
+.nav { display:flex; justify-content:space-between; gap:8px; position:sticky; bottom:0; background:var(--bg); padding:8px 0 } .falta { color:var(--bad); font-size:.85rem; font-weight:700 }
+.prog { height:6px; border-radius:3px; background:var(--line); margin:0 0 10px; overflow:hidden } .prog i { display:block; height:100%; background:var(--brand) }
+@media print { .nav, .btn, .noprint { display:none !important } body { background:#fff; color:#000 } .card { border:1px solid #bbb; break-inside:avoid } main { max-width:none } }
+</style>
+</head>
+<body>
+<main id="m"><div class="card"><p>Cargando…</p></div></main>
+<script src="conocedatos.js"></script>
+<script src="lib-qrcode.js"></script>
+<script>
+(function () {
+  'use strict';
+  const m = document.getElementById('m'), K = window.CONO;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const logo = '<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#0e5e5a"/><path d="M15 51V13l38 38z" fill="#fff"/><path d="M22 44V30l14 14z" fill="#0e5e5a"/><circle cx="46" cy="18" r="5.5" fill="#f0a500"/></svg>';
+  if (!K) { m.innerHTML = '<div class="card"><h1>No se pudo cargar</h1><p>Revisa tu conexión y vuelve a abrir el enlace.</p></div>'; return; }
+  let d = {}; try { const h = location.hash.slice(1); if (h && h[0] === 'j') { const b = atob(h.slice(1).replace(/-/g, '+').replace(/_/g, '/')), by = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) by[i] = b.charCodeAt(i); d = JSON.parse(new TextDecoder().decode(by)); } } catch (e) { d = {}; }
+  // las respuestas se quedan solo en este celular
+  const KEY = 'escuadra.conocete.' + (d.c || 'libre');
+  let st = {}; try { st = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { st = {}; }
+  st.r = st.r || {}; st.ver = st.ver || (d.t && K.test(d.t) ? 'q:' + d.t : 'menu');
+  const guarda = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { } };
+  const R = id => (st.r[id] = st.r[id] || {});
+  const head = sub => '<div class="top">' + logo + '<div><b>Conócete</b><small>' + esc(d.g ? d.g + ' · ' : '') + esc(sub || 'Estudios para conocerte y aprender mejor') + '</small></div></div>';
+  const ir = v => { st.ver = v; guarda(); pinta(); window.scrollTo(0, 0); };
+  const hechos = () => K.T.filter(t => K.completo(t.id, st.r[t.id]));
+
+  function menu() {
+    let h = head() + '<div class="card"><h1>👋 ¡Hola!</h1><p class="sm">Son ' + K.T.length + ' estudios cortos. Haz los que te pida tu profe; cada uno te da tus resultados al momento y consejos para aprender mejor.</p><p class="sm mut">' + esc(K.AVISO) + '</p></div><div class="menu">';
+    K.T.forEach(t => { const n = K.contestadas(t.id, st.r[t.id]), ok = K.completo(t.id, st.r[t.id]); h += '<button class="tst' + (ok ? ' ok' : '') + '" data-ir="' + (ok ? 'r:' : 'q:') + t.id + '"><span class="i">' + t.ico + '</span><span><b>' + esc(t.t) + '</b><small>' + t.items.length + ' preguntas · ' + t.dur + '</small></span><span class="st">' + (ok ? '✓ Ver' : n ? n + '/' + t.items.length : 'Empezar ›') + '</span></button>'; });
+    h += '</div>';
+    if (d.c && hechos().length) h += codigos();
+    h += '<p class="foot">' + esc(K.FUENTE) + '</p>';
+    return h;
+  }
+
+  function preguntas(t) {
+    const r = R(t.id), n = K.contestadas(t.id, r);
+    let h = head(t.ico + ' ' + t.t) + '<div class="prog"><i style="width:' + (n / t.items.length * 100) + '%"></i></div><div class="card"><h1>' + t.ico + ' ' + esc(t.t) + '</h1><p class="sm">' + esc(t.intro) + '</p>';
+    t.items.forEach((x, i) => {
+      if (t.raz) {
+        const vis = x.mat != null ? '<div class="vis">' + K.matSVG(x.mat) + '</div>' : x.rot != null ? '<div class="vis">' + K.rotSVG(x.rot) + '</div>' : '';
+        const ops = x.op.map((o, j) => { const cont = x.mat != null ? K.opMatSVG(x.mat, j) : x.rot != null ? K.opRotSVG(x.rot, j) : '<span>' + esc(o) + '</span>'; return '<label><input type="radio" name="p' + i + '" data-i="' + i + '" value="' + j + '"' + (r[i] != null && Number(r[i]) === j ? ' checked' : '') + '>' + cont + '<span class="l">' + 'ABCD'[j] + '</span></label>'; }).join('');
+        h += '<div class="rz" id="p' + i + '"><p class="q"><span class="n">' + (i + 1) + '.</span> ' + esc(x.q) + '</p>' + vis + '<div class="ops' + (x.mat == null && x.rot == null ? ' txt' : '') + '">' + ops + '</div></div>';
+      } else {
+        h += '<div class="lk" id="p' + i + '"><p>' + (i + 1) + '. ' + esc(x.t) + '</p><div class="op' + (t.esc.length === 4 ? ' c4' : '') + '">' + t.esc.map((e, j) => '<label><input type="radio" name="p' + i + '" data-i="' + i + '" value="' + (j + 1) + '"' + (Number(r[i]) === j + 1 ? ' checked' : '') + '>' + esc(e) + '</label>').join('') + '</div></div>';
+      }
+    });
+    h += '</div><div class="nav"><button class="btn gh" data-ir="menu">‹ Menú</button><span class="falta" id="falta"></span><button class="btn" id="fin">Ver mis resultados ›</button></div>';
+    return h;
+  }
+
+  const lvl = (t, di, l) => { const dm = t.dims[di], malo = dm.bueno === false ? l === 2 : (dm.medioOk && l === 2) ? false : l === 0; return '<span class="lvl' + (malo ? ' b' : l === 1 ? ' m' : '') + '">' + K.NIV[l] + '</span>'; };
+  function resultados(t) {
+    const s = K.puntua(t.id, st.r[t.id]); let h = head(t.ico + ' ' + t.t) + '<div class="card"><h1>' + t.ico + ' Tus resultados</h1><p class="sm mut">Son una guía para conocerte, no una etiqueta. Cambian con lo que vives y practicas.</p>';
+    if (t.raz) {
+      const tot = s.reduce((a, b) => a + b, 0);
+      h += '<p><b>Resolviste ' + tot + ' de 16 retos.</b></p>' + t.dims.map((dm, i) => '<div class="bar"><span>' + esc(dm.n) + '</span><span class="t"><i style="width:' + (s[i] / 4 * 100) + '%"></i></span><b>' + s[i] + '/4</b></div>').join('');
+      const ord = s.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]), fu = ord[0][1], de = ord[ord.length - 1][1];
+      h += '<div class="dim"><b>💪 Tu fuerte: ' + esc(t.dims[fu].n) + '</b><p class="sm">' + esc(t.dims[fu].mec) + '</p></div>';
+      if (s[de] < 4) h += '<div class="dim"><b>🎯 Para practicar: ' + esc(t.dims[de].n) + '</b><p class="sm">' + esc(t.dims[de].mec) + '</p><p class="tip">💡 ' + esc(t.dims[de].tip) + '</p></div>';
+      h += '<p class="sm mut" style="margin-top:10px">Esto <b>no es un test de CI</b>: son 16 retos de un día. El razonamiento mejora con práctica, como un músculo.</p>';
+      h += '<details class="noprint"><summary class="sm">Ver las respuestas correctas</summary><p class="sm">' + t.items.map((x, i) => (i + 1) + ': ' + 'ABCD'[x.ok] + (Number(st.r[t.id][i]) === x.ok ? ' ✓' : ' ✗')).join(' · ') + '</p></details>';
+    } else if (t.id === 'confianza') {
+      h += t.dims.map((dm, i) => '<div class="bar"><span>' + dm.ico + ' ' + esc(dm.n) + '</span><span class="t"><i style="width:' + (K.prop(t.id, i, s[i]) * 100) + '%"></i></span><b>' + (1 + s[i] / 2).toFixed(1) + '</b></div>').join('');
+      const ord = s.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]), fu = t.dims[ord[0][1]], de = t.dims[ord[ord.length - 1][1]];
+      h += '<div class="dim"><b>💪 Donde más confianza te tienes: ' + fu.ico + ' ' + esc(fu.n) + '</b><p class="sm">Úsalo: en tu equipo puedes ayudar a otros en esa parte.</p></div>' +
+        '<div class="dim"><b>🎯 Donde menos: ' + de.ico + ' ' + esc(de.n) + '</b><p class="sm">La confianza crece con logros chicos. Pide practicar un paso a la vez y fíjate en lo que sí te salió.</p></div><p class="sm mut">Escala de 1 (nada capaz) a 5 (muy capaz).</p>';
+    } else {
+      t.dims.forEach((dm, i) => { const l = K.nivel(t.id, i, s[i]), p = K.prop(t.id, i, s[i]);
+        const txt = dm[K.NIV[l]] || (l === 1 ? 'A veces. ' + (dm.bueno === false ? dm.alto : dm.bajo) : l === 2 ? dm.alto : dm.bajo);
+        h += '<div class="dim"><b>' + esc(dm.n) + lvl(t, i, l) + '</b><div class="bar" style="grid-template-columns:1fr 46px"><span class="t"><i class="' + (dm.bueno === false ? 'bad' : '') + '" style="width:' + (p * 100) + '%"></i></span><b>' + Math.round(p * 100) + '%</b></div><p class="sm">' + esc(txt) + '</p>' + (dm.tip && (l < 2 || dm.bueno === false || t.id === 'nervios') ? '<p class="tip">💡 ' + esc(dm.tip) + '</p>' : '') + '</div>'; });
+      if (t.id === 'estudio') { const buenos = [0, 1, 2].map(i => [K.prop(t.id, i, s[i]), i]).sort((a, b) => a[0] - b[0]), sig = t.dims[buenos[0][1]];
+        h += '<div class="dim" style="background:var(--oks)"><b>🎯 Tu siguiente paso</b><p class="sm">' + esc(sig.tip) + '</p><p class="sm mut">Ponerte a prueba y repartir el estudio son de las técnicas que más funcionan según la investigación; releer y subrayar, de las que menos.</p></div>'; }
+      if (t.id === 'emoc') h += '<p class="sm mut" style="margin-top:10px">Si estás pasando por un momento difícil, platícalo con alguien de confianza: tu familia, tu tutor o orientación de la escuela.</p>';
+      if (t.id === 'nervios') { const a = s.every((v, i) => K.nivel(t.id, i, v) === 2); if (a) h += '<p class="sm" style="margin-top:10px">Tus nervios con los exámenes están altos. Platícalo con tu profe o con orientación: hay formas de bajarlos y mostrar lo que sí sabes.</p>'; }
+    }
+    h += '</div>';
+    if (d.c) h += codigos();
+    h += '<div class="nav"><button class="btn gh" data-ir="menu">‹ Menú</button><button class="btn gh" data-ir="q:' + t.id + '">Cambiar respuestas</button><button class="btn" id="imp">🖨 Guardar</button></div><p class="foot">' + esc(t.guia.fuente) + '</p>';
+    return h;
+  }
+
+  function codigos() {
+    const hs = hechos(); if (!hs.length) return '';
+    let h = '<div class="card noprint" style="text-align:center"><h2>📲 Para tu profe</h2><p class="sm">Escribe tu número de lista. Tu profe escanea el QR o escribe los códigos. Solo llevan tus puntajes, no tus respuestas.</p><input class="num" id="num" inputmode="numeric" maxlength="3" value="' + esc(st.num || '') + '" placeholder="No."> <button class="btn" id="vcod">Ver códigos</button><div id="cod">';
+    if (st.num) { const cods = hs.map(t => K.codigo(d.c, st.num, t.id, K.puntua(t.id, st.r[t.id])));
+      let qr = ''; try { const q = window.qrcode(0, 'M'); q.addData(K.qrTxt(d.c, st.num, cods)); q.make(); const n = q.getModuleCount(), mg = 3; let p = ''; for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) p += 'M' + (c + mg) + ' ' + (r + mg) + 'h1v1h-1z'; qr = '<svg viewBox="0 0 ' + (n + 2 * mg) + ' ' + (n + 2 * mg) + '" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="' + p + '" fill="#000"/></svg>'; } catch (e) { }
+      h += '<div class="qr">' + qr + '</div>' + hs.map((t, i) => '<p class="sm" style="margin:2px 0">' + t.ico + ' ' + esc(t.t) + '</p><div class="cod">' + K.fmt(cods[i]) + '</div>').join('') + '<p class="sm mut">Códigos de No. ' + esc(st.num) + '</p>'; }
+    return h + '</div></div>';
+  }
+
+  function pinta() {
+    const v = st.ver || 'menu', t = v.length > 2 ? K.test(v.slice(2)) : null;
+    m.innerHTML = v.indexOf('q:') === 0 && t ? preguntas(t) : v.indexOf('r:') === 0 && t ? resultados(t) : menu();
+    enlaza(t);
+  }
+  function enlaza(t) {
+    m.querySelectorAll('[data-ir]').forEach(b => b.onclick = () => ir(b.dataset.ir));
+    m.querySelectorAll('input[data-i]').forEach(x => x.onchange = () => { R(t.id)[x.dataset.i] = Number(x.value); guarda(); const pr = m.querySelector('.prog i'); if (pr) pr.style.width = (K.contestadas(t.id, st.r[t.id]) / t.items.length * 100) + '%'; });
+    const fin = document.getElementById('fin');
+    if (fin) fin.onclick = () => { const r = st.r[t.id] || {}, i = t.items.findIndex((_, j) => r[j] == null); if (i >= 0) { document.getElementById('falta').textContent = 'Te falta la ' + (i + 1); const el = document.getElementById('p' + i); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; } ir('r:' + t.id); };
+    const ip = document.getElementById('imp'); if (ip) ip.onclick = () => window.print();
+    const vc = document.getElementById('vcod'); if (vc) vc.onclick = () => { const n = parseInt(document.getElementById('num').value, 10); if (!(n > 0 && n < 100)) return; st.num = n; guarda(); pinta(); };
+  }
+  pinta();
+})();
+</script>
+</body>
+</html>

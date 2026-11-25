@@ -22,6 +22,7 @@ table { width:100%; border-collapse:collapse } td, th { padding:7px 4px; border-
 ul { padding-left:0; list-style:none; margin:0 } li { padding:8px 0; border-bottom:1px solid var(--line) } li:last-child { border:0 }
 .chip { display:inline-block; padding:1px 9px; border-radius:999px; font-size:.8rem; font-weight:700 }
 .foot { font-size:.78rem; color:var(--mut); text-align:center; margin-top:18px }
+.sem{display:flex;gap:8px;margin:6px 0}.sem div{flex:1;text-align:center;background:#f3f6f6;border-radius:10px;padding:6px 2px}.sem small{display:block;font-size:.75rem;color:#5b6b69}.sem b{font-size:1.5rem}.sem b.ok{color:#15803d}.sem b.warn{color:#b45309}.sem b.bad{color:#b91c1c}.sem i{display:block;font-size:.65rem;font-weight:400;color:#5b6b69}.ins{display:flex;flex-wrap:wrap;gap:6px}.ins span{background:#fff7e6;border:1px solid #f5d38a;border-radius:20px;padding:4px 10px;font-size:.88rem}.ins small{display:block;font-size:.7rem;color:#7a6a3a}
 </style>
 </head>
 <body>
@@ -53,6 +54,11 @@ ul { padding-left:0; list-style:none; margin:0 } li { padding:8px 0; border-bott
     (d.to != null && d.c != null && c100(d.to) > c100(d.c) ? '<p class="sm">Si entrega lo pendiente puede llegar a <b>' + c10(d.to) + '</b>.</p>' : '') +
     (d.ne != null ? '<p class="sm">' + (d.ne > 100 ? 'Aunque saque 100 en el examen no le alcanza: necesita entregar lo pendiente.' : d.ne <= 0 ? 'Con lo que lleva ya aprueba, pero debe presentar el examen.' : 'En el examen necesita al menos <b>' + esc(d.ne) + ' de 100</b>.') + '</p>' : '') + '</div>';
   const rs = d.r || [], apo = r => r[2] == null ? null : Math.round(r[2] * Number(r[1] || 0) / 100), base = rs.reduce((s, r) => s + (r[2] == null ? 0 : Number(r[1] || 0)), 0), tot = rs.reduce((s, r) => s + Number(r[1] || 0), 0), lleva = rs.reduce((s, r) => s + (apo(r) || 0), 0);
+  // v1.46.0: portal del alumno: su semestre, lo que viene y sus insignias
+  if (d.se && d.se.length) { const SK = { asegurado: 'ok', camino: 'ok', aprobado: 'ok', riesgo: 'warn', nolcanza: 'bad', extra: 'bad' };
+    h += '<div class="card"><h2>Tu semestre</h2><div class="sem">' + d.se.map(x => '<div><small>' + esc(x[0]) + '</small><b class="' + (x[1] == null ? 'na' : cls(x[1] * 10)) + '">' + (x[1] == null ? '·' : esc(x[1])) + (x[2] ? '<i>en curso</i>' : '') + '</b></div>').join('') + '</div>' + (d.st ? '<p class="sm"><span class="chip ' + (SK[d.sk] || '') + '">' + esc(d.st) + '</span></p>' : '') + '</div>'; }
+  if (d.px && d.px.length) h += '<div class="card"><h2>Lo que viene</h2><ul>' + d.px.map(x => '<li><b>' + esc(x[0]) + ':</b> ' + esc(x[1]) + '</li>').join('') + '</ul></div>';
+  if (d.in) h += '<div class="card"><h2>Tus insignias</h2>' + (d.in.length ? '<div class="ins">' + d.in.map(x => '<span>' + esc(x[0]) + ' ' + esc(x[1]) + (x[2] ? '<small>' + esc(x[2]) + '</small>' : '') + '</span>').join('') + '</div>' : '<p class="sm mut">Todavía ninguna: asistencia perfecta, entregar todo, explicar a un compañero o repasar en casa dan insignias.</p>') + '</div>';
   h += '<div class="card"><h2>Cómo se calcula</h2><table><thead><tr><th>Rubro</th><th>Vale</th><th style="text-align:right">Lleva</th></tr></thead><tbody>' + rs.map(r => '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + ' %</td><td class="n">' + (apo(r) == null ? '—' : apo(r) + ' %') + '</td></tr>').join('') + '</tbody></table>' +
     (base > 0 && base < tot ? '<p class="sm mut">Mientras falten rubros por calificar, la calificación se saca sobre lo ya calificado: lleva ' + lleva + ' % de ' + base + ' %.</p>' : '') +
     '<p class="sm" style="margin-top:10px"><b>Asistencia:</b> ' + (as[1] ? esc(as[0]) + ' de ' + esc(as[1]) + ' clases' + ((as[2] || []).length ? ' · faltó: ' + as[2].map(esc).join(', ') : ' · sin faltas') : 'sin registros todavía') + '.</p></div>';

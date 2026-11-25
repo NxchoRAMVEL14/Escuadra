@@ -22,6 +22,7 @@ h1 { font-size:1.2rem; margin:0 0 6px } h2 { font-size:1.02rem; margin:0 0 10px 
 textarea, input[type=text] { width:100%; font:inherit; padding:10px; border:1.5px solid var(--line); border-radius:11px; background:var(--s); color:var(--ink) }
 .btn { display:block; width:100%; padding:13px; border-radius:11px; border:0; background:var(--brand); color:var(--bink); font:inherit; font-weight:700; cursor:pointer }
 .btn:disabled { opacity:.6 } .foot { font-size:.76rem; color:var(--mut); text-align:center; margin-top:16px }
+.nums{display:flex;flex-wrap:wrap;gap:6px}.nums .op{width:3.2em;text-align:center}
 </style>
 </head>
 <body>
@@ -41,6 +42,33 @@ textarea, input[type=text] { width:100%; font:inherit; padding:10px; border:1.5p
     return JSON.parse(txt);
   }
   let d; try { d = await lee(); } catch (e) { m.innerHTML = '<div class="card"><h1>No se pudo abrir la encuesta</h1><p>Escanea otra vez el QR.</p></div>'; return; }
+  // v1.46.0: buzón anónimo (k: 'buz') y coevaluación del proyecto (k: 'coe')
+  const manda = async resp => { const c = window.ESCUADRA_CONFIG || {}; if (!c.supabaseUrl || !c.supabaseAnonKey || !d.o) throw new Error('No está conectado. Avísale a tu profe.');
+    const res = await fetch(String(c.supabaseUrl).replace(/\/$/, '') + '/rest/v1/escuadra_encuesta', { method: 'POST', headers: { apikey: c.supabaseAnonKey, Authorization: 'Bearer ' + c.supabaseAnonKey, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify({ owner: d.o, encuesta: d.e, resp: resp }) });
+    if (!res.ok) throw new Error('No se pudo enviar (' + res.status + '). Intenta de nuevo en un momento.'); };
+  if (d.k === 'buz') {
+    const TI = [['sug', '💡 Sugerencia'], ['duda', '❓ Duda de la clase'], ['preo', '😟 Algo me preocupa'], ['grac', '👏 Agradecimiento']], LB = 'escuadra.buz.' + d.e; let tipo = 'sug';
+    const hd = '<div class="top">' + logo + '<div><b>Buzón anónimo</b><small>' + esc(d.g) + '</small></div></div>';
+    const pintaB = (txt) => { m.innerHTML = hd + '<div class="card"><p class="sm mut">No pide tu nombre. Lo lee solo tu profe.</p><h2>¿Qué nos quieres decir?</h2>' + TI.map(t => '<button type="button" class="op' + (t[0] === tipo ? ' on' : '') + '" data-t="' + t[0] + '">' + t[1] + '</button>').join('') + '<textarea id="bt" rows="5" maxlength="600" placeholder="Escribe aquí">' + esc(txt || '') + '</textarea></div><button class="btn" id="env">Enviar</button><p class="foot">⚠️ Si estás en peligro o alguien te lastima, no esperes: habla hoy con orientación o con un adulto de confianza.</p>';
+      m.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { tipo = b.dataset.t; pintaB(document.getElementById('bt').value); });
+      document.getElementById('env').onclick = async () => { const t = document.getElementById('bt').value.trim(), bt = document.getElementById('env'); if (t.length < 3) { alert('Escribe tu mensaje.'); return; }
+        let ul = 0; try { ul = Number(localStorage.getItem(LB)) || 0; } catch (e) { } if (Date.now() - ul < 120000) { alert('Espera un par de minutos antes de mandar otro mensaje.'); return; }
+        bt.disabled = true; bt.textContent = 'Enviando…'; try { await manda({ tipo: tipo, t: t.slice(0, 600) }); try { localStorage.setItem(LB, String(Date.now())); } catch (e) { } m.innerHTML = hd + '<div class="card"><h1>✓ ¡Gracias!</h1><p>Tu mensaje llegó sin tu nombre.</p></div>'; } catch (e) { bt.disabled = false; bt.textContent = 'Enviar'; alert(e.message); } }; };
+    pintaB(''); return;
+  }
+  if (d.k === 'coe') {
+    const ESC = ['Nunca', 'A veces', 'Casi siempre', 'Siempre'], hd = '<div class="top">' + logo + '<div><b>' + esc(d.t || 'Coevaluación') + '</b><small>' + esc(d.g) + '</small></div></div>';
+    let yo = null, eqi = -1; const ev = {};
+    const elige = () => { m.innerHTML = hd + '<div class="card"><h2>¿Cuál es tu número de lista?</h2><div class="nums">' + d.eq.map((e, i) => e[1].map(a => '<button type="button" class="op" data-n="' + a[0] + '" data-e="' + i + '">' + esc(a[0]) + '</button>').join('')).join('') + '</div><p class="sm mut">Tu profe ve quién evaluó a quién; tus compañeros no.</p></div>';
+      m.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { yo = b.dataset.n; eqi = Number(b.dataset.e); let ya = false; try { ya = !!localStorage.getItem('escuadra.coe.' + d.e + '.' + yo); } catch (e) { } if (ya && !confirm('Ya contestaste con el número ' + yo + '. ¿Contestar de nuevo? (cuenta la última)')) return; pintaC(); }); };
+    const pintaC = () => { const e = d.eq[eqi]; m.innerHTML = hd + '<div class="card"><p class="sm mut">' + esc(e[0]) + ' · Número ' + esc(yo) + '</p><p class="sm">Califica a cada integrante <b>y a ti</b>: 1 = nunca, 2 = a veces, 3 = casi siempre, 4 = siempre. Sé honesto: sirve para mejorar el trabajo en equipo.</p></div>' +
+        e[1].map(a => '<div class="card"><h2>' + (String(a[0]) === String(yo) ? 'Tú (núm. ' + esc(yo) + ')' : 'Núm. ' + esc(a[0]) + ' · ' + esc(a[1])) + '</h2>' + d.cr.map((c, k) => '<p class="sm" style="margin:8px 0 4px"><b>' + esc(c) + '</b></p><div class="caras">' + [1, 2, 3, 4].map(v => '<button type="button" data-a="' + a[0] + '" data-c="' + k + '" data-v="' + v + '" class="' + (((ev[a[0]] || [])[k]) === v ? 'on' : '') + '" aria-label="' + ESC[v - 1] + '">' + v + '</button>').join('') + '</div>').join('') + '</div>').join('') +
+        '<button class="btn" id="env">Enviar</button><p class="foot">1 nunca · 2 a veces · 3 casi siempre · 4 siempre</p>';
+      m.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { const l = ev[b.dataset.a] = ev[b.dataset.a] || []; l[Number(b.dataset.c)] = Number(b.dataset.v); const y = window.scrollY; pintaC(); window.scrollTo(0, y); });
+      document.getElementById('env').onclick = async () => { const falta = e[1].some(a => d.cr.some((c, k) => !(ev[a[0]] || [])[k])); if (falta) { alert('Te falta calificar algún criterio.'); return; }
+        const bt = document.getElementById('env'); bt.disabled = true; bt.textContent = 'Enviando…'; try { await manda({ de: Number(yo), ev: ev }); try { localStorage.setItem('escuadra.coe.' + d.e + '.' + yo, '1'); } catch (x) { } m.innerHTML = hd + '<div class="card"><h1>✓ ¡Gracias!</h1><p>Tu evaluación llegó.</p></div>'; } catch (x) { bt.disabled = false; bt.textContent = 'Enviar'; alert(x.message); } }; };
+    elige(); return;
+  }
   const LS = 'escuadra.enc.' + d.e; let ya = false; try { ya = !!localStorage.getItem(LS); } catch (e) { }
   const head = '<div class="top">' + logo + '<div><b>Encuesta anónima</b><small>' + esc(d.g) + '</small></div></div>';
   if (ya) { m.innerHTML = head + '<div class="card"><h1>✓ Ya contestaste</h1><p>Gracias. Tu profe va a contarles qué hará con lo que dijeron.</p></div>'; return; }

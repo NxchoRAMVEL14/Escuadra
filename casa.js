@@ -210,7 +210,7 @@
     const pid = C.parcialActual().id, lg = (S.get('casaLog:' + g.id) || {})[a.id] || [];
     return card('<h3>👪 Comunicar a casa</h3><p class="muted small">Consulta con QR o enlace (sin nombre), mensaje de WhatsApp a su madre, padre o tutor(a) y repaso de sus temas débiles.</p>' +
       '<label class="fld"><span>WhatsApp de su madre, padre o tutor(a) (opcional, 10 dígitos)</span><input id="al-tel" inputmode="tel" value="' + esc(a.tel || '') + '" data-ch="alumno-f" data-aid="' + a.id + '" data-f="tel" placeholder="Ej. 4761234567"></label>' +
-      '<div class="row gap wrap">' + btn('🔗 Consulta (QR)', 'ca-consulta', 'data-aid="' + a.id + '" data-pid="' + pid + '"', 'small primary') + btn('💬 WhatsApp a casa', 'ca-wa', 'data-aid="' + a.id + '" data-pid="' + pid + '"', 'small') + btn('🏠 Repaso para casa', 'ca-repaso', 'data-aid="' + a.id + '"', 'small') + '</div>' +
+      '<div class="row gap wrap">' + btn('🔗 Portal del alumno (QR)', 'ca-consulta', 'data-aid="' + a.id + '" data-pid="' + pid + '"', 'small primary') + btn('💬 WhatsApp a casa', 'ca-wa', 'data-aid="' + a.id + '" data-pid="' + pid + '"', 'small') + btn('🏠 Repaso para casa', 'ca-repaso', 'data-aid="' + a.id + '"', 'small') + '</div>' +
       (lg.length ? '<p class="muted small">Mensajes a casa: ' + lg.slice(-5).map(f => u.fCorta(f)).join(', ') + '.</p>' : '') +
       (CA.resultados(g, a.id).length ? '<p class="muted small">Repasos para casa hechos: ' + CA.resultados(g, a.id).slice(-5).map(resTxt).join(' · ') + '.</p>' : ''));
   };
