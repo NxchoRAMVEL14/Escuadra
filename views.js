@@ -156,12 +156,12 @@
   function avisoRespaldo(hoy) {
     if (!S.keys('grupo:').length) return '';
     const m = E.sync.meta(), dias = iso => iso ? u.diffDays(String(iso).slice(0, 10), hoy) : null;
-    const ds = dias(m.lastSyncAt), db = dias(m.lastBackupAt), sinc = ds != null && ds <= 3, lim = sinc ? 30 : 7;
+    const ds = dias(m.lastSyncAt), db = dias(m.lastBackupAt), sinc = ds != null && ds <= 3, lim = 7;   // v1.44.0: respaldo semanal también con Supabase
     if (db != null && db < lim) return '';
     const cr = E.sync.creds(), falta = !cr.url ? 'conecta Supabase' : !E.sync.user ? 'inicia sesión en Supabase' : '';
     return card('<h3>💾 ' + (sinc ? 'Respaldo del mes' : 'Tus datos solo están en este dispositivo') + '</h3><p class="small">' +
-      (sinc ? 'Ya se sincronizan con Supabase; aun así, guarda un respaldo al mes en Drive por si acaso.' : 'Si Chrome borra sus datos o cambias de celular, se pierden calificaciones y listas. ' + (falta ? 'Para que se guarden solos, ' + falta + ' (Ajustes → Sincronización). Mientras, descarga un respaldo.' : 'Descarga un respaldo y guárdalo en Drive.')) +
-      (db != null ? ' Último respaldo: hace ' + db + (db === 1 ? ' día' : ' días') + '.' : ' Todavía no has descargado ninguno.') + '</p><div class="row gap wrap">' + btn(icon('download') + ' Descargar respaldo', 'backup-dl', '', 'primary') + (sinc ? '' : link('Sincronización', 'ajustes/sync', 'small')) + '</div>', sinc ? '' : 'accent');
+      (sinc ? 'Ya se sincronizan con Supabase; aun así, guarda un respaldo cada semana en tu Drive por si acaso.' : 'Si Chrome borra sus datos o cambias de celular, se pierden calificaciones y listas. ' + (falta ? 'Para que se guarden solos, ' + falta + ' (Ajustes → Sincronización). Mientras, descarga un respaldo.' : 'Descarga un respaldo y guárdalo en Drive.')) +
+      (db != null ? ' Último respaldo: hace ' + db + (db === 1 ? ' día' : ' días') + '.' : ' Todavía no has descargado ninguno.') + '</p><div class="row gap wrap">' + btn('☁️ Guardar en Drive', 'backup-share', '', 'primary') + btn(icon('download') + ' Descargar', 'backup-dl', '', '') + (sinc ? '' : link('Sincronización', 'ajustes/sync', 'small')) + '</div>', sinc ? '' : 'accent');
   }
   function ideaDelDia(g, p) {
     const sm = (g && p ? D.smKey(g, p.id) : '') || '';
@@ -1172,6 +1172,11 @@
   };
   A['sync-logout'] = async () => { await E.sync.logout(); E.render(); };
   A['notif-on'] = () => E.notify.pedir();
+  // v1.44.0: compartir el respaldo (en Android eliges Drive); si el navegador no deja compartir archivos, se descarga
+  A['backup-share'] = async () => { const nom = 'escuadra-respaldo-' + u.today() + '.json', txt = JSON.stringify({ app: 'escuadra', version: E.VERSION, fecha: u.now(), docs: S.docs });
+    let ok = false; try { const f = new File([txt], nom, { type: 'application/json' }); if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Respaldo de Escuadra' }); ok = true; } } catch (e) { if (e && e.name === 'AbortError') return; }
+    if (!ok) { u.download(nom, txt, 'application/json'); u.toast('Se descargó: súbelo a tu Drive', 'ok', 3500); } else u.toast('Respaldo enviado', 'ok');
+    E.sync.setMeta({ lastBackupAt: u.now() }); E.render(); };
   A['backup-dl'] = () => { u.download('escuadra-respaldo-' + u.today() + '.json', JSON.stringify({ app: 'escuadra', version: E.VERSION, fecha: u.now(), docs: S.docs }, null, 1), 'application/json'); E.sync.setMeta({ lastBackupAt: u.now() }); E.render(); };
   CH['backup-restore'] = async el => {
     const file = el.files && el.files[0]; if (!file) return;
