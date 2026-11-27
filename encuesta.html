@@ -56,6 +56,15 @@ textarea, input[type=text] { width:100%; font:inherit; padding:10px; border:1.5p
         bt.disabled = true; bt.textContent = 'Enviando…'; try { await manda({ tipo: tipo, t: t.slice(0, 600) }); try { localStorage.setItem(LB, String(Date.now())); } catch (e) { } m.innerHTML = hd + '<div class="card"><h1>✓ ¡Gracias!</h1><p>Tu mensaje llegó sin tu nombre.</p></div>'; } catch (e) { bt.disabled = false; bt.textContent = 'Enviar'; alert(e.message); } }; };
     pintaB(''); return;
   }
+  if (d.k === 'lis') { // v1.49.0: lista con QR
+    const hd = '<div class="top">' + logo + '<div><b>Lista de hoy</b><small>' + esc(d.g) + '</small></div></div>', LK = 'escuadra.lis.' + d.e + '.' + d.f;
+    let dev = ''; try { dev = localStorage.getItem('escuadra.dev') || ''; if (!dev) { dev = Math.random().toString(36).slice(2, 10); localStorage.setItem('escuadra.dev', dev); } } catch (e) { }
+    let ya = null; try { ya = localStorage.getItem(LK); } catch (e) { }
+    if (ya) { m.innerHTML = hd + '<div class="card"><h1>✓ Ya quedaste</h1><p>Desde este celular ya se registró el número <b>' + esc(ya) + '</b> hoy.</p></div>'; return; }
+    m.innerHTML = hd + '<div class="card"><h2>¿Cuál es tu número de lista?</h2><div class="nums">' + (d.n || []).map(n => '<button type="button" class="op" data-n="' + n + '">' + esc(n) + '</button>').join('') + '</div><p class="sm mut">Elige el tuyo: desde este celular solo se puede registrar un número al día.</p></div>';
+    m.querySelectorAll('[data-n]').forEach(b => b.onclick = async () => { const n = b.dataset.n; if (!confirm('¿Eres el número ' + n + '?')) return; m.querySelectorAll('[data-n]').forEach(x => { x.disabled = true; });
+      try { await manda({ num: Number(n), f: d.f, w: d.w, tk: d.tk, dev: dev }); try { localStorage.setItem(LK, n); } catch (e) { } m.innerHTML = hd + '<div class="card"><h1>✓ ¡Listo!</h1><p>Quedaste registrado con el número <b>' + esc(n) + '</b>.</p></div>'; } catch (x) { m.querySelectorAll('[data-n]').forEach(y => { y.disabled = false; }); alert(x.message); } }); return;
+  }
   if (d.k === 'coe') {
     const ESC = ['Nunca', 'A veces', 'Casi siempre', 'Siempre'], hd = '<div class="top">' + logo + '<div><b>' + esc(d.t || 'Coevaluación') + '</b><small>' + esc(d.g) + '</small></div></div>';
     let yo = null, eqi = -1; const ev = {};

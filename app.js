@@ -2,8 +2,13 @@
 (function () {
   'use strict';
   const E = window.E, u = E.u, S = E.store, D = E.data;
-  E.VERSION = '1.46.0';
+  E.VERSION = '1.50.1';
   E.CHANGELOG = [
+            { v: '1.50.1', f: '2026-11-26', t: 'Panel del tutor: la asistencia de la boleta se muestra en días (1 por día) y a quién atender dice «5 de 11 días»' },
+            { v: '1.50.0', f: '2026-11-26', t: 'Panel del tutor: lee la boleta grupal en PDF de control escolar y arma el semáforo de todas las materias, a quién atender primero, cómo va cada materia, la tarjeta en la ficha y el mensaje a casa' },
+            { v: '1.49.0', f: '2026-11-25', t: 'Paquete 6 (innovar): asistente con Claude, lista con QR, inventario con QR, tu enseñanza en números, modo sin internet revisado y expediente del semestre en ZIP' },
+            { v: '1.48.0', f: '2026-11-24', t: 'Paquete 5 (clases): simuladores de escalera, hoja de práctica con lista de material, retos FreeCAD, clase invertida, banco de proyectos y cobertura del programa' },
+            { v: '1.47.0', f: '2026-11-24', t: 'Paquete 4 (papás): avisos a casa listos para WhatsApp, informe mensual con QR, citas individuales en la junta e historial con la familia con acuerdos en seguimiento' },
             { v: '1.46.0', f: '2026-11-24', t: 'Paquete 3: insignias, portal del alumno, repaso antes del examen, portafolio del proyecto, buzón anónimo y auto/coevaluación' },
             { v: '1.45.0', f: '2026-11-24', t: 'Paquete 2: línea de tiempo del alumno, comparar parciales, cómo terminaría el semestre, mapa de temas y reporte para tutoría' },
             { v: '1.44.0', f: '2026-11-23', t: 'Mis pendientes en Inicio (tus tareas + avisos de la app), respaldo semanal con «Guardar en Drive» y atajo «Alerta temprana» en el ícono' },
