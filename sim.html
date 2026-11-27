@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simuladores de diagrama escalera · Escuadra</title>
+<style>
+:root { --bg: #f5f8f7; --card: #fff; --ink: #12221f; --muted: #5a6c68; --line: #d6e0dd; --brand: #0e5e5a; --on: #16a34a; --red: #dc2626 }
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif }
+header { background: var(--brand); color: #fff; padding: 16px 20px 12px } header h1 { margin: 0; font-size: 1.4rem } header p { margin: 2px 0 0; opacity: .9; font-size: .92rem }
+nav { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5 }
+nav a { text-decoration: none; color: var(--brand); font-weight: 600; font-size: .88rem; padding: 6px 10px; border-radius: 999px; background: #e6f2f0 } nav a.on { background: var(--brand); color: #fff }
+main { max-width: 1240px; margin: 0 auto; padding: 16px }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin: 0 0 16px }
+h2 { margin: 0 0 4px; font-size: 1.25rem; color: var(--brand) } h3 { margin: 12px 0 6px; font-size: 1rem }
+.muted { color: var(--muted) } .small { font-size: .88rem }
+.sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; align-items: start } @media (max-width: 860px) { .sim { grid-template-columns: 1fr } }
+.panel { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: #fbfdfc } svg { display: block; width: 100%; height: auto }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px } button { font: inherit; font-size: .9rem; border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 9px 12px; border-radius: 12px; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none }
+button.na { border-color: #16a34a } button.nc { border-color: #dc2626 } button.on { background: #dcfce7; border-color: var(--on) } button.ncon { background: #fee2e2; border-color: var(--red) } button.tg.on { background: #fef3c7; border-color: #f59e0b }
+.io { width: 100%; border-collapse: collapse; font-size: .85rem } .io td { padding: 4px 6px; border-bottom: 1px solid var(--line) } .led { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; vertical-align: middle } .led.on { background: var(--on); box-shadow: 0 0 6px var(--on) }
+ol, ul { padding-left: 20px } .tip { background: #f1f7f6; border-left: 4px solid var(--brand); padding: 8px 10px; border-radius: 0 8px 8px 0; font-size: .9rem }
+label.fx { font-size: .85rem; display: inline-flex; gap: 6px; align-items: center; margin-top: 6px }
+footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 10px 0 30px }
+</style>
+</head>
+<body>
+<header><h1>Simuladores de diagrama escalera</h1><p>Presiona los botones, mira el diagrama: lo que conduce se pone verde.</p></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<footer>Escuadra · Técnico en Mecatrónica · CETAC 19</footer>
+<script src="sims-data.js"></script>
+<script>
+(function () {
+  'use strict';
+  const SIMS = window.SIMS, $ = s => document.querySelector(s);
+  let s = null, v = {}, fis = {}, fijar = false, ult = 0, raf = 0;
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const nav = () => { $('#nav').innerHTML = SIMS.LIST.map(x => '<a href="#' + x.id + '"' + (s && s.id === x.id ? ' class="on"' : '') + '>' + x.ico + ' ' + esc(x.t) + '</a>').join(''); };
+  const ent = k => { const c = s.vars[k][2]; return c === 'boton' || c === 'selector' || c === 'falla'; };
+  // ---------- escenas ----------
+  const ESC = {
+    arranque: () => { fis.a = (fis.a || 0) + (v.K1 ? 12 : 0); const r = v.K1 ? fis.a : (fis.a || 0);
+      return '<svg viewBox="0 0 320 200"><rect x="40" y="60" width="150" height="90" rx="14" fill="#64748b"/><rect x="190" y="95" width="30" height="20" fill="#475569"/><g transform="translate(250 105) rotate(' + r + ')">' + [0, 90, 180, 270].map(a => '<ellipse rx="34" ry="9" transform="rotate(' + a + ') translate(30 0)" fill="' + (v.K1 ? '#0ea5e9' : '#94a3b8') + '"/>').join('') + '<circle r="9" fill="#334155"/></g><text x="115" y="110" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">MOTOR</text><circle cx="70" cy="40" r="13" fill="' + (v.H1 ? '#22c55e' : '#e2e8f0') + '" stroke="#334155"/><text x="90" y="45" font-size="12">H1</text>' + (v.F1 ? '<text x="160" y="185" text-anchor="middle" fill="#dc2626" font-weight="700">⚡ Sobrecarga: el térmico se disparó</text>' : '<text x="160" y="185" text-anchor="middle" fill="#64748b" font-size="13">' + (v.K1 ? 'Girando' : 'Detenido') + '</text>') + '</svg>'; },
+    semaforo: () => '<svg viewBox="0 0 320 220"><rect x="125" y="10" width="70" height="190" rx="14" fill="#1f2937"/>' + [['H1', '#ef4444'], ['H3', '#f59e0b'], ['H2', '#22c55e']].map((c, i) => '<circle cx="160" cy="' + (45 + i * 60) + '" r="24" fill="' + (v[c[0]] ? c[1] : '#374151') + '"' + (v[c[0]] ? ' style="filter:drop-shadow(0 0 8px ' + c[1] + ')"' : '') + '/>').join('') + '<rect x="152" y="200" width="16" height="20" fill="#475569"/></svg>',
+    banda: () => { fis.p = fis.p || []; const L = 0.97; fis.p.forEach(p => { if (v.K1) p.x = Math.min(L, p.x + 0.004); }); v.B1 = fis.p.some(p => p.x >= L - 0.001);
+      return '<svg viewBox="0 0 340 190"><rect x="20" y="110" width="290" height="22" rx="11" fill="#334155"/>' + [0, 1, 2, 3, 4, 5, 6].map(i => '<circle cx="' + (31 + i * 44.5) + '" cy="121" r="8" fill="#64748b"/>').join('') + fis.p.map(p => '<rect x="' + (25 + p.x * 260) + '" y="80" width="30" height="30" rx="3" fill="#d97706" stroke="#92400e"/>').join('') +
+        '<rect x="292" y="60" width="14" height="22" fill="#0f766e"/><line x1="299" y1="82" x2="299" y2="108" stroke="' + (v.B1 ? '#f59e0b' : '#94a3b8') + '" stroke-dasharray="3 3" stroke-width="2"/><text x="299" y="55" text-anchor="middle" font-size="11">B1</text><circle cx="40" cy="40" r="12" fill="' + (v.H1 ? '#f59e0b' : '#e2e8f0') + '" stroke="#334155"/><text x="58" y="45" font-size="12">H1 pieza lista</text><text x="165" y="165" text-anchor="middle" font-size="13" fill="#64748b">Banda ' + (v.K1 ? 'en marcha' : 'detenida') + '</text></svg>'; },
+    cilindro: () => { fis.x = Math.max(0, Math.min(1, (fis.x || 0) + (v.Y1 ? 0.012 : -0.012))); v.S1 = fis.x <= 0.001; v.S2 = fis.x >= 0.999;
+      return '<svg viewBox="0 0 340 180"><rect x="30" y="60" width="130" height="50" rx="6" fill="#94a3b8" stroke="#475569"/><rect x="' + (40 + fis.x * 100) + '" y="64" width="12" height="42" fill="#334155"/><rect x="' + (52 + fis.x * 100) + '" y="80" width="108" height="10" fill="#cbd5e1" stroke="#64748b"/><rect x="' + (160 + fis.x * 100) + '" y="70" width="14" height="30" rx="3" fill="#475569"/>' +
+        '<rect x="160" y="125" width="10" height="16" fill="' + (v.S1 ? '#22c55e' : '#e2e8f0') + '" stroke="#334155"/><text x="165" y="158" text-anchor="middle" font-size="11">S1 (a0)</text><rect x="270" y="125" width="10" height="16" fill="' + (v.S2 ? '#22c55e' : '#e2e8f0') + '" stroke="#334155"/><text x="275" y="158" text-anchor="middle" font-size="11">S2 (a1)</text>' +
+        '<rect x="40" y="20" width="60" height="26" fill="' + (v.Y1 ? '#dcfce7' : '#fff') + '" stroke="#334155"/><text x="70" y="38" text-anchor="middle" font-size="11">5/2 · Y1</text><text x="230" y="40" text-anchor="middle" font-size="13" fill="#64748b">' + (fis.x > 0.001 && fis.x < 0.999 ? (v.Y1 ? 'Saliendo (A+)' : 'Entrando (A−)') : fis.x >= 0.999 ? 'Afuera' : 'Adentro') + '</text></svg>'; },
+    prensa: () => { fis.y = Math.max(0, Math.min(1, (fis.y || 0) + (v.Y1 ? 0.01 : -0.016))); v.B1 = fis.y <= 0.001; v.B2 = fis.y >= 0.999; if (v.B2) fis.ok = true; const ram = 40 + fis.y * 70;
+      return '<svg viewBox="0 0 320 210"><rect x="60" y="10" width="200" height="16" fill="#475569"/><rect x="60" y="10" width="14" height="180" fill="#475569"/><rect x="246" y="10" width="14" height="180" fill="#475569"/><rect x="60" y="176" width="200" height="16" fill="#475569"/><rect x="152" y="26" width="16" height="' + (ram - 26) + '" fill="#cbd5e1" stroke="#64748b"/><rect x="115" y="' + ram + '" width="90" height="18" fill="#0f766e"/>' +
+        '<rect x="125" y="' + (fis.ok ? 160 : 146) + '" width="70" height="' + (fis.ok ? 16 : 30) + '" rx="3" fill="#d97706" stroke="#92400e"/><circle cx="290" cy="30" r="11" fill="' + (v.H1 ? '#22c55e' : '#e2e8f0') + '" stroke="#334155"/><text x="290" y="56" text-anchor="middle" font-size="10">H1</text><text x="160" y="205" text-anchor="middle" font-size="12" fill="#64748b">' + (v.Y1 ? 'Bajando' : fis.y > 0.001 ? 'Subiendo' : 'Arriba') + '</text></svg>'; }
+  };
+  const CTRL = { banda: () => '<button data-x="pieza">➕ Poner pieza</button><button data-x="quitar">✋ Retirar pieza</button>', prensa: () => '<button data-x="nueva">🔄 Pieza nueva</button>' };
+  const pinta = () => {
+    $('#esc').innerHTML = ESC[s.id]();
+    $('#lad').innerHTML = SIMS.svg(s, v, { vivo: true });
+    $('#io').innerHTML = Object.keys(s.vars).map(k => { const d = s.vars[k], on = d[1] === 'ton' ? !!(v._c || {})[k] : !!v[k]; return '<tr><td><b>' + k + '</b></td><td>' + esc(d[0]) + '</td><td>' + (d[1] === 'ton' ? 'TON ' + d[3] + ' s' : d[1]) + '</td><td><span class="led' + (on ? ' on' : '') + '"></span></td></tr>'; }).join('');
+    document.querySelectorAll('[data-k]').forEach(b => { const k = b.dataset.k, nc = s.vars[k][1] === 'NC'; b.classList.toggle(nc ? 'ncon' : 'on', !!v[k]); });
+  };
+  const loop = t => { const dt = Math.min(0.1, (t - (ult || t)) / 1000); ult = t; SIMS.paso(s, v, dt); pinta(); raf = requestAnimationFrame(loop); };
+  const abre = () => {
+    cancelAnimationFrame(raf); s = SIMS.get(location.hash.slice(1)) || SIMS.LIST[0]; v = {}; fis = {}; ult = 0; nav();
+    const ins = Object.keys(s.vars).filter(ent);
+    $('#main').innerHTML = '<section><h2>' + s.ico + ' ' + esc(s.t) + '</h2><p class="muted">' + esc(s.sub) + '</p><p class="tip"><b>Objetivo:</b> ' + esc(s.obj) + '</p><div class="sim"><div class="panel"><div id="esc"></div><div class="btns">' +
+      ins.map(k => { const d = s.vars[k], tg = d[2] !== 'boton'; return '<button data-k="' + k + '" class="' + (d[1] === 'NC' ? 'nc' : 'na') + (tg ? ' tg' : '') + '">' + (tg ? '⏻ ' : '') + k + ' · ' + esc(d[0]) + '</button>'; }).join('') + (CTRL[s.id] ? CTRL[s.id]() : '') + '</div>' +
+      (ins.some(k => s.vars[k][2] === 'boton') ? '<label class="fx"><input type="checkbox" id="fijar"' + (fijar ? ' checked' : '') + '> Los botones se quedan presionados (para usar con mouse; otro clic los suelta)</label>' : '') +
+      '<h3>Entradas y salidas</h3><table class="io" id="io"></table></div><div class="panel"><h3 style="margin-top:0">Diagrama escalera</h3><div id="lad"></div></div></div></section>' +
+      '<section><h3>Cómo se arma</h3><ol>' + s.pasos.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol><h3>Preguntas</h3><ol>' + s.preguntas.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol></section>';
+    const fx = $('#fijar'); if (fx) fx.onchange = () => { fijar = fx.checked; };
+    document.querySelectorAll('[data-k]').forEach(b => { const k = b.dataset.k, tg = s.vars[k][2] !== 'boton';
+      if (tg) { b.onclick = () => { v[k] = !v[k]; }; return; }
+      b.addEventListener('pointerdown', e => { e.preventDefault(); if (fijar) v[k] = !v[k]; else { v[k] = true; try { b.setPointerCapture(e.pointerId); } catch (x) { } } });
+      ['pointerup', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => { if (!fijar) v[k] = false; }));
+      b.addEventListener('contextmenu', e => e.preventDefault()); });
+    document.querySelectorAll('[data-x]').forEach(b => b.onclick = () => { const x = b.dataset.x;
+      if (x === 'pieza') { fis.p = fis.p || []; if (!fis.p.some(p => p.x < 0.15)) fis.p.push({ x: 0 }); }
+      if (x === 'quitar') fis.p = (fis.p || []).filter(p => p.x < 0.95);
+      if (x === 'nueva') fis.ok = false; });
+    raf = requestAnimationFrame(loop);
+  };
+  window.addEventListener('hashchange', abre); abre();
+})();
+</script>
+</body>
+</html>
