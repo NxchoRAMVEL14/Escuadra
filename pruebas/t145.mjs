@@ -67,7 +67,7 @@ const bloques = await p.evaluate(() => [...document.querySelectorAll('.mn-h')].m
 ok('Más tiene los 5 bloques (opción A)', bloques.length >= 5 && /Para la clase/.test(bloques.join('|')) && /Sistema/.test(bloques.join('|')) && /padres y la cotutora/.test(bloques.join('|')) && /administración/.test(bloques.join('|')), bloques.join(' | '));
 await p.evaluate(() => document.querySelector('[data-act=mn-edit]').click()); await p.waitForTimeout(400);
 const tiles = await p.evaluate(() => document.querySelectorAll('.mn-t').length);
-ok('modo acomodar muestra todas las secciones', tiles === 71, tiles + ' (52 + Historial de cambios + Cobros + Bitácora semanal + Expo + Muestra + Memorama + Test de vida + Para mí como profe + Entrega de calificaciones + Conócete + Cierre de semestre + Alerta temprana + Copiar a otro grupo + Comparar parciales + Mapa de temas + Insignias + Coevaluación + Buzón + Repaso antes del examen)');
+ok('modo acomodar muestra todas las secciones', tiles === 84, tiles + ' (52 + Historial de cambios + Cobros + Bitácora semanal + Expo + Muestra + Memorama + Test de vida + Para mí como profe + Entrega de calificaciones + Conócete + Cierre de semestre + Alerta temprana + Copiar a otro grupo + Comparar parciales + Mapa de temas + Insignias + Coevaluación + Buzón + Repaso antes del examen + Avisos a casa + Informe mensual + Familias + Retos FreeCAD + Simuladores + Clase invertida + Banco de proyectos + Cobertura + Asistente + Lista con QR + Tu enseñanza + Sin internet + Panel del tutor)');
 const dragOk = await p.evaluate(() => {
   const g = document.querySelector('.mn-grid[data-grp=clase]'); return g ? [...g.querySelectorAll('.mn-t')].map(t => t.dataset.r).slice(0, 3) : [];
 });

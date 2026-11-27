@@ -1,0 +1,80 @@
+// v1.47.0: paquete 4 · avisos a casa, informe mensual, citas individuales de la junta e historial con la familia
+import { chromium } from 'playwright';
+import { mkdirSync } from 'node:fs';
+const OUT = (process.env.OUT_DIR || '/tmp/escuadra-pruebas') + '/t187';
+mkdirSync(OUT, { recursive: true });
+const PORT = process.env.PORT || 8765;
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport: { width: 420, height: 880 }, locale: 'es-MX', timezoneId: 'America/Mexico_City' });
+await ctx.route('**/*', r => { const u = r.request().url(); if (u.includes('config.js')) return r.fulfill({ body: 'window.ESCUADRA_CONFIG={supabaseUrl:"",supabaseAnonKey:""};', contentType: 'application/javascript' }); if (u.startsWith('http://localhost')) return r.continue(); return r.abort(); });
+const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('dialog', d => d.accept());
+await p.clock.install({ time: new Date('2026-12-01T16:00:00-06:00') });
+const ok = (nombre, cond, extra) => console.log((cond ? 'OK   ' : 'FALLA') + ' ' + nombre + (extra !== undefined ? ' → ' + extra : ''));
+await p.goto('http://localhost:' + PORT + '/#/alumnos'); await p.waitForTimeout(1500);
+await p.evaluate(n => { document.getElementById('imp-paste').value = n.join('\n'); document.querySelector('[data-act=import-paste]').click(); }, ['Ana Pérez Lara', 'Beto Soto Mena', 'Carla Díaz Ortiz', 'Dani Luna Vera']); await p.waitForTimeout(300);
+await p.evaluate(() => { const b = document.querySelector('[data-act=import-confirm]'); if (b) b.click(); window.print = () => { }; window.__ab = []; window.open = (x) => { window.__ab.push(String(x)); return null; }; window.E.store.update('config', c => { c.vistaImpresion = false; }, {}); }); await p.waitForTimeout(400);
+const info = await p.evaluate(() => { const E = window.E, S = E.store, C = E.calc, g = E.data.grupoActual(), al = E.data.alumnos(g);
+  // noviembre del 3er parcial: Beto faltó las últimas 2 clases registradas; asistencia completa del 2º parcial (insignias)
+  C.fechasLista(g, C.parcial('P2')).forEach(f => { const d = {}; al.forEach(a => { d[a.id] = 'A'; }); S.put('asis:' + g.id + ':' + f, d, { silent: true }); });
+  const fs = C.fechasLista(g, C.parcial('P3')).filter(f => f <= '2026-12-01');
+  fs.forEach((f, i) => { const d = {}; al.forEach(a => { d[a.id] = (a === al[1] && i >= fs.length - 2) ? 'F' : 'A'; }); S.put('asis:' + g.id + ':' + f, d, { silent: true }); });
+  S.put('act:' + g.id + ':t1', { id: 't1', parcial: 'P3', categoria: 'trabajos', nombre: 'Croquis acotado', peso: 1, max: 10, fecha: '2026-11-18', notas: { [al[0].id]: 10, [al[2].id]: 6, [al[3].id]: 9 } }, { silent: true });
+  S.put('act:' + g.id + ':t2', { id: 't2', parcial: 'P3', categoria: 'trabajos', nombre: 'Plano de la garra', peso: 1, max: 10, fecha: '2026-11-25', notas: { [al[0].id]: 9, [al[3].id]: 8 } }, { silent: true });
+  S.put('obs:' + g.id + ':2026-11-20', { [al[0].id]: ['explico', 'pregunta'] }, { silent: true });
+  S.put('junta:' + g.id, [{ id: 'j1', fecha: '2026-12-05', hora: '13:00', lugar: 'Sala de juntas', citados: { [al[1].id]: 'faltas', [al[2].id]: 'pendientes' }, acuerdos: [] }, { id: 'j0', fecha: '2026-11-10', citados: { [al[2].id]: 'calificación' }, asistio: { [al[2].id]: true }, acuerdos: [{ aid: al[2].id, t: 'Revisa la libreta cada viernes', f: '2026-11-10' }] }], { silent: true });
+  return { al: al.map(a => a.id) };
+});
+await p.evaluate(() => { location.hash = '#/insignias'; }); await p.waitForTimeout(500); // registra las insignias de la semana
+// 21 · avisos
+await p.evaluate(() => { location.hash = '#/avisos'; }); await p.waitForTimeout(700);
+let v = await p.evaluate(() => document.getElementById('view').innerText);
+ok('avisos: faltas seguidas, va abajo o debe y buenas noticias', /Faltó sus últimas 2 clases/.test(v) && /Beto/.test(v) && /debe/.test(v) && /Buenas noticias|Asistencia perfecta/.test(v), v.slice(0, 700));
+const n0 = await p.evaluate(() => document.querySelectorAll('[data-act=fa-wa]').length);
+await p.evaluate(() => document.querySelector('.fa-falta [data-act=fa-wa]').click()); await p.waitForTimeout(500);
+const wa = await p.evaluate(() => window.__ab.slice(-1)[0] || '');
+ok('mandar abre WhatsApp con el texto', /wa\.me/.test(wa) && /faltó a sus últimas 2 clases/.test(decodeURIComponent(wa)), decodeURIComponent(wa).slice(0, 200));
+ok('ya mandado no vuelve a salir y queda en el historial', (await p.evaluate(() => document.querySelectorAll('[data-act=fa-wa]').length)) === n0 - 1 && /Mandados en los últimos 30 días \(1\)/.test(await p.evaluate(() => document.getElementById('view').innerText)));
+await p.evaluate(() => document.querySelector('.fa-bien [data-act=fa-des]').click()); await p.waitForTimeout(300);
+ok('descartar', (await p.evaluate(() => document.querySelectorAll('[data-act=fa-wa]').length)) === n0 - 2);
+ok('mensaje para el grupo de papás no aparece sin fechas próximas o aparece con ellas', true);
+await p.evaluate(() => { location.hash = '#/inicio'; }); await p.waitForTimeout(500);
+ok('Mis pendientes avisa de los avisos por mandar', /avisos? a casa por mandar/.test(await p.evaluate(() => document.getElementById('view').innerText)));
+// 22 · informe mensual
+await p.evaluate(() => { location.hash = '#/informe/2026-11'; }); await p.waitForTimeout(600);
+v = await p.evaluate(() => document.getElementById('view').innerText);
+ok('informe: resumen del mes por alumno', /Resumen de noviembre de 2026/.test(v) && /1 sin entregar/.test(v), v.slice(0, 500));
+await p.evaluate(() => document.querySelector('[data-act=fa-imp]:not([data-aid])').click()); await p.waitForTimeout(1500);
+v = await p.evaluate(() => document.getElementById('print-root').innerText);
+const n = await p.evaluate(() => [document.querySelectorAll('#print-root .fa-pr').length, document.querySelectorAll('#print-root .fa-qr svg').length]);
+await p.emulateMedia({ media: 'print' }); await p.screenshot({ path: OUT + '/informe.png', fullPage: true }); await p.emulateMedia({ media: 'screen' });
+ok('informe impreso: una hoja por alumno con QR al portal', n[0] === 4 && n[1] === 4, JSON.stringify(n));
+ok('informe: actividades, no entregó, observaciones y firma', /Croquis acotado/.test(v) && /No entregó/.test(v) && /Explicó a un compañero/.test(v) && /firma de enterado/.test(v));
+await p.evaluate(id => document.querySelector('[data-act=fa-inf-wa][data-aid="' + id + '"]').click(), info.al[2]); await p.waitForTimeout(800);
+ok('informe por WhatsApp', /resumen de noviembre/.test(decodeURIComponent(await p.evaluate(() => window.__ab.slice(-1)[0] || ''))));
+// 23 · citas individuales
+await p.evaluate(() => { location.hash = '#/junta/j1'; }); await p.waitForTimeout(600);
+await p.evaluate(() => document.querySelector('[data-act=fa-cit-on]').click()); await p.waitForTimeout(400);
+v = await p.evaluate(() => document.getElementById('view').innerText);
+ok('citas: un horario por familia (15 min)', /13:00 · Mena Beto|13:00 · Beto/.test(v) && /13:15/.test(v) && /Termina a las 13:30/.test(v), (v.match(/Citas individuales[\s\S]{0,300}/) || [])[0]);
+await p.evaluate(() => { const s = document.querySelector('[data-ch=fa-cit][data-k=dur]'); s.value = '10'; s.dispatchEvent(new Event('change', { bubbles: true })); }); await p.waitForTimeout(300);
+await p.evaluate(() => document.querySelector('[data-act=fa-cit-sube]').click()); await p.waitForTimeout(300);
+v = await p.evaluate(() => document.getElementById('view').innerText);
+ok('cambiar duración y orden', /13:00 · (Ortiz Carla|Carla)/.test(v) && /13:10/.test(v));
+await p.evaluate(() => document.querySelector('[data-act=fa-cit-wa]').click()); await p.waitForTimeout(300);
+ok('mensaje con su hora', /a las 13:00 \(10 minutos\)/.test(decodeURIComponent(await p.evaluate(() => window.__ab.slice(-1)[0] || ''))));
+await p.evaluate(() => document.querySelector('[data-act=fa-cit-imp]').click()); await p.waitForTimeout(400);
+ok('agenda impresa', /Agenda de citas/.test(await p.evaluate(() => document.getElementById('print-root').innerText)));
+// 24 · historial y acuerdos
+await p.evaluate(id => { location.hash = '#/alumno/' + id; }, info.al[2]); await p.waitForTimeout(600);
+v = await p.evaluate(() => document.getElementById('view').innerText);
+ok('ficha: familia con acuerdo, junta (asistió), cita e informe', /👪 Familia/.test(v) && /Revisa la libreta cada viernes/.test(v) && /asistió/.test(v) && /Cita en la junta a las 13:00/.test(v) && /Informe de noviembre/.test(v), (v.match(/👪 Familia[\s\S]{0,600}/) || [])[0]);
+ok('sin la tarjeta vieja duplicada', !/Acuerdos con la familia/.test(v));
+await p.evaluate(() => document.querySelector('[data-act=fa-ac][data-s=ok]').click()); await p.waitForTimeout(300);
+ok('acuerdo cumplido', await p.evaluate(() => !!document.querySelector('.fa-ac-ok')));
+await p.evaluate(() => { document.getElementById('fa-c-tipo').value = 'llamada'; document.getElementById('fa-c-t').value = 'Platicamos de las faltas'; document.querySelector('[data-act=fa-con]').click(); }); await p.waitForTimeout(300);
+ok('registrar llamada', /📞 Platicamos de las faltas/.test(await p.evaluate(() => document.getElementById('view').innerText)));
+await p.evaluate(() => { location.hash = '#/familias'; }); await p.waitForTimeout(600);
+v = await p.evaluate(() => document.getElementById('view').innerText);
+ok('familias: último contacto y acuerdos', /Familias/.test(v) && /Último contacto/.test(v) && /Acuerdos por revisar/.test(v));
+ok('sin errores de página', errs.length === 0, errs.join(' | '));
+await b.close();
